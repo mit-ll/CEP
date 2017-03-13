@@ -1,0 +1,18 @@
+/* memmap */
+MEMORY
+{
+    rom : ORIGIN = 0x00000000, LENGTH = 0x00800000
+    ram : ORIGIN = 0x40000000, LENGTH = 0x00800000
+    h : ORIGIN = 0x40000000, LENGTH = 0x00400000
+}
+
+SECTIONS
+{
+    .text : { *(.text*) } > rom
+    .bss : { *(.bss*) } > ram
+    .heap : { *(.heap*) } > h
+}
+
+    end = ORIGIN(h) + LENGTH(h);
+
+_stacktop = ORIGIN(ram) + LENGTH(ram);

@@ -1,0 +1,281 @@
+--$ XILINX$RCSfile: xcf32p.bsd,v $
+--  XILINX Revision: 1.4  
+-------------------------------------------------------------------------------
+-- Copyright (c) 2006-2008 Xilinx, Inc.
+-- This design is confidential and proprietary of Xilinx, All Rights Reserved.
+-------------------------------------------------------------------------------
+--   ____  ____
+--  /   /\/   /
+-- /___/  \  /  Vendor:         Xilinx
+-- \   \   \/   Version:        v1.01 (PROM BSDL template version)
+--  \   \       Application:    Generate_Prom_Bsdl_Files.pl, 1.00
+--  /   /       Filename:       xcf32p.bsd
+-- /___/   /\   Generated:      Thu Feb 14 05:43:23 2008
+-- \   \  /  \  State:           State: PRELIMINARY  
+--  \___\/\___\                  
+--
+-- Device:      XCF32P
+-- Package:     GENERIC (using VO48 package as basis)
+-- Purpose:     IEEE 1149.1 BSDL file
+-- Reference:   None
+-- Revisions:   
+--  1.00 - Created.
+--  1.01 - Isolated CF pin input cell from output/control cells.
+------------------------------------------------------------------------------
+-- Technical Support:
+--
+-- Find the latest version of this BSDL file, find technical support answers, 
+--  or find contact information at:  http://www.support.xilinx.com
+--
+------------------------------------------------------------------------------
+-- Special Instructions:
+--
+-- This BSDL file reflects the pre-configuration behavior. To reflect
+--  the post-configuration JTAG behavior (if any), edit this file as 
+--  described below:
+--      1. Rename file and entity if necessary to avoid name collisions.
+--      2. Modify USERCODE value in USERCODE_REGISTER declaration.
+------------------------------------------------------------------------------
+-- BSDL Silicon Validation Information
+--  None.
+------------------------------------------------------------------------------
+entity XCF32P is
+
+generic (PHYSICAL_PIN_MAP : string := "VO48");
+
+port (
+    BUSY:       in      bit;
+    CE:         in      bit;
+    CEO:        out     bit;
+    -- CF can work as an in or out, but not as an inout.
+    -- Default is an "in" port type.
+    -- To make CF an "out" port type, exchange the CF port definition with
+    -- the commented definition below, and modify the BOUNDARY_REGISTER
+    -- definition as described in the comments in the BOUNDARY_REGISTER 
+    -- section.
+    -- CF:         out     bit;
+    CF:         in      bit;
+    CLK:        in      bit;
+    CLKOUT:     out     bit;
+    D0:         out     bit;
+    D1:         out     bit;
+    D2:         out     bit;
+    D3:         out     bit;
+    D4:         out     bit;
+    D5:         out     bit;
+    D6:         out     bit;
+    D7:         out     bit;
+    EN_EXT_SEL: in      bit;
+    GND:        linkage bit_vector (1 to 7);
+    OE_RESET:   inout   bit;
+    REV_SEL0:   in      bit;
+    REV_SEL1:   in      bit;
+    TCK:        in      bit;
+    TDI:        in      bit;
+    TDO:        out     bit;
+    TMS:        in      bit;
+    VCCINT:     linkage bit_vector (1 to 3);
+    VCCJ:       linkage bit;
+    VCCO:       linkage bit_vector (1 to 4);
+    DNC:        linkage bit_vector (1 to 11)
+); --end port list
+
+use STD_1149_1_2001.all;
+
+attribute COMPONENT_CONFORMANCE of XCF32P : entity is 
+    "STD_1149_1_2001";
+
+attribute PIN_MAP of XCF32P : entity is 
+    PHYSICAL_PIN_MAP;
+
+constant VO48: PIN_MAP_STRING:=
+    "BUSY       : 5," &
+    "CE         : 13," &
+    "CEO        : 10," &
+    "CF         : 6," &
+    "CLK        : 12," &
+    "CLKOUT     : 9," &
+    "D0         : 28," &
+    "D1         : 29," &
+    "D2         : 32," &
+    "D3         : 33," &
+    "D4         : 43," &
+    "D5         : 44," &
+    "D6         : 47," &
+    "D7         : 48," &
+    "EN_EXT_SEL : 25," &
+    "OE_RESET   : 11," &
+    "REV_SEL0   : 26," &
+    "REV_SEL1   : 27," &
+    "TCK        : 20," &
+    "TDI        : 19," &
+    "TDO        : 22," &
+    "TMS        : 21," &
+    "GND        : (2,7,17,23,31,36,46)," &
+    "VCCINT     : (4,15,34)," &
+    "VCCJ       : 24," &
+    "VCCO       : (8,30,38,45)," &
+    "DNC        : (1,3,14,16,18,35,37,39,40,41,42)";
+
+attribute TAP_SCAN_IN    of TDI : signal is true;
+attribute TAP_SCAN_MODE  of TMS : signal is true;
+attribute TAP_SCAN_OUT   of TDO : signal is true;
+attribute TAP_SCAN_CLOCK of TCK : signal is (15.00e+06, BOTH);
+
+attribute INSTRUCTION_LENGTH of XCF32P : entity is 
+    16;
+
+attribute INSTRUCTION_OPCODE of XCF32P : entity is
+    "BYPASS             (1111111111111111)," &
+    "SAMPLE             (0000000000000001)," &
+    "PRELOAD            (0000000000000001)," &
+    "EXTEST             (0000000000000000)," &
+    "IDCODE             (0000000011111110)," &
+    "USERCODE           (0000000011111101)," &
+    "HIGHZ              (0000000011111100)," &
+    "CLAMP              (0000000011111010)," &
+    "ISC_ENABLE         (0000000011101000)," &
+    "XSC_ENABLEC        (0000000011101001)," &
+    "ISC_PROGRAM        (0000000011101010)," &
+    "ISC_ADDRESS_SHIFT  (0000000011101011)," &
+    "ISC_READ           (0000000011111000)," &
+    "ISC_ERASE          (0000000011101100)," &
+    "ISC_DATA_SHIFT     (0000000011101101)," &
+    "XSC_READ           (0000000011101111)," &
+    "XSC_BLANK_CHECK    (0000000000001101)," &
+    "ISC_DISABLE        (0000000011110000)," &
+    "ISC_NOOP           (0000000011100000)," &
+    "XSC_CONFIG         (0000000011101110)," &
+    "XSC_CLR_STATUS     (0000000011110100)," &
+    "XSC_OP_STATUS      (0000000011100011)," &
+    "XSC_MFG_READ       (0000000011110001)," &
+    "XSC_CONFIG_PLUS    (0000000011110110)," &
+    "XSC_UNLOCK         (1010101001010101)," &
+    "XSC_DATA_BTC       (0000000011110010)," &
+    "XSC_DATA_WRPT      (0000000011110111)," &
+    "XSC_DATA_RDPT      (0000000000000100)," &
+    "XSC_DATA_UC        (0000000000000110)," &
+    "XSC_DATA_CC        (0000000000000111)," &
+    "XSC_DATA_DONE      (0000000000001001)," &
+    "XSC_DATA_CCB       (0000000000001100)," &
+    "XSC_DATA_BLANK     (0000000011110101)," &
+    "XSC_DATA_SUCR      (0000000000001110)," &
+    "XSC_ADDRESS_DUMP   (0000000011100110)";
+                        
+attribute INSTRUCTION_CAPTURE of XCF32P: entity is 
+    "XXXXXXXXXXXXXX01";
+-- IR[15:9] = 0000000 (Not used)
+-- IR[8:7]  = Previous ISC Operation Result (10=success; 01=fail; 00/11=N/A)
+-- IR[6:5]  = Erase/Program Result (10=success; 01=fail; 00/11=N/A)
+-- IR[4]    = Erase/Program Status (1=ready; 0=busy)
+-- IR[3]    = ISC/Normal Mode (1=ISC mode; 0=normal download mode)
+-- IR[2]    = 1532 DONE Status For Selected Revision (1 = DONE; 0 = Not DONE)
+-- IR[1:0]  = 01 as defined by IEEE STD 1149.1
+
+attribute IDCODE_REGISTER of XCF32P: entity is
+    "XXXX" &                -- version
+    "0101000001011001" &    -- part number
+    "00001001001" &         -- manufacturer's id
+    "1";                    -- required by IEEE STD 1149.1
+
+attribute USERCODE_REGISTER of XCF32P: entity is
+    "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX";
+
+
+attribute REGISTER_ACCESS of XCF32P : entity is
+    "BOUNDARY           (EXTEST, SAMPLE, PRELOAD),"&
+    "BYPASS             (BYPASS, HIGHZ, CLAMP, ISC_DISABLE, XSC_CONFIG, XSC_CONFIG_PLUS)," &
+    "DEVICE_ID          (IDCODE, USERCODE),"&
+    "ISPENABLE[8]       (ISC_ENABLE, XSC_ENABLEC),"&
+    "DATA0[256]         (ISC_DATA_SHIFT)," &
+    "ISC_RDATA[256]     (ISC_READ),"&
+    "DATA1[8388608]     (XSC_READ),"&
+    "ADDRESS[24]        (ISC_ADDRESS_SHIFT),"&
+    "ISC_SECTOR[24]     (ISC_ERASE, XSC_UNLOCK),"&
+    "DATA_UC[32]        (XSC_DATA_UC)," &
+    "ISC_DEFAULT[8]     (ISC_PROGRAM, ISC_NOOP, XSC_OP_STATUS, XSC_CLR_STATUS),"&
+    "XSC_MFG[8]         (XSC_MFG_READ),"&
+    "BLANK[8]           (XSC_BLANK_CHECK, XSC_DATA_BLANK),"&
+    "DATA_BTC[32]       (XSC_DATA_BTC),"&
+    "DATA_WRPT[16]      (XSC_DATA_WRPT),"&
+    "DATA_RDPT[16]      (XSC_DATA_RDPT),"&
+    "DATA_CC[256]       (XSC_DATA_CC),"&
+    "DONE[8]            (XSC_DATA_DONE),"&
+    "DATA_CCB[16]       (XSC_DATA_CCB),"&
+    "DATA_SUCR[16]      (XSC_DATA_SUCR),"&
+    "ADDR_DUMP[16]      (XSC_ADDRESS_DUMP)";
+
+attribute BOUNDARY_LENGTH of XCF32P : entity is 
+    32;
+
+attribute BOUNDARY_REGISTER of XCF32P : entity is
+--  cellnum (type, port,        function,   safe[,  ccell,  disval, disrslt])
+        " 0 (BC_1, CE ,         input,      X                           )," &
+        " 1 (BC_1, CLK,         input,      X                           )," &
+        " 2 (BC_1, *,           controlr,   0                           )," &
+        " 3 (BC_1, OE_RESET,    output3,    X,      2,      0,      Z   )," &
+        " 4 (BC_1, OE_RESET,    input,      X                           )," &
+        " 5 (BC_1, *,           controlr,   0                           )," &
+        " 6 (BC_1, CEO,         output3,    X,      5,      0,      Z   )," &
+        " 7 (BC_1, *,           controlr,   0                           )," &
+        " 8 (BC_1, CLKOUT,      output3,    X,      7,      0,      Z   )," &
+        -- CF can work as an in or out, but not as an inout.
+        -- Default is an "in" port type.
+        -- To make CF an "out" port type, exchange the BOUNDARY_REGISTER 
+        -- definitions for cells 9, 10, and 11 with the the commented 
+        -- definitions below, and modify the port definition as described in
+        -- the port definition section.
+        -- " 9 (BC_1, *,           controlr,   0                           )," &
+        -- "10 (BC_1, CF,          output3,    X,      9,      0,      Z   )," &
+        -- "11 (BC_1, *,           internal,   X                           )," &
+        " 9 (BC_1, *,           internal,   0                           )," &
+        "10 (BC_1, *,           internal,   X                           )," &
+        "11 (BC_1, CF ,         input,      X                           )," &
+        "12 (BC_1, BUSY,        input,      X                           )," &
+        "13 (BC_1, *,           controlr,   0                           )," &
+        "14 (BC_1, D7,          output3,    X,      13,     0,      Z   )," &
+        "15 (BC_1, *,           controlr,   0                           )," &
+        "16 (BC_1, D6,          output3,    X,      15,     0,      Z   )," &
+        "17 (BC_1, *,           controlr,   0                           )," &
+        "18 (BC_1, D5,          output3,    X,      17,     0,      Z   )," &
+        "19 (BC_1, *,           controlr,   0                           )," &
+        "20 (BC_1, D4,          output3,    X,      19,     0,      Z   )," &
+        "21 (BC_1, *,           controlr,   0                           )," &
+        "22 (BC_1, D3,          output3,    X,      21,     0,      Z   )," &
+        "23 (BC_1, *,           controlr,   0                           )," &
+        "24 (BC_1, D2,          output3,    X,      23,     0,      Z   )," &
+        "25 (BC_1, *,           controlr,   0                           )," &
+        "26 (BC_1, D1,          output3,    X,      25,     0,      Z   )," &
+        "27 (BC_1, *,           controlr,   0                           )," &
+        "28 (BC_1, D0,          output3,    X,      27,     0,      Z   )," &
+        "29 (BC_1, REV_SEL1,    input,      X                           )," &
+        "30 (BC_1, REV_SEL0,    input,      X                           )," &
+        "31 (BC_1, EN_EXT_SEL,  input,      X                           )";
+
+attribute DESIGN_WARNING of XCF32P : entity is
+    "The XCF32P TAP PAUSE states are not " &
+        "fully compliant with the IEEE 1149.1 specification. The active instruction " &
+        "or data shift register re-captures new values when the TAP is transitioned " &
+        "from a PAUSE state, through the corresponding EXIT2 state, and back to the " &
+        "original SHIFT state. The following are potential methods that can be used " &
+        "to avoid this issue: " &
+            "1. Avoid using the TAP PAUSE-IR or PAUSE-DR state to temporarily pause " &
+                "a shift operation. " &
+            "2. Stop (gate) the TCK within the SHIFT-IR or SHIFT-DR state to pause " &
+                "a the shift operation instead of parking the TAP in the corresponding " &
+                "PAUSE state. " &
+            "3. Put this XCF32P device on a separate " &
+                "boundary-scan chain that does not encounter the TAP PAUSE states. " &
+    "The CF pin is an inout, but CF can be defined only as an in or out " &
+        "boundary-scan port.  The default CF definition is an in. " &
+        "See comments in the ports and BOUNDARY_REGISTER sections for " &
+        "changing the CF definition to an out. " &
+        "If the CF definition is changed to an out, " &
+        "do not drive CF low when CF is connected to the PROGRAM/PROG_B pin of " &
+        "a Virtex, Virtex-E, Virtex-4, Spartan-II, Spartan-IIE FPGA and when " &
+        "the FPGA is in the same boundary-scan chain as this XCF32P. " &
+        "A Low applied to the PROGRAM/PROG_B pin of these FPGAs resets the TAP " &
+        "in these FPGAs.";
+
+end XCF32P;
+

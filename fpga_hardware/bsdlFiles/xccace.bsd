@@ -1,0 +1,353 @@
+--$ XILINX$RCSfile: xccace.bsd,v $
+--$ XILINX$Revision: 1.1 $
+--
+-- BSDL file for device XCCACE, package BARE_DIE
+-- Xilinx, Inc. $State: Exp $ $Date: 2003/01/31 01:08:38 $
+--
+-- For technical support, http://support.xilinx.com -> enter text 'bsdl'
+-- in the text search box at the left of the page.  If none of
+-- these records resolve your problem you should open a web support case
+-- or contact our technical support at:
+--
+--	North America	1-800-255-7778		hotline@xilinx.com
+--	United Kingdom	(44) 1932 820821	ukhelp@xilinx.com
+--	France		(33) 1 3463 0100	frhelp@xilinx.com
+--	Germany		(49) 89 991 54930	dlhelp@xilinx.com
+--	Japan		(81) 3-3297-9163	jhotline@xilinx.com
+--
+
+entity XCCACE is
+
+generic (PHYSICAL_PIN_MAP : string := "BARE_DIE" );
+
+port (
+  CLK       : in      bit;
+  RESET_n   : in      bit;
+  STATLED_n : out     bit;
+  ERRLED_n  : out     bit;
+  MPCE_n    : in      bit;
+  MPWE_n    : in      bit;
+  MPOE_n    : in      bit;
+  MPIRQ     : buffer  bit;
+  MPBRDY    : buffer  bit;
+  MPA0      : in      bit;
+  MPA1      : in      bit;
+  MPA2      : in      bit;
+  MPA3      : in      bit;
+  MPA4      : in      bit;
+  MPA5      : in      bit;
+  MPA6      : in      bit;
+  MPD0      : inout   bit;
+  MPD1      : inout   bit;
+  MPD2      : inout   bit;
+  MPD3      : inout   bit;
+  MPD4      : inout   bit;
+  MPD5      : inout   bit;
+  MPD6      : inout   bit;
+  MPD7      : inout   bit;
+  MPD8      : inout   bit;
+  MPD9      : inout   bit;
+  MPD10     : inout   bit;
+  MPD11     : inout   bit;
+  MPD12     : inout   bit;
+  MPD13     : inout   bit;
+  MPD14     : inout   bit;
+  MPD15     : inout   bit;
+  CFA0      : buffer  bit;
+  CFA1      : buffer  bit;
+  CFA2      : buffer  bit;
+  CFA3      : buffer  bit;
+  CFA4      : buffer  bit;
+  CFA5      : buffer  bit;
+  CFA6      : buffer  bit;
+  CFA7      : buffer  bit;
+  CFA8      : buffer  bit;
+  CFA9      : buffer  bit;
+  CFA10     : buffer  bit;
+  CFD0      : inout   bit;
+  CFD1      : inout   bit;
+  CFD2      : inout   bit;
+  CFD3      : inout   bit;
+  CFD4      : inout   bit;
+  CFD5      : inout   bit;
+  CFD6      : inout   bit;
+  CFD7      : inout   bit;
+  CFD8      : inout   bit;
+  CFD9      : inout   bit;
+  CFD10     : inout   bit;
+  CFD11     : inout   bit;
+  CFD12     : inout   bit;
+  CFD13     : inout   bit;
+  CFD14     : inout   bit;
+  CFD15     : inout   bit;
+  CFCE1_n   : buffer  bit;
+  CFCE2_n   : buffer  bit;
+  CFREG_n   : buffer  bit;
+  CFWE_n    : buffer  bit;
+  CFOE_n    : buffer  bit;
+  CFWAIT_n  : in      bit;
+  CFRDYNBSY : in      bit;
+  CFCD1_n   : in      bit;
+  CFCD2_n   : in      bit;
+  CFGADDR0  : in      bit;
+  CFGADDR1  : in      bit;
+  CFGADDR2  : in      bit;
+  CFGMODE   : in      bit;
+  CFGTDI    : linkage bit;
+  CFGTCK    : linkage bit;
+  CFGTMS    : linkage bit;
+  CFGTDO    : linkage bit;
+  CFGPROG_n : linkage bit;
+  CFGINIT_n : in      bit;
+  TSTTDI    : in      bit;
+  TSTTCK    : in      bit;
+  TSTTMS    : in      bit;
+  TSTTDO    :   out   bit;
+  GND       : linkage bit_vector (1 to 16);
+  HVCC      : linkage bit_vector (1 to 8);
+  LVCC      : linkage bit_vector (1 to 8)
+); --end port list
+
+use STD_1149_1_1994.all;
+
+attribute COMPONENT_CONFORMANCE of XCCACE : entity is 
+  "STD_1149_1_1993";
+
+attribute PIN_MAP of XCCACE : entity is PHYSICAL_PIN_MAP;
+
+constant BARE_DIE: PIN_MAP_STRING:=
+  "CLK:P93," &
+  "RESET_n:P33," &
+  "STATLED_n:P95," &
+  "ERRLED_n:P96," &
+  "MPCE_n:P42," &
+  "MPWE_n:P76," &
+  "MPOE_n:P77," &
+  "MPIRQ:P41," &
+  "MPBRDY:P39," &
+  "MPA0:P70," &
+  "MPA1:P69," &
+  "MPA2:P68," &
+  "MPA3:P67," &
+  "MPA4:P45," &
+  "MPA5:P44," &
+  "MPA6:P43," &
+  "MPD0:P66," &
+  "MPD1:P65," &
+  "MPD2:P63," &
+  "MPD3:P62," &
+  "MPD4:P61," &
+  "MPD5:P60," &
+  "MPD6:P59," &
+  "MPD7:P58," &
+  "MPD8:P56," &
+  "MPD9:P53," &
+  "MPD10:P52," &
+  "MPD11:P51," &
+  "MPD12:P50," &
+  "MPD13:P49," &
+  "MPD14:P48," &
+  "MPD15:P47," &
+  "CFA0:P4," &
+  "CFA1:P142," &
+  "CFA2:P141," &
+  "CFA3:P139," &
+  "CFA4:P137," &
+  "CFA5:P135," &
+  "CFA6:P134," &
+  "CFA7:P132," &
+  "CFA8:P130," &
+  "CFA9:P125," &
+  "CFA10:P121," &
+  "CFD0:P5," &
+  "CFD1:P6," &
+  "CFD2:P8," &
+  "CFD3:P104," &
+  "CFD4:P106," &
+  "CFD5:P113," &
+  "CFD6:P115," &
+  "CFD7:P117," &
+  "CFD8:P7," &
+  "CFD9:P11," &
+  "CFD10:P12," &
+  "CFD11:P105," &
+  "CFD12:P107," &
+  "CFD13:P114," &
+  "CFD14:P116," &
+  "CFD15:P118," &
+  "CFCE1_n:P119," &
+  "CFCE2_n:P138," &
+  "CFREG_n:P3," &
+  "CFWE_n:P131," &
+  "CFOE_n:P123," &
+  "CFWAIT_n:P140," &
+  "CFRDYNBSY:P133," &
+  "CFCD1_n:P103," &
+  "CFCD2_n:P13," &
+  "CFGADDR0:P86," &
+  "CFGADDR1:P87," &
+  "CFGADDR2:P88," &
+  "CFGMODE:P89," &
+  "CFGTDI:P81," &
+  "CFGTCK:P80," &
+  "CFGTMS:P85," &
+  "CFGTDO:P82," &
+  "CFGPROG_n:P79," &
+  "CFGINIT_n:P78," &
+  "TSTTDI:P102," &
+  "TSTTCK:P101," &
+  "TSTTMS:P98," &
+  "TSTTDO:P97," &
+  "GND:(P9,P18,P26,P35,P46,P54,P64,P75,P83,P91,P100,P111,P120,P129,P136,P144)," &
+  "HVCC:(P1,P17,P37,P55,P73,P92,P109,P128)," &
+  "LVCC:(P10,P15,P25,P57,P84,P94,P99,P126)";
+--end pin map
+
+attribute TAP_SCAN_IN    of TSTTDI : signal is true;
+attribute TAP_SCAN_OUT   of TSTTDO : signal is true;
+attribute TAP_SCAN_MODE  of TSTTMS : signal is true;
+attribute TAP_SCAN_CLOCK of TSTTCK : signal is (16.7e06, BOTH);
+
+attribute INSTRUCTION_LENGTH of XCCACE : entity is 8;
+
+attribute INSTRUCTION_OPCODE of XCCACE : entity is
+ "BYPASS ( 11111111 )," &
+ "SAMPLE ( 00000001 )," &
+ "EXTEST ( 00000000 )," &
+ "IDCODE ( 00001001 )";
+
+attribute INSTRUCTION_CAPTURE of XCCACE: entity is "XXXXXX01";
+-- Bit 7 of instruction capture is CFGINSTRERR (MPU ERRORREG register bit 8)
+-- Bit 6 is CFGFAILED (MPU ERRORREG register bit 6)
+-- Bit 5 is CFGREADERR (MPU ERRORREG register bit 7)
+-- Bit 4 is CFCERROR (MPU STATUSREG register bit 3)
+-- Bit 3 is CFGERROR (MPU STATUSREG register bit 2)
+-- Bit 2 is CFGDONE (MPU STATUSREG register bit 7).
+
+attribute IDCODE_REGISTER of XCCACE: entity is
+        "XXXX" &                -- version
+        "1010000000000001" &    -- part number
+        "00001001001" &         -- manufacturer's id
+        "1";                    -- required by standard
+
+attribute REGISTER_ACCESS of XCCACE : entity is
+        "BYPASS ( BYPASS )," &
+        "BOUNDARY ( SAMPLE, EXTEST )," &
+        "DEVICE_ID ( IDCODE )";
+
+attribute BOUNDARY_LENGTH of XCCACE : entity is 109;
+
+attribute BOUNDARY_REGISTER of XCCACE : entity is
+-- cellnum (type, port, function, safe[, ccell, disval, disrslt])
+  "     0 (BC_1, CFGINIT_n, input, X)," &
+  "     1 (BC_1, *, internal, 0)," &
+  "     2 (BC_1, CFGMODE, input, X)," &
+  "     3 (BC_1, CFGADDR2, input, X)," &
+  "     4 (BC_1, CFGADDR1, input, X)," &
+  "     5 (BC_1, CFGADDR0, input, X)," &
+  "     6 (BC_1, CFCD2_n, input, X)," &
+  "     7 (BC_1, CFCD1_n, input, X)," &
+  "     8 (BC_1, CFRDYNBSY, input, X)," &
+  "     9 (BC_1, CFWAIT_n, input, X)," &
+  "    10 (BC_1, CFOE_n, output2, X)," &
+  "    11 (BC_1, CFWE_n, output2, X)," &
+  "    12 (BC_1, CFREG_n, output2, X)," &
+  "    13 (BC_1, CFCE2_n, output2, X)," &
+  "    14 (BC_1, CFCE1_n, output2, X)," &
+  "    15 (BC_1, *, control, 0)," &
+  "    16 (BC_1, CFD15, output3, X, 15, 0, Z)," &
+  "    17 (BC_1, CFD14, output3, X, 15, 0, Z)," &
+  "    18 (BC_1, CFD13, output3, X, 15, 0, Z)," &
+  "    19 (BC_1, CFD12, output3, X, 15, 0, Z)," &
+  "    20 (BC_1, CFD11, output3, X, 15, 0, Z)," &
+  "    21 (BC_1, CFD10, output3, X, 15, 0, Z)," &
+  "    22 (BC_1, CFD9, output3, X, 15, 0, Z)," &
+  "    23 (BC_1, CFD8, output3, X, 15, 0, Z)," &
+  "    24 (BC_1, CFD7, output3, X, 15, 0, Z)," &
+  "    25 (BC_1, CFD6, output3, X, 15, 0, Z)," &
+  "    26 (BC_1, CFD5, output3, X, 15, 0, Z)," &
+  "    27 (BC_1, CFD4, output3, X, 15, 0, Z)," &
+  "    28 (BC_1, CFD3, output3, X, 15, 0, Z)," &
+  "    29 (BC_1, CFD2, output3, X, 15, 0, Z)," &
+  "    30 (BC_1, CFD1, output3, X, 15, 0, Z)," &
+  "    31 (BC_1, CFD0, output3, X, 15, 0, Z)," &
+  "    32 (BC_1, CFD15, input, X)," &
+  "    33 (BC_1, CFD14, input, X)," &
+  "    34 (BC_1, CFD13, input, X)," &
+  "    35 (BC_1, CFD12, input, X)," &
+  "    36 (BC_1, CFD11, input, X)," &
+  "    37 (BC_1, CFD10, input, X)," &
+  "    38 (BC_1, CFD9, input, X)," &
+  "    39 (BC_1, CFD8, input, X)," &
+  "    40 (BC_1, CFD7, input, X)," &
+  "    41 (BC_1, CFD6, input, X)," &
+  "    42 (BC_1, CFD5, input, X)," &
+  "    43 (BC_1, CFD4, input, X)," &
+  "    44 (BC_1, CFD3, input, X)," &
+  "    45 (BC_1, CFD2, input, X)," &
+  "    46 (BC_1, CFD1, input, X)," &
+  "    47 (BC_1, CFD0, input, X)," &
+  "    48 (BC_1, CFA10, output2, X)," &
+  "    49 (BC_1, CFA9, output2, X)," &
+  "    50 (BC_1, CFA8, output2, X)," &
+  "    51 (BC_1, CFA7, output2, X)," &
+  "    52 (BC_1, CFA6, output2, X)," &
+  "    53 (BC_1, CFA5, output2, X)," &
+  "    54 (BC_1, CFA4, output2, X)," &
+  "    55 (BC_1, CFA3, output2, X)," &
+  "    56 (BC_1, CFA2, output2, X)," &
+  "    57 (BC_1, CFA1, output2, X)," &
+  "    58 (BC_1, CFA0, output2, X)," &
+  "    59 (BC_1, *, control, 0)," &
+  "    60 (BC_1, *, control, 0)," &
+  "    61 (BC_1, MPD15, output3, X, 59, 0, Z)," &
+  "    62 (BC_1, MPD14, output3, X, 59, 0, Z)," &
+  "    63 (BC_1, MPD13, output3, X, 59, 0, Z)," &
+  "    64 (BC_1, MPD12, output3, X, 59, 0, Z)," &
+  "    65 (BC_1, MPD11, output3, X, 59, 0, Z)," &
+  "    66 (BC_1, MPD10, output3, X, 59, 0, Z)," &
+  "    67 (BC_1, MPD9, output3, X, 59, 0, Z)," &
+  "    68 (BC_1, MPD8, output3, X, 59, 0, Z)," &
+  "    69 (BC_1, MPD7, output3, X, 60, 0, Z)," &
+  "    70 (BC_1, MPD6, output3, X, 60, 0, Z)," &
+  "    71 (BC_1, MPD5, output3, X, 60, 0, Z)," &
+  "    72 (BC_1, MPD4, output3, X, 60, 0, Z)," &
+  "    73 (BC_1, MPD3, output3, X, 60, 0, Z)," &
+  "    74 (BC_1, MPD2, output3, X, 60, 0, Z)," &
+  "    75 (BC_1, MPD1, output3, X, 60, 0, Z)," &
+  "    76 (BC_1, MPD0, output3, X, 60, 0, Z)," &
+  "    77 (BC_1, MPD15, input, X)," &
+  "    78 (BC_1, MPD14, input, X)," &
+  "    79 (BC_1, MPD13, input, X)," &
+  "    80 (BC_1, MPD12, input, X)," &
+  "    81 (BC_1, MPD11, input, X)," &
+  "    82 (BC_1, MPD10, input, X)," &
+  "    83 (BC_1, MPD9, input, X)," &
+  "    84 (BC_1, MPD8, input, X)," &
+  "    85 (BC_1, MPD7, input, X)," &
+  "    86 (BC_1, MPD6, input, X)," &
+  "    87 (BC_1, MPD5, input, X)," &
+  "    88 (BC_1, MPD4, input, X)," &
+  "    89 (BC_1, MPD3, input, X)," &
+  "    90 (BC_1, MPD2, input, X)," &
+  "    91 (BC_1, MPD1, input, X)," &
+  "    92 (BC_1, MPD0, input, X)," &
+  "    93 (BC_1, MPA6, input, X)," &
+  "    94 (BC_1, MPA5, input, X)," &
+  "    95 (BC_1, MPA4, input, X)," &
+  "    96 (BC_1, MPA3, input, X)," &
+  "    97 (BC_1, MPA2, input, X)," &
+  "    98 (BC_1, MPA1, input, X)," &
+  "    99 (BC_1, MPA0, input, X)," &
+  "   100 (BC_1, MPBRDY, output2, X)," &
+  "   101 (BC_1, MPIRQ, output2, X)," &
+  "   102 (BC_1, MPOE_n, input, X)," &
+  "   103 (BC_1, MPWE_n, input, X)," &
+  "   104 (BC_1, MPCE_n, input, X)," &
+  "   105 (BC_1, ERRLED_n, output2, 1, 105, 1, WEAK1)," &
+  "   106 (BC_1, STATLED_n, output2, 1, 106, 1, WEAK1)," &
+  "   107 (BC_1, RESET_n, input, X)," &
+  "   108 (BC_1, CLK, input, X)";
+--end boundary register
+
+end XCCACE;

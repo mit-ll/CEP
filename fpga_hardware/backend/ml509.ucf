@@ -1,0 +1,44 @@
+NET  sys_clk_in_n  LOC="K19" | IOSTANDARD = LVDS_25 | PERIOD = 5ns;   # Bank 3, Vcco=2.5V, No DCI      
+NET  sys_clk_in_p  LOC="L19" | IOSTANDARD = LVDS_25 | PERIOD = 5ns;   # Bank 3, Vcco=2.5V, No DCI 
+
+NET  rst_n_pad_i	LOC="E9" | PULLUP | IOSTANDARD=LVDCI_33 | TIG;    # Bank 20, Vcco=3.3V, DCI using 49.9 ohm resistors
+
+NET  uart0_srx_pad_i	LOC="AG15" | IOSTANDARD=LVCMOS33;  # Bank 4, Vcco=3.3V, No DCI
+NET  uart0_stx_pad_o	LOC="AG20" | IOSTANDARD=LVCMOS33;  # Bank 4, Vcco=3.3V, No DCI
+
+######################################################################
+#
+# External JTAG connections on J6 pins 46, 50, 54, 58
+#
+######################################################################
+NET  tck_pad_i LOC="AJ34" | CLOCK_DEDICATED_ROUTE=FALSE;  # Bank 13, Vcco=2.5V or 3.3V user selectable by J20
+NET  tdo_pad_o LOC="AM32";  # Bank 13, Vcco=2.5V or 3.3V user selectable by J20
+NET  tdi_pad_i LOC="AN34";  # Bank 13, Vcco=2.5V or 3.3V user selectable by J20
+NET  tms_pad_i LOC="AN33";  # Bank 13, Vcco=2.5V or 3.3V user selectable by J20
+NET  jtag_gnd  LOC="AM33" | PULLDOWN;
+NET  jtag_vdd  LOC="AL33" | PULLUP;
+
+######################################################################
+#
+# External UART connections on J6 pins 2, 4
+#
+######################################################################
+
+NET  uart0_srx_expheader_pad_i LOC="H33";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+NET  uart0_stx_expheader_pad_o LOC="F34";   # Bank 11, Vcco=2.5V or 3.3V user selectable by J20
+
+######################################################################
+#
+# UCF file from ML501 PAR
+#
+######################################################################
+
+# Define the two clock domains as timespecs
+NET dcm0_clkdv TNM_NET="wb_clk_o";
+TIMESPEC "TS_wb_clk_o" = PERIOD "wb_clk_o" 20 ns HIGH 50%;
+#NET dcm0_clk0 TNM_NET = "ssram_clk200";
+INST *sys_clk_in_ibufds DIFF_TERM=TRUE;
+NET "clkgen0/sys_clk_in_200" TNM_NET = "sys_clk_in_200";
+TIMESPEC "TSSYSCLK200" = PERIOD "sys_clk_in_200" 5 ns HIGH 50 %;
+# Reset timing ignore - treat as async paths
+

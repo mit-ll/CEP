@@ -4,10 +4,11 @@
 const uint32_t AES_BASE = 0xF0000000;
 
 // Offset of AES data and control registers in device memory map
-const uint32_t AES_DONE = 0;
+const uint32_t AES_START = 0;
 const uint32_t PT_BASE = 1;
 const uint32_t KEY_BASE = 5;
-const uint32_t CT_BASE = 9;
+const uint32_t AES_DONE = 9;
+const uint32_t CT_BASE = 10;
 
 // Level-dependent functions
 void runForClockCycles(const unsigned int pCycles);

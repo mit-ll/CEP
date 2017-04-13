@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include "SHA256.h"
 
 // Current simulation time
 vluint64_t main_time = 0;
@@ -14,9 +15,6 @@ double sc_time_stamp () {
     return main_time;
 }
 
-const unsigned int CLOCK_PERIOD = 10;
-const unsigned int HASH_BITS = 256;
-const unsigned int MESSAGE_BITS = 512;
 Vsha256* top;
 
 void runForClockCycles(const unsigned int pCycles) {
@@ -49,19 +47,13 @@ void waitForValidOutput(void) {
     }
 }
 
-void printWordAsBytes(uint32_t pWord) {
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF000000) >> 24);
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF0000) >> 16);
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF00) >> 8);
-    cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);
-}
-
-void reportHash() {
-    cout << "Hash: 0x";
-    for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
-        printWordAsBytes(top->digest[i]);
+void reportAppended(void) {
+    cout << "Padded input:" << endl;
+    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
+        cout << "0x";
+        printf("%08X", top->block[i]);
+        cout << endl;
     }
-    cout << endl;
 }
 
 void updateHash(char *pHash) {
@@ -78,47 +70,16 @@ void strobeInit(void) {
     top->init = 0;
 }
 
-#ifdef tehcuu
-void hashString(const char *pString, char *pHash) {
-    bool done = false;
-    int totalBytes = 0;
-    const char* current = pString;
-    
-    cout << "Hashing: " << pString << endl;
-    
-    // Reset for each message
-    resetAndReady();
-    
-    while(!done) {
-        waitForReady();
+void loadPaddedMessage(const char* msg_ptr) {
+    int temp = 0;
+    for(int i = ((MESSAGE_BITS / 8) - 1); i >= 0; --i) {
+        temp = (temp << 8) | ((*msg_ptr++) & 0xFF);
         
-        // Break into 4 byte chunks
-        int numBytes;
-        for(numBytes = 0; numBytes < 4; ++numBytes) {
-            if(*current == '\0') {
-                done = true;
-                break;
-            }
-            ((char *)(&top->in))[3 - numBytes] = *current++;
+        if(i % 4 == 0) {
+            top->block[i / 4] = temp;
         }
-        
-        // Send the word and length to the module
-        top->byte_num = numBytes;
-        top->is_last = done ? 1 : 0;
-        top->in_ready = 1;
-        
-        printf("Data: 0x%8.8X\n", top->in);
-        printf("%d bytes\n", top->byte_num);
-        
-        runForClockCycles(10);
-        top->in_ready = 0;
-        runForClockCycles(10);
     }
-    
-    waitForValidOutput();
-    reportHash();
 }
-#endif
 
 int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
@@ -149,13 +110,9 @@ int main(int argc, char **argv, char **env) {
     cout << "Starting..." << endl;
     
     // abc
-    uint32_t message[16] = {0x61626380, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x18};
-    for(int i = 0; i < (MESSAGE_BITS / 32); ++i) {
-        top->block[i] = message[(MESSAGE_BITS / 32) - 1 - i];
-    }
-    strobeInit();
-    waitForValidOutput();
-    reportHash();
+    hashString("abc", hash);
+    compareHash(hash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", "abc");
+    
     
 #ifdef theouthe
     

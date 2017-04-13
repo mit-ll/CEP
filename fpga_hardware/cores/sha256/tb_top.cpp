@@ -83,7 +83,7 @@ void reportAppended(void) {
     cout << "Padded input:" << endl;
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
         cout << "0x";
-        printf("%08X", readFromAddress(SHA256_MESSAGE_BASE + i));
+        printf("%08X", readFromAddress(SHA256_MSG_BASE + i));
         cout << endl;
     }
 }
@@ -112,7 +112,7 @@ void loadPaddedMessage(const char* msg_ptr) {
         temp = (temp << 8) | ((*msg_ptr++) & 0xFF);
         
         if(i % 4 == 0) {
-            writeToAddress(SHA256_MESSAGE_BASE + (i / 4), temp);
+            writeToAddress(SHA256_MSG_BASE + (i / 4), temp);
         }
     }
 }

@@ -16,14 +16,14 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 void updateHash(char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
-    for(int i = (128 / 32) - 1; i >= 0; --i) {
+    for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
         *hPtr++ = readFromAddress(MD5_HASH_BASE + i);
     }
 }
 
 void reportAppended() {
     cout << "Padded input:" << endl;
-    for(int i = (512 / 32) - 1; i >= 0; --i) {
+    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
         cout << "0x";
 	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + i);
         printf("%08X", dataPart);
@@ -53,7 +53,7 @@ void strobeMsgValid() {
 }
 
 void loadPaddedMessage(const char* msg_ptr) {
-  for(int i = 0; i < ((512 / 8) / 4); ++i) {
+  for(int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
     uint32_t temp = 0;
     for(int j = 0; j < 4; ++j) {
       ((char *)(&temp))[j] = *msg_ptr++;
@@ -63,7 +63,7 @@ void loadPaddedMessage(const char* msg_ptr) {
 }
 
 int main(int argc, char **argv, char **env) {
-  char hash[128 /8];
+  char hash[HASH_BITS /8];
 
   cout << "Resetting the MD5 module..." << endl;
     

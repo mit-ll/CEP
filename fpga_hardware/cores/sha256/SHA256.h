@@ -23,7 +23,6 @@ void loadPaddedMessage(const char* msg_ptr);
 void reportAppended(void);
 
 void resetAndReady(void) {
-    reset();
     waitForReady();
 }
 
@@ -37,7 +36,7 @@ void reportHash() {
     printf("\n");
 }
 
-int addPadding(vluint64_t pMessageBits64Bit, char* buffer) {
+int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
     int extraBits = pMessageBits64Bit % 512;
     int paddingBits = extraBits > 448 ? 1024 - extraBits : 512 - extraBits;
     

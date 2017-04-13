@@ -3,11 +3,11 @@ const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
 
 // Offset of MD5 data and control registers in device memory map
-const uint32_t MD5_READY = 0;
-const uint32_t MSG_BASE = 1;
-const uint32_t HASH_DONE = 17;
-const uint32_t HASH_BASE = 18;
-const uint32_t MD5_RST = 22;
+const uint32_t SHA256_READY = 0;
+const uint32_t SHA256_MESSAGE_BASE = 1;
+const uint32_t SHA256_HASH_DONE = 17;
+const uint32_t SHA256_HASH_BASE = 18;
+const uint32_t SHA256_NEXT_INIT = 0;
 
 // Level-dependent functions
 void reset(void);

@@ -37,7 +37,11 @@
 //
 //======================================================================
 
-module sha256_core(
+// Modified by Matthew Hicks:
+//   Convert to synchronous, positive level reset
+//   Fix at 256-bit mode
+
+module sha256(
                    input wire            clk,
                    input wire            rst,
 

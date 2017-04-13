@@ -15,7 +15,6 @@ double sc_time_stamp () {
     return main_time;
 }
 
-const unsigned int CLOCK_PERIOD = 10;
 Vaes_128* top;
 
 void runForClockCycles(const unsigned int pCycles) {
@@ -41,24 +40,24 @@ void start(void) {
 }
 
 void reportCiphertext(void) {
-    cout << "Ciphertext:\t0x";
-    for(int i = (128 / 32) - 1; i >= 0; --i) {
-        printWordAsBytes(top->out[i]);
+    printf("Ciphertext:\t0x");
+    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
+        printf("%08X", top->out[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void saveCiphertext(uint32_t *pCT) {
-    for(int i = 0; i < (128 / 32); ++i) {
+    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
         *pCT++ = top->out[i];
     }
 }
 
 void setPlaintext(const char* pPT) {
     cout << "Plaintext:\t0x";
-    for(int i = 0; i < (128 / 8); ++i) {
+    for(int i = 0; i < (BLOCK_BITS / 8); ++i) {
         for(int j = 0; j < 4; ++j) {
-            ((char *)(&(top->state[(128 / 32) - 1 - i])))[3 - j] = *pPT++;
+            ((char *)(&(top->state[(BLOCK_BITS / 32) - 1 - i])))[3 - j] = *pPT++;
         }
         cout << hex << setfill('0') << setw(8) << top->state[3-i];
     }
@@ -67,7 +66,7 @@ void setPlaintext(const char* pPT) {
 
 void setPlaintext(const uint32_t* pPT) {
     cout << "Plaintext:\t0x";
-    for(int i = 0; i < (128 / 32); ++i) {
+    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
         top->state[3-i] = pPT[i];
         cout << hex << setfill('0') << setw(8) << pPT[i];
     }
@@ -76,7 +75,7 @@ void setPlaintext(const uint32_t* pPT) {
 
 void setKey(const uint32_t* pKey) {
     cout << "Key:\t\t0x";
-    for(int i = 0; i < (128 / 32); ++i) {
+    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
         top->key[3-i] = pKey[i];
         cout << hex << setfill('0') << setw(8) << pKey[i];
     }
@@ -87,7 +86,7 @@ int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
     top = new Vaes_128;
     
-    uint32_t ct[128 / 32];
+    uint32_t ct[BLOCK_BITS / 32];
     
     cout << "Initializing interface and resetting core" << endl;
     

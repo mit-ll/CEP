@@ -1,6 +1,7 @@
 #include <iostream>
-#include <fstream>
 #include <iomanip>
+using namespace std;
+
 #include "MD5.h"
 #include "input.h"
 
@@ -12,20 +13,11 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
   *((uint32_t *)(pAddress + MD5_BASE)) = pData;
 }
 
-void reportHash() {
-  cout << "Hash: 0x";
-  for(int i = (128 / 32) - 1; i >= 0; --i) {
-    uint32_t hashPart = readFromAddress(HASH_BASE + i);
-    printWordAsBytes(hashPart);
-  }
-  cout << endl;
-}
-
 void updateHash(char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
     for(int i = (128 / 32) - 1; i >= 0; --i) {
-        *hPtr++ = readFromAddress(HASH_BASE + i);
+        *hPtr++ = readFromAddress(MD5_HASH_BASE + i);
     }
 }
 
@@ -33,8 +25,8 @@ void reportAppended() {
     cout << "Padded input:" << endl;
     for(int i = (512 / 32) - 1; i >= 0; --i) {
         cout << "0x";
-	uint32_t dataPart = readFromAddress(MSG_BASE + i);
-        printWordAsBytes(dataPart);
+	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + i);
+        printf("%08X", dataPart);
         cout << endl;
     }
 }
@@ -66,7 +58,7 @@ void loadPaddedMessage(const char* msg_ptr) {
     for(int j = 0; j < 4; ++j) {
       ((char *)(&temp))[j] = *msg_ptr++;
     }
-    writeToAddress(MSG_BASE + i, temp);
+    writeToAddress(MD5_MSG_BASE + i, temp);
   }
 }
 
@@ -95,7 +87,7 @@ int main(int argc, char **argv, char **env) {
 
   // Hash a test file
   resetAndReady();
-  hashString(inputFile, hash);
+  hashString(fileInput, hash);
   compareHash(hash, "7E2190CE5041B22EE3E1F82716136750", "text file");
 
   exit(0);

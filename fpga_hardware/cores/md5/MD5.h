@@ -1,14 +1,16 @@
-// State and functionality common to all tests
+const unsigned int HASH_BITS = 128;
+const unsigned int MESSAGE_BITS = 512;
+const unsigned int CLOCK_PERIOD = 10;
 
 // Base address of the core on the bus
 const uint32_t MD5_BASE = 0xF0000000;
 
 // Offset of MD5 data and control registers in device memory map
-const uint32_t MD5_READY = 0;
-const uint32_t MSG_BASE = 1;
-const uint32_t HASH_DONE = 17;
-const uint32_t HASH_BASE = 18;
-const uint32_t MD5_RST = 22;
+const uint32_t MD5_READY = MD5_BASE + 0;
+const uint32_t MD5_MSG_BASE = MD5_BASE + 1;
+const uint32_t MD5_HASH_DONE = MD5_BASE + 17;
+const uint32_t MD5_HASH_BASE = MD5_BASE + 18;
+const uint32_t MD5_RST = MD5_BASE + 22;
 
 // Level-dependent functions
 void resetAndReady(void);
@@ -17,10 +19,27 @@ void loadPaddedMessage(const char* msg_ptr);
 void strobeMsgValid(void);
 void waitForValidOut(void);
 void updateHash(char *pHash);
-void reportHash(void);
 void reportAppended(void);
 
-int addPadding(vluint64_t pMessageBits64Bit, char* buffer) {
+void printWordAsBytesRev(uint32_t pWord) {
+    cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);
+    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF00) >> 8);
+    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF0000) >> 16);
+    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF000000) >> 24);
+}
+
+void reportHash() {
+    printf("Hash: 0x");
+    char hash[HASH_BITS / 8];
+    updateHash(hash);
+    uint32_t* temp = (uint32_t *)hash;
+    for(int i = 0; i < (HASH_BITS / 32); ++i) {
+        printf("%08X", *temp++);
+    }
+    printf("\n");
+}
+
+int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
   int extraBits = pMessageBits64Bit % 512;
   int paddingBits = extraBits > 448 ? 1024 - extraBits : 512 - extraBits;
     
@@ -38,20 +57,6 @@ int addPadding(vluint64_t pMessageBits64Bit, char* buffer) {
   }
     
   return (paddingBits / 8);
-}
-
-void printWordAsBytes(uint32_t pWord) {
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF000000) >> 24);
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF0000) >> 16);
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF00) >> 8);
-  cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);
-}
-
-void printWordAsBytesRev(uint32_t pWord) {
-  cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF00) >> 8);
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF0000) >> 16);
-  cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF000000) >> 24);
 }
 
 bool compareHash(const char * pProposedHash, const char* pExpectedHash, const char * pTestString) {

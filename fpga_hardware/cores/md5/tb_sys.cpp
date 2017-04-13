@@ -6,11 +6,11 @@ using namespace std;
 #include "input.h"
 
 uint32_t readFromAddress(uint32_t pAddress) {
-  return *((uint32_t *)(pAddress + MD5_BASE));
+  return *((uint32_t *)pAddress);
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
-  *((uint32_t *)(pAddress + MD5_BASE)) = pData;
+  *((uint32_t *)pAddress) = pData;
 }
 
 void updateHash(char *pHash) {

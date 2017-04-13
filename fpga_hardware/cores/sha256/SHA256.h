@@ -15,6 +15,7 @@ void waitForReady(void);
 void updateHash(char *pHash);
 void waitForValidOutput(void);
 void strobeInit(void);
+void strobeNext(void);
 void loadPaddedMessage(const char* msg_ptr);
 void reportAppended(void);
 
@@ -77,6 +78,7 @@ bool compareHash(const char * pProposedHash, const char* pExpectedHash, const ch
 
 void hashString(const char *pString, char *pHash) {
     bool done = false;
+    bool firstTime = true;
     int totalBytes = 0;
     
     cout << "Hashing: " << pString << endl;
@@ -112,7 +114,12 @@ void hashString(const char *pString, char *pHash) {
         do {
             waitForReady();
             loadPaddedMessage(msg_ptr);
-            strobeInit();
+            if(firstTime) {
+                strobeInit();
+                firstTime = false;
+            } else {
+                strobeNext();
+            }
             waitForValidOutput();
             waitForReady();
             reportAppended();

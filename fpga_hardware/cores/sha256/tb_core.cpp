@@ -70,6 +70,12 @@ void strobeInit(void) {
     top->init = 0;
 }
 
+void strobeNext(void) {
+    top->next = 1;
+    runForClockCycles(1);
+    top->next = 0;
+}
+
 void loadPaddedMessage(const char* msg_ptr) {
     int temp = 0;
     for(int i = ((MESSAGE_BITS / 8) - 1); i >= 0; --i) {
@@ -109,28 +115,44 @@ int main(int argc, char **argv, char **env) {
     
     cout << "Starting..." << endl;
     
-    // abc
-    hashString("abc", hash);
-    compareHash(hash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", "abc");
-    
-    
-#ifdef theouthe
-    
-    //compareHash("d135bb84d0439dbac432247ee573a23ea7d3c9deb2a968eb31d47c4fb45f1ef4422d6c531b5b9bd6f449ebcc449ea94d0a8f05f62130fda612da53c79659f609", hash, "short string");
-    hashString("LL", hash);
-    
-    hashString("The quick brown fox jumps over the lazy dog", hash);
-    
-    hashString("The quick brown fox jumps over the lazy dog.", hash);
-    compareHash("ab7192d2b11f51c7dd744e7b3441febf397ca07bf812cceae122ca4ded6387889064f8db9230f173f6d1ab6e24b6e50f065b039f799f5592360a6558eb52d760", hash, "short string plus one char");
-    
-    hashString("\xA1\xA2\xA3\xA4\xA5", hash);
-    compareHash("12f4a85b68b091e8836219e79dfff7eb9594a42f5566515423b2aa4c67c454de83a62989e44b5303022bfe8c1a9976781b747a596cdab0458e20d8750df6ddfb", hash, "5 characeter");
-    
+    // Test common case 1
     hashString("", hash);
-    compareHash("0eab42de4c3ceb9235fc91acffe746b29c29a8c366b7c60e4e67c466f36a4304c00fa9caf9d87976ba469bcbe06713b435f091ef2769fb160cdab33d3670680e", hash, "empty string");
-#endif
+    compareHash(hash, "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "empty string");
     
+    // Test common case 2
+    hashString("a", hash);
+    compareHash(hash, "ca978112ca1bbdcafac231b39a23dc4da786eff8147c4e72b9807785afee48bb", "single character");
+    
+    // Test common case 3
+    hashString("abc", hash);
+    compareHash(hash, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", "three character");
+    
+    // Test a message that requires an extra chunk to be added to hold padding
+    hashString("Lincoln LaboratoLincoln LaboratoLincoln LaboratoLincoln Laborato", hash);
+    compareHash(hash, "f88c49e2b696d45a699eb10effafb3c9522df6f7fa68c2509d105e849be605ba", "512-bit message");
+    
+    // Hash a test file
+    ifstream inFile("input.txt", ios::in|ios::binary|ios::ate);
+    if(inFile.is_open()) {
+        streampos size = inFile.tellg();
+        
+        inFile.seekg(0, ios::beg);
+        
+        int messageBits = (size - inFile.tellg()) * 8;
+        printf("Message length: %d bits\n", messageBits);
+        
+        char * block = new char[messageBits / 8];
+        memset(block, 0, messageBits/8);
+        
+        inFile.read(block, size);
+        inFile.close();
+        
+        hashString(block, hash);
+        compareHash(hash, "0e053a84aae06a58b677cbda6c2bed32046a56e311faae4393fa2c8201daa2f7", "text file");
+    } else {
+        cout << "ERROR: unable to open input.txt" << endl;
+    }
+
     top->final();
     delete top;
     exit(0);

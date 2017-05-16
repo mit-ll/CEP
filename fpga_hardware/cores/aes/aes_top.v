@@ -49,7 +49,7 @@ module aes_top(
        key[3] <= 0;
      end
      else if(wb_stb_i & wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[5:2])
          0: start <= wb_dat_i[0];
          1: pt[3] <= wb_dat_i;
          2: pt[2] <= wb_dat_i;
@@ -62,7 +62,7 @@ module aes_top(
          default: ;
        endcase
      else if(wb_stb_i & ~wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[5:2])
          0: wb_dat_o <= {31'b0, start};
          1: wb_dat_o <= pt[3];
          2: wb_dat_o <= pt[2];

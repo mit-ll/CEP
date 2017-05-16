@@ -58,7 +58,7 @@ module sha256_top(
        data[15] <= 0;
      end
      else if(wb_stb_i & wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[6:2])
          0: begin
              startHash <= wb_dat_i[0];
              newMessage <= wb_dat_i[1];
@@ -82,7 +82,7 @@ module sha256_top(
          default: ;
        endcase
      else if(wb_stb_i & ~wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[6:2])
          0: wb_dat_o <= {31'b0, ready};
          1: wb_dat_o <= data[0];
          2: wb_dat_o <= data[1];

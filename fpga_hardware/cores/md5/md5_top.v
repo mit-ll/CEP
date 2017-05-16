@@ -58,7 +58,7 @@ module md5_top(
        data[15] <= 0;
      end
      else if(wb_stb_i & wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[6:2])
          0: startHash <= wb_dat_i[0];
          1: data[15] <= wb_dat_i;
          2: data[14] <= wb_dat_i;
@@ -80,7 +80,7 @@ module md5_top(
          default: ;
        endcase
      else if(wb_stb_i & ~wb_we_i)
-       case(wb_adr_i[4:0])
+       case(wb_adr_i[6:2])
          0: wb_dat_o <= {31'b0, ready};
          1: wb_dat_o <= data[15];
          2: wb_dat_o <= data[14];

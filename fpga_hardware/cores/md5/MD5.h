@@ -7,10 +7,10 @@ const uint32_t MD5_BASE = 0xF0000000;
 
 // Offset of MD5 data and control registers in device memory map
 const uint32_t MD5_READY = MD5_BASE + 0;
-const uint32_t MD5_MSG_BASE = MD5_BASE + 1;
-const uint32_t MD5_HASH_DONE = MD5_BASE + 17;
-const uint32_t MD5_HASH_BASE = MD5_BASE + 18;
-const uint32_t MD5_RST = MD5_BASE + 22;
+const uint32_t MD5_MSG_BASE = MD5_BASE + (1 * 4);
+const uint32_t MD5_HASH_DONE = MD5_BASE + (17 * 4);
+const uint32_t MD5_HASH_BASE = MD5_BASE + (18 * 4);
+const uint32_t MD5_RST = MD5_BASE + (22 * 4);
 
 // Level-dependent functions
 void resetAndReady(void);

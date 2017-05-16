@@ -17,7 +17,7 @@ void updateHash(char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
     for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
-        *hPtr++ = readFromAddress(MD5_HASH_BASE + i);
+        *hPtr++ = readFromAddress(MD5_HASH_BASE + (i * 4));
     }
 }
 
@@ -25,7 +25,7 @@ void reportAppended() {
     cout << "Padded input:" << endl;
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
         cout << "0x";
-	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + i);
+	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
         printf("%08X", dataPart);
         cout << endl;
     }
@@ -58,7 +58,7 @@ void loadPaddedMessage(const char* msg_ptr) {
     for(int j = 0; j < 4; ++j) {
       ((char *)(&temp))[j] = *msg_ptr++;
     }
-    writeToAddress(MD5_MSG_BASE + i, temp);
+    writeToAddress(MD5_MSG_BASE + (i * 4), temp);
   }
 }
 

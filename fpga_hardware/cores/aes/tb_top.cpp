@@ -73,14 +73,14 @@ void start(void) {
 void reportCiphertext(void) {
     printf("Ciphertext:\t0x");
     for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
-        printf("%08X", readFromAddress(AES_CT_BASE + i));
+        printf("%08X", readFromAddress(AES_CT_BASE + (i * 4)));
     }
     printf("\n");
 }
 
 void saveCiphertext(uint32_t *pCT) {
     for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        *pCT++ = readFromAddress(AES_CT_BASE + i);
+        *pCT++ = readFromAddress(AES_CT_BASE + (i * 4));
     }
 }
 
@@ -91,7 +91,7 @@ void setPlaintext(const char* pPT) {
         for(int j = 0; j < 4; ++j) {
             ((char *)(&temp))[3 - j] = *pPT++;
         }
-        writeToAddress(AES_PT_BASE + (3 - i), temp);
+        writeToAddress(AES_PT_BASE + ((3 - i) * 4), temp);
         cout << hex << setfill('0') << setw(8) << temp;
     }
     cout << endl;
@@ -100,7 +100,7 @@ void setPlaintext(const char* pPT) {
 void setPlaintext(const uint32_t* pPT) {
     cout << "Plaintext:\t0x";
     for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        writeToAddress(AES_PT_BASE + (3 - i), pPT[i]);
+        writeToAddress(AES_PT_BASE + ((3 - i) * 4), pPT[i]);
         cout << hex << setfill('0') << setw(8) << pPT[i];
     }
     cout << endl;
@@ -109,7 +109,7 @@ void setPlaintext(const uint32_t* pPT) {
 void setKey(const uint32_t* pKey) {
     cout << "Key:\t\t0x";
     for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        writeToAddress(AES_KEY_BASE + (3 - i), pKey[i]);
+        writeToAddress(AES_KEY_BASE + ((3 - i) * 4), pKey[i]);
         cout << hex << setfill('0') << setw(8) << pKey[i];
     }
     cout << endl;

@@ -12,7 +12,19 @@ const uint32_t MD5_HASH_DONE = MD5_BASE + (17 * 4);
 const uint32_t MD5_HASH_BASE = MD5_BASE + (18 * 4);
 const uint32_t MD5_RST = MD5_BASE + (22 * 4);
 
+// Current simulation time
+vluint64_t main_time = 0;
+
+// Called by $time in Verilog
+// converts to double, to match
+// what SystemC does
+double sc_time_stamp () {
+    return main_time;
+}
+
 // Level-dependent functions
+void evalModel();
+void toggleClock(void);
 void resetAndReady(void);
 void waitForReady(void);
 void loadPaddedMessage(const char* msg_ptr);
@@ -20,6 +32,16 @@ void strobeMsgValid(void);
 void waitForValidOut(void);
 void updateHash(char *pHash);
 void reportAppended(void);
+
+void runForClockCycles(const unsigned int pCycles) {
+    int doubleCycles = pCycles << 2;
+    while(doubleCycles > 0) {
+        evalModel();
+        toggleClock();
+        main_time += (CLOCK_PERIOD >> 2);
+        --doubleCycles;
+    }
+}
 
 void printWordAsBytesRev(uint32_t pWord) {
     cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);

@@ -5,7 +5,7 @@ using namespace std;
 #include "AES.h"
 
 // Need this to fully implement expected interface
-void runForClockCycles(unsigned int x) {;}
+void toggleClock() {;}
 
 uint32_t readFromAddress(uint32_t pAddress) {
     return *((uint32_t *)pAddress);

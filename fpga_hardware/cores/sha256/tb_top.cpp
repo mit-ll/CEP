@@ -5,28 +5,14 @@
 #include <iomanip>
 #include "SHA256.h"
 
-// Current simulation time
-vluint64_t main_time = 0;
-
-// Called by $time in Verilog
-// converts to double, to match
-// what SystemC does
-double sc_time_stamp () {
-    return main_time;
-}
-
 Vsha256_top* top;
 
-void runForClockCycles(const unsigned int pCycles) {
-    int doubleCycles = 0;
-    while(doubleCycles < (pCycles << 1)) {
-        top->eval();
-        if((main_time % (CLOCK_PERIOD >> 1)) == 0) {
-            ++doubleCycles;
-            top->wb_clk_i = ~top->wb_clk_i;
-        }
-        main_time++;
-    }
+void evalModel() {
+    top->eval();
+}
+
+void toggleClock() {
+    top->wb_clk_i = ~top->wb_clk_i;
 }
 
 void reset(void) {

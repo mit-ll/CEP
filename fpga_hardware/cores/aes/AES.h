@@ -11,14 +11,35 @@ const uint32_t AES_KEY_BASE = AES_BASE + (5 * 4);
 const uint32_t AES_DONE = AES_BASE + (9 * 4);
 const uint32_t AES_CT_BASE = AES_BASE + (10 * 4);
 
+// Current simulation time
+vluint64_t main_time = 0;
+
+// Called by $time in Verilog
+// converts to double, to match
+// what SystemC does
+double sc_time_stamp () {
+    return main_time;
+}
+
 // Level-dependent functions
-void runForClockCycles(const unsigned int pCycles);
+void evalModel();
+void toggleClock(void);
 bool ciphertextValid(void);
 void start(void);
 void saveCiphertext(uint32_t *pCT);
 void setPlaintext(const char* pPT);
 void setPlaintext(const uint32_t* pPT);
 void setKey(const uint32_t* pKey);
+
+void runForClockCycles(const unsigned int pCycles) {
+    int doubleCycles = pCycles << 2;
+    while(doubleCycles > 0) {
+        evalModel();
+        toggleClock();
+        main_time += (CLOCK_PERIOD >> 2);
+        --doubleCycles;
+    }
+}
 
 void waitForValidOutput(void) {
     while (!ciphertextValid()) {

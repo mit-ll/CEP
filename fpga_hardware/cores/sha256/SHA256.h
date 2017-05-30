@@ -12,7 +12,19 @@ const uint32_t SHA256_HASH_DONE = SHA256_BASE + (17 * 4);
 const uint32_t SHA256_HASH_BASE = SHA256_BASE + (18 * 4);
 const uint32_t SHA256_NEXT_INIT = SHA256_BASE + 0;
 
+// Current simulation time
+vluint64_t main_time = 0;
+
+// Called by $time in Verilog
+// converts to double, to match
+// what SystemC does
+double sc_time_stamp () {
+    return main_time;
+}
+
 // Level-dependent functions
+void evalModel();
+void toggleClock(void);
 void reset(void);
 void waitForReady(void);
 void updateHash(char *pHash);
@@ -21,6 +33,16 @@ void strobeInit(void);
 void strobeNext(void);
 void loadPaddedMessage(const char* msg_ptr);
 void reportAppended(void);
+
+void runForClockCycles(const unsigned int pCycles) {
+    int doubleCycles = pCycles << 2;
+    while(doubleCycles > 0) {
+        evalModel();
+        toggleClock();
+        main_time += (CLOCK_PERIOD >> 2);
+        --doubleCycles;
+    }
+}
 
 void resetAndReady(void) {
     waitForReady();

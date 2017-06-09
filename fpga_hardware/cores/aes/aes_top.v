@@ -1,16 +1,14 @@
 module aes_top(
-		 wb_adr_i, wb_bte_i, wb_cti_i, wb_cyc_i, wb_dat_i, wb_sel_i,
+		 wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
 		 wb_stb_i, wb_we_i,
-		 wb_ack_o, wb_err_o, wb_rty_o, wb_dat_o,
-		 wb_clk_i, wb_rst_i
+		 wb_ack_o, wb_err_o, wb_dat_o,
+		 wb_clk_i, wb_rst_i, int_o
 );
 
    parameter dw = 32;
    parameter aw = 32;
 
    input [aw-1:0]	wb_adr_i;
-   input [1:0] 		wb_bte_i;
-   input [2:0] 		wb_cti_i;
    input 		wb_cyc_i;
    input [dw-1:0] 	wb_dat_i;
    input [3:0] 		wb_sel_i;
@@ -19,8 +17,8 @@ module aes_top(
    
    output 		wb_ack_o;
    output 		wb_err_o;
-   output 		wb_rty_o;
-   output [dw-1:0] 	wb_dat_o;
+   output reg [dw-1:0] 	wb_dat_o;
+   output              int_o;
    
    input 		wb_clk_i;
    input 		wb_rst_i;
@@ -28,12 +26,17 @@ module aes_top(
 
    assign wb_ack_o = 1'b1;
    assign wb_err_o = 1'b0;
-   assign wb_rty_o = 1'b0;
+   assign int_o = 1'b0;
 
    // Internal registers
    reg start;
    reg [31:0] pt [0:3];
    reg [31:0] key [0:3];
+
+  wire [127:0] pt_big = {pt[0], pt[1], pt[2], pt[3]};
+  wire [127:0] key_big = {key[0], key[1], key[2], key[3]};
+  wire [127:0] ct;
+  wire ct_valid;
 
    // Implement MD5 I/O memory map interface
    always @(posedge wb_clk_i) begin
@@ -80,11 +83,6 @@ module aes_top(
          default: ;
        endcase
    end
-
-  wire [127:0] pt_big = {pt[0], pt[1], pt[2], pt[3]};
-  wire [127:0] key_big = {key[0], key[1], key[2], key[3]};
-  wire [127:0] ct;
-  wire ct_valid;
 
   aes_128 aes(
     .clk(wb_clk_i),

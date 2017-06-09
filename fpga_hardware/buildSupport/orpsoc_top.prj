@@ -1,3 +1,7 @@
+verilog work "cores/aes/table.v"
+verilog work "cores/aes/round.v"
+verilog work "cores/aes/aes_128.v"
+verilog work "cores/aes/aes_top.v"
 verilog work "cores/adv_debug_sys/Hardware/adv_dbg_if/rtl/verilog/syncflop.v"
 verilog work "cores/adv_debug_sys/Hardware/adv_dbg_if/rtl/verilog/syncreg.v"
 verilog work "cores/adv_debug_sys/Hardware/adv_dbg_if/rtl/verilog/bytefifo.v"

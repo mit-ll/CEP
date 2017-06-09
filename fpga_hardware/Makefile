@@ -11,10 +11,11 @@ UART_RTL = $(CORES)/uart16550/rtl/verilog
 RAM_RTL = $(CORES)/ram_wb
 ADV_DBG_IF_RTL = $(CORES)/adv_debug_sys/Hardware/adv_dbg_if/rtl/verilog
 XIL_INTERNAL_JTAG = $(CORES)/adv_debug_sys/Hardware/xilinx_internal_jtag/rtl/verilog
+AES = $(CORES)/aes
 
 TEST_BENCH = $(CORES)/bench
 
-IVERILOG_SRCS := $(wildcard $(ORPSOC_RTL)/*.v) $(wildcard $(CLKGEN_RTL)/*.v) $(wildcard $(ARBITER_RTL)/*.v) $(wildcard $(DBG_IF_RTL)/*.v) $(wildcard $(OR1200_RTL)/*.v) $(wildcard $(UART_RTL)/*.v)  $(wildcard $(RAM_RTL)/*.v) $(wildcard $(TEST_BENCH)/*.v)
+IVERILOG_SRCS := $(wildcard $(ORPSOC_RTL)/*.v) $(wildcard $(CLKGEN_RTL)/*.v) $(wildcard $(ARBITER_RTL)/*.v) $(wildcard $(DBG_IF_RTL)/*.v) $(wildcard $(OR1200_RTL)/*.v) $(wildcard $(UART_RTL)/*.v)  $(wildcard $(RAM_RTL)/*.v) $(wildcard $(TEST_BENCH)/*.v) $(wildcard $(aes)/*.v)
 IVERILOG_SRCS := $(filter-out %-defines.v %-params.v %_defines.v, $(IVERILOG_SRCS))
 
 
@@ -46,11 +47,11 @@ clean:
 	rm -rf _xmsgs xst *.{xst,xrpt,srp,lso,log,pwr,xml} *impact* auto_project* XPower_Isim
 
 orpsoc.vvp: $(IVERILOG_SRCS)
-	iverilog -s orpsoc_testbench  -t vvp -o $@ -I$(ORPSOC_RTL) -I$(DBG_IF_RTL) -I$(UART_RTL)  -I$(DBG_IF_RTL) -I$(OR1200_RTL) -I$(TEST_BENCH) $^
+	iverilog -s orpsoc_testbench  -t vvp -o $@ -I$(ORPSOC_RTL) -I$(DBG_IF_RTL) -I$(UART_RTL)  -I$(DBG_IF_RTL) -I$(OR1200_RTL) -I$(AES) -I$(TEST_BENCH) $^
 
 ###########  SYNTHESIS TARGETS ###########################################
 
-orpsoc_top.ngc: $(ORPSOC_RTL)/*.v  buildSupport/orpsoc_top.xst buildSupport/orpsoc_top.prj $(CLKGEN_RTL)/*.v $(ARBITER_RTL)/*.v $(DBG_IF_RTL)/*.v $(JTAG_TAP_RTL)/*.v $(OR1200_RTL)/*.v $(UART_RTL)/*.v $(ADV_DBG_IF_RTL)/*.v $(XIL_INTERNAL_JTAG)/*.v
+orpsoc_top.ngc: $(ORPSOC_RTL)/*.v  buildSupport/orpsoc_top.xst buildSupport/orpsoc_top.prj $(CLKGEN_RTL)/*.v $(ARBITER_RTL)/*.v $(DBG_IF_RTL)/*.v $(JTAG_TAP_RTL)/*.v $(OR1200_RTL)/*.v $(UART_RTL)/*.v $(ADV_DBG_IF_RTL)/*.v $(XIL_INTERNAL_JTAG)/*.v $(AES)/*.v
 	xst -ifn "buildSupport/orpsoc_top.xst"
 	rm -f orpsoc_top_xst.xrpt
 	rm -f orpsoc_top.srp

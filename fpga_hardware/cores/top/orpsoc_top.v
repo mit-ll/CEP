@@ -449,6 +449,19 @@ module orpsoc_top
    wire 				  wbm_eth0_err_i;
    wire 				  wbm_eth0_rty_i;
 
+   // AES wires
+   wire [31:0] 				  wbs_d_aes_adr_i;
+   wire [wbs_d_aes_data_width-1:0] 	  wbs_d_aes_dat_i;
+   wire [3:0] 				  wbs_d_aes_sel_i;
+   wire 				  wbs_d_aes_we_i;
+   wire 				  wbs_d_aes_cyc_i;
+   wire 				  wbs_d_aes_stb_i;
+   wire [2:0] 				  wbs_d_aes_cti_i;
+   wire [1:0] 				  wbs_d_aes_bte_i;   
+   wire [wbs_d_aes_data_width-1:0] 	  wbs_d_aes_dat_o;   
+   wire 				  wbs_d_aes_ack_o;
+   wire 				  wbs_d_aes_err_o;
+   wire 				  wbs_d_aes_rty_o;
 
 
    //
@@ -577,32 +590,45 @@ module orpsoc_top
       .wbs1_ack_o			(wbs_d_eth0_ack_o),
       .wbs1_err_o			(wbs_d_eth0_err_o),
       .wbs1_rty_o			(wbs_d_eth0_rty_o),
+
+      .wbs2_adr_i			(wbs_d_aes_adr_i),
+      .wbs2_dat_i			(wbs_d_aes_dat_i),
+      .wbs2_sel_i			(wbs_d_aes_sel_i),
+      .wbs2_we_i			(wbs_d_aes_we_i),
+      .wbs2_cyc_i			(wbs_d_aes_cyc_i),
+      .wbs2_stb_i			(wbs_d_aes_stb_i),
+      .wbs2_cti_i			(wbs_d_aes_cti_i),
+      .wbs2_bte_i			(wbs_d_aes_bte_i),
+      .wbs2_dat_o			(wbs_d_aes_dat_o),
+      .wbs2_ack_o			(wbs_d_aes_ack_o),
+      .wbs2_err_o			(wbs_d_aes_err_o),
+      .wbs2_rty_o			(wbs_d_aes_rty_o),
       
-      .wbs2_adr_i			(wbm_b_d_adr_o),
-      .wbs2_dat_i			(wbm_b_d_dat_o),
-      .wbs2_sel_i			(wbm_b_d_sel_o),
-      .wbs2_we_i			(wbm_b_d_we_o),
-      .wbs2_cyc_i			(wbm_b_d_cyc_o),
-      .wbs2_stb_i			(wbm_b_d_stb_o),
-      .wbs2_cti_i			(wbm_b_d_cti_o),
-      .wbs2_bte_i			(wbm_b_d_bte_o),
-      .wbs2_dat_o			(wbm_b_d_dat_i),
-      .wbs2_ack_o			(wbm_b_d_ack_i),
-      .wbs2_err_o			(wbm_b_d_err_i),
-      .wbs2_rty_o			(wbm_b_d_rty_i),
+      .wbs3_adr_i			(wbm_b_d_adr_o),
+      .wbs3_dat_i			(wbm_b_d_dat_o),
+      .wbs3_sel_i			(wbm_b_d_sel_o),
+      .wbs3_we_i			(wbm_b_d_we_o),
+      .wbs3_cyc_i			(wbm_b_d_cyc_o),
+      .wbs3_stb_i			(wbm_b_d_stb_o),
+      .wbs3_cti_i			(wbm_b_d_cti_o),
+      .wbs3_bte_i			(wbm_b_d_bte_o),
+      .wbs3_dat_o			(wbm_b_d_dat_i),
+      .wbs3_ack_o			(wbm_b_d_ack_i),
+      .wbs3_err_o			(wbm_b_d_err_i),
+      .wbs3_rty_o			(wbm_b_d_rty_i),
       
-      .wbs3_adr_i			(wbs_d_ram0_adr_i),
-      .wbs3_dat_i			(wbs_d_ram0_dat_i),
-      .wbs3_sel_i			(wbs_d_ram0_sel_i),
-      .wbs3_we_i			(wbs_d_ram0_we_i),
-      .wbs3_cyc_i			(wbs_d_ram0_cyc_i),
-      .wbs3_stb_i			(wbs_d_ram0_stb_i),
-      .wbs3_cti_i			(wbs_d_ram0_cti_i),
-      .wbs3_bte_i			(wbs_d_ram0_bte_i),
-      .wbs3_dat_o			(wbs_d_ram0_dat_o),
-      .wbs3_ack_o			(wbs_d_ram0_ack_o),
-      .wbs3_err_o			(wbs_d_ram0_err_o),
-      .wbs3_rty_o			(wbs_d_ram0_rty_o),
+      .wbs4_adr_i			(wbs_d_ram0_adr_i),
+      .wbs4_dat_i			(wbs_d_ram0_dat_i),
+      .wbs4_sel_i			(wbs_d_ram0_sel_i),
+      .wbs4_we_i			(wbs_d_ram0_we_i),
+      .wbs4_cyc_i			(wbs_d_ram0_cyc_i),
+      .wbs4_stb_i			(wbs_d_ram0_stb_i),
+      .wbs4_cti_i			(wbs_d_ram0_cti_i),
+      .wbs4_bte_i			(wbs_d_ram0_bte_i),
+      .wbs4_dat_o			(wbs_d_ram0_dat_o),
+      .wbs4_ack_o			(wbs_d_ram0_ack_o),
+      .wbs4_err_o			(wbs_d_ram0_err_o),
+      .wbs4_rty_o			(wbs_d_ram0_rty_o),
 
       // Clock, reset inputs
       .wb_clk			(wb_clk),
@@ -613,8 +639,11 @@ module orpsoc_top
    defparam arbiter_dbus0.wb_num_slaves = dbus_arb_wb_num_slaves;
    defparam arbiter_dbus0.slave0_addr_width = dbus_arb_slave0_addr_width;
    defparam arbiter_dbus0.slave1_adr = dbus_arb_slave1_adr;
+   defparam arbiter_dbus0.slave1_addr_width = dbus_arb_slave1_addr_width;
+   defparam arbiter_dbus0.slave2_adr = dbus_arb_slave2_adr;
    defparam arbiter_dbus0.slave2_addr_width = dbus_arb_slave2_addr_width;
    defparam arbiter_dbus0.slave3_addr_width = dbus_arb_slave3_addr_width;
+   defparam arbiter_dbus0.slave4_addr_width = dbus_arb_slave4_addr_width;
 
    //
    // Wishbone byte-wide bus arbiter
@@ -1632,7 +1661,44 @@ module orpsoc_top
    assign wbs_d_gpio0_rty_o = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif // !`ifdef GPIO0
+
+`ifdef AES
+   ////////////////////////////////////////////////////////////////////////
+   //
+   // AES
+   // 
+   ////////////////////////////////////////////////////////////////////////
    
+   aes_top aes
+     (
+      // Wishbone Slave interface
+      .wb_clk_i		(wb_clk),
+      .wb_rst_i		(wb_rst),
+      .wb_dat_i		(wbs_d_aes_dat_i),
+      .wb_adr_i		(wbs_d_aes_adr_i),
+      .wb_sel_i		(wbs_d_aes_sel_i[3:0]),
+      .wb_we_i 		(wbs_d_aes_we_i),
+      .wb_cyc_i		(wbs_d_aes_cyc_i),
+      .wb_stb_i		(wbs_d_aes_stb_i),
+      .wb_dat_o		(wbs_d_aes_dat_o),
+      .wb_err_o		(wbs_d_aes_err_o),
+      .wb_ack_o		(wbs_d_aes_ack_o),
+      
+      // Processor interrupt
+      .int_o		(aes_irq)
+   );
+
+   assign wbs_d_aes_rty_o = 0;
+   ////////////////////////////////////////////////////////////////////////
+`else
+   assign wbs_d_aes_dat_o = 0;
+   assign wbs_d_aes_err_o = 0;
+   assign wbs_d_aes_ack_o = 0;
+   assign wbs_d_aes_rty_o = 0;
+   ////////////////////////////////////////////////////////////////////////
+`endif
+
+
    ////////////////////////////////////////////////////////////////////////
    //
    // OR1200 Interrupt assignment
@@ -1658,7 +1724,11 @@ module orpsoc_top
 `else   
    assign or1200_pic_ints[6] = 0;
 `endif
+`ifdef AES
+   assign or1200_pic_ints[7] = aes_irq;
+`else
    assign or1200_pic_ints[7] = 0;
+`endif
    assign or1200_pic_ints[8] = 0;
    assign or1200_pic_ints[9] = 0;
 `ifdef I2C0

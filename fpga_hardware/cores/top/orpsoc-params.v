@@ -96,6 +96,13 @@ parameter wbs_d_eth0_addr_width = 12;
 parameter wbm_eth0_data_width = 32;
 parameter wbm_eth0_addr_width = 32;
 
+// AES defines
+parameter aes_wb_adr = 8'h93;
+parameter wbs_d_aes_data_width = 32;
+parameter wbs_d_aes_addr_width = 6;
+parameter wbm_aes_data_width = 32;
+parameter wbm_aes_addr_width = 32;
+
 //////////////////////////////////////////////////////
 //                                                  //
 // Wishbone bus parameters                          //
@@ -126,12 +133,15 @@ parameter ibus_arb_slave1_addr_width = wbs_i_mc0_addr_width; // DDR
 ///////////////////////////
 // Has auto foward to last slave when no address hits
 parameter dbus_arb_wb_addr_match_width = 8;
-parameter dbus_arb_wb_num_slaves = 4;
+parameter dbus_arb_wb_num_slaves = 5;
 // Slave addresses
 parameter dbus_arb_slave0_addr_width = wbs_d_mc0_addr_width; // DDR
 parameter dbus_arb_slave1_adr = eth0_wb_adr; // Ethernet
-parameter dbus_arb_slave2_addr_width = dbus_arb_wb_addr_match_width; // Byte bus
-parameter dbus_arb_slave3_addr_width = wbs_d_rom0_addr_width; // ROM/RAM
+parameter dbus_arb_slave1_addr_width = wbs_d_eth0_addr_width;
+parameter dbus_arb_slave2_adr = aes_wb_adr; // AES
+parameter dbus_arb_slave2_addr_width = wbs_d_aes_addr_width;
+parameter dbus_arb_slave3_addr_width = dbus_arb_wb_addr_match_width; // Byte bus
+parameter dbus_arb_slave4_addr_width = wbs_d_rom0_addr_width; // ROM/RAM
 
 ///////////////////////////////
 //                           //

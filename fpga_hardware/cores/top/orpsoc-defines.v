@@ -55,6 +55,7 @@
  `define RAM_WB
  `define UART0
 // `define GPIO0
+ `define AES
 
 // end of included module defines - keep this comment line here, scripts depend on it!!
 

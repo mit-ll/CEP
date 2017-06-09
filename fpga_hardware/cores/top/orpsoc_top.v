@@ -82,7 +82,6 @@ module orpsoc_top
     sys_clk_in_p,sys_clk_in_n,
 
     rst_n_pad_i  
-    , led_sr
     );
 
 `include "orpsoc-params.v"   
@@ -177,7 +176,6 @@ module orpsoc_top
    output 		      eth0_rst_n_o;
  `endif
 `endif //  `ifdef ETH0
-   output         led_sr;
 
    ////////////////////////////////////////////////////////////////////////
    //

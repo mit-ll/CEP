@@ -100,8 +100,6 @@ parameter wbm_eth0_addr_width = 32;
 parameter aes_wb_adr = 8'h93;
 parameter wbs_d_aes_data_width = 32;
 parameter wbs_d_aes_addr_width = 6;
-parameter wbm_aes_data_width = 32;
-parameter wbm_aes_addr_width = 32;
 
 //////////////////////////////////////////////////////
 //                                                  //

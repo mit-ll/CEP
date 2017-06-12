@@ -343,15 +343,15 @@ module arbiter_dbus
    //
    // Slave selects
    //
-     // ROM/RAM - Given priority
-   assign wb_slave_sel[4] = ~|wbm_adr_o[wb_adr_width - 1:slave3_addr_width];
+     // ROM/RAM - Given least sig bits of address (usually 24)
+   assign wb_slave_sel[4] = ~|wbm_adr_o[wb_adr_width - 1:slave4_addr_width];
      // DDR
    assign wb_slave_sel[0] = ~wb_slave_sel[3] & ~|wbm_adr_o[wb_adr_width-1:slave0_addr_width];
      // Ethernet
    assign wb_slave_sel[1] = wbm_adr_o[`WB_ARB_ADDR_MATCH_SEL] == slave1_adr;
    assign wb_slave_sel[2] = wbm_adr_o[`WB_ARB_ADDR_MATCH_SEL] == slave2_adr;
      // Auto select last slave when others are not selected
-   assign wb_slave_sel[3] = ~(wb_slave_sel_r[3] | wb_slave_sel_r[0] | wb_slave_sel_r[1]);
+   assign wb_slave_sel[3] = ~(wb_slave_sel_r[0] | wb_slave_sel_r[1] | wb_slave_sel_r[2] | wb_slave_sel_r[4]);
    
 
 `ifdef ARBITER_DBUS_WATCHDOG
@@ -454,10 +454,10 @@ module arbiter_dbus
    assign wbs4_we_i =  wbm_we_o;
    assign wbs4_cti_i = wbm_cti_o;
    assign wbs4_bte_i = wbm_bte_o;
-   assign wbs_dat_o_mux_i[2] = wbs4_dat_o;
-   assign wbs_ack_o_mux_i[2] = wbs4_ack_o & wb_slave_sel_r[4];
-   assign wbs_err_o_mux_i[2] = wbs4_err_o & wb_slave_sel_r[4];
-   assign wbs_rty_o_mux_i[2] = wbs4_rty_o & wb_slave_sel_r[4];
+   assign wbs_dat_o_mux_i[4] = wbs4_dat_o;
+   assign wbs_ack_o_mux_i[4] = wbs4_ack_o & wb_slave_sel_r[4];
+   assign wbs_err_o_mux_i[4] = wbs4_err_o & wb_slave_sel_r[4];
+   assign wbs_rty_o_mux_i[4] = wbs4_rty_o & wb_slave_sel_r[4];
 
    // Master out mux from slave in data
    assign wbm_dat_i = wb_slave_sel_r[0] ? wbs_dat_o_mux_i[0] :

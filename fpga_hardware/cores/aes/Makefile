@@ -1,4 +1,8 @@
-default: core
+default:
+	@echo "core: Verify just the core"
+	@echo "top:  Verify the core plus a Wishbone bus interface"
+	@echo "sys:  Create a VMEM file to be loaded onto a SoC for full-system verification"
+	@echo "clean: Remove all generated files"
 
 core:
 	verilator --cc --clk clk --default-language 1364-2001 -I. aes_128.v table.v round.v --top-module aes_128 -exe tb_core.cpp
@@ -17,4 +21,4 @@ sys:
 	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
 
 clean:
-	rm -rf obj_dir *~
+	rm -rf obj_dir *~ tb_sys.S tb_sys.bin tb_sys.vmem tb_sys

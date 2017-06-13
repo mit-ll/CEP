@@ -5,11 +5,11 @@ void toggleClock() {;}
 void evalModel() {;}
 
 uint32_t readFromAddress(uint32_t pAddress) {
-    return *((uint32_t *)pAddress);
+    return *((volatile uint32_t *)pAddress);
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
-    *((uint32_t *)pAddress) = pData;
+    *((volatile uint32_t *)pAddress) = pData;
 }
 
 bool ciphertextValid(void) {
@@ -21,49 +21,53 @@ void start(void) {
     writeToAddress(AES_START, 0x0);
 }
 
-void reportCiphertext(void) {
-    printf("Ciphertext:\t0x");
-    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
-        printf("%08X", readFromAddress(AES_CT_BASE + (i * 4)));
-    }
-    printf("\n");
-}
 
 void saveCiphertext(uint32_t *pCT) {
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
         *pCT++ = readFromAddress(AES_CT_BASE + (i * 4));
     }
 }
 
+void reportCiphertext(void) {
+    printf("Ciphertext:\t0x");
+    uint32_t ct[BLOCK_BITS / 32];
+
+    saveCiphertext(ct);
+    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
+      printf("%08X", ct[i]);
+    }
+    printf("\n");
+}
+
 void setPlaintext(const char* pPT) {
-    cout << "Plaintext:\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 8); ++i) {
+    printf("Plaintext:\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 8); ++i) {
         uint32_t temp;
         for(int j = 0; j < 4; ++j) {
             ((char *)(&temp))[3 - j] = *pPT++;
         }
         writeToAddress(AES_PT_BASE + ((3 - i) * 4), temp);
-        cout << hex << setfill('0') << setw(8) << temp;
+	printf("%08X", temp);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setPlaintext(const uint32_t* pPT) {
-    cout << "Plaintext:\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    printf("Plaintext:\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
         writeToAddress(AES_PT_BASE + ((3 - i) * 4), pPT[i]);
-        cout << hex << setfill('0') << setw(8) << pPT[i];
+	printf("%08X", pPT[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setKey(const uint32_t* pKey) {
-    cout << "Key:\t\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    printf("Key:\t\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
         writeToAddress(AES_KEY_BASE + ((3 - i) * 4), pKey[i]);
-        cout << hex << setfill('0') << setw(8) << pKey[i];
+	printf("%08X", pKey[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 int main(int argc, char **argv, char **env) {

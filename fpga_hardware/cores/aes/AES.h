@@ -1,8 +1,4 @@
-#include <iostream>
-#include <iomanip>
-#include <cstdio>
-using namespace std;
-
+#include <stdio.h>
 
 const unsigned int BLOCK_BITS = 128;
 const unsigned int CLOCK_PERIOD = 10;
@@ -26,7 +22,7 @@ const uint32_t AES_PT_BYTES = 4 * 4;
 const uint32_t AES_KEY_BASE = AES_PT_BASE + AES_PT_BYTES;
 const uint32_t AES_KEY_BYTES = 4 * 4;
 const uint32_t AES_DONE = AES_KEY_BASE + AES_KEY_BYTES;
-const uint32_t AES_DONE_BYTES = 1;
+const uint32_t AES_DONE_BYTES = 4;
 const uint32_t AES_CT_BASE = AES_DONE + AES_DONE_BYTES;
 
 // Current simulation time
@@ -81,8 +77,8 @@ void verifyCiphertext(const char *pExpectedHexString, const char * pTestString) 
     saveCiphertext(ct);
     
     if(compareCiphertext(ct, pExpectedHexString)) {
-        cout << "PASSED: " << pTestString << endl;
+      printf("PASSED: %s\n", pTestString);
     } else {
-        cout << "FAILED: " << pTestString << endl;
+      printf("FAILED: %s\n", pTestString);
     }
 }

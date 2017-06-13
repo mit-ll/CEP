@@ -10,5 +10,11 @@ top:
 	make -j -C obj_dir -f Vaes_top.mk Vaes_top
 	./obj_dir/Vaes_top
 
+sys:
+	or1k-elf-g++ -Wall -pedantic -O3 ../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys
+	or1k-elf-objdump -D tb_sys > tb_sys.S
+	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
+	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
+
 clean:
 	rm -rf obj_dir *~

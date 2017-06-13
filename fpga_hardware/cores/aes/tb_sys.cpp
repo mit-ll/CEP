@@ -1,11 +1,8 @@
-#include <iostream>
-#include <iomanip>
-using namespace std;
-
 #include "AES.h"
 
 // Need this to fully implement expected interface
 void toggleClock() {;}
+void evalModel() {;}
 
 uint32_t readFromAddress(uint32_t pAddress) {
     return *((uint32_t *)pAddress);
@@ -123,5 +120,5 @@ int main(int argc, char **argv, char **env) {
     reportCiphertext();
     verifyCiphertext("58e2fccefa7e3061367f1d57a4e7455a", "test 5");
     
-    exit(0);
+    return 0;
 }

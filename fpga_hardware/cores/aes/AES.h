@@ -1,8 +1,22 @@
+#include <iostream>
+#include <iomanip>
+#include <cstdio>
+using namespace std;
+
+
 const unsigned int BLOCK_BITS = 128;
 const unsigned int CLOCK_PERIOD = 10;
 
+#ifndef uint32_t
+  typedef unsigned int uint32_t;
+#endif
+
+#ifndef vluint64_t
+  typedef unsigned long vluint64_t;
+#endif
+
 // Base address of the core on the bus
-const uint32_t AES_BASE = 0xF0000000;
+const uint32_t AES_BASE = 0x92000000;
 
 // Offset of AES data and control registers in device memory map
 const uint32_t AES_START = AES_BASE;

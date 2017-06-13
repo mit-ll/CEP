@@ -79,7 +79,7 @@ parameter uart0_addr_width = 3;
 
 // ROM/RAM
 parameter wbs_i_rom0_data_width = 32;
-parameter wbs_i_rom0_addr_width = 17;
+parameter wbs_i_rom0_addr_width = 21;
 parameter wbs_d_rom0_data_width = wbs_i_rom0_data_width;
 parameter wbs_d_rom0_addr_width = wbs_i_rom0_addr_width;
 

@@ -71,20 +71,20 @@ module aes_top(
    // Read side
    always @(*) begin
       case(wb_adr_i[5:2])
-        0: wb_dat_o <= {31'b0, start};
-        1: wb_dat_o <= pt[3];
-        2: wb_dat_o <= pt[2];
-        3: wb_dat_o <= pt[1];
-        4: wb_dat_o <= pt[0];
-        5: wb_dat_o <= key[3];
-        6: wb_dat_o <= key[2];
-        7: wb_dat_o <= key[1];
-        8: wb_dat_o <= key[0];
-        9: wb_dat_o <= {31'b0, ct_valid};
-        10: wb_dat_o <= ct[127:96];
-        11: wb_dat_o <= ct[95:64];
-        12: wb_dat_o <= ct[63:32];
-        13: wb_dat_o <= ct[31:0];
+        0: wb_dat_o = {31'b0, start};
+        1: wb_dat_o = pt[3];
+        2: wb_dat_o = pt[2];
+        3: wb_dat_o = pt[1];
+        4: wb_dat_o = pt[0];
+        5: wb_dat_o = key[3];
+        6: wb_dat_o = key[2];
+        7: wb_dat_o = key[1];
+        8: wb_dat_o = key[0];
+        9: wb_dat_o = {31'b0, ct_valid};
+        10: wb_dat_o = ct[127:96];
+        11: wb_dat_o = ct[95:64];
+        12: wb_dat_o = ct[63:32];
+        13: wb_dat_o = ct[31:0];
         default: ;
       endcase
    end // always @ (*)

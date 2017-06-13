@@ -4,6 +4,7 @@
 void toggleClock() {;}
 void evalModel() {;}
 
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t readFromAddress(uint32_t pAddress) {
     return *((volatile uint32_t *)pAddress);
 }
@@ -20,7 +21,6 @@ void start(void) {
     writeToAddress(AES_START, 0x1);
     writeToAddress(AES_START, 0x0);
 }
-
 
 void saveCiphertext(uint32_t *pCT) {
     for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {

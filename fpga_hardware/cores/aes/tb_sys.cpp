@@ -24,7 +24,7 @@ void start(void) {
 
 void saveCiphertext(uint32_t *pCT) {
     for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        *pCT++ = readFromAddress(AES_CT_BASE + (i * 4));
+        pCT[i] = readFromAddress(AES_CT_BASE + (i * 4));
     }
 }
 
@@ -33,7 +33,7 @@ void reportCiphertext(void) {
     uint32_t ct[BLOCK_BITS / 32];
 
     saveCiphertext(ct);
-    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
       printf("%08X", ct[i]);
     }
     printf("\n");

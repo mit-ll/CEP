@@ -1,8 +1,5 @@
 #include "verilated.h"
 #include "Vaes_top.h"
-#include <iostream>
-#include <fstream>
-#include <iomanip>
 #include "AES.h"
 
 Vaes_top* top;
@@ -56,49 +53,52 @@ void start(void) {
     writeToAddress(AES_START, 0x0);
 }
 
+void saveCiphertext(uint32_t *pCT) {
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
+        pCT[i] = readFromAddress(AES_CT_BASE + (i * 4));
+    }
+}
+
 void reportCiphertext(void) {
     printf("Ciphertext:\t0x");
-    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
-        printf("%08X", readFromAddress(AES_CT_BASE + (i * 4)));
+    uint32_t ct[BLOCK_BITS / 32];
+    
+    saveCiphertext(ct);
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
+        printf("%08X", ct[i]);
     }
     printf("\n");
 }
 
-void saveCiphertext(uint32_t *pCT) {
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        *pCT++ = readFromAddress(AES_CT_BASE + (i * 4));
-    }
-}
-
 void setPlaintext(const char* pPT) {
-    cout << "Plaintext:\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 8); ++i) {
+    printf("Plaintext:\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 8); ++i) {
         uint32_t temp;
         for(int j = 0; j < 4; ++j) {
             ((char *)(&temp))[3 - j] = *pPT++;
         }
         writeToAddress(AES_PT_BASE + ((3 - i) * 4), temp);
-        cout << hex << setfill('0') << setw(8) << temp;
+        printf("%08X", temp);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setPlaintext(const uint32_t* pPT) {
-    cout << "Plaintext:\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    printf("Plaintext:\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
         writeToAddress(AES_PT_BASE + ((3 - i) * 4), pPT[i]);
-        cout << hex << setfill('0') << setw(8) << pPT[i];
+        printf("%08X", pPT[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setKey(const uint32_t* pKey) {
-    cout << "Key:\t\t0x";
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    printf("Key:\t\t0x");
+    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
         writeToAddress(AES_KEY_BASE + ((3 - i) * 4), pKey[i]);
-        cout << hex << setfill('0') << setw(8) << pKey[i];
+        printf("%08X", pKey[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 int main(int argc, char **argv, char **env) {
@@ -107,7 +107,7 @@ int main(int argc, char **argv, char **env) {
     
     uint32_t ct[BLOCK_BITS / 32];
     
-    cout << "Initializing interface and resetting core" << endl;
+    printf("Initializing interface and resetting core\n");
     
     // Initialize Inputs
     top->wb_clk_i = 0;
@@ -117,7 +117,7 @@ int main(int argc, char **argv, char **env) {
     top->wb_stb_i = 0;
     runForClockCycles(100);
     
-    cout << "Reset complete" << endl;
+    printf("Reset complete\n");
     
     uint32_t pt1[4]  = {0x3243f6a8, 0x885a308d, 0x313198a2, 0xe0370734};
     uint32_t key1[4] = {0x2b7e1516, 0x28aed2a6, 0xabf71588, 0x09cf4f3c};

@@ -1,8 +1,5 @@
 #include "verilated.h"
 #include "Vaes_128.h"
-#include <iostream>
-#include <fstream>
-#include <iomanip>
 #include "AES.h"
 
 Vaes_128* top;
@@ -40,32 +37,32 @@ void saveCiphertext(uint32_t *pCT) {
 }
 
 void setPlaintext(const char* pPT) {
-    cout << "Plaintext:\t0x";
+    printf("Plaintext:\t0x");
     for(int i = 0; i < (BLOCK_BITS / 8); ++i) {
         for(int j = 0; j < 4; ++j) {
             ((char *)(&(top->state[(BLOCK_BITS / 32) - 1 - i])))[3 - j] = *pPT++;
         }
-        cout << hex << setfill('0') << setw(8) << top->state[3-i];
+        printf("%08X", top->state[3-i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setPlaintext(const uint32_t* pPT) {
-    cout << "Plaintext:\t0x";
+    printf("Plaintext:\t0x");
     for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
         top->state[3-i] = pPT[i];
-        cout << hex << setfill('0') << setw(8) << pPT[i];
+        printf("%08X", pPT[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 void setKey(const uint32_t* pKey) {
-    cout << "Key:\t\t0x";
+    printf("Key:\t\t0x");
     for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
         top->key[3-i] = pKey[i];
-        cout << hex << setfill('0') << setw(8) << pKey[i];
+        printf("%08X", pKey[i]);
     }
-    cout << endl;
+    printf("\n");
 }
 
 int main(int argc, char **argv, char **env) {
@@ -74,14 +71,14 @@ int main(int argc, char **argv, char **env) {
     
     uint32_t ct[BLOCK_BITS / 32];
     
-    cout << "Initializing interface and resetting core" << endl;
+    printf("Initializing interface and resetting core\n");
     
     // Initialize Inputs
     top->clk = 0;
     top->start = 0;
     runForClockCycles(100);
     
-    cout << "Reset complete" << endl;
+    printf("Reset complete\n");
     
     uint32_t pt1[4]  = {0x3243f6a8, 0x885a308d, 0x313198a2, 0xe0370734};
     uint32_t key1[4] = {0x2b7e1516, 0x28aed2a6, 0xabf71588, 0x09cf4f3c};

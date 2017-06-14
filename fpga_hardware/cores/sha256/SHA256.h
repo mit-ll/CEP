@@ -2,14 +2,25 @@ const unsigned int HASH_BITS = 256;
 const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
 
+#ifndef uint32_t
+  typedef unsigned int uint32_t;
+#endif
+
+#ifndef vluint64_t
+  typedef unsigned long vluint64_t;
+#endif
+
 // Base address of the core on the bus
-const uint32_t SHA256_BASE = 0xF0000000;
+const uint32_t SHA256_BASE = 0x92000000;
 
 // Offset of SHA256 data and control registers in device memory map
 const uint32_t SHA256_READY = SHA256_BASE + 0;
-const uint32_t SHA256_MSG_BASE = SHA256_BASE + (1 * 4);
-const uint32_t SHA256_HASH_DONE = SHA256_BASE + (17 * 4);
-const uint32_t SHA256_HASH_BASE = SHA256_BASE + (18 * 4);
+const uint32_t SHA256_READY_SIZE = 4;
+const uint32_t SHA256_MSG_BASE = SHA256_READY + SHA256_READY_SIZE;
+const uint32_t SHA256_MSG_SIZE = 16 * 4;
+const uint32_t SHA256_HASH_DONE = SHA256_MSG_BASE + SHA256_MSG_SIZE;
+const uint32_t SHA256_HASH_DONE_SIZE = 4;
+const uint32_t SHA256_HASH_BASE = SHA256_HASH_DONE + SHA256_HASH_DONE_SIZE;
 const uint32_t SHA256_NEXT_INIT = SHA256_BASE + 0;
 
 // Current simulation time
@@ -105,7 +116,7 @@ void hashString(const char *pString, char *pHash) {
     bool firstTime = true;
     int totalBytes = 0;
     
-    printf("Hashing: %s\n");
+    printf("Hashing: %s\n", pString);
     
     // Reset for each message
     resetAndReady();

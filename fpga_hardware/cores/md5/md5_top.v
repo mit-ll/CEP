@@ -1,16 +1,14 @@
 module md5_top(
-		 wb_adr_i, wb_bte_i, wb_cti_i, wb_cyc_i, wb_dat_i, wb_sel_i,
+		 wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
 		 wb_stb_i, wb_we_i,
-		 wb_ack_o, wb_err_o, wb_rty_o, wb_dat_o,
-		 wb_clk_i, wb_rst_i
+		 wb_ack_o, wb_err_o, wb_dat_o,
+		 wb_clk_i, wb_rst_i, int_o
 );
 
    parameter dw = 32;
    parameter aw = 32;
 
    input [aw-1:0]	wb_adr_i;
-   input [1:0] 		wb_bte_i;
-   input [2:0] 		wb_cti_i;
    input 		wb_cyc_i;
    input [dw-1:0] 	wb_dat_i;
    input [3:0] 		wb_sel_i;
@@ -19,16 +17,15 @@ module md5_top(
    
    output 		wb_ack_o;
    output 		wb_err_o;
-   output 		wb_rty_o;
    output [dw-1:0] 	wb_dat_o;
-   
+   output		int_o;
+
    input 		wb_clk_i;
    input 		wb_rst_i;
 
-
    assign wb_ack_o = 1'b1;
    assign wb_err_o = 1'b0;
-   assign wb_rty_o = 1'b0;
+   assign int_o = 1'b0;
 
    // Internal registers
    reg startHash;
@@ -36,6 +33,7 @@ module md5_top(
    reg message_reset;
 
    // Implement MD5 I/O memory map interface
+   // Write side
    always @(posedge wb_clk_i) begin
      if(wb_rst_i) begin
        startHash <= 0;
@@ -79,31 +77,36 @@ module md5_top(
          22: message_reset <= wb_dat_i[0];
          default: ;
        endcase
-     else if(wb_stb_i & ~wb_we_i)
+     end
+   end
+
+   // Implement MD5 I/O memory map interface
+   // Read side
+   always @(*) begin
        case(wb_adr_i[6:2])
-         0: wb_dat_o <= {31'b0, ready};
-         1: wb_dat_o <= data[15];
-         2: wb_dat_o <= data[14];
-         3: wb_dat_o <= data[13];
-         4: wb_dat_o <= data[12];
-         5: wb_dat_o <= data[11];
-         6: wb_dat_o <= data[10];
-         7: wb_dat_o <= data[9];
-         8: wb_dat_o <= data[8];
-         9: wb_dat_o <= data[7];
-         10: wb_dat_o <= data[6];
-         11: wb_dat_o <= data[5];
-         12: wb_dat_o <= data[4];
-         13: wb_dat_o <= data[3];
-         14: wb_dat_o <= data[2];
-         15: wb_dat_o <= data[1];
-         16: wb_dat_o <= data[0];
-         17: wb_dat_o <= {31'b0, hashValid};
-         21: wb_dat_o <= hash[0:31];
-         20: wb_dat_o <= hash[32:63];
-         19: wb_dat_o <= hash[64:95];
-         18: wb_dat_o <= hash[96:127];
-         default: ;
+         0: wb_dat_o = {31'b0, ready};
+         1: wb_dat_o = data[15];
+         2: wb_dat_o = data[14];
+         3: wb_dat_o = data[13];
+         4: wb_dat_o = data[12];
+         5: wb_dat_o = data[11];
+         6: wb_dat_o = data[10];
+         7: wb_dat_o = data[9];
+         8: wb_dat_o = data[8];
+         9: wb_dat_o = data[7];
+         10: wb_dat_o = data[6];
+         11: wb_dat_o = data[5];
+         12: wb_dat_o = data[4];
+         13: wb_dat_o = data[3];
+         14: wb_dat_o = data[2];
+         15: wb_dat_o = data[1];
+         16: wb_dat_o = data[0];
+         17: wb_dat_o = {31'b0, hashValid};
+         21: wb_dat_o = hash[0:31];
+         20: wb_dat_o = hash[32:63];
+         19: wb_dat_o = hash[64:95];
+         18: wb_dat_o = hash[96:127];
+         default: wb_dat_o = 32'b0;
        endcase
    end
 

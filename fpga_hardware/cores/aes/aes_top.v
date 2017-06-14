@@ -85,7 +85,7 @@ module aes_top(
         11: wb_dat_o = ct[95:64];
         12: wb_dat_o = ct[63:32];
         13: wb_dat_o = ct[31:0];
-        default: ;
+        default: wb_dat_o = 32'b0;
       endcase
    end // always @ (*)
    

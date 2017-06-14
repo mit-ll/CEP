@@ -1,12 +1,19 @@
 #include <cstdio>
+#include <cstring>
 
 #include "MD5.h"
 #include "input.h"
 
+// Need this to fully implement expected interface
+void toggleClock() {;}
+void evalModel() {;}
+
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t readFromAddress(uint32_t pAddress) {
   return *((volatile uint32_t *)pAddress);
 }
 
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
   *((volatile uint32_t *)pAddress) = pData;
 }
@@ -20,7 +27,7 @@ void updateHash(char *pHash) {
 }
 
 void reportAppended() {
-    printf("Padded input:\n";
+    printf("Padded input:\n");
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
 	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
         printf("0x%08n", dataPart);
@@ -49,7 +56,7 @@ void strobeMsgValid() {
 }
 
 void loadPaddedMessage(const char* msg_ptr) {
-  for(int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
+  for(unsigned int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
     uint32_t temp = 0;
     for(int j = 0; j < 4; ++j) {
       ((char *)(&temp))[j] = *msg_ptr++;
@@ -86,5 +93,5 @@ int main(int argc, char **argv, char **env) {
   hashString(fileInput, hash);
   compareHash(hash, "7E2190CE5041B22EE3E1F82716136750", "text file");
 
-  exit(0);
+  return 0;
 }

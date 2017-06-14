@@ -2,10 +2,6 @@ const unsigned int HASH_BITS = 128;
 const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
 
-#ifndef uint32_t
-  typedef unsigned int uint32_t;
-#endif
-
 #ifndef vluint64_t
   typedef unsigned long vluint64_t;
 #endif
@@ -64,7 +60,7 @@ void reportHash() {
     char hash[HASH_BITS / 8];
     updateHash(hash);
     uint32_t* temp = (uint32_t *)hash;
-    for(int i = 0; i < (HASH_BITS / 32); ++i) {
+    for(unsigned int i = 0; i < (HASH_BITS / 32); ++i) {
         printf("%08X", *temp++);
     }
     printf("\n");
@@ -91,15 +87,15 @@ int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
 }
 
 bool compareHash(const char * pProposedHash, const char* pExpectedHash, const char * pTestString) {
-  char longTemp[(128 / 4) + 1];
+  char longTemp[(HASH_BITS / 4) + 1];
     
   char *temp = longTemp;
-  for(int i = 0; i < ((128 / 8) / 4); ++i) {
+  for(unsigned int i = 0; i < ((HASH_BITS / 8) / 4); ++i) {
     sprintf(temp, "%8.8x", ((uint32_t *)pProposedHash)[i]);
     temp += 8;
   }
     
-  if(strncmp(longTemp, pExpectedHash, 128 / 4) == 0) {
+  if(strncmp(longTemp, pExpectedHash, HASH_BITS / 4) == 0) {
     printf("PASSED: %s hash test\n", pTestString);
     return true;
   }

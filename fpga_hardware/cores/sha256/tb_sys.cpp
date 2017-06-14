@@ -1,12 +1,19 @@
 #include <cstdio>
+#include <cstring>
 
 #include "SHA256.h"
 #include "input.h"
 
+// Need this to fully implement expected interface
+void toggleClock() {;}
+void evalModel() {;}
+
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t readFromAddress(uint32_t pAddress) {
   return *((volatile uint32_t *)pAddress);
 }
 
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
   *((volatile uint32_t *)pAddress) = pData;
 }
@@ -33,7 +40,7 @@ void reportAppended(void) {
 void updateHash(char *pHash) {
     uint32_t * temp = (uint32_t *)pHash;
     
-    for(int i = 0; i < (HASH_BITS / 32); ++i) {
+    for(unsigned int i = 0; i < (HASH_BITS / 32); ++i) {
         *temp++ = readFromAddress(SHA256_HASH_BASE + (i * 4));
     }
 }
@@ -88,5 +95,5 @@ int main(int argc, char **argv, char **env) {
     hashString(fileInput, hash);
     compareHash(hash, "0e053a84aae06a58b677cbda6c2bed32046a56e311faae4393fa2c8201daa2f7", "text file");
 
-    exit(0);
+    return 0;
 }

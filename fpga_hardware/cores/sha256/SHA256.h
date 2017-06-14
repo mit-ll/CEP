@@ -2,10 +2,6 @@ const unsigned int HASH_BITS = 256;
 const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
 
-#ifndef uint32_t
-  typedef unsigned int uint32_t;
-#endif
-
 #ifndef vluint64_t
   typedef unsigned long vluint64_t;
 #endif

@@ -17,7 +17,7 @@ module md5_top(
    
    output 		wb_ack_o;
    output 		wb_err_o;
-   output [dw-1:0] 	wb_dat_o;
+   output reg [dw-1:0] 	wb_dat_o;
    output		int_o;
 
    input 		wb_clk_i;
@@ -31,6 +31,12 @@ module md5_top(
    reg startHash;
    reg [31:0] data [0:15];
    reg message_reset;
+
+  /* verilator lint_off LITENDIAN */
+  wire [0:511] bigData = {data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]};
+  wire [0:127] hash;
+  wire ready;
+  wire hashValid;
 
    // Implement MD5 I/O memory map interface
    // Write side
@@ -109,12 +115,6 @@ module md5_top(
          default: wb_dat_o = 32'b0;
        endcase
    end
-
-  /* verilator lint_off LITENDIAN */
-  wire [0:511] bigData = {data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]};
-  wire [0:127] hash;
-  wire ready;
-  wire hashValid;
 
   pancham pancham(
     .clk(wb_clk_i),

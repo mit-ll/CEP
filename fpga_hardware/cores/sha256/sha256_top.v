@@ -17,7 +17,7 @@ module sha256_top(
    
    output 		wb_ack_o;
    output 		wb_err_o;
-   output [dw-1:0] 	wb_dat_o;
+   output reg [dw-1:0] 	wb_dat_o;
    output		int_o;
    
    input 		wb_clk_i;
@@ -31,6 +31,11 @@ module sha256_top(
    reg startHash;
    reg newMessage;
    reg [31:0] data [0:15];
+
+  wire [511:0] bigData = {data[15], data[14], data[13], data[12], data[11], data[10], data[9], data[8], data[7], data[6], data[5], data[4], data[3], data[2], data[1], data[0]};
+  wire [255:0] hash;
+  wire ready;
+  wire hashValid;
 
    // Implement SHA256 I/O memory map interface
    // Write side
@@ -115,11 +120,6 @@ module sha256_top(
          default: wb_dat_o = 32'b0;
        endcase
    end
-
-  wire [511:0] bigData = {data[15], data[14], data[13], data[12], data[11], data[10], data[9], data[8], data[7], data[6], data[5], data[4], data[3], data[2], data[1], data[0]};
-  wire [255:0] hash;
-  wire ready;
-  wire hashValid;
 
   sha256 sha256(
     .clk(wb_clk_i),

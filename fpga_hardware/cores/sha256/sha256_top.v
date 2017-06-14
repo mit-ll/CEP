@@ -24,7 +24,7 @@ module sha256_top(
    input 		wb_rst_i;
 
    assign wb_ack_o = 1'b1;
-   assign wb_rty_o = 1'b0;
+   assign wb_err_o = 1'b0;
    assign int_o = 1'b0;
 
    // Internal registers
@@ -55,7 +55,7 @@ module sha256_top(
        data[14] <= 0;
        data[15] <= 0;
      end
-     else if(wb_stb_i & wb_we_i)
+     else if(wb_stb_i & wb_we_i) begin
        case(wb_adr_i[6:2])
          0: begin
              startHash <= wb_dat_i[0];

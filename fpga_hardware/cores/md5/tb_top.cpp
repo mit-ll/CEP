@@ -108,8 +108,6 @@ int main(int argc, char **argv, char **env) {
 
   // Unused/constant signals
   top->wb_rst_i = 0;
-  top->wb_bte_i = 0;
-  top->wb_cti_i = 0;
   top->wb_cyc_i = 0;
   top->wb_sel_i = 15;
     

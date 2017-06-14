@@ -105,7 +105,7 @@ void hashString(const char *pString, char *pHash) {
     bool firstTime = true;
     int totalBytes = 0;
     
-    cout << "Hashing: " << pString << endl;
+    printf("Hashing: %s\n");
     
     // Reset for each message
     resetAndReady();

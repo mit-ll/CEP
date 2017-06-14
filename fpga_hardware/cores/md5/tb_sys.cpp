@@ -1,16 +1,14 @@
-#include <iostream>
-#include <iomanip>
-using namespace std;
+#include <cstdio>
 
 #include "MD5.h"
 #include "input.h"
 
 uint32_t readFromAddress(uint32_t pAddress) {
-  return *((uint32_t *)pAddress);
+  return *((volatile uint32_t *)pAddress);
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
-  *((uint32_t *)pAddress) = pData;
+  *((volatile uint32_t *)pAddress) = pData;
 }
 
 void updateHash(char *pHash) {
@@ -22,12 +20,10 @@ void updateHash(char *pHash) {
 }
 
 void reportAppended() {
-    cout << "Padded input:" << endl;
+    printf("Padded input:\n";
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-        cout << "0x";
 	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
-        printf("%08X", dataPart);
-        cout << endl;
+        printf("0x%08n", dataPart);
     }
 }
 
@@ -65,12 +61,12 @@ void loadPaddedMessage(const char* msg_ptr) {
 int main(int argc, char **argv, char **env) {
   char hash[HASH_BITS /8];
 
-  cout << "Resetting the MD5 module..." << endl;
+  printf("Resetting the MD5 module...\n");
     
   // Test reset behavior
   resetAndReady();
 
-  cout << "Reset complete" << endl;
+  printf("Reset complete\n");
 
   resetAndReady();
   hashString("a", hash);

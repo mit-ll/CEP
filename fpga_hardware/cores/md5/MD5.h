@@ -44,10 +44,10 @@ void runForClockCycles(const unsigned int pCycles) {
 }
 
 void printWordAsBytesRev(uint32_t pWord) {
-    cout << hex << uppercase << setfill('0') << setw(2) << (pWord & 0xFF);
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF00) >> 8);
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF0000) >> 16);
-    cout << hex << uppercase << setfill('0') << setw(2) << ((pWord & 0xFF000000) >> 24);
+    printf("%02X", (pWord & 0xFF));
+    printf("%02X", ((pWord & 0xFF00) >> 8));
+    printf("%02X", ((pWord & 0xFF0000) >> 16));
+    printf("%02X", ((pWord & 0xFF000000) >> 24));
 }
 
 void reportHash() {
@@ -103,7 +103,7 @@ void hashString(const char *pString, char *pHash) {
   bool done = false;
   int totalBytes = 0;
     
-  cout << "Hashing: " << pString << endl;
+  printf("Hashing: %s\n", pString);
     
   // Reset for each message
   resetAndReady();

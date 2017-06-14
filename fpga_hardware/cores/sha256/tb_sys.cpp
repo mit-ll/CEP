@@ -1,16 +1,14 @@
-#include <iostream>
-#include <iomanip>
-using namespace std;
+#include <cstdio>
 
 #include "SHA256.h"
 #include "input.h"
 
 uint32_t readFromAddress(uint32_t pAddress) {
-  return *((uint32_t *)pAddress);
+  return *((volatile uint32_t *)pAddress);
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
-  *((uint32_t *)pAddress) = pData;
+  *((volatile uint32_t *)pAddress) = pData;
 }
 
 void waitForReady(void) {
@@ -26,11 +24,9 @@ void waitForValidOutput(void) {
 }
 
 void reportAppended(void) {
-    cout << "Padded input:" << endl;
+    printf("Padded input:\n");
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-        cout << "0x";
-        printf("%08X", readFromAddress(SHA256_MSG_BASE + (i * 4)));
-        cout << endl;
+        printf("0x%08X\n", readFromAddress(SHA256_MSG_BASE + (i * 4)));
     }
 }
 
@@ -66,11 +62,11 @@ void loadPaddedMessage(const char* msg_ptr) {
 int main(int argc, char **argv, char **env) {
     char hash[HASH_BITS / 8];
     
-    cout << "Waiting for ready signal..." << endl;
+    printf("Waiting for ready signal...\n");
     
     waitForReady();
     
-    cout << "Starting..." << endl;
+    printf("Starting...\n");
     
     // Test common case 1
     hashString("", hash);

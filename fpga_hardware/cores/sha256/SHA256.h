@@ -153,7 +153,7 @@ void hashString(const char *pString, char *pHash) {
             }
             waitForValidOutput();
             waitForReady();
-            reportAppended();
+            //reportAppended();
             reportHash();
             updateHash(pHash);
             addedBytes -= (MESSAGE_BITS / 8);

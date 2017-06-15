@@ -124,21 +124,17 @@ int main(int argc, char **argv, char **env) {
 
   cout << "Reset complete" << endl;
 
-  resetAndReady();
   hashString("a", hash);
   compareHash(hash, "0cc175b9c0f1b6a831c399e269772661", "single character");
     
-  resetAndReady();
   hashString("abc", hash);
   compareHash(hash, "900150983cd24fb0d6963f7d28e17f72", "three character");
     
   // Test a message that requires an extra chunk to be added to hold padding
-  resetAndReady();
   hashString("Lincoln LaboratoLincoln LaboratoLincoln LaboratoLincoln Laborato", hash);
   compareHash(hash, "93f3763d2c20d33e5031e20480eaca58", "512-bit sized message");
 
   // Hash a test file
-  resetAndReady();
   ifstream inFile("input.txt", ios::in|ios::binary|ios::ate);
   if(inFile.is_open()) {
     streampos size = inFile.tellg();

@@ -75,21 +75,17 @@ int main(int argc, char **argv, char **env) {
 
   printf("Reset complete\n");
 
-  resetAndReady();
   hashString("a", hash);
   compareHash(hash, "0cc175b9c0f1b6a831c399e269772661", "single character");
     
-  resetAndReady();
   hashString("abc", hash);
   compareHash(hash, "900150983cd24fb0d6963f7d28e17f72", "three character");
     
   // Test a message that requires an extra chunk to be added to hold padding
-  resetAndReady();
   hashString("Lincoln LaboratoLincoln LaboratoLincoln LaboratoLincoln Laborato", hash);
   compareHash(hash, "93f3763d2c20d33e5031e20480eaca58", "512-bit sized message");
 
   // Hash a test file
-  resetAndReady();
   hashString(fileInput, hash);
   compareHash(hash, "7E2190CE5041B22EE3E1F82716136750", "text file");
 

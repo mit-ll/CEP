@@ -34,7 +34,11 @@
  *         on the left hand side of the round #n equation.
  * 
  */
-`include "pancham.h"
+
+`define ROUND1 2'b00
+`define ROUND2 2'b01
+`define ROUND3 2'b10
+`define ROUND4 2'b11
 
 module pancham_round (
      a

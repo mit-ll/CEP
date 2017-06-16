@@ -13,13 +13,13 @@ VerilatedVcdC* tfp = new VerilatedVcdC; //VCD file gen
 
 void evalModel() {
     top->eval();
+#if VM_TRACE
+    tfp->dump(main_time);//VCD file gen
+#endif
 }
 
 void toggleClock() {
     top->wb_clk_i = ~top->wb_clk_i;
-#if VM_TRACE
-    tfp->dump(main_time);//VCD file gen
-#endif
 }
 
 void waitForACK() {

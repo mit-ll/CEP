@@ -1,5 +1,6 @@
 #include <stdio.h>
 
+const unsigned int KEY_BITS = 192;
 const unsigned int BLOCK_BITS = 128;
 const unsigned int CLOCK_PERIOD = 10;
 
@@ -20,7 +21,7 @@ const uint32_t AES_START_BYTES = 4;
 const uint32_t AES_PT_BASE = AES_START + AES_START_BYTES;
 const uint32_t AES_PT_BYTES = 4 * 4;
 const uint32_t AES_KEY_BASE = AES_PT_BASE + AES_PT_BYTES;
-const uint32_t AES_KEY_BYTES = 4 * 4;
+const uint32_t AES_KEY_BYTES = 6 * 4;
 const uint32_t AES_DONE = AES_KEY_BASE + AES_KEY_BYTES;
 const uint32_t AES_DONE_BYTES = 4;
 const uint32_t AES_CT_BASE = AES_DONE + AES_DONE_BYTES;
@@ -62,14 +63,21 @@ void waitForValidOutput(void) {
 }
 
 bool compareCiphertext(uint32_t* pCT, const char *pExpectedHexString) {
-    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
-        for(int j = 3; j >= 0; --j) {
-            if(((char *)(&(pCT[i])))[j] == pExpectedHexString[j + (i * 4)])
-                return false;
-        }
+    char longTemp[(BLOCK_BITS / 4) + 1];
+    
+    // Convert the calculated ciphertext into a text string
+    char *temp = longTemp;
+    for(int i = ((BLOCK_BITS / 32) - 1); i >= 0; --i) {
+        sprintf(temp, "%8.8x", ((uint32_t *)pCT)[i]);
+        temp += 8;
     }
     
-    return true;
+    // Now we can compare them as hex strings
+    if(strncmp(longTemp, pExpectedHexString, BLOCK_BITS / 4) == 0) {
+        return true;
+    }
+    
+    return false;
 }
 
 void verifyCiphertext(const char *pExpectedHexString, const char * pTestString) {
@@ -79,6 +87,7 @@ void verifyCiphertext(const char *pExpectedHexString, const char * pTestString) 
     if(compareCiphertext(ct, pExpectedHexString)) {
       printf("PASSED: %s\n", pTestString);
     } else {
+      printf("Expected:\t0x%s\n", pExpectedHexString);
       printf("FAILED: %s\n", pTestString);
     }
 }

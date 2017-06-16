@@ -29,12 +29,11 @@ module md5_top(
 
    // Internal registers
    reg startHash;
-   reg [31:0] data [0:15];
+   reg [31:0] data [15:0];
    reg message_reset;
 
-  /* verilator lint_off LITENDIAN */
-  wire [0:511] bigData = {data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]};
-  wire [0:127] hash;
+  wire [511:0] bigData = {data[0], data[1], data[2], data[3], data[4], data[5], data[6], data[7], data[8], data[9], data[10], data[11], data[12], data[13], data[14], data[15]};
+  wire [127:0] hash;
   wire ready;
   wire hashValid;
 
@@ -108,10 +107,10 @@ module md5_top(
          15: wb_dat_o = data[1];
          16: wb_dat_o = data[0];
          17: wb_dat_o = {31'b0, hashValid};
-         21: wb_dat_o = hash[0:31];
-         20: wb_dat_o = hash[32:63];
-         19: wb_dat_o = hash[64:95];
-         18: wb_dat_o = hash[96:127];
+         21: wb_dat_o = hash[127:96];
+         20: wb_dat_o = hash[95:64];
+         19: wb_dat_o = hash[63:32];
+         18: wb_dat_o = hash[31:0];
          default: wb_dat_o = 32'b0;
        endcase
    end

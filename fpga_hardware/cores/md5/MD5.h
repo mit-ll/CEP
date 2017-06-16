@@ -35,7 +35,7 @@ void waitForReady(void);
 void loadPaddedMessage(const char* msg_ptr);
 void strobeMsgValid(void);
 void waitForValidOut(void);
-void updateHash(char *pHash);
+void updateHash(unsigned char *pHash);
 void reportAppended(void);
 
 void runForClockCycles(const unsigned int pCycles) {
@@ -49,33 +49,32 @@ void runForClockCycles(const unsigned int pCycles) {
 }
 
 void printWordAsBytesRev(uint32_t pWord) {
-    printf("%02X", (pWord & 0xFF));
-    printf("%02X", ((pWord & 0xFF00) >> 8));
-    printf("%02X", ((pWord & 0xFF0000) >> 16));
-    printf("%02X", ((pWord & 0xFF000000) >> 24));
+    printf("%02X", (unsigned int)(pWord & 0xFF));
+    printf("%02X", (unsigned int)((pWord & 0xFF00) >> 8));
+    printf("%02X", (unsigned int)((pWord & 0xFF0000) >> 16));
+    printf("%02X", (unsigned int)((pWord & 0xFF000000) >> 24));
 }
 
 void reportHash() {
     printf("Hash: 0x");
-    char hash[HASH_BITS / 8];
+    unsigned char hash[HASH_BITS / 8];
     updateHash(hash);
-    uint32_t* temp = (uint32_t *)hash;
-    for(unsigned int i = 0; i < (HASH_BITS / 32); ++i) {
-        printf("%08X", *temp++);
+    for(unsigned int i = 0; i < (HASH_BITS / 8); ++i) {
+        printf("%02X", hash[i]);
     }
     printf("\n");
 }
 
 int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
-  int extraBits = pMessageBits64Bit % 512;
-  int paddingBits = extraBits > 448 ? 1024 - extraBits : 512 - extraBits;
+  int extraBits = pMessageBits64Bit % MESSAGE_BITS;
+  int paddingBits = extraBits > 448 ? (2 * MESSAGE_BITS) - extraBits : MESSAGE_BITS - extraBits;
     
   // Add size to end of string
   const int startByte = extraBits / 8;
   const int sizeStartByte =  startByte + ((paddingBits / 8) - 8);
   for(int i = startByte; i < (sizeStartByte + 8); ++i) {
     if(i == startByte) {
-      buffer[i] = 0x80; // 1 followed by many 0's
+      buffer[i] = (unsigned char)0x80; // 1 followed by many 0's
     } else if( i >= sizeStartByte) {
       buffer[i] = ((char *)(&pMessageBits64Bit))[i - sizeStartByte];
     } else {
@@ -86,12 +85,12 @@ int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
   return (paddingBits / 8);
 }
 
-bool compareHash(const char * pProposedHash, const char* pExpectedHash, const char * pTestString) {
+bool compareHash(const unsigned char * pProposedHash, const char* pExpectedHash, const char * pTestString) {
   char longTemp[(HASH_BITS / 4) + 1];
     
   char *temp = longTemp;
   for(unsigned int i = 0; i < ((HASH_BITS / 8) / 4); ++i) {
-    sprintf(temp, "%8.8x", ((uint32_t *)pProposedHash)[i]);
+    sprintf(temp, "%8.8x", (unsigned int)((uint32_t *)pProposedHash)[i]);
     temp += 8;
   }
     
@@ -104,7 +103,7 @@ bool compareHash(const char * pProposedHash, const char* pExpectedHash, const ch
   return false;
 }
 
-void hashString(const char *pString, char *pHash) {
+void hashString(const char *pString, unsigned char *pHash) {
   bool done = false;
   int totalBytes = 0;
     
@@ -118,8 +117,8 @@ void hashString(const char *pString, char *pHash) {
         
     // Copy next portion of string to message buffer
     char *msg_ptr = message;
-    int length = 0;
-    while(length < (512 / 8)) {
+    unsigned int length = 0;
+    while(length < (MESSAGE_BITS / 8)) {
       // Check for end of input
       if(*pString == '\0') {
 	done = true;
@@ -144,11 +143,11 @@ void hashString(const char *pString, char *pHash) {
       strobeMsgValid();
       waitForValidOut();
       waitForReady();
-      //reportAppended();
+      reportAppended();
       reportHash();
       updateHash(pHash);
-      addedBytes -= (512 / 8);
-      msg_ptr += (512 / 8);
+      addedBytes -= (MESSAGE_BITS / 8);
+      msg_ptr += (MESSAGE_BITS / 8);
     } while(addedBytes > 0);
   }
 }

@@ -15,7 +15,7 @@ void toggleClock() {
     top->clk = ~top->clk;
 }
 
-void updateHash(char *pHash) {
+void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
     for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
@@ -70,7 +70,7 @@ int main(int argc, char **argv, char **env) {
     
     top = new Vpancham;
     char message[MESSAGE_BITS * 2];
-    char hash[HASH_BITS / 8];
+    unsigned char hash[HASH_BITS / 8];
     
     // Test reset behavior
     top->clk = 0;

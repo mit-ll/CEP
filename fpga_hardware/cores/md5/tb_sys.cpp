@@ -18,7 +18,7 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
   *((volatile uint32_t *)pAddress) = pData;
 }
 
-void updateHash(char *pHash) {
+void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
     for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
@@ -30,7 +30,7 @@ void reportAppended() {
     printf("Padded input:\n");
     for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
 	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
-        printf("0x%08n", dataPart);
+        printf("0x%08X\n", (unsigned int)dataPart);
     }
 }
 
@@ -58,23 +58,22 @@ void strobeMsgValid() {
 void loadPaddedMessage(const char* msg_ptr) {
   for(unsigned int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
     uint32_t temp = 0;
-    for(int j = 0; j < 4; ++j) {
+    for(int j = 3; j >= 0; --j) {
+      //printf("%02X ", (unsigned int)(*msg_ptr & 0xFF));
       ((char *)(&temp))[j] = *msg_ptr++;
     }
+    //printf("\n 0x%08X written to: 0x%08X\n", temp, MD5_MSG_BASE + (i * 4));
     writeToAddress(MD5_MSG_BASE + (i * 4), temp);
   }
 }
 
 int main(int argc, char **argv, char **env) {
-  char hash[HASH_BITS /8];
+  unsigned char hash[HASH_BITS / 8];
 
   printf("Resetting the MD5 module...\n");
-    
-  // Test reset behavior
   resetAndReady();
-
   printf("Reset complete\n");
-
+  
   hashString("a", hash);
   compareHash(hash, "0cc175b9c0f1b6a831c399e269772661", "single character");
     

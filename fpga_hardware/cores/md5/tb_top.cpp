@@ -58,7 +58,7 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
   runForClockCycles(10);
 }
 
-void updateHash(char *pHash) {
+void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
     for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
@@ -114,7 +114,7 @@ int main(int argc, char **argv, char **env) {
     Verilated::traceEverOn(true); //VCD file gen
 #endif
   top = new Vmd5_top;
-  char hash[HASH_BITS /8];
+  unsigned char hash[HASH_BITS /8];
     
 #if VM_TRACE
   printf("Initializing traces and opening VCD file\n");

@@ -14,6 +14,11 @@ top:
 	make -j -C obj_dir -f Vaes_top.mk Vaes_top
 	./obj_dir/Vaes_top
 
+vcd:
+	verilator --trace --trace-depth 1 --cc --clk clk --default-language 1364-2001 aes_top.v aes_128.v table.v round.v --top-module aes_top -exe tb_top.cpp
+	make -j -C obj_dir -f Vaes_top.mk Vaes_top
+	./obj_dir/Vaes_top
+
 sys:
 	or1k-elf-g++ -Wall -pedantic -O3 ../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys
 	or1k-elf-objdump -D tb_sys > tb_sys.S

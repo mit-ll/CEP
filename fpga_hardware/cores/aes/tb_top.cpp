@@ -2,7 +2,14 @@
 #include "Vaes_top.h"
 #include "AES.h"
 
+#if VM_TRACE 
+#include "verilated_vcd_c.h"//VCD file gen
+#endif 
+
 Vaes_top* top;
+#if VM_TRACE 
+VerilatedVcdC* tfp = new VerilatedVcdC; //VCD file gen
+#endif
 
 void evalModel() {
     top->eval();
@@ -10,6 +17,9 @@ void evalModel() {
 
 void toggleClock() {
     top->wb_clk_i = ~top->wb_clk_i;
+#if VM_TRACE
+    tfp->dump(main_time);//VCD file gen
+#endif
 }
 
 void waitForACK() {
@@ -103,9 +113,19 @@ void setKey(const uint32_t* pKey) {
 
 int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
+#if VM_TRACE
+    Verilated::traceEverOn(true); //VCD file gen
+#endif
+
     top = new Vaes_top;
     
     uint32_t ct[BLOCK_BITS / 32];
+
+#if VM_TRACE
+  printf("Initializing traces and opening VCD file\n");
+  top->trace (tfp, 99);//VCD file gen 
+  tfp->open("./obj_dir/Vaes_top.vcd");//VCD file gen
+#endif
     
     printf("Initializing interface and resetting core\n");
     
@@ -172,6 +192,9 @@ int main(int argc, char **argv, char **env) {
     reportCiphertext();
     verifyCiphertext("58e2fccefa7e3061367f1d57a4e7455a", "test 5");
     
+#if VM_TRACE    
+    tfp->close(); //VCD file gen
+#endif
     top->final();
     delete top;
     exit(0);

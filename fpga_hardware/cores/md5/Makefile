@@ -20,5 +20,10 @@ sys:
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
 
+vcd:
+	verilator --trace --trace-depth 1 --cc --clk clk --default-language 1364-2001 md5_top.v -exe tb_top.cpp
+	make -j -C obj_dir -f Vmd5_top.mk Vmd5_top
+	./obj_dir/Vmd5_top
+
 clean:
 	rm -rf obj_dir *~ tb_sys.S tb_sys.bin tb_sys.vmem tb_sys

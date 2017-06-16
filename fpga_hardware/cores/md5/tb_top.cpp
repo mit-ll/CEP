@@ -6,7 +6,14 @@
 #include "MD5.h"
 #include "input.h"
 
+#if VM_TRACE 
+#include "verilated_vcd_c.h"//VCD file gen
+#endif 
+
 Vmd5_top* top;
+#if VM_TRACE 
+VerilatedVcdC* tfp = new VerilatedVcdC; //VCD file gen
+#endif
 
 void evalModel() {
     top->eval();
@@ -14,6 +21,9 @@ void evalModel() {
 
 void toggleClock() {
     top->wb_clk_i = ~top->wb_clk_i;
+#if VM_TRACE
+    tfp->dump(main_time);//VCD file gen
+#endif
 }
 
 void waitForACK() {
@@ -100,10 +110,17 @@ void loadPaddedMessage(const char* msg_ptr) {
 
 int main(int argc, char **argv, char **env) {
   Verilated::commandArgs(argc, argv);
-
+#if VM_TRACE
+    Verilated::traceEverOn(true); //VCD file gen
+#endif
   top = new Vmd5_top;
   char hash[HASH_BITS /8];
     
+#if VM_TRACE
+  printf("Initializing traces and opening VCD file\n");
+  top->trace (tfp, 99);//VCD file gen 
+  tfp->open("./obj_dir/Vmd5_top.vcd");//VCD file gen
+#endif
   cout << "Resetting the wishbone interface..." << endl;
 
   // Unused/constant signals
@@ -156,6 +173,9 @@ int main(int argc, char **argv, char **env) {
     cout << "ERROR: unable to open input.txt" << endl;
   }
 
+#if VM_TRACE    
+    tfp->close(); //VCD file gen
+#endif
   top->final();
   delete top;
   exit(0);

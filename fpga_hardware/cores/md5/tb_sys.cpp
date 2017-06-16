@@ -86,7 +86,7 @@ int main(int argc, char **argv, char **env) {
 
   // Hash a test file
   hashString(fileInput, hash);
-  compareHash(hash, "7E2190CE5041B22EE3E1F82716136750", "text file");
+  compareHash(hash, "7e2190ce5041b22ee3e1f82716136750", "text file");
 
   return 0;
 }

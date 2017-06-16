@@ -65,9 +65,9 @@ void reportHash() {
     printf("\n");
 }
 
-int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
-  int extraBits = pMessageBits64Bit % MESSAGE_BITS;
-  int paddingBits = extraBits > 448 ? (2 * MESSAGE_BITS) - extraBits : MESSAGE_BITS - extraBits;
+int addPadding(uint64_t pMessageBits, char* buffer) {
+  int extraBits = pMessageBits % MESSAGE_BITS;
+  int paddingBits = extraBits > 448 ? (2 * MESSAGE_BITS) - extraBits : MESSAGE_BITS - extraBits; // Last 64 bits used to store message size (bytes)
     
   // Add size to end of string
   const int startByte = extraBits / 8;
@@ -75,8 +75,12 @@ int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
   for(int i = startByte; i < (sizeStartByte + 8); ++i) {
     if(i == startByte) {
       buffer[i] = (unsigned char)0x80; // 1 followed by many 0's
-    } else if( i >= sizeStartByte) {
-      buffer[i] = ((char *)(&pMessageBits64Bit))[i - sizeStartByte];
+    } else if(i >= sizeStartByte) {
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
+      buffer[i] = ((char *)(&pMessageBits))[i - sizeStartByte];
+#else
+      buffer[i] = ((char *)(&pMessageBits))[7 - (i - sizeStartByte)];
+#endif
     } else {
       buffer[i] = 0x0;
     }
@@ -112,7 +116,7 @@ void hashString(const char *pString, unsigned char *pHash) {
   // Reset for each message
   resetAndReady();
   while(!done) {
-    char message[1024];
+    char message[2 * MESSAGE_BITS];
     memset(message, 0, sizeof(message));
         
     // Copy next portion of string to message buffer

@@ -1,8 +1,18 @@
 #include <stdio.h>
 
+const unsigned int BITS_PER_BYTE = 8;
+const unsigned int BYTES_PER_WORD = 4;
 const unsigned int KEY_BITS = 192;
 const unsigned int BLOCK_BITS = 128;
 const unsigned int CLOCK_PERIOD = 10;
+const unsigned int AES_START_BYTES = BYTES_PER_WORD;
+const unsigned int AES_DONE_BYTES = BYTES_PER_WORD;
+
+// Automatically generated constants
+const unsigned int KEY_BYTES = KEY_BITS / BITS_PER_BYTE;
+const unsigned int KEY_WORDS = KEY_BYTES / BYTES_PER_WORD;
+const unsigned int BLOCK_BYTES = BLOCK_BITS / BITS_PER_BYTE;
+const unsigned int BLOCK_WORDS = BLOCK_BYTES / BYTES_PER_WORD;
 
 #ifndef uint32_t
   typedef unsigned int uint32_t;
@@ -17,13 +27,9 @@ const uint32_t AES_BASE = 0x92000000;
 
 // Offset of AES data and control registers in device memory map
 const uint32_t AES_START = AES_BASE;
-const uint32_t AES_START_BYTES = 4;
 const uint32_t AES_PT_BASE = AES_START + AES_START_BYTES;
-const uint32_t AES_PT_BYTES = 4 * 4;
-const uint32_t AES_KEY_BASE = AES_PT_BASE + AES_PT_BYTES;
-const uint32_t AES_KEY_BYTES = 6 * 4;
-const uint32_t AES_DONE = AES_KEY_BASE + AES_KEY_BYTES;
-const uint32_t AES_DONE_BYTES = 4;
+const uint32_t AES_KEY_BASE = AES_PT_BASE + BLOCK_BYTES;
+const uint32_t AES_DONE = AES_KEY_BASE + KEY_BYTES;
 const uint32_t AES_CT_BASE = AES_DONE + AES_DONE_BYTES;
 
 // Current simulation time
@@ -67,13 +73,14 @@ bool compareCiphertext(uint32_t* pCT, const char *pExpectedHexString) {
     
     // Convert the calculated ciphertext into a text string
     char *temp = longTemp;
-    for(int i = ((BLOCK_BITS / 32) - 1); i >= 0; --i) {
+    for(int i = (BLOCK_WORDS - 1); i >= 0; --i) {
         sprintf(temp, "%8.8x", ((uint32_t *)pCT)[i]);
         temp += 8;
     }
     
     // Now we can compare them as hex strings
-    if(strncmp(longTemp, pExpectedHexString, BLOCK_BITS / 4) == 0) {
+    // 2 string characters per byte
+    if(strncmp(longTemp, pExpectedHexString, (BLOCK_BYTES * 2)) == 0) {
         return true;
     }
     
@@ -81,7 +88,7 @@ bool compareCiphertext(uint32_t* pCT, const char *pExpectedHexString) {
 }
 
 void verifyCiphertext(const char *pExpectedHexString, const char * pTestString) {
-    uint32_t ct[BLOCK_BITS / 32];
+    uint32_t ct[BLOCK_WORDS];
     saveCiphertext(ct);
     
     if(compareCiphertext(ct, pExpectedHexString)) {

@@ -24,23 +24,23 @@ void start(void) {
 
 void reportCiphertext(void) {
     printf("Ciphertext:\t0x");
-    for(int i = (BLOCK_BITS / 32) - 1; i >= 0; --i) {
+    for(int i = BLOCK_WORDS - 1; i >= 0; --i) {
         printf("%08X", top->out[i]);
     }
     printf("\n");
 }
 
 void saveCiphertext(uint32_t *pCT) {
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    for(int i = 0; i < BLOCK_WORDS; ++i) {
         *pCT++ = top->out[i];
     }
 }
 
 void setPlaintext(const char* pPT) {
     printf("Plaintext:\t0x");
-    for(int i = 0; i < (BLOCK_BITS / 8); ++i) {
+    for(int i = 0; i < BLOCK_BYTES; ++i) {
         for(int j = 0; j < 4; ++j) {
-            ((char *)(&(top->state[(BLOCK_BITS / 32) - 1 - i])))[3 - j] = *pPT++;
+            ((char *)(&(top->state[BLOCK_WORDS - 1 - i])))[3 - j] = *pPT++;
         }
         printf("%08X", top->state[3-i]);
     }
@@ -49,8 +49,8 @@ void setPlaintext(const char* pPT) {
 
 void setPlaintext(const uint32_t* pPT) {
     printf("Plaintext:\t0x");
-    for(int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        top->state[3-i] = pPT[i];
+    for(int i = 0; i < BLOCK_WORDS; ++i) {
+        top->state[(BLOCK_WORDS - 1) - i] = pPT[i];
         printf("%08X", pPT[i]);
     }
     printf("\n");
@@ -58,8 +58,8 @@ void setPlaintext(const uint32_t* pPT) {
 
 void setKey(const uint32_t* pKey) {
     printf("Key:\t\t0x");
-    for(int i = 0; i < (KEY_BITS / 32); ++i) {
-        top->key[(KEY_BITS / 32) - i] = pKey[i];
+    for(int i = 0; i < KEY_WORDS; ++i) {
+        top->key[(KEY_WORDS - 1) - i] = pKey[i];
         printf("%08X", pKey[i]);
     }
     printf("\n");
@@ -69,7 +69,7 @@ int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
     top = new Vaes_192;
     
-    uint32_t ct[BLOCK_BITS / 32];
+    uint32_t ct[BLOCK_WORDS];
     
     printf("Initializing interface and resetting core\n");
     

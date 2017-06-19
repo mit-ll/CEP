@@ -64,17 +64,17 @@ void start(void) {
 }
 
 void saveCiphertext(uint32_t *pCT) {
-    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        pCT[i] = readFromAddress(AES_CT_BASE + (i * 4));
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
+        pCT[(BLOCK_WORDS - 1) - i] = readFromAddress(AES_CT_BASE + (i * BYTES_PER_WORD));
     }
 }
 
 void reportCiphertext(void) {
     printf("Ciphertext:\t0x");
-    uint32_t ct[BLOCK_BITS / 32];
+    uint32_t ct[BLOCK_WORDS];
     
     saveCiphertext(ct);
-    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
         printf("%08X", ct[i]);
     }
     printf("\n");
@@ -82,12 +82,12 @@ void reportCiphertext(void) {
 
 void setPlaintext(const char* pPT) {
     printf("Plaintext:\t0x");
-    for(unsigned int i = 0; i < (BLOCK_BITS / 8); ++i) {
+    for(unsigned int i = 0; i < BLOCK_BYTES; ++i) {
         uint32_t temp;
         for(int j = 0; j < 4; ++j) {
-            ((char *)(&temp))[3 - j] = *pPT++;
+            ((char *)(&temp))[(BLOCK_WORDS - 1) - j] = *pPT++;
         }
-        writeToAddress(AES_PT_BASE + ((3 - i) * 4), temp);
+        writeToAddress(AES_PT_BASE + (((BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), temp);
         printf("%08X", temp);
     }
     printf("\n");
@@ -95,8 +95,8 @@ void setPlaintext(const char* pPT) {
 
 void setPlaintext(const uint32_t* pPT) {
     printf("Plaintext:\t0x");
-    for(unsigned int i = 0; i < (BLOCK_BITS / 32); ++i) {
-        writeToAddress(AES_PT_BASE + ((3 - i) * 4), pPT[i]);
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
+        writeToAddress(AES_PT_BASE + (((BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), pPT[i]);
         printf("%08X", pPT[i]);
     }
     printf("\n");
@@ -104,8 +104,8 @@ void setPlaintext(const uint32_t* pPT) {
 
 void setKey(const uint32_t* pKey) {
     printf("Key:\t\t0x");
-    for(unsigned int i = 0; i < (KEY_BITS / 32); ++i) {
-        writeToAddress(AES_KEY_BASE + (((KEY_BITS / 32) - i) * 4), pKey[i]);
+    for(unsigned int i = 0; i < KEY_WORDS; ++i) {
+        writeToAddress(AES_KEY_BASE + (((KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
         printf("%08X", pKey[i]);
     }
     printf("\n");
@@ -119,7 +119,7 @@ int main(int argc, char **argv, char **env) {
 
     top = new Vaes_top;
     
-    uint32_t ct[BLOCK_BITS / 32];
+    uint32_t ct[BLOCK_WORDS];
 
 #if VM_TRACE
   printf("Initializing traces and opening VCD file\n");

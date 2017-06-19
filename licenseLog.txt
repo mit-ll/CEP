@@ -151,3 +151,14 @@ License Description:  LGPL 2.1
 License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function:  e..g This code provides a basic AES-192 encryption function.
 It will be integrated as a HW accelerator into the system.
+
+Title:  fft
+Source: http://opencores.org/project,pipelined_fft_64
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+http://opencores.org/project,wdsp (FIR, IIR, FFT)
+
+http://opencores.org/project,rtcclock

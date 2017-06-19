@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <string.h>
 
 const unsigned int BITS_PER_BYTE = 8;
 const unsigned int BYTES_PER_WORD = 4;

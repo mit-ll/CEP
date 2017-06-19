@@ -1,0 +1,153 @@
+Title:  OR1200
+Source:  http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/or1200/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  SoC (top)
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/orpsoc_top/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  aes
+Source: https://opencores.org/project,tiny_aes
+License Description:  Apache 2.0
+License terms: http://www.apache.org/licenses/LICENSE-2.0.html
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  md5
+Source: http://pancham.sourceforge.net/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  rsa
+Source: http://git.level2crm.com/cryptech/core-math-modexp/tree/master
+License Description:  LGPL-ish
+License terms:
+// Author: Joachim Strombergson
+// Copyright (c) 2015, Secworks Sweden AB
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or
+// without modification, are permitted provided that the following
+// conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in
+//    the documentation and/or other materials provided with the
+//    distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  sha
+Source: http://git.level2crm.com/cryptech/core-hash-sha256/tree/master
+License Description:  LGPL-ish
+License terms:
+// Author: Joachim Strombergson
+// Copyright (c) 2013, Secworks Sweden AB
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or
+// without modification, are permitted provided that the following
+// conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in
+//    the documentation and/or other materials provided with the
+//    distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  bus arbiters
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/arbiter/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  adv_debug_sys
+Source: https://opencores.org/project,adv_debug_sys
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  clkgen
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/clkgen/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  dbg_if
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/dbg_if/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  ethmac
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/ethmac/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  jtag_tap
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/jtag_tap/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  test bench
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/bench/verilog/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.
+
+Title:  UART
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/uart16550/
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  e..g This code provides a basic AES-192 encryption function.
+It will be integrated as a HW accelerator into the system.

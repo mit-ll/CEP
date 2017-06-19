@@ -1,6 +1,3 @@
-#include <cstdio>
-#include <cstring>
-
 #include "MD5.h"
 #include "input.h"
 
@@ -21,15 +18,15 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
-    for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
-        *hPtr++ = readFromAddress(MD5_HASH_BASE + (i * 4));
+    for(int i = HASH_WORDS - 1; i >= 0; --i) {
+        *hPtr++ = readFromAddress(MD5_HASH_BASE + (i * BYTES_PER_WORD));
     }
 }
 
 void reportAppended() {
     printf("Padded input:\n");
-    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
+    for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
+	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * BYTES_PER_WORD));
         printf("0x%08X\n", (unsigned int)dataPart);
     }
 }
@@ -56,19 +53,19 @@ void strobeMsgValid() {
 }
 
 void loadPaddedMessage(const char* msg_ptr) {
-  for(unsigned int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
+  for(unsigned int i = 0; i < MESSAGE_WORDS; ++i) {
     uint32_t temp = 0;
-    for(int j = 3; j >= 0; --j) {
+    for(int j = BYTES_PER_WORD - 1; j >= 0; --j) {
       //printf("%02X ", (unsigned int)(*msg_ptr & 0xFF));
       ((char *)(&temp))[j] = *msg_ptr++;
     }
     //printf("\n 0x%08X written to: 0x%08X\n", temp, MD5_MSG_BASE + (i * 4));
-    writeToAddress(MD5_MSG_BASE + (i * 4), temp);
+    writeToAddress(MD5_MSG_BASE + (i * BYTES_PER_WORD), temp);
   }
 }
 
 int main(int argc, char **argv, char **env) {
-  unsigned char hash[HASH_BITS / 8];
+  unsigned char hash[HASH_BYTES];
 
   printf("Resetting the MD5 module...\n");
   resetAndReady();

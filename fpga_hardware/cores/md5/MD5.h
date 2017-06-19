@@ -1,21 +1,33 @@
+#include <stdio.h>
+#include <string.h>
+
+const unsigned int BITS_PER_BYTE = 8;
+const unsigned int BYTES_PER_WORD = 4;
 const unsigned int HASH_BITS = 128;
 const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
+const unsigned int MD5_READY_BYTES = 4;
+const unsigned int MD5_HASH_DONE_BYTES = 4;
 
-#ifndef vluint64_t
-  typedef unsigned long vluint64_t;
-#endif
+// Automatically generated constants
+const unsigned int HASH_BYTES = HASH_BITS / BITS_PER_BYTE;
+const unsigned int HASH_WORDS = HASH_BYTES / BYTES_PER_WORD;
+const unsigned int MESSAGE_BYTES = MESSAGE_BITS / BITS_PER_BYTE;
+const unsigned int MESSAGE_WORDS = MESSAGE_BYTES / BYTES_PER_WORD;
 
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef unsigned long vluint64_t;
 
 // Base address of the core on the bus
 const uint32_t MD5_BASE = 0x92000000;
 
 // Offset of MD5 data and control registers in device memory map
-const uint32_t MD5_READY = MD5_BASE + 0;
-const uint32_t MD5_MSG_BASE = MD5_BASE + (1 * 4);
-const uint32_t MD5_HASH_DONE = MD5_BASE + (17 * 4);
-const uint32_t MD5_HASH_BASE = MD5_BASE + (18 * 4);
-const uint32_t MD5_RST = MD5_BASE + (22 * 4);
+const uint32_t MD5_READY = MD5_BASE;
+const uint32_t MD5_MSG_BASE = MD5_READY + MD5_READY_BYTES;
+const uint32_t MD5_HASH_DONE = MD5_MSG_BASE + MESSAGE_BYTES;
+const uint32_t MD5_HASH_BASE = MD5_HASH_DONE + MD5_HASH_DONE_BYTES;
+const uint32_t MD5_RST = MD5_HASH_BASE + HASH_BYTES;
 
 // Current simulation time
 vluint64_t main_time = 0;
@@ -57,9 +69,9 @@ void printWordAsBytesRev(uint32_t pWord) {
 
 void reportHash() {
     printf("Hash: 0x");
-    unsigned char hash[HASH_BITS / 8];
+    unsigned char hash[HASH_BYTES];
     updateHash(hash);
-    for(unsigned int i = 0; i < (HASH_BITS / 8); ++i) {
+    for(unsigned int i = 0; i < HASH_BYTES; ++i) {
         printf("%02X", hash[i]);
     }
     printf("\n");
@@ -93,7 +105,7 @@ bool compareHash(const unsigned char * pProposedHash, const char* pExpectedHash,
   char longTemp[(HASH_BITS / 4) + 1];
     
   char *temp = longTemp;
-  for(unsigned int i = 0; i < ((HASH_BITS / 8) / 4); ++i) {
+  for(unsigned int i = 0; i < HASH_WORDS; ++i) {
     sprintf(temp, "%8.8x", (unsigned int)((uint32_t *)pProposedHash)[i]);
     temp += 8;
   }
@@ -122,7 +134,7 @@ void hashString(const char *pString, unsigned char *pHash) {
     // Copy next portion of string to message buffer
     char *msg_ptr = message;
     unsigned int length = 0;
-    while(length < (MESSAGE_BITS / 8)) {
+    while(length < MESSAGE_BYTES) {
       // Check for end of input
       if(*pString == '\0') {
 	done = true;
@@ -136,7 +148,7 @@ void hashString(const char *pString, unsigned char *pHash) {
     // Need to add padding if done
     int addedBytes = 0;
     if(done) {
-      addedBytes = addPadding(totalBytes * 8, message);
+      addedBytes = addPadding(totalBytes * BITS_PER_BYTE, message);
     }
         
     // Send the message
@@ -150,8 +162,8 @@ void hashString(const char *pString, unsigned char *pHash) {
       reportAppended();
       reportHash();
       updateHash(pHash);
-      addedBytes -= (MESSAGE_BITS / 8);
-      msg_ptr += (MESSAGE_BITS / 8);
+      addedBytes -= MESSAGE_BYTES;
+      msg_ptr += MESSAGE_BYTES;
     } while(addedBytes > 0);
   }
 }

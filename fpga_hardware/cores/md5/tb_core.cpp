@@ -18,14 +18,14 @@ void toggleClock() {
 void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
-    for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
+    for(int i = HASH_WORDS - 1; i >= 0; --i) {
         *hPtr++ = top->msg_output[i];
     }
 }
 
 void reportAppended() {
     cout << "Padded input:" << endl;
-    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
+    for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
         cout << "0x";
         printf("%08X", top->msg_padded[i]);
         cout << endl;
@@ -58,8 +58,8 @@ void strobeMsgValid() {
 }
 
 void loadPaddedMessage(const char* msg_ptr) {
-    for(int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
-        for(int j = 0; j < 4; ++j) {
+    for(int i = 0; i < MESSAGE_WORDS; ++i) {
+        for(int j = 0; j < BYTES_PER_WORD; ++j) {
             ((char *)(&top->msg_padded[i]))[j] = *msg_ptr++;
         }
     }
@@ -70,12 +70,12 @@ int main(int argc, char **argv, char **env) {
     
     top = new Vpancham;
     char message[MESSAGE_BITS * 2];
-    unsigned char hash[HASH_BITS / 8];
+    unsigned char hash[HASH_BYTES];
     
     // Test reset behavior
     top->clk = 0;
     top->rst = 1;
-    for(int i = 0; i < (MESSAGE_BITS / 32); ++i) {
+    for(int i = 0; i < MESSAGE_WORDS; ++i) {
         top->msg_padded[i] = 0;
     }
     top->msg_in_valid = 0;
@@ -88,8 +88,8 @@ int main(int argc, char **argv, char **env) {
     reportHash();
     
     // Save the hash value to check for stabilization
-    vluint32_t savedHash[4];
-    for(int i = 0; i < 4; ++i) {
+    vluint32_t savedHash[HASH_WORDS];
+    for(int i = 0; i < HASH_WORDS; ++i) {
         savedHash[i] = top->msg_output[i];
     }
     
@@ -102,7 +102,7 @@ int main(int argc, char **argv, char **env) {
     }
     
     // Check against saved hash
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         if(savedHash[i] != top->msg_output[i]) {
             cout << "FAILED: output not stabilized" << endl;
             break;
@@ -122,7 +122,7 @@ int main(int argc, char **argv, char **env) {
     }
     
     // Check against saved hash
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         if(savedHash[i] != top->msg_output[i]) {
             cout << "FAILED: output not stabilized" << endl;
             break;
@@ -139,7 +139,7 @@ int main(int argc, char **argv, char **env) {
     waitForValidOut();
     
     // Save the hash value to check for stabilization
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         savedHash[i] = top->msg_output[i];
     }
     
@@ -154,7 +154,7 @@ int main(int argc, char **argv, char **env) {
     waitForReady();
     
     // Check against saved hash
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         if(savedHash[i] != top->msg_output[i]) {
             cout << "FAILED: hash not maintained after ready" << endl;
             break;
@@ -169,7 +169,7 @@ int main(int argc, char **argv, char **env) {
     waitForValidOut();
     
     // Check against saved hash
-    for(int i = 0; i < 4; ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         if(savedHash[i] != top->msg_output[i]) {
             cout << "PASSED: hash not consistent across consecutive hashes" << endl;
             break;

@@ -2,7 +2,6 @@
 #include "Vmd5_top.h"
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include "MD5.h"
 #include "input.h"
 
@@ -61,18 +60,16 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 void updateHash(unsigned char *pHash) {
     uint32_t* hPtr = (uint32_t *)pHash;
     
-    for(int i = (HASH_BITS / 32) - 1; i >= 0; --i) {
-        *hPtr++ = readFromAddress(MD5_HASH_BASE + (i * 4));
+    for(int i = HASH_WORDS - 1; i >= 0; --i) {
+        *hPtr++ = readFromAddress(MD5_HASH_BASE + (i * BYTES_PER_WORD));
     }
 }
 
 void reportAppended() {
-    cout << "Padded input:" << endl;
-    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-        cout << "0x";
-	uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * 4));
-        printf("%08X", dataPart);
-        cout << endl;
+    printf("Padded input:\n");
+    for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
+	    uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * BYTES_PER_WORD));
+        printf("0x%08X\n", dataPart);
     }
 }
 
@@ -99,12 +96,12 @@ void strobeMsgValid() {
 }
 
 void loadPaddedMessage(const char* msg_ptr) {
-  for(int i = 0; i < ((MESSAGE_BITS / 8) / 4); ++i) {
+  for(int i = 0; i < MESSAGE_WORDS; ++i) {
     uint32_t temp = 0;
-    for(int j = 0; j < 4; ++j) {
+    for(int j = 0; j < BYTES_PER_WORD; ++j) {
       ((char *)(&temp))[j] = *msg_ptr++;
     }
-    writeToAddress(MD5_MSG_BASE + (i * 4), temp);
+    writeToAddress(MD5_MSG_BASE + (i * BYTES_PER_WORD), temp);
   }
 }
 
@@ -114,7 +111,7 @@ int main(int argc, char **argv, char **env) {
     Verilated::traceEverOn(true); //VCD file gen
 #endif
   top = new Vmd5_top;
-  unsigned char hash[HASH_BITS /8];
+  unsigned char hash[HASH_BYTES];
     
 #if VM_TRACE
   printf("Initializing traces and opening VCD file\n");

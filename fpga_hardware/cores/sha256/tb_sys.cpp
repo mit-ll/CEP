@@ -32,16 +32,16 @@ void waitForValidOutput(void) {
 
 void reportAppended(void) {
     printf("Padded input:\n");
-    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-        printf("0x%08X\n", readFromAddress(SHA256_MSG_BASE + (i * 4)));
+    for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
+        printf("0x%08X\n", readFromAddress(SHA256_MSG_BASE + (i * BYTES_PER_WORD)));
     }
 }
 
 void updateHash(char *pHash) {
     uint32_t * temp = (uint32_t *)pHash;
     
-    for(unsigned int i = 0; i < (HASH_BITS / 32); ++i) {
-        *temp++ = readFromAddress(SHA256_HASH_BASE + (i * 4));
+    for(unsigned int i = 0; i < HASH_WORDS; ++i) {
+        *temp++ = readFromAddress(SHA256_HASH_BASE + (i * BYTES_PER_WORD));
     }
 }
 
@@ -57,17 +57,17 @@ void strobeNext(void) {
 
 void loadPaddedMessage(const char* msg_ptr) {
     int temp = 0;
-    for(int i = ((MESSAGE_BITS / 8) - 1); i >= 0; --i) {
+    for(int i = (MESSAGE_BYTES - 1); i >= 0; --i) {
         temp = (temp << 8) | ((*msg_ptr++) & 0xFF);
         
-        if(i % 4 == 0) {
+        if(i % BYTES_PER_WORD == 0) {
             writeToAddress(SHA256_MSG_BASE + i, temp);
         }
     }
 }
 
 int main(int argc, char **argv, char **env) {
-    char hash[HASH_BITS / 8];
+    char hash[HASH_BYTES];
     
     printf("Waiting for ready signal...\n");
     

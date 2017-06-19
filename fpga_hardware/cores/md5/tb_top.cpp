@@ -155,11 +155,11 @@ int main(int argc, char **argv, char **env) {
 
     inFile.seekg(0, ios::beg);
 
-    int messageBits = (size - inFile.tellg()) * 8;
+    int messageBits = (size - inFile.tellg()) * BITS_PER_BYTE;
     printf("Message length: %d bits\n", messageBits);
       
-    char * block = new char[messageBits / 8];
-    memset(block, 0, messageBits/8);
+    char * block = new char[messageBits / BITS_PER_BYTE];
+    memset(block, 0, messageBits/BITS_PER_BYTE);
       
     inFile.read(block, size);
     inFile.close();

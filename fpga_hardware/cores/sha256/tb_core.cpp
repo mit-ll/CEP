@@ -2,7 +2,6 @@
 #include "Vsha256.h"
 #include <iostream>
 #include <fstream>
-#include <iomanip>
 #include "SHA256.h"
 
 Vsha256* top;
@@ -34,18 +33,16 @@ void waitForValidOutput(void) {
 }
 
 void reportAppended(void) {
-    cout << "Padded input:" << endl;
-    for(int i = (MESSAGE_BITS / 32) - 1; i >= 0; --i) {
-        cout << "0x";
-        printf("%08X", top->block[i]);
-        cout << endl;
+    printf("Padded input:\n");
+    for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
+        printf("0x%08X\n", top->block[i]);
     }
 }
 
 void updateHash(char *pHash) {
     uint32_t * temp = (uint32_t *)pHash;
     
-    for(int i = 0; i < (HASH_BITS / 32); ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         *temp++ = top->digest[i];
     }
 }
@@ -64,11 +61,11 @@ void strobeNext(void) {
 
 void loadPaddedMessage(const char* msg_ptr) {
     int temp = 0;
-    for(int i = ((MESSAGE_BITS / 8) - 1); i >= 0; --i) {
+    for(int i = (MESSAGE_BYTES - 1); i >= 0; --i) {
         temp = (temp << 8) | ((*msg_ptr++) & 0xFF);
         
-        if(i % 4 == 0) {
-            top->block[i / 4] = temp;
+        if(i % BYTES_PER_WORD == 0) {
+            top->block[i / BYTES_PER_WORD] = temp;
         }
     }
 }
@@ -77,29 +74,29 @@ int main(int argc, char **argv, char **env) {
     Verilated::commandArgs(argc, argv);
     
     top = new Vsha256;
-    char hash[HASH_BITS / 8];
+    char hash[HASH_BYTES];
     
-    cout << "Initializing interface and resetting core" << endl;
+    printf("Initializing interface and resetting core\n");
     
     // Initialize Inputs
     top->clk = 0;
     top->rst = 0;
     top->init = 0;
     top->next = 0;
-    for(int i = 0; i < (HASH_BITS / 32); ++i) {
+    for(int i = 0; i < HASH_WORDS; ++i) {
         top->block[i] = 0;
     }
     runForClockCycles(10);
     
     reset();
     
-    cout << "Reset complete" << endl;
+    printf("Reset complete\n");
     
-    cout << "Waiting for ready signal..." << endl;
+    printf("Waiting for ready signal...\n");
     
     waitForReady();
     
-    cout << "Starting..." << endl;
+    printf("Starting...\n");
     
     // Test common case 1
     hashString("", hash);
@@ -124,11 +121,11 @@ int main(int argc, char **argv, char **env) {
         
         inFile.seekg(0, ios::beg);
         
-        int messageBits = (size - inFile.tellg()) * 8;
+        int messageBits = (size - inFile.tellg()) * BITS_PER_BYTE;
         printf("Message length: %d bits\n", messageBits);
         
-        char * block = new char[messageBits / 8];
-        memset(block, 0, messageBits/8);
+        char * block = new char[messageBits / BITS_PER_BYTE];
+        memset(block, 0, messageBits/BITS_PER_BYTE);
         
         inFile.read(block, size);
         inFile.close();

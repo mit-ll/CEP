@@ -1,23 +1,33 @@
+#include <stdio.h>
+#include <string.h>
+
+const unsigned int BITS_PER_BYTE = 8;
+const unsigned int BYTES_PER_WORD = 4;
 const unsigned int HASH_BITS = 256;
 const unsigned int MESSAGE_BITS = 512;
 const unsigned int CLOCK_PERIOD = 10;
+const unsigned int SHA256_READY_BYTES = BYTES_PER_WORD;
+const unsigned int SHA256_HASH_DONE_BYTES = BYTES_PER_WORD;
 
-#ifndef vluint64_t
-  typedef unsigned long vluint64_t;
-#endif
+// Automatically generated constants
+const unsigned int MESSAGE_BYTES = MESSAGE_BITS / BITS_PER_BYTE;
+const unsigned int MESSAGE_WORDS = MESSAGE_BYTES / BYTES_PER_WORD;
+const unsigned int HASH_BYTES = HASH_BITS / BITS_PER_BYTE;
+const unsigned int HASH_WORDS = HASH_BYTES / BYTES_PER_WORD;
+
+typedef unsigned int uint32_t;
+typedef unsigned long long uint64_t;
+typedef unsigned long vluint64_t;
 
 // Base address of the core on the bus
 const uint32_t SHA256_BASE = 0x92000000;
 
 // Offset of SHA256 data and control registers in device memory map
-const uint32_t SHA256_READY = SHA256_BASE + 0;
-const uint32_t SHA256_READY_SIZE = 4;
-const uint32_t SHA256_MSG_BASE = SHA256_READY + SHA256_READY_SIZE;
-const uint32_t SHA256_MSG_SIZE = 16 * 4;
-const uint32_t SHA256_HASH_DONE = SHA256_MSG_BASE + SHA256_MSG_SIZE;
-const uint32_t SHA256_HASH_DONE_SIZE = 4;
-const uint32_t SHA256_HASH_BASE = SHA256_HASH_DONE + SHA256_HASH_DONE_SIZE;
-const uint32_t SHA256_NEXT_INIT = SHA256_BASE + 0;
+const uint32_t SHA256_READY = SHA256_BASE;
+const uint32_t SHA256_MSG_BASE = SHA256_READY + SHA256_READY_BYTES;
+const uint32_t SHA256_HASH_DONE = SHA256_MSG_BASE + MESSAGE_BYTES;
+const uint32_t SHA256_HASH_BASE = SHA256_HASH_DONE + SHA256_HASH_DONE_BYTES;
+const uint32_t SHA256_NEXT_INIT = SHA256_BASE;
 
 // Current simulation time
 vluint64_t main_time = 0;
@@ -57,21 +67,21 @@ void resetAndReady(void) {
 
 void reportHash() {
     printf("Hash: 0x");
-    char hash[HASH_BITS / 8];
+    char hash[HASH_BYTES];
     updateHash(hash);
-    for(int i = (HASH_BITS / 8) - 1; i >= 0; --i) {
+    for(int i = (HASH_BYTES) - 1; i >= 0; --i) {
         printf("%02X", (hash[i] & 0xFF));
     }
     printf("\n");
 }
 
 int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
-    int extraBits = pMessageBits64Bit % 512;
-    int paddingBits = extraBits > 448 ? 1024 - extraBits : 512 - extraBits;
+    int extraBits = pMessageBits64Bit % MESSAGE_BITS;
+    int paddingBits = extraBits > 448 ? (2 * MESSAGE_BITS) - extraBits : MESSAGE_BITS - extraBits;
     
     // Add size to end of string
-    const int startByte = extraBits / 8;
-    const int sizeStartByte =  startByte + ((paddingBits / 8) - 8);
+    const int startByte = extraBits / BITS_PER_BYTE;
+    const int sizeStartByte =  startByte + ((paddingBits / BITS_PER_BYTE) - 8);
     for(int i = startByte; i < (sizeStartByte + 8); ++i) {
         if(i == startByte) {
             buffer[i] = 0x80; // 1 followed by many 0's
@@ -84,14 +94,14 @@ int addPadding(uint64_t pMessageBits64Bit, char* buffer) {
         }
     }
     
-    return (paddingBits / 8);
+    return (paddingBits / BITS_PER_BYTE);
 }
 
 bool compareHash(const char * pProposedHash, const char* pExpectedHash, const char * pTestString) {
     char longTemp[(HASH_BITS / 4) + 1];
     
     char *temp = longTemp;
-    for(int i = ((HASH_BITS / 32) - 1); i >= 0; --i) {
+    for(int i = (HASH_WORDS - 1); i >= 0; --i) {
         sprintf(temp, "%8.8x", ((uint32_t *)pProposedHash)[i]);
         temp += 8;
     }
@@ -117,13 +127,13 @@ void hashString(const char *pString, char *pHash) {
     // Reset for each message
     resetAndReady();
     while(!done) {
-        char message[1024];
+        char message[2 * MESSAGE_BITS];
         memset(message, 0, sizeof(message));
         
         // Copy next portion of string to message buffer
         char *msg_ptr = message;
         int length = 0;
-        while(length < (MESSAGE_BITS / 8)) {
+        while(length < MESSAGE_BYTES) {
             // Check for end of input
             if(*pString == '\0') {
                 done = true;
@@ -137,7 +147,7 @@ void hashString(const char *pString, char *pHash) {
         // Need to add padding if done
         int addedBytes = 0;
         if(done) {
-            addedBytes = addPadding(totalBytes * 8, message);
+            addedBytes = addPadding(totalBytes * BITS_PER_BYTE, message);
         }
         
         // Send the message
@@ -156,8 +166,8 @@ void hashString(const char *pString, char *pHash) {
             //reportAppended();
             reportHash();
             updateHash(pHash);
-            addedBytes -= (MESSAGE_BITS / 8);
-            msg_ptr += (MESSAGE_BITS / 8);
+            addedBytes -= MESSAGE_BYTES;
+            msg_ptr += MESSAGE_BYTES;
         } while(addedBytes > 0);
     }
 }

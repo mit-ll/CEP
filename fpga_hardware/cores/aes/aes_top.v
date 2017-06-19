@@ -51,6 +51,8 @@ module aes_top(
        key[1] <= 0;
        key[2] <= 0;
        key[3] <= 0;
+       key[4] <= 0;
+       key[5] <= 0;
      end
      else if(wb_stb_i & wb_we_i)
        case(wb_adr_i[5:2])

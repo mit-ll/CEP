@@ -31,10 +31,10 @@ module aes_top(
    // Internal registers
    reg start;
    reg [31:0] pt [0:3];
-   reg [31:0] key [0:3];
+   reg [31:0] key [0:5];
 
   wire [127:0] pt_big = {pt[0], pt[1], pt[2], pt[3]};
-  wire [127:0] key_big = {key[0], key[1], key[2], key[3]};
+  wire [191:0] key_big = {key[0], key[1], key[2], key[3], key[4], key[5]};
   wire [127:0] ct;
   wire ct_valid;
 
@@ -59,10 +59,12 @@ module aes_top(
          2: pt[2] <= wb_dat_i;
          3: pt[1] <= wb_dat_i;
          4: pt[0] <= wb_dat_i;
-         5: key[3] <= wb_dat_i;
-         6: key[2] <= wb_dat_i;
-         7: key[1] <= wb_dat_i;
-         8: key[0] <= wb_dat_i;
+         5: key[5] <= wb_dat_i;
+         6: key[4] <= wb_dat_i;
+         7: key[3] <= wb_dat_i;
+         8: key[2] <= wb_dat_i;
+         9: key[1] <= wb_dat_i;
+         10: key[0] <= wb_dat_i;
          default: ;
        endcase
    end // always @ (posedge wb_clk_i)
@@ -76,20 +78,22 @@ module aes_top(
         2: wb_dat_o = pt[2];
         3: wb_dat_o = pt[1];
         4: wb_dat_o = pt[0];
-        5: wb_dat_o = key[3];
-        6: wb_dat_o = key[2];
-        7: wb_dat_o = key[1];
-        8: wb_dat_o = key[0];
-        9: wb_dat_o = {31'b0, ct_valid};
-        10: wb_dat_o = ct[127:96];
-        11: wb_dat_o = ct[95:64];
-        12: wb_dat_o = ct[63:32];
-        13: wb_dat_o = ct[31:0];
+        5: wb_dat_o = key[5];
+        6: wb_dat_o = key[4];
+        7: wb_dat_o = key[3];
+        8: wb_dat_o = key[2];
+        9: wb_dat_o = key[1];
+        10: wb_dat_o = key[0];
+        11: wb_dat_o = {31'b0, ct_valid};
+        12: wb_dat_o = ct[127:96];
+        13: wb_dat_o = ct[95:64];
+        14: wb_dat_o = ct[63:32];
+        15: wb_dat_o = ct[31:0];
         default: wb_dat_o = 32'b0;
       endcase
    end // always @ (*)
    
-  aes_128 aes(
+  aes_192 aes(
     .clk(wb_clk_i),
     .state(pt_big),
     .key(key_big),

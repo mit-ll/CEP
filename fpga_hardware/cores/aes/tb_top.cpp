@@ -75,7 +75,7 @@ void reportCiphertext(void) {
     
     saveCiphertext(ct);
     for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
-        printf("%08X", ct[i]);
+      printf("%08X", ct[(BLOCK_WORDS - 1) - i]);
     }
     printf("\n");
 }

@@ -10,6 +10,7 @@ entity FFT_WB is
 generic (WB_Width:integer:=32;--Filter width signals of in/out
 			Adress_wordwidth:integer:=32 ;
 			N:integer:=1024;--width word of coefs
+                        Log2N:integer:=10;
 			reg_control:integer:=0;
 			reg_data:integer:=4;
 			reg_status:integer:=8;
@@ -34,7 +35,8 @@ component fft_core_pipeline1 is
   generic (  
 	input_width : integer :=16; 
    twiddle_width : integer :=16; 
-   N : integer :=1024; 
+   N : integer :=1024;
+   Log2N : integer :=10;
    add_g : integer:=0;--1;  --Either 0 or 1 only. 
    mult_g : integer:=0--9  --Can be any number from 0 to twiddle_width+1 
    ); 
@@ -44,11 +46,11 @@ component fft_core_pipeline1 is
 	clear : in std_logic;
 	enable_out: out std_logic;
 	frame_ready: out std_logic;
-	index : out std_logic_vector(integer(ceil(log2(real((N)))))-1 downto 0);
+	index : out std_logic_vector(Log2N-1 downto 0);
       xin_r : in std_logic_vector(input_width-1 downto 0); 
       xin_i : in std_logic_vector(input_width-1 downto 0); 
-      Xout_r : out std_logic_vector (input_width+((integer(ceil(log2(real((N)))))-1)/2)*mult_g+integer(ceil(log2(real((N)))))*add_g-1 downto 0); 
-      Xout_i : out std_logic_vector (input_width+((integer(ceil(log2(real((N)))))-1)/2)*mult_g+integer(ceil(log2(real((N)))))*add_g-1 downto 0) 
+      Xout_r : out std_logic_vector (input_width+((Log2N - 1)/2)*mult_g+Log2N*add_g-1 downto 0); 
+      Xout_i : out std_logic_vector (input_width+((Log2N - 1)/2)*mult_g+Log2N*add_g-1 downto 0) 
    ); 
 end component;
 
@@ -69,7 +71,7 @@ port(
  
  ACK_O: out   std_logic;--to MASTER
  ADR_I: in    std_logic_vector( adress_wordwidth-1 downto 0 );
- ADR_FFT: in    std_logic_vector( integer(ceil(log2(real(N))))-1 downto 0 );
+ ADR_FFT: in    std_logic_vector(Log2N-1 downto 0 );
  DAT_I: in    std_logic_vector( data_wordwidth-1 downto 0 );--from MASTER
  sDAT_I: in    std_logic_vector( data_wordwidth-1 downto 0 );--from SLAVE
  DAT_O: out   std_logic_vector( data_wordwidth-1 downto 0 );--to MASTER
@@ -84,7 +86,7 @@ port(
  );
 end component;
 
-signal index_aux: std_logic_vector(integer(ceil(log2(real(N))))-1 downto 0);
+signal index_aux: std_logic_vector(Log2N-1 downto 0);
 signal frame_ready_aux,enable_out_aux,FFT_enable_aux,clear_aux:std_logic;
 signal Data1_aux,Data2_aux: std_logic_vector(WB_Width-1 downto 0);
 begin

@@ -48,7 +48,7 @@ void wait_ready(){
 /*Check if both inputs are equal*/
 bool assertEquals(uint32_t expected, uint32_t actual){
     if (expected == actual) return true;// success
-    else{                   printf("*** Expected: %08X, got %08X\r\n", expected, actual);
+    else{                   printf("*** Expected: %08X, got %08X\r\n", (unsigned int) expected, (unsigned int) actual);
                             return false;// failure
     }
 }
@@ -66,7 +66,6 @@ bool assertSuccess(bool success){
 void exp32bit_mod2048bit_test(){
     int i;
     bool success=true;
-    uint32_t read_data;
 
     printf("\r\n");
     printf("Test with e = 65537 and 2048 bit modulus -- Encrypting\r\n");
@@ -79,7 +78,7 @@ void exp32bit_mod2048bit_test(){
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MODULUS_DATA, MOD[i]);
-        if(DEBUG) printf("writing: %d -> %08X\r\n", i, MOD[i]);
+        if(DEBUG) printf("writing: %d -> %08X\r\n", i, (unsigned int) MOD[i]);
     }
 
     write_word(ADDR_MESSAGE_PTR_RST, 0x00000000);
@@ -87,7 +86,7 @@ void exp32bit_mod2048bit_test(){
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MESSAGE_DATA, MSG[i]);
-        if(DEBUG) printf("Writing: %d -> %08X\r\n", i, MSG[i]);
+        if(DEBUG) printf("Writing: %d -> %08X\r\n", i, (unsigned int) MSG[i]);
     }
 
     write_word(ADDR_EXPONENT_LENGTH, 0x00000001);
@@ -99,12 +98,12 @@ void exp32bit_mod2048bit_test(){
 
     write_word(ADDR_RESULT_PTR_RST, 0x00000000);
     RES[0]=read_word(ADDR_RESULT_DATA);
-    success=success&assertEquals(0x00000000, RES[0]);
+    success=success&assertEquals(0x00000000, (unsigned int) RES[0]);
 
     for(i=0; i<64; i=i+1) {
-        read_data=read_word(ADDR_RESULT_DATA);
+        RES[i]=read_word(ADDR_RESULT_DATA);
         success=success&assertEquals(RES[i], OUT[i]);
-        if(DEBUG) printf("Reading: %d -> %08X -> %08X\r\n", i, RES[i], OUT[i]);
+        if(DEBUG) printf("Reading: %d -> %08X -> %08X\r\n", i, (unsigned int) RES[i], (unsigned int) OUT[i]);
     }
 
     if (success) printf("*** ERROR: e65537_2048bit_modulus was NOT successful.\r\n");
@@ -119,7 +118,7 @@ void modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wres){
     printf("\r\n");
     printf("*** Running -> modexp_32bits()\r\n");
   
-    printf("*** Writing -> MES: %08X EXP: %08X MOD: %08X\r\n", Wmsg, Wexp, Wmod);
+    printf("*** Writing -> MES: %08X EXP: %08X MOD: %08X\r\n", (unsigned int) Wmsg, (unsigned int) Wexp, (unsigned int) Wmod);
 
 
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
@@ -150,7 +149,7 @@ void modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wres){
     write_word(ADDR_RESULT_PTR_RST  , 0x00000000);
     Rres=read_word(ADDR_RESULT_DATA);
      
-    printf("*** Reading -> MES: %08X EXP: %08X MOD: %08X RES: %08X\r\n", Rmsg, Rexp, Rmod, Rres);
+    printf("*** Reading -> MES: %08X EXP: %08X MOD: %08X RES: %08X\r\n", (unsigned int) Rmsg, (unsigned int) Rexp, (unsigned int) Rmod, (unsigned int) Rres);
     success=success&assertEquals(Wres, Rres);
 
 
@@ -167,14 +166,14 @@ void modexp_encrypt(){
 
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
     write_word(ADDR_EXPONENT_DATA   , pubEXP[0]);
-    if(DEBUG) printf("Writing EXP: %d %08X\r\n", pubEXP[0], pubEXP[0]);
+    if(DEBUG) printf("Writing EXP: %d %08X\r\n", (int) pubEXP[0], (unsigned int) pubEXP[0]);
 
     write_word(ADDR_MODULUS_PTR_RST, 0x00000000);
     write_word(ADDR_MODULUS_DATA   , 0x00000000);
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MODULUS_DATA, pubMOD[i]);
-        if(DEBUG) printf("Writing MOD: %d -> %08X\r\n", i, pubMOD[i]);
+        if(DEBUG) printf("Writing MOD: %d -> %08X\r\n", i, (unsigned int) pubMOD[i]);
     }
 
     write_word(ADDR_MESSAGE_PTR_RST, 0x00000000);
@@ -182,7 +181,7 @@ void modexp_encrypt(){
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MESSAGE_DATA, PMSG[i]);
-        if(DEBUG) printf("Writing MSG: %d -> %08X\r\n", i, PMSG[i]);
+        if(DEBUG) printf("Writing MSG: %d -> %08X\r\n", i, (unsigned int) PMSG[i]);
     }
 
     write_word(ADDR_EXPONENT_LENGTH, 0x00000001);
@@ -198,7 +197,7 @@ void modexp_encrypt(){
 
     for(i=0; i<64; i=i+1) {
         CMSG[i]=read_word(ADDR_RESULT_DATA);
-        if(DEBUG) printf("Reading: %d -> %08X \r\n", i, CMSG[i]);
+        if(DEBUG) printf("Reading: %d -> %08X \r\n", i, (unsigned int) CMSG[i]);
     }
 
     assertSuccess(success);
@@ -218,7 +217,7 @@ void modexp_decrypt(){
     write_word(ADDR_EXPONENT_DATA   , 0x00000000);
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_EXPONENT_DATA, priPRIEXP[i]);
-        if(DEBUG) printf("Writing EXP: %d -> %08X\r\n", i, priPRIEXP[i]);
+        if(DEBUG) printf("Writing EXP: %d -> %08X\r\n", i, (unsigned int) priPRIEXP[i]);
     }
 
     write_word(ADDR_MODULUS_PTR_RST, 0x00000000);
@@ -226,7 +225,7 @@ void modexp_decrypt(){
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MODULUS_DATA, priMOD[i]);
-        if(DEBUG) printf("Writing MOD: %d -> %08X\r\n", i, priMOD[i]);
+        if(DEBUG) printf("Writing MOD: %d -> %08X\r\n", i, (unsigned int) priMOD[i]);
     }
 
     write_word(ADDR_MESSAGE_PTR_RST, 0x00000000);
@@ -234,7 +233,7 @@ void modexp_decrypt(){
 
     for(i=0; i<64; i=i+1) {
         write_word(ADDR_MESSAGE_DATA, CMSG[i]);
-        if(DEBUG) printf("Writing MSG: %d -> %08X\r\n", i, CMSG[i]);
+        if(DEBUG) printf("Writing MSG: %d -> %08X\r\n", i, (unsigned int) CMSG[i]);
     }
 
     write_word(ADDR_EXPONENT_LENGTH, 0x00000041);
@@ -250,7 +249,7 @@ void modexp_decrypt(){
 
     for(i=0; i<64; i=i+1) {
         GMSG[i]=read_word(ADDR_RESULT_DATA);
-        if(DEBUG) printf("Reading: %d -> %08X \r\n", i, GMSG[i]);
+        if(DEBUG) printf("Reading: %d -> %08X \r\n", i, (unsigned int) GMSG[i]);
         success=success&assertEquals(PMSG[i], GMSG[i]);
     }
     assertSuccess(success);

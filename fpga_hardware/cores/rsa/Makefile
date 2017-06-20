@@ -129,4 +129,8 @@ clean:
 	rm -f ./a2h
 	rm -f ./h2a
 	rm -f ./file
+	rm -f tb_sys
+	rm -f tb_sys.S
+	rm -f tb_sys.bin
+	rm -f tb_sys.vmem
 

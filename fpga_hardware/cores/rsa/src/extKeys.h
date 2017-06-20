@@ -37,7 +37,7 @@ int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64
         if(c=='\n'){c=BASE64[*SCUR];*SCUR=*SCUR+1;}
         in[i] = c;
 
-        for(t=0;(t<sizeof(b64))&c!=b64[t];t++);
+        for(t=0;((t<sizeof(b64))&c)!=b64[t];t++);
 
         b64src[y++] = t;
         if(y == 4) {
@@ -53,9 +53,9 @@ int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64
 
 /*Write extracted values to memory and display*/
 int write(int *shift, int *length, unsigned char *in, unsigned char *out, const char* BASE64, int *SCUR, unsigned int SMAX, const char* name, unsigned int write, uint32_t (*OUTPUT)[64]){
-    unsigned int i=0, y=0, result=1;
+    int i=0, y=0, result=1;
     uint32_t BUF=0x00000000;
-    
+
     //Skip header byte if 00
     if(out[*shift]==0x00){
         *shift=*shift+1;
@@ -79,7 +79,7 @@ int write(int *shift, int *length, unsigned char *in, unsigned char *out, const 
                 y++;
             }
         }
-        
+
         //Update base64 and hex buffer
         *shift=*shift+1;
         if(*shift>5)
@@ -96,103 +96,137 @@ int write(int *shift, int *length, unsigned char *in, unsigned char *out, const 
 int priKey(const char *KPRI, int KSIZE){
     int i=0, y=0, shift=6, length=0, result=0, loc=0;
     unsigned char out[6], in[8];
+
     char *header=(char*)malloc(35);
 
     //Extract starting header line
     for(loc=0; KPRI[loc]!='\n'; loc++)
         header[loc]=KPRI[loc];
     header[loc]=KPRI[loc];loc++;
-    
+
     //Verify header line is for private key
     if(strcmp(header, "-----BEGIN RSA PRIVATE KEY-----\n")){
-        #if DISPLAY      
+#if DISPLAY      
         printf("Invalid PRIVATE RSA key file\r\n");
-        #endif
+#endif
         return 0;
     } else{
-        #if DISPLAY      
+#if DISPLAY      
         printf("%s", header);
-        #endif
+#endif
     }
 
-    //Extract RSA private key information
-    for(i=0; (result=read(&shift, in, out, KPRI, &loc, KSIZE)) !=0; i++){
-        switch(i){
-            case 0: //header
-                if(out[0]==0x30 && out[1]==0x82){
-                    #if DISPLAY
-                    printf("Header: ASN.1 Sequence\r\n");
-                    #endif
-                    shift=4;
-                    break;
-                }
-                else{
-                    #if DISPLAY
-                    printf("Header: Invalid\r\n");
-                    #endif
-                    return 0;
-                }
-            case 2: //algorithm version
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "version", PRI_ALGORITHM_VERSION, &priALG)) break;
-                else return 0;
+
+    /*
+       char *header="-----BEGIN RSA PRIVATE KEY-----\n";
+
+    //Extract starting header line
+    for(loc=0; KPRI[loc]!='\n'; loc++){
+    if(KPRI[loc]!=header[loc]){
+#if DISPLAY      
+printf("Invalid PRIVATE RSA key file\r\n");
+#endif
+return 0;
+}
+}
+loc++;
+*/  
+//Verify header line is for private key
+/*
+   if(strcmp(header, "-----BEGIN RSA PRIVATE KEY-----\n")){
+#if DISPLAY      
+printf("Invalid PRIVATE RSA key file\r\n");
+#endif
+return 0;
+} else{
+#if DISPLAY      
+printf("%s", header);
+#endif
+}
+*/
+#if DISPLAY      
+printf("%s", header);
+#endif
+printf("%c, %c", KPRI[loc], KPRI[loc+1]);
+
+//Extract RSA private key information
+for(i=0; (result=read(&shift, in, out, KPRI, &loc, KSIZE)) !=0; i++){
+    switch(i){
+        case 0: //header
+            if(out[0]==0x30 && out[1]==0x82){
+#if DISPLAY
+                printf("Header: ASN.1 Sequence\r\n");
+#endif
+                shift=4;
                 break;
-            case 4: //modulus
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priModulus", PRI_MODULUS, &priMOD)) break;
-                else return 0;
-                break;
-            case 6: //public exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "pubExponent", PRI_PUBLIC_EXPONENT, &priPUBEXP)) break;
-                else return 0;
-                break;
-            case 8: //private exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priExponent", PRI_PRIVATE_EXPONENT, &priPRIEXP)) break;
-                else return 0;
-                break;
-            case 10: //prime1
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime1", PRI_PRIME_1, &priPRI1)) break;
-                else return 0;
-                break;
-            case 12: //prime2
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime2", PRI_PRIME_2, &priPRI2)) break;
-                else return 0;
-                break;
-            case 14: //exponent1
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent1", PRI_EXPONENT_1, &priEXP1)) break;
-                else return 0;
-                break;
-            case 16: //exponent2
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent2", PRI_EXPONENT_2, &priEXP2)) break;
-                else return 0;
-                break;
-            case 18://coefficient
-                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "coefficient", PRI_COEFFICIENT, &priCOE))) return 1;//LAST INPUT
-                else return 0;
-                break;
-            default://Seperator
-                if(out[shift]==0x02){
-                    shift++;
-                    if(out[shift]>>7){
-                        length=(out[shift+1]&0x7F)<<8|(out[shift+2]&0x7F);
-                        length=0;
-                        for(y=0; y<(out[shift]&0x7F); y++)
-                            length=length<<8|out[shift+y+1];
-                        shift=shift+y+1;
-                    }else{
-                        length = out[shift];
-                        shift++;
-                    }
-                    #if DISPLAY
-                    printf("Seperator: Integer -> %d bytes long\r\n", length);
-                    #endif
+            }
+            else{
+#if DISPLAY
+                printf("Header: Invalid\r\n");
+#endif
+                return 0;
+            }
+        case 2: //algorithm version
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "version", PRI_ALGORITHM_VERSION, &priALG))) break;
+            else return 0;
+            break;
+        case 4: //modulus
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priModulus", PRI_MODULUS, &priMOD))) break;
+            else return 0;
+            break;
+        case 6: //public exponent
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "pubExponent", PRI_PUBLIC_EXPONENT, &priPUBEXP))) break;
+            else return 0;
+            break;
+        case 8: //private exponent
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priExponent", PRI_PRIVATE_EXPONENT, &priPRIEXP))) break;
+            else return 0;
+            break;
+        case 10: //prime1
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime1", PRI_PRIME_1, &priPRI1))) break;
+            else return 0;
+            break;
+        case 12: //prime2
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime2", PRI_PRIME_2, &priPRI2))) break;
+            else return 0;
+            break;
+        case 14: //exponent1
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent1", PRI_EXPONENT_1, &priEXP1))) break;
+            else return 0;
+            break;
+        case 16: //exponent2
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent2", PRI_EXPONENT_2, &priEXP2))) break;
+            else return 0;
+            break;
+        case 18://coefficient
+            if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "coefficient", PRI_COEFFICIENT, &priCOE))) return 1;//LAST INPUT
+            else return 0;
+            break;
+        default://Seperator
+            if(out[shift]==0x02){
+                shift++;
+                if(out[shift]>>7){
+                    length=(out[shift+1]&0x7F)<<8|(out[shift+2]&0x7F);
+                    length=0;
+                    for(y=0; y<(out[shift]&0x7F); y++)
+                        length=length<<8|out[shift+y+1];
+                    shift=shift+y+1;
                 }else{
-                    #if DISPLAY
-                    printf("Seperator: Invalid\r\n");
-                    #endif
-                    return 0;
+                    length = out[shift];
+                    shift++;
                 }
-        }
+#if DISPLAY
+                printf("Seperator: Integer -> %d bytes long\r\n", length);
+#endif
+            }else{
+#if DISPLAY
+                printf("Seperator: Invalid\r\n");
+#endif
+                return 0;
+            }
     }
-    return 0;
+}
+return 0;
 }
 
 /*Extract Public Key*/
@@ -200,7 +234,7 @@ int pubKey(const char *KPRI, int KSIZE){
     int i=0, y=0, shift=6, length=0, result=0, loc=0;
     unsigned char out[6], in[8];
     char *header=(char*)malloc(35);
-    
+
     //Extract starting header line
     for(loc=0; KPRI[loc]!='\n'; loc++)
         header[loc]=KPRI[loc];
@@ -208,14 +242,14 @@ int pubKey(const char *KPRI, int KSIZE){
 
     //Verify header line is for private key
     if(strcmp(header, "-----BEGIN PUBLIC KEY-----\n")){
-        #if DISPLAY      
+#if DISPLAY      
         printf("Invalid PUBLIC RSA key file\r\n");
-        #endif
+#endif
         return 0;
     } else{
-        #if DISPLAY
+#if DISPLAY
         printf("%s", header);
-        #endif
+#endif
     }
 
     //Extract RSA public key information
@@ -223,13 +257,13 @@ int pubKey(const char *KPRI, int KSIZE){
         switch(i){
             case 0: //header
                 length=28;
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "Header", PUB_MODULUS, &pubMOD)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "Header", PUB_MODULUS, &pubMOD))) break;
                 else return 0;
             case 2: //modulus
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "modulus", PUB_MODULUS, &pubMOD)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "modulus", PUB_MODULUS, &pubMOD))) break;
                 else return 0;
             case 4: //public exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent", PUB_EXPONENT, &pubEXP)) return 1;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent", PUB_EXPONENT, &pubEXP))) return 1;
                 else return 0;
             default://Seperator
                 if(out[shift]==0x02){
@@ -244,13 +278,13 @@ int pubKey(const char *KPRI, int KSIZE){
                         length = out[shift];
                         shift++;
                     }
-                    #if DISPLAY
+#if DISPLAY
                     printf("Seperator: Integer -> %d bytes long\r\n", length);
-                    #endif
+#endif
                 }else{
-                    #if DISPLAY
+#if DISPLAY
                     printf("Seperator: Invalid \r\n");
-                    #endif
+#endif
                     return 0;
                 }
         }

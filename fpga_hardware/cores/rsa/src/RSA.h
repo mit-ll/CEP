@@ -120,32 +120,40 @@ void modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wres){
   
     printf("*** Writing -> MES: %08X EXP: %08X MOD: %08X\r\n", (unsigned int) Wmsg, (unsigned int) Wexp, (unsigned int) Wmod);
 
-
+printf("*** Writing -> EXP\r\n");
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
     write_word(ADDR_EXPONENT_DATA   , Wexp);
 
+printf("*** Writing -> MOD\r\n");
     write_word(ADDR_MODULUS_PTR_RST , 0x00000000);
     write_word(ADDR_MODULUS_DATA    , Wmod);
 
+printf("*** Writing -> MES\r\n");
     write_word(ADDR_MESSAGE_PTR_RST , 0x00000000);
     write_word(ADDR_MESSAGE_DATA    , Wmsg);
 
+printf("*** Writing -> LENGTH\r\n");
     write_word(ADDR_EXPONENT_LENGTH , 0x00000001);
     write_word(ADDR_MODULUS_LENGTH  , 0x00000001);
 
+printf("*** Writing -> START\r\n");
     // Start processing and wait for ready.
     write_word(ADDR_CTRL            , 0x00000001);
     wait_ready();
 
+printf("*** Reading -> MSG\r\n");
     write_word(ADDR_MESSAGE_PTR_RST , 0x00000000);
     Rmsg=read_word(ADDR_MESSAGE_DATA);
     
+printf("*** Reading -> EXP\r\n");
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
     Rexp=read_word(ADDR_EXPONENT_DATA);
     
+printf("*** Reading -> MOD\r\n");
     write_word(ADDR_MODULUS_PTR_RST , 0x00000000);
     Rmod=read_word(ADDR_MODULUS_DATA);
     
+printf("*** Reading -> RESULT\r\n");
     write_word(ADDR_RESULT_PTR_RST  , 0x00000000);
     Rres=read_word(ADDR_RESULT_DATA);
      

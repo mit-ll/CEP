@@ -103,7 +103,7 @@ begin
      port map (s=>s, in0=>prvs_ext_i, in1=>swapsub, data=>toreg_i); 
 process(prvs_r,prvs_i,s,t) 
 begin 
-     if add_g=1 then 
+     if(add_g='1') then 
     if            (t='0' and s='1') then 
       prvs_ext_r <= prvs_i(data_width-2) & prvs_i; 
       prvs_ext_i <= prvs_r(data_width-2) & prvs_r; 
@@ -112,13 +112,13 @@ begin
                      prvs_ext_i <= prvs_i(data_width-2) & prvs_i; 
    end if;   
  else 
-    if (t='0' and s='1') then 
+    --if(t='0' and s='1') then 
     prvs_ext_r <= prvs_i; 
      prvs_ext_i <= prvs_r; 
-  else 
+  --else 
    prvs_ext_r <= prvs_r; 
    prvs_ext_i <= prvs_i; 
-  end if;  
+  --end if;  
  end if;   
 end process; 
  

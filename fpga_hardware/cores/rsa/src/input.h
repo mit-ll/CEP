@@ -1,5 +1,15 @@
-typedef long unsigned int uint32_t;
+//typedef long unsigned int uint32_t;
 //typedef uint64_t vluint64_t;
+
+#ifndef uint32_t
+typedef unsigned int uint32_t;
+#endif
+#ifndef uint64_t
+typedef unsigned long long uint64_t;
+#endif
+#ifndef vluint64_t
+typedef unsigned long vluint64_t;
+#endif
 
 //Data for 32-bit modexp tests
 uint32_t pubMOD[64],pubEXP[64],priALG[64],priMOD[64],priPUBEXP[64],priPRIEXP[64],priPRI1[64],priPRI2[64],priEXP1[64],priEXP2[64],priCOE[64];

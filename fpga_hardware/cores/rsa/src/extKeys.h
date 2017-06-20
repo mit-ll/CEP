@@ -32,12 +32,12 @@ int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64
         return 1;
 
     //Load new data into base64 buffer and update hex buffer
-    for(i; i<8 && i<SMAX; i++){
+    for(; i<8 && i<SMAX; i++){
         c=BASE64[*SCUR];*SCUR=*SCUR+1;
         if(c=='\n'){c=BASE64[*SCUR];*SCUR=*SCUR+1;}
         in[i] = c;
 
-        for(t=0;t<sizeof(b64)&c!=b64[t];t++);
+        for(t=0;((unsigned) t<sizeof(b64))&(c!=b64[t]);t++);
 
         b64src[y++] = t;
         if(y == 4) {
@@ -96,7 +96,7 @@ int write(int *shift, int *length, unsigned char *in, unsigned char *out, const 
 int priKey(const char *KPRI, int KSIZE){
     int i=0, y=0, shift=6, length=0, result=0, loc=0;
     unsigned char out[6], in[8];
-    char *header="-----BEGIN RSA PRIVATE KEY-----\n";
+    const char *header="-----BEGIN RSA PRIVATE KEY-----\n";
 
     //Extract starting header line
     for(loc=0; KPRI[loc]!='\n'; loc++){
@@ -132,35 +132,35 @@ int priKey(const char *KPRI, int KSIZE){
                     return 0;
                 }
             case 2: //algorithm version
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "version", PRI_ALGORITHM_VERSION, &priALG)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "version", PRI_ALGORITHM_VERSION, &priALG))) break;
                 else return 0;
                 break;
             case 4: //modulus
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priModulus", PRI_MODULUS, &priMOD)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priModulus", PRI_MODULUS, &priMOD))) break;
                 else return 0;
                 break;
             case 6: //public exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "pubExponent", PRI_PUBLIC_EXPONENT, &priPUBEXP)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "pubExponent", PRI_PUBLIC_EXPONENT, &priPUBEXP))) break;
                 else return 0;
                 break;
             case 8: //private exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priExponent", PRI_PRIVATE_EXPONENT, &priPRIEXP)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "priExponent", PRI_PRIVATE_EXPONENT, &priPRIEXP))) break;
                 else return 0;
                 break;
             case 10: //prime1
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime1", PRI_PRIME_1, &priPRI1)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime1", PRI_PRIME_1, &priPRI1))) break;
                 else return 0;
                 break;
             case 12: //prime2
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime2", PRI_PRIME_2, &priPRI2)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "prime2", PRI_PRIME_2, &priPRI2))) break;
                 else return 0;
                 break;
             case 14: //exponent1
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent1", PRI_EXPONENT_1, &priEXP1)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent1", PRI_EXPONENT_1, &priEXP1))) break;
                 else return 0;
                 break;
             case 16: //exponent2
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent2", PRI_EXPONENT_2, &priEXP2)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent2", PRI_EXPONENT_2, &priEXP2))) break;
                 else return 0;
                 break;
             case 18://coefficient
@@ -198,7 +198,7 @@ int priKey(const char *KPRI, int KSIZE){
 int pubKey(const char *KPRI, int KSIZE){
     int i=0, y=0, shift=6, length=0, result=0, loc=0;
     unsigned char out[6], in[8];
-    char *header="-----BEGIN PUBLIC KEY-----\n";
+    const char *header="-----BEGIN PUBLIC KEY-----\n";
 
     //Extract starting header line
     for(loc=0; KPRI[loc]!='\n'; loc++){
@@ -221,13 +221,13 @@ int pubKey(const char *KPRI, int KSIZE){
         switch(i){
             case 0: //header
                 length=28;
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "Header", PUB_MODULUS, &pubMOD)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "Header", PUB_MODULUS, &pubMOD))) break;
                 else return 0;
             case 2: //modulus
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "modulus", PUB_MODULUS, &pubMOD)) break;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "modulus", PUB_MODULUS, &pubMOD))) break;
                 else return 0;
             case 4: //public exponent
-                if(result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent", PUB_EXPONENT, &pubEXP)) return 1;
+                if((result=write(&shift, &length, in, out, KPRI, &loc, KSIZE, "exponent", PUB_EXPONENT, &pubEXP))) return 1;
                 else return 0;
             default://Seperator
                 if(out[shift]==0x02){

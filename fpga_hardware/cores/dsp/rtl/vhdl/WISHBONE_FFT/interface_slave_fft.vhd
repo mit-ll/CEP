@@ -7,6 +7,8 @@ use ieee.math_real.all;
 entity interface_slave_fft is 
 generic(
 N: integer:=1024;
+Log2N: integer:=10;
+Log2N3: integer:=13;
 data_wordwidth: integer:=32;
 adress_wordwidth: integer:=32;
 reg_control:integer:=0;
@@ -21,7 +23,7 @@ port(
  
  ACK_O: out   std_logic;--to MASTER
  ADR_I: in    std_logic_vector( adress_wordwidth-1 downto 0 );
- ADR_FFT: in    std_logic_vector( integer(ceil(log2(real(N))))-1 downto 0 );
+ ADR_FFT: in    std_logic_vector( Log2N-1 downto 0 );
  DAT_I: in    std_logic_vector( data_wordwidth-1 downto 0 );--from MASTER
  sDAT_I: in    std_logic_vector( data_wordwidth-1 downto 0 );--from SLAVE
  DAT_O: out   std_logic_vector( data_wordwidth-1 downto 0 );--to MASTER
@@ -42,7 +44,7 @@ component ramsita IS
 	PORT
 	(
 		address		: IN STD_LOGIC_VECTOR (9 DOWNTO 0);
-		clock		: IN STD_LOGIC  := '1';
+		clock		: IN STD_LOGIC;
 		data		: IN STD_LOGIC_VECTOR (31 DOWNTO 0);
 		wren		: IN STD_LOGIC ;
 		q		: OUT STD_LOGIC_VECTOR (31 DOWNTO 0)
@@ -69,7 +71,7 @@ port(
 end component;
 
 signal OUT_AUX,OUT_AUX1, ZERO:  std_logic_vector( Data_wordwidth-1 downto 0 );
-signal ADD_aux:std_logic_vector( integer(ceil(log2(real((N+3)*4))))-1 downto 0 );
+signal ADD_aux:std_logic_vector( Log2N3-1 downto 0 );
 
 signal ack_r, ack_w: std_logic;
 
@@ -105,12 +107,12 @@ begin
 	
 	
    --Se elimina offset para direcciones de lectura de memoria RAM 
-	ADD_aux<=std_logic_vector(unsigned(ADR_I(integer(ceil(log2(real((N+3)*4))))-1 downto 0))-(reg_memory));
+	ADD_aux<=std_logic_vector(unsigned(ADR_I(Log2N3-1 downto 0))-(reg_memory));
 	
 	RAM: RAM_Memory  
 generic map(
 
-Add_WordWidth=>integer(ceil(log2(real(N)))),
+Add_WordWidth=>Log2N,
 Data_WordWidth=>Data_WordWidth
 )
 port map(
@@ -119,45 +121,36 @@ port map(
  DATi=>sDAT_I,
  DATo=>OUT_AUX1,
  --Divide entre cuatro, direcciones alineadas cada 4 bytes
- ADR_WB=>ADD_aux(integer(ceil(log2(real((N)))))+1 downto 2),
- ADR_FFT=>ADR_FFT(integer(ceil(log2(real(N))))-1 downto 0),
+ ADR_WB=>ADD_aux(Log2N+1 downto 2),
+ ADR_FFT=>ADR_FFT(Log2N-1 downto 0),
  W_R=>enable_in,
  clk=>clk 
  );
 
 
    --Decodificador de escritura
-	process(ADR_I,STB_I,WE_I,ZERO,OUT_AUX,OUT_AUX1,FFT_finish_in)
-	begin
-		
-	
-			 if (WE_I='1' and STB_I='1') then--ESCRIBIR EN FFT
-					case ADR_I(integer(ceil(log2(real((N+3)*4))))-1 downto 0) is 
-								
-						when std_logic_vector(to_unsigned(Reg_control,integer(ceil(log2(real((N+3)*4)))))) => 	
-																												clear_out<='1';
-																												FFT_enable<='1';																													
-																												sDAT_O<=ZERO;						
-						when std_logic_vector(to_unsigned(Reg_data,integer(ceil(log2(real((N+3)*4))))))=>   
-																											  sDAT_O<=OUT_AUX;
-																											 FFT_enable<='1';																										 
-																											 clear_out<='0';
-																							 	
-						when OTHERS => sDAT_O<=ZERO;											
-											clear_out<='0';
-											FFT_enable<='0';	
-					   end case;
-			 		
-			 else 
-						sDAT_O<=ZERO;						
-						clear_out<='0';
-						FFT_enable<='0';
-			 end if;
-			 
-		
+  process(ADR_I,STB_I,WE_I,ZERO,OUT_AUX,OUT_AUX1,FFT_finish_in)
+  begin
+    if (WE_I='1' and STB_I='1') then --ESCRIBIR EN FFT
+      case ADR_I(Log2N3-1 downto 0) is 
+--        when std_logic_vector(to_unsigned(Reg_control,Log2N3)) =>
+--          clear_out<='1';
+--          FFT_enable<='1';												       --          sDAT_O<=ZERO;						
+--        when std_logic_vector(to_unsigned(Reg_data,Log2N3))=>
+--          sDAT_O<=OUT_AUX;
+--          FFT_enable<='1';
+--          clear_out<='0';
+        when OTHERS => sDAT_O<=ZERO;											
+          clear_out<='0';
+          FFT_enable<='0';	
+      end case;  
+    else
+      sDAT_O<=ZERO;						
+      clear_out<='0';
+      FFT_enable<='0';
+    end if;
+  end process;
 
-	end process;
-	
 	--Decodificador de lectura
 	process(ADR_I,STB_I,WE_I,ZERO,OUT_AUX,OUT_AUX1,FFT_finish_in)
 	begin
@@ -168,7 +161,7 @@ port map(
 			 
 
 			 
-					if ADR_I(integer(ceil(log2(real((N+3)*4))))-1 downto 0) = std_logic_vector(to_unsigned(Reg_status,integer(ceil(log2(real((N+3)*4)))))) then			
+					if ADR_I(Log2N3-1 downto 0) = std_logic_vector(to_unsigned(Reg_status,Log2N3)) then			
 				
 																								DAT_O(0)<=FFT_finish_in;
 																								DAT_O(Data_wordwidth-1 downto 1)<=ZERO(Data_wordwidth-1 downto 1);														

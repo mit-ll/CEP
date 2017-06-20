@@ -86,7 +86,8 @@ module modexp_top(
    assign wb_ack_o = 1'b1;
    assign wb_err_o = 1'b0;
    assign int_o = 1'b0;
-
+   wire reset_n=!wb_rst_i;
+   
   //----------------------------------------------------------------
   // Internal constant and parameter definitions.
   //----------------------------------------------------------------
@@ -187,7 +188,7 @@ module modexp_top(
   modexp_core #(.OPW(OPERAND_WIDTH), .ADW(ADDRESS_WIDTH))
   core_inst(
             .clk(wb_clk_i),
-            .reset_n(wb_rst_i),
+            .reset_n(reset_n),
 
             .start(start_reg),
             .ready(ready),
@@ -227,9 +228,9 @@ module modexp_top(
   // All registers are positive edge triggered with asynchronous
   // active low reset. All registers have write enable.
   //----------------------------------------------------------------
-  always @ (posedge wb_clk_i or negedge wb_rst_i)
+  always @ (posedge wb_clk_i or negedge reset_n)
     begin
-      if (!wb_rst_i)
+      if (!reset_n)
         begin
           start_reg           <= 1'b0;
           exponent_length_reg <= DEFAULT_EXPLENGTH;

@@ -8,7 +8,7 @@ uint32_t pubMOD[64],pubEXP[64],priALG[64],priMOD[64],priPUBEXP[64],priPRIEXP[64]
 uint32_t PUBEXP, PMSG[64], GMSG[64], CMSG[64], PUBMOD[64], PRIEXP[64], PRIMOD[64];
 char*       DMSG;
 const char* IMSG = "Hello World!!";
-const int   SMSG=13+1;
+const unsigned int SMSG=13+1;
 
 //Data for Preset Example
 const uint32_t EXP =  0x000000FF;

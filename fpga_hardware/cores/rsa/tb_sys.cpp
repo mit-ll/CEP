@@ -44,7 +44,7 @@ int main(int argc, char **argv, char **env) {
     //modexp_32bits(0x30000000, 0xC0000000, 0x00A00001, 0x0000CC3F); //msg^exp > mod ->
     
     //For Testing -> Generated Text equal to Plain Text
-    for(i=0; i<64*4; i++) GMSG[i]=PMSG[i];
+    for(i=0; i<64; i++) GMSG[i]=PMSG[i];
 
     //Convert input from ASCII to HEX
     h2a(PMSG, SMSG, &DMSG);

@@ -9,10 +9,10 @@ void decodeblock(unsigned char in[], unsigned char *out, int i) {
 }
 
 /*Update base64 buffer and convert to Hex buffer */
-int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64, int *SCUR, int SMAX){
+int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64, int *SCUR, unsigned int SMAX){
     unsigned char b64src[3];
     unsigned char c;
-    int i=0, y=0, t=0;
+    unsigned int i=0, y=0, t=0;
 
     //Update Buffer Pointers
     if(*shift > 5){
@@ -32,12 +32,12 @@ int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64
         return 1;
 
     //Load new data into base64 buffer and update hex buffer
-    for(i; i<8 && i<SMAX; i++){
+    for(; i<8 && i<SMAX; i++){
         c=BASE64[*SCUR];*SCUR=*SCUR+1;
         if(c=='\n'){c=BASE64[*SCUR];*SCUR=*SCUR+1;}
         in[i] = c;
 
-        for(t=0;t<sizeof(b64)&c!=b64[t];t++);
+        for(t=0;(t<sizeof(b64))&c!=b64[t];t++);
 
         b64src[y++] = t;
         if(y == 4) {
@@ -52,8 +52,8 @@ int read(int *shift,  unsigned char *in,  unsigned char *out, const char* BASE64
 }
 
 /*Write extracted values to memory and display*/
-int write(int *shift, int *length, unsigned char *in, unsigned char *out, const char* BASE64, int *SCUR, int SMAX, const char* name, int write, uint32_t (*OUTPUT)[64]){
-    int i=0, y=0, result=1;
+int write(int *shift, int *length, unsigned char *in, unsigned char *out, const char* BASE64, int *SCUR, unsigned int SMAX, const char* name, unsigned int write, uint32_t (*OUTPUT)[64]){
+    unsigned int i=0, y=0, result=1;
     uint32_t BUF=0x00000000;
     
     //Skip header byte if 00

@@ -1,5 +1,4 @@
 #include <stdio.h>
-//#include <string.h>
 #include <stdlib.h>
 
 #include "input.h"
@@ -120,42 +119,50 @@ void modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wres){
   
     printf("*** Writing -> MES: %08X EXP: %08X MOD: %08X\r\n", (unsigned int) Wmsg, (unsigned int) Wexp, (unsigned int) Wmod);
 
-printf("*** Writing -> EXP\r\n");
+printf("*** Writing -> EXP -> %08x -> %08x\r\n", ADDR_EXPONENT_PTR_RST, 0x00000000);
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
+printf("*** Writing -> EXP -> %08x -> %08x\r\n", ADDR_EXPONENT_DATA, Wexp);
     write_word(ADDR_EXPONENT_DATA   , Wexp);
 
-printf("*** Writing -> MOD\r\n");
+printf("*** Writing -> MOD -> %08x -> %08x\r\n", ADDR_MODULUS_PTR_RST, 0x00000000);
     write_word(ADDR_MODULUS_PTR_RST , 0x00000000);
+printf("*** Writing -> EXP -> %08x -> %08x\r\n", ADDR_MODULUS_DATA, Wmod);
     write_word(ADDR_MODULUS_DATA    , Wmod);
 
-printf("*** Writing -> MES\r\n");
+printf("*** Writing -> MES -> %08x -> %08x\r\n", ADDR_MESSAGE_PTR_RST, 0x00000000);
     write_word(ADDR_MESSAGE_PTR_RST , 0x00000000);
+printf("*** Writing -> EXP -> %08x -> %08x\r\n", ADDR_MESSAGE_DATA, Wmsg);
     write_word(ADDR_MESSAGE_DATA    , Wmsg);
 
-printf("*** Writing -> LENGTH\r\n");
+printf("*** Writing -> LEN -> %08x -> %08x\r\n", ADDR_EXPONENT_LENGTH, 0x00000001);
     write_word(ADDR_EXPONENT_LENGTH , 0x00000001);
+printf("*** Writing -> EXP -> %08x -> %08x\r\n", ADDR_MODULUS_LENGTH, 0x00000001);
     write_word(ADDR_MODULUS_LENGTH  , 0x00000001);
 
-printf("*** Writing -> START\r\n");
     // Start processing and wait for ready.
+printf("*** Writing -> START -> %08x -> %08x\r\n", ADDR_CTRL, 0x00000001);
     write_word(ADDR_CTRL            , 0x00000001);
     wait_ready();
 
-printf("*** Reading -> MSG\r\n");
+printf("*** Reading -> MSG -> %08x -> %08x\r\n", ADDR_MESSAGE_PTR_RST, 0x00000000);
     write_word(ADDR_MESSAGE_PTR_RST , 0x00000000);
     Rmsg=read_word(ADDR_MESSAGE_DATA);
+printf("*** Reading -> MSG -> %08x -> %08x\r\n", ADDR_MESSAGE_DATA, Rmsg);
     
-printf("*** Reading -> EXP\r\n");
+printf("*** Reading -> EXP -> %08x -> %08x\r\n", ADDR_EXPONENT_PTR_RST, 0x00000000);
     write_word(ADDR_EXPONENT_PTR_RST, 0x00000000);
     Rexp=read_word(ADDR_EXPONENT_DATA);
+printf("*** Reading -> EXP -> %08x -> %08x\r\n", ADDR_EXPONENT_DATA, Rexp);
     
-printf("*** Reading -> MOD\r\n");
+printf("*** Reading -> MOD -> %08x -> %08x\r\n", ADDR_MODULUS_PTR_RST, 0x00000000);
     write_word(ADDR_MODULUS_PTR_RST , 0x00000000);
     Rmod=read_word(ADDR_MODULUS_DATA);
+printf("*** Reading -> MOD -> %08x -> %08x\r\n", ADDR_MODULUS_DATA, Rmod);
     
-printf("*** Reading -> RESULT\r\n");
+printf("*** Reading -> RES -> %08x -> %08x\r\n", ADDR_EXPONENT_PTR_RST, 0x00000000);
     write_word(ADDR_RESULT_PTR_RST  , 0x00000000);
     Rres=read_word(ADDR_RESULT_DATA);
+printf("*** Reading -> RES -> %08x -> %08x\r\n", ADDR_EXPONENT_DATA, Rres);
      
     printf("*** Reading -> MES: %08X EXP: %08X MOD: %08X RES: %08X\r\n", (unsigned int) Rmsg, (unsigned int) Rexp, (unsigned int) Rmod, (unsigned int) Rres);
     success=success&assertEquals(Wres, Rres);

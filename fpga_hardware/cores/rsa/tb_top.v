@@ -66,7 +66,7 @@ reg  [31 : 0] tc_ctr;
 reg [127 : 0] result_data;
 
 reg           tb_clk;
-reg           tb_reset_n;
+reg           tb_reset;
 reg           tb_cs;
 reg           tb_we;
 reg  [31 : 0] tb_address;
@@ -102,7 +102,7 @@ modexp_top dut(
 		 .wb_dat_o(tb_read_data),
 		 
 		 .wb_clk_i(tb_clk),
-		 .wb_rst_i(tb_reset_n),
+		 .wb_rst_i(tb_reset),
 		 .int_o(tb_int)//
 );
 
@@ -125,10 +125,10 @@ end // clk_gen
 task reset_dut();
     begin
         $display("*** Toggle reset.");
-        tb_reset_n = 0;
+        tb_reset = 1;
 
         #(2 * CLK_PERIOD);
-        tb_reset_n = 1;
+        tb_reset = 0;
         $display("");
     end
 endtask // reset_dut
@@ -145,7 +145,7 @@ task init_sim();
         tc_ctr             = 0;
 
         tb_clk             = 0;
-        tb_reset_n         = 1;
+        tb_reset           = 0;
 
         tb_cs              = 0;
         tb_we              = 0;
@@ -543,7 +543,7 @@ begin : main
     if(VCD) begin
         $dumpfile("./iverilog/tb_top.vcd");
         $dumpvars(0,tb_top);
-        //$dumpvars(1,tb_clk, tb_reset_n, tb_cs, tb_we, tb_address, tb_write_data, tb_read_data);
+        //$dumpvars(1,tb_clk, tb_reset, tb_cs, tb_we, tb_address, tb_write_data, tb_read_data);
     end
 
     $display("   -= Testbench for modexp started =-");

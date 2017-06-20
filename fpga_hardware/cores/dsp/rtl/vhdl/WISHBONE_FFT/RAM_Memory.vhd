@@ -7,6 +7,8 @@ entity RAM_Memory is
 generic(
 
 Add_WordWidth: integer:=10;
+-- 2^Add_WordWidth
+Add_WordBits: integer:=1024;
 Data_WordWidth: integer:=32
 );
 port(
@@ -21,7 +23,7 @@ end entity;
 
 architecture RTL of RAM_Memory is
 
-type array_aux is array((2**Add_WordWidth)-1 downto 0) of std_logic_vector(Data_WordWidth-1 downto 0);
+type array_aux is array((Add_WordBits)-1 downto 0) of std_logic_vector(Data_WordWidth-1 downto 0);
 signal mem:array_aux;
 signal  reg0: std_logic_vector(Data_WordWidth-1 downto 0);
 begin
@@ -30,12 +32,12 @@ begin
 	if rising_edge(clk) then 
 			
 			if ( W_R='1') then
-					mem(to_integer(unsigned(ADR_FFT)))<=DATi   ;  
+					mem(10)<=DATi;--mem(to_integer(unsigned(ADR_FFT)))<=DATi   ;  
 			end if;	
 			
 				
 				--DATo<=reg0;
-	DATo <=  mem(to_integer(unsigned(ADR_WB)));  			
+	DATo <=  mem(10);--mem(to_integer(unsigned(ADR_WB)));  			
 		
 	end if;
 	

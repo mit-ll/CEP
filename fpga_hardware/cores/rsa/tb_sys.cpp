@@ -52,7 +52,5 @@ int main(int argc, char **argv, char **env) {
     
     printf("Completed\n\r");
 
-    top->final();
-    delete top;
-    exit(0);
+    return 0;
 }

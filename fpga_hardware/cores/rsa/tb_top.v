@@ -6,7 +6,7 @@
 //------------------------------------------------------------------
 // Test module.
 //------------------------------------------------------------------
-module tb_modexp();
+module tb_top();
 
 //----------------------------------------------------------------
 // Internal constant and parameter definitions.
@@ -89,14 +89,22 @@ integer f1;
 //----------------------------------------------------------------
 // Device Under Test.
 //----------------------------------------------------------------
-modexp dut(
-    .clk(tb_clk),
-    .reset_n(tb_reset_n),
-    .cs(tb_cs),
-    .we(tb_we),
-    .address(tb_address[10:2]),
-    .write_data(tb_write_data),
-.read_data(tb_read_data));
+modexp_top dut(
+		 .wb_adr_i(tb_address),
+		 .wb_cyc_i(tb_cyc),//
+		 .wb_dat_i(tb_write_data),
+		 .wb_sel_i(tb_sel),//
+		 .wb_stb_i(tb_cs),
+		 .wb_we_i(tb_we),
+		 
+		 .wb_ack_o(tb_ack),//
+		 .wb_err_o(tb_err),//
+		 .wb_dat_o(tb_read_data),
+		 
+		 .wb_clk_i(tb_clk),
+		 .wb_rst_i(tb_reset_n),
+		 .int_o(tb_int)//
+);
 
 //----------------------------------------------------------------
 // clk_gen
@@ -241,7 +249,6 @@ begin
 end
 endtask // assertSuccess
 
-
 //----------------------------------------------------------------
 // display_test_results()
 //
@@ -264,7 +271,7 @@ task display_test_results();
 endtask // display_test_results
 
 //----------------------------------------------------------------
-// exp32bit_mod2048bit_test();
+// exp32bit_mod2048bit_test
 //----------------------------------------------------------------
 task exp32bit_mod2048bit_test();
     integer i;
@@ -330,7 +337,7 @@ begin
     else
         $display("*** e65537_2048bit_modulus success.");
 end
-endtask // e65537_2048bit_modulus
+endtask // exp32bit_mod2048bit_test
 
 //----------------------------------------------------------------
 // modexp_encrypt
@@ -393,7 +400,7 @@ begin
 
     assertSuccess(success);
 end
-endtask // e65537_2048bit_modulus
+endtask // modexp_encrypt
 
 //----------------------------------------------------------------
 // modexp_decrypt
@@ -465,7 +472,7 @@ begin
 
     assertSuccess(success);
 end
-endtask // e65537_2048bit_modulus
+endtask // modexp_decrypt
 
 //----------------------------------------------------------------
 // modexp_32bits
@@ -524,7 +531,7 @@ begin
 
     assertSuccess(success);
 end
-endtask // e65537_2048bit_modulus
+endtask // modexp_32bits
 
 //----------------------------------------------------------------
 // main
@@ -534,8 +541,8 @@ endtask // e65537_2048bit_modulus
 initial
 begin : main
     if(VCD) begin
-        $dumpfile("./iverilog/tb_modexp.vcd");
-        $dumpvars(0,tb_modexp);
+        $dumpfile("./iverilog/tb_top.vcd");
+        $dumpvars(0,tb_top);
         //$dumpvars(1,tb_clk, tb_reset_n, tb_cs, tb_we, tb_address, tb_write_data, tb_read_data);
     end
 

@@ -1,81 +1,23 @@
-#include "verilated.h"
-#include "Vmodexp_top.h"
 #include "./src/RSA.h"
 
-#if VM_TRACE 
-#include "verilated_vcd_c.h"
-VerilatedVcdC* tfp = new VerilatedVcdC;
-#endif 
+// Need this to fully implement expected interface
+void evalModel() {;}
+void toggleClock() {;}
 
-Vmodexp_top* top;
-
-void evalModel() {
-    top->eval();
-#if VM_TRACE
-    tfp->dump(main_time);
-#endif
-}
-
-void toggleClock() {
-    top->wb_clk_i = ~top->wb_clk_i;
-}
-
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t read_word(uint32_t pAddress) {
-    top->wb_stb_i=1;
-    top->wb_we_i=0;
-    top->wb_adr_i = pAddress;
-    runForClockCycles(1);
-    uint32_t data = top->wb_dat_o;
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
-    return data;
+    return *((volatile uint32_t *)pAddress);
 }
 
 void write_word(uint32_t pAddress, uint32_t pData) {
-    top->wb_stb_i=1;
-    top->wb_we_i=1;
-    top->wb_adr_i = pAddress;
-    top->wb_dat_i = pData;
-    runForClockCycles(1);
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
-}
-
-void init(){
-    top->wb_clk_i = 0;
-    top->wb_rst_i = 0;
-    top->wb_stb_i = 0;
-    top->wb_we_i  = 0;
-    top->wb_adr_i = 0x00000000;
-    top->wb_dat_i = 0x00000000;
-    runForClockCycles(10);
-
-    printf("Reset complete\r\n");
-
-    top->wb_rst_i = 1;
-    runForClockCycles(10);
+    *((volatile uint32_t *)pAddress) = pData;
 }
 
 int main(int argc, char **argv, char **env) {
     int i=0;
 
-    Verilated::commandArgs(argc, argv);
-#if VM_TRACE
-    Verilated::traceEverOn(true);
-#endif
-    top = new Vmodexp_top;
-
-#if VM_TRACE
-    printf("Initializing traces and opening VCD file\n");
-    top->trace (tfp, 99);//VCD file gen 
-    tfp->open("./obj_dir/Vmodexp_top.vcd");//VCD file gen
-#endif
-
     printf("Initializing interface and resetting core\r\n");
 
-    // Initialize Inputs
-    init();
-    
     //Convert input from ASCII to HEX
     a2h(IMSG, SMSG, &PMSG);
     printf("Input:%s\r\n", IMSG);
@@ -110,9 +52,6 @@ int main(int argc, char **argv, char **env) {
     
     printf("Completed\n\r");
 
-#if VM_TRACE    
-    tfp->close();
-#endif
     top->final();
     delete top;
     exit(0);

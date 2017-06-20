@@ -152,12 +152,10 @@ module montprod #(parameter OPW = 32, parameter ADW = 8)
   wire                 add_carry_out_sa;
   wire [(OPW - 1) : 0] add_result_sm;
   wire                 add_carry_out_sm;
-
   reg [(ADW - 1) : 0]  b_word_index; //loop counter as a word index
-
 /* verilator lint_off UNOPTFLAT */
   reg  [(OPW - 1) : 0] shr_data_in;
-/* verilator lint_off UNOPTFLAT */
+/* verilator lint_on UNOPTFLAT */
   wire                 shr_carry_out;
   wire [(OPW - 1) : 0] shr_data_out;
 
@@ -173,7 +171,7 @@ module montprod #(parameter OPW = 32, parameter ADW = 8)
   reg [(OPW - 1) : 0]  sa_adder_data_in;
 /* verilator lint_off UNOPTFLAT */
   reg [(OPW - 1) : 0]  muxed_s_mem_read_data;
-/* verilator lint_off UNOPTFLAT */
+/* verilator lint_on UNOPTFLAT */
   reg [(OPW - 1) : 0]  shifted_s_mem_write_data;
 
   wire [(ADW - 1) : 0] length_m1;

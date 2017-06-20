@@ -1,5 +1,5 @@
 #include "verilated.h"
-#include "Vmodexp_top.h"
+#include "Vmodexp.h"
 #include "./src/RSA.h"
 
 #if VM_TRACE 
@@ -7,7 +7,7 @@
 VerilatedVcdC* tfp = new VerilatedVcdC;
 #endif 
 
-Vmodexp_top* top;
+Vmodexp* top;
 
 void evalModel() {
     top->eval();
@@ -17,42 +17,42 @@ void evalModel() {
 }
 
 void toggleClock() {
-    top->wb_clk_i = ~top->wb_clk_i;
+    top->clk = ~top->clk;
 }
 
 uint32_t read_word(uint32_t pAddress) {
-    top->wb_stb_i=1;
-    top->wb_we_i=0;
-    top->wb_adr_i = pAddress;
+    top->cs=1;
+    top->we=0;
+    top->address = pAddress>>2;
     runForClockCycles(1);
-    uint32_t data = top->wb_dat_o;
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
+    uint32_t data = top->read_data;
+    top->cs=0;
+    top->we=0;
     return data;
 }
 
 void write_word(uint32_t pAddress, uint32_t pData) {
-    top->wb_stb_i=1;
-    top->wb_we_i=1;
-    top->wb_adr_i = pAddress;
-    top->wb_dat_i = pData;
+    top->cs=1;
+    top->we=1;
+    top->address = pAddress>>2;
+    top->write_data = pData;
     runForClockCycles(1);
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
+    top->cs=0;
+    top->we=0;
 }
 
 void init(){
-    top->wb_clk_i = 0;
-    top->wb_rst_i = 0;
-    top->wb_stb_i = 0;
-    top->wb_we_i  = 0;
-    top->wb_adr_i = 0x00000000;
-    top->wb_dat_i = 0x00000000;
+    top->clk = 0;
+    top->reset_n = 0;
+    top->cs = 0;
+    top->we = 0;
+    top->address = 0x00;
+    top->write_data = 0x00000000;
     runForClockCycles(10);
 
     printf("Reset complete\r\n");
 
-    top->wb_rst_i = 1;
+    top->reset_n = 1;
     runForClockCycles(10);
 }
 
@@ -63,12 +63,12 @@ int main(int argc, char **argv, char **env) {
 #if VM_TRACE
     Verilated::traceEverOn(true);
 #endif
-    top = new Vmodexp_top;
+    top = new Vmodexp;
 
 #if VM_TRACE
     printf("Initializing traces and opening VCD file\n");
     top->trace (tfp, 99);//VCD file gen 
-    tfp->open("./obj_dir/Vmodexp_top.vcd");//VCD file gen
+    tfp->open("./obj_dir/Vmodexp.vcd");//VCD file gen
 #endif
 
     printf("Initializing interface and resetting core\r\n");

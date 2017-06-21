@@ -1,6 +1,6 @@
 // File ./stage_II.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -30,17 +30,17 @@
 // no timescale needed
 
 module stage_II(
-input wire [data_width - 1 - add_g:0] prvs_r,
-input wire [data_width - 1 - add_g:0] prvs_i,
-input wire t,
-input wire s,
-input wire clock,
-input wire enable,
-input wire resetn,
-input wire [twiddle_width - 1:0] fromrom_r,
-input wire [twiddle_width - 1:0] fromrom_i,
-output wire [data_width + mult_g - 1:0] tonext_r,
-output wire [data_width + mult_g - 1:0] tonext_i
+prvs_r,
+prvs_i,
+t,
+s,
+clock,
+enable,
+resetn,
+fromrom_r,
+fromrom_i,
+tonext_r,
+tonext_i
 );
 
 parameter [31:0] data_width=14;
@@ -48,7 +48,29 @@ parameter [31:0] add_g=1;
 parameter [31:0] mult_g=9;
 parameter [31:0] twiddle_width=10;
 parameter [31:0] shift_stages=16;
+input [data_width - 1 - add_g:0] prvs_r;
+input [data_width - 1 - add_g:0] prvs_i;
+input t;
+input s;
+input clock;
+input enable;
+input resetn;
+input [twiddle_width - 1:0] fromrom_r;
+input [twiddle_width - 1:0] fromrom_i;
+output [data_width + mult_g - 1:0] tonext_r;
+output [data_width + mult_g - 1:0] tonext_i;
 
+wire [data_width - 1 - add_g:0] prvs_r;
+wire [data_width - 1 - add_g:0] prvs_i;
+wire t;
+wire s;
+wire clock;
+wire enable;
+wire resetn;
+wire [twiddle_width - 1:0] fromrom_r;
+wire [twiddle_width - 1:0] fromrom_i;
+wire [data_width + mult_g - 1:0] tonext_r;
+wire [data_width + mult_g - 1:0] tonext_i;
 
 
 wire [data_width - 1:0] toreg_r;

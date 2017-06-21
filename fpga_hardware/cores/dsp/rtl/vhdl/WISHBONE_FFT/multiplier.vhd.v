@@ -1,6 +1,6 @@
 // File ./multiplier.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -22,14 +22,20 @@
 // no timescale needed
 
 module multiplier(
-input wire [inst_width1 - 1:0] inst_A,
-input wire [inst_width2 - 1:0] inst_B,
-output wire [inst_width1 + inst_width2 - 1:0] PRODUCT_inst
+inst_A,
+inst_B,
+PRODUCT_inst
 );
 
 parameter [31:0] inst_width1=16;
 parameter [31:0] inst_width2=16;
+input [inst_width1 - 1:0] inst_A;
+input [inst_width2 - 1:0] inst_B;
+output [inst_width1 + inst_width2 - 1:0] PRODUCT_inst;
 
+wire [inst_width1 - 1:0] inst_A;
+wire [inst_width2 - 1:0] inst_B;
+wire [inst_width1 + inst_width2 - 1:0] PRODUCT_inst;
 
 
 wire [inst_width1 + inst_width2 - 1:0] mult_sig;

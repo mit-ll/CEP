@@ -1,4 +1,4 @@
-// File ./BF2I.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
+// File BF2II.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
 //  * Verilog Module Declaration Style: 1995
 
@@ -19,15 +19,16 @@
 // The result of translation follows.  Its copyright status should be
 // considered unchanged from the original VHDL.
 
-//Butterfly stage type 1 
-//7/17/02  
+//Butterfly stage type 2 
+//7/17/0 2  
 // no timescale needed
 
-module BF2I(
+module BF2II(
 fromreg_r,
 fromreg_i,
 prvs_r,
 prvs_i,
+t,
 s,
 toreg_r,
 toreg_i,
@@ -41,6 +42,7 @@ input [data_width - 1:0] fromreg_r;
 input [data_width - 1:0] fromreg_i;
 input [data_width - 1 - add_g:0] prvs_r;
 input [data_width - 1 - add_g:0] prvs_i;
+input t;
 input s;
 output [data_width - 1:0] toreg_r;
 output [data_width - 1:0] toreg_i;
@@ -51,6 +53,7 @@ wire [data_width - 1:0] fromreg_r;
 wire [data_width - 1:0] fromreg_i;
 wire [data_width - 1 - add_g:0] prvs_r;
 wire [data_width - 1 - add_g:0] prvs_i;
+wire t;
 wire s;
 wire [data_width - 1:0] toreg_r;
 wire [data_width - 1:0] toreg_i;
@@ -64,6 +67,8 @@ wire [data_width:0] add1_out;
 wire [data_width:0] add2_out;
 wire [data_width:0] sub1_out;
 wire [data_width:0] sub2_out;
+reg [data_width:0] swapadd;
+reg [data_width:0] swapsub;
 
   adder #(
       .inst_width(data_width))
@@ -106,7 +111,7 @@ wire [data_width:0] sub2_out;
   mux_2(
       .s(s),
     .in0(fromreg_i),
-    .in1(add2_out),
+    .in1(swapadd),
     .data(tonext_i));
 
   mux2_mmw #(
@@ -122,17 +127,39 @@ wire [data_width:0] sub2_out;
   mux_4(
       .s(s),
     .in0(prvs_ext_i),
-    .in1(sub2_out),
+    .in1(swapsub),
     .data(toreg_i));
 
-  always @(prvs_r or prvs_i) begin
-    if(add_g == 1) begin
-      prvs_ext_r <= {prvs_r[data_width - 2],prvs_r};
-      prvs_ext_i <= {prvs_i[data_width - 2],prvs_i};
+  always @(prvs_r or prvs_i or s or t) begin
+    if((add_g == 1'b 1)) begin
+      if((t == 1'b 0 && s == 1'b 1)) begin
+        prvs_ext_r <= {prvs_i[data_width - 2],prvs_i};
+        prvs_ext_i <= {prvs_r[data_width - 2],prvs_r};
+      end
+      else begin
+        prvs_ext_r <= {prvs_r[data_width - 2],prvs_r};
+        prvs_ext_i <= {prvs_i[data_width - 2],prvs_i};
+      end
     end
     else begin
+      //if(t='0' and s='1') then 
+      prvs_ext_r <= prvs_i;
+      prvs_ext_i <= prvs_r;
+      //else 
       prvs_ext_r <= prvs_r;
       prvs_ext_i <= prvs_i;
+      //end if;  
+    end
+  end
+
+  always @(add2_out or sub2_out or s or t) begin
+    if((t == 1'b 0 && s == 1'b 1)) begin
+      swapadd <= sub2_out;
+      swapsub <= add2_out;
+    end
+    else begin
+      swapadd <= add2_out;
+      swapsub <= sub2_out;
     end
   end
 

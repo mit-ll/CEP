@@ -1,6 +1,6 @@
 // File ./twiddle_mult.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -30,18 +30,30 @@
 // no timescale needed
 
 module twiddle_mult(
-input wire [mult_width - 1:0] data_r,
-input wire [mult_width - 1:0] data_i,
-input wire [twiddle_width - 1:0] twdl_r,
-input wire [twiddle_width - 1:0] twdl_i,
-output reg [output_width - 1:0] out_r,
-output reg [output_width - 1:0] out_i
+data_r,
+data_i,
+twdl_r,
+twdl_i,
+out_r,
+out_i
 );
 
 parameter [31:0] mult_width=7;
 parameter [31:0] twiddle_width=3;
 parameter [31:0] output_width=9;
+input [mult_width - 1:0] data_r;
+input [mult_width - 1:0] data_i;
+input [twiddle_width - 1:0] twdl_r;
+input [twiddle_width - 1:0] twdl_i;
+output [output_width - 1:0] out_r;
+output [output_width - 1:0] out_i;
 
+wire [mult_width - 1:0] data_r;
+wire [mult_width - 1:0] data_i;
+wire [twiddle_width - 1:0] twdl_r;
+wire [twiddle_width - 1:0] twdl_i;
+reg [output_width - 1:0] out_r;
+reg [output_width - 1:0] out_i;
 
 
 wire [twiddle_width + mult_width:0] mult_out_r;

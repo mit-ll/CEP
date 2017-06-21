@@ -1,6 +1,6 @@
 // File ./comp_mult.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -24,17 +24,29 @@
 // no timescale needed
 
 module comp_mult(
-input wire [inst_width1 - 1:0] Re1,
-input wire [inst_width1 - 1:0] Im1,
-input wire [inst_width2 - 1:0] Re2,
-input wire [inst_width2 - 1:0] Im2,
-output wire [inst_width1 + inst_width2:0] Re,
-output wire [inst_width1 + inst_width2:0] Im
+Re1,
+Im1,
+Re2,
+Im2,
+Re,
+Im
 );
 
 parameter [31:0] inst_width1=14;
 parameter [31:0] inst_width2=14;
+input [inst_width1 - 1:0] Re1;
+input [inst_width1 - 1:0] Im1;
+input [inst_width2 - 1:0] Re2;
+input [inst_width2 - 1:0] Im2;
+output [inst_width1 + inst_width2:0] Re;
+output [inst_width1 + inst_width2:0] Im;
 
+wire [inst_width1 - 1:0] Re1;
+wire [inst_width1 - 1:0] Im1;
+wire [inst_width2 - 1:0] Re2;
+wire [inst_width2 - 1:0] Im2;
+wire [inst_width1 + inst_width2:0] Re;
+wire [inst_width1 + inst_width2:0] Im;
 
 
 //multiplier outputs 

@@ -1,6 +1,6 @@
 // File ./stage_I.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -28,20 +28,36 @@
 // no timescale needed
 
 module stage_I(
-input wire [data_width - 1 - add_g:0] prvs_r,
-input wire [data_width - 1 - add_g:0] prvs_i,
-input wire s,
-input wire clock,
-input wire resetn,
-input wire enable,
-output wire [data_width - 1:0] tonext_r,
-output wire [data_width - 1:0] tonext_i
+prvs_r,
+prvs_i,
+s,
+clock,
+resetn,
+enable,
+tonext_r,
+tonext_i
 );
 
 parameter [31:0] data_width=13;
 parameter [31:0] add_g=1;
 parameter [31:0] shift_stages=32;
+input [data_width - 1 - add_g:0] prvs_r;
+input [data_width - 1 - add_g:0] prvs_i;
+input s;
+input clock;
+input resetn;
+input enable;
+output [data_width - 1:0] tonext_r;
+output [data_width - 1:0] tonext_i;
 
+wire [data_width - 1 - add_g:0] prvs_r;
+wire [data_width - 1 - add_g:0] prvs_i;
+wire s;
+wire clock;
+wire resetn;
+wire enable;
+wire [data_width - 1:0] tonext_r;
+wire [data_width - 1:0] tonext_i;
 
 
 wire [data_width - 1:0] toreg_r;

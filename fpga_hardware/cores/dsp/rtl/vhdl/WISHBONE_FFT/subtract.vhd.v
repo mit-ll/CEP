@@ -1,6 +1,6 @@
 // File ./subtract.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -22,13 +22,19 @@
 // no timescale needed
 
 module subtract(
-input wire [inst_width - 1:0] inst_A,
-input wire [inst_width - 1:0] inst_B,
-output wire [inst_width:0] DIFF
+inst_A,
+inst_B,
+DIFF
 );
 
 parameter [31:0] inst_width=32;
+input [inst_width - 1:0] inst_A;
+input [inst_width - 1:0] inst_B;
+output [inst_width:0] DIFF;
 
+wire [inst_width - 1:0] inst_A;
+wire [inst_width - 1:0] inst_B;
+wire [inst_width:0] DIFF;
 
 
 wire [inst_width:0] a_signed; wire [inst_width:0] b_signed; wire [inst_width:0] diff_signed;

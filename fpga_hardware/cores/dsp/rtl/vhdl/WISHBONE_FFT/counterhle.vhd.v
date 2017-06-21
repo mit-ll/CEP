@@ -1,6 +1,6 @@
 // File ./counterhle.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -26,15 +26,25 @@
 // no timescale needed
 
 module counterhle(
-input wire clock,
-input wire resetn,
-input wire enable,
-input wire clear,
-output wire [width - 1:0] countout
+clock,
+resetn,
+enable,
+clear,
+countout
 );
 
 parameter [31:0] width=3;
+input clock;
+input resetn;
+input enable;
+input clear;
+output [width - 1:0] countout;
 
+wire clock;
+wire resetn;
+wire enable;
+wire clear;
+wire [width - 1:0] countout;
 
 
 reg [width - 1:0] count;

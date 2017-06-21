@@ -1,6 +1,6 @@
 // File ./rom2.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -25,16 +25,24 @@
 // no timescale needed
 
 module rom2(
-input wire clk,
-input wire [7:0] address,
-output reg [data_width - 1:0] datar,
-output reg [data_width - 1:0] datai
+clk,
+address,
+datar,
+datai
 );
 
 parameter [31:0] data_width=16;
 parameter [31:0] address_width=8;
+input clk;
+input [7:0] address;
+output [data_width - 1:0] datar;
+output [data_width - 1:0] datai;
 
-
+wire clk;
+wire [7:0] address;
+reg [data_width - 1:0] datar;
+reg [data_width - 1:0] datai;
+integer i;
 
 
   always @(posedge address or posedge clk) begin

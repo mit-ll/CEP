@@ -1,6 +1,6 @@
 // File ./shiftregN.vhd translated with vhd2vl v2.4 VHDL to Verilog RTL translator
 // vhd2vl settings:
-//  * Verilog Module Declaration Style: 2001
+//  * Verilog Module Declaration Style: 1995
 
 // vhd2vl is Free (libre) Software:
 //   Copyright (C) 2001 Vincenzo Liguori - Ocean Logic Pty Ltd
@@ -24,16 +24,26 @@
 // no timescale needed
 
 module shiftregN(
-input wire clock,
-input wire enable,
-output wire [data_width - 1:0] read_data,
-input wire [data_width - 1:0] write_data,
-input wire resetn
+clock,
+enable,
+read_data,
+write_data,
+resetn
 );
 
 parameter [31:0] data_width=25;
 parameter [31:0] n=254;
+input clock;
+input enable;
+output [data_width - 1:0] read_data;
+input [data_width - 1:0] write_data;
+input resetn;
 
+wire clock;
+wire enable;
+wire [data_width - 1:0] read_data;
+wire [data_width - 1:0] write_data;
+wire resetn;
 
 // Declarations 
 

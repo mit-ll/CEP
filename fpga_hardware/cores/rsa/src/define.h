@@ -1,5 +1,5 @@
 #define PATH                  "./gen/"
-#define DISPLAY               1
+#define DISPLAY               0
 #define DEBUG                 0
 
 #define ADDR_BASE             0x92000000

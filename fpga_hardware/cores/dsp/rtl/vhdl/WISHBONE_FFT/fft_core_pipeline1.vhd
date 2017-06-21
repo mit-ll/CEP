@@ -44,7 +44,8 @@ entity fft_core_pipeline1 is
   generic (  
 	input_width : integer :=16; 
    twiddle_width : integer :=16; 
-   N : integer :=1024; 
+   N : integer :=1024;
+   LOG2N : integer :=10;
    add_g : integer:=0;--1;  --Either 0 or 1 only. 
    mult_g : integer:=0--9  --Can be any number from 0 to twiddle_width+1 
    ); 
@@ -54,17 +55,17 @@ entity fft_core_pipeline1 is
 	clear : in std_logic;
 	enable_out: out std_logic;
 	frame_ready: out std_logic;
-	index : out std_logic_vector(integer(ceil(log2(real((N)))))-1 downto 0);
+	index : out std_logic_vector(Log2N-1 downto 0);
       xin_r : in std_logic_vector(input_width-1 downto 0); 
       xin_i : in std_logic_vector(input_width-1 downto 0); 
-      Xout_r : out std_logic_vector (input_width+((integer(ceil(log2(real((N)))))-1)/2)*mult_g+integer(ceil(log2(real((N)))))*add_g-1 downto 0); 
-      Xout_i : out std_logic_vector (input_width+((integer(ceil(log2(real((N)))))-1)/2)*mult_g+integer(ceil(log2(real((N)))))*add_g-1 downto 0) 
+      Xout_r : out std_logic_vector (input_width+((Log2N-1)/2)*mult_g+Log2N*add_g-1 downto 0); 
+      Xout_i : out std_logic_vector (input_width+((Log2N-1)/2)*mult_g+Log2N*add_g-1 downto 0) 
    ); 
 end fft_core_pipeline1; 
  
 architecture structure of fft_core_pipeline1 is 
 --Signal declarations 
-constant num_stages: integer :=integer(ceil(log2(real((N))))); 
+constant num_stages: integer :=Log2N; 
 signal control: std_logic_vector(num_stages-1 downto 0); 
 signal bit_reverse_index: std_logic_vector(num_stages-1 downto 0); 
 type stage_array is array (1 to num_stages-1) of 

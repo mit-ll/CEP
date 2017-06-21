@@ -1,7 +1,9 @@
 default:
-	@echo "sys        : Create a VMEM file to be loaded onto a SoC for full-system verification"
-	@echo "ver        : Verilator - verify the core plus a Wishbone bus interface <- INCOMPLETE: verilator bug"
-	@echo "ver_modexp : Verilator - Verify the core with original bus interface   <- INCOMPLETE: verilator bug"
+	@echo "sys        : Create a VMEM file to be loaded onto a SoC"
+	@echo "ver        : Verilator - verify the core plus a Wishbone bus interface"
+	@echo "             INCOMPLETE: verilator bug"
+	@echo "ver_modexp : Verilator - Verify the core with original bus interface"
+	@echo "             INCOMPLETE: verilator bug"
 	@echo "vcd        : Verilator - Generate VCD for ver"
 	@echo "vcd_modexp : Verilator - Generate VCD for ver_modexp"
 	@echo "top        : iVerilog  - Verify the core plus a Wishbone bus interface"
@@ -20,7 +22,8 @@ default:
 	@echo ""
 	@echo "tKey       : test key - full functionality"
 	@echo "tTop       : test top - full functionality"
-	@echo "clear      : Remove all generated files"
+	@echo ""
+	@echo "clean      : Remove all generated files"
 
 sys:
 	or1k-elf-g++ -Wall -pedantic -O3 ../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys

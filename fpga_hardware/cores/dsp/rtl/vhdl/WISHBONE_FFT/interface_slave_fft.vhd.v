@@ -113,7 +113,7 @@ reg ack_r; wire ack_w;
   assign ADD_aux = (((ADR_I[Log2N3 - 1:0])) - ((reg_memory)));
   RAM_Memory #(
       .Add_WordWidth(Log2N),
-    .data_wordwidth(data_wordwidth))
+    .Data_WordWidth(data_wordwidth))
   RAM(
       .DATi(sDAT_I),
     .DATo(OUT_AUX1),

@@ -38,7 +38,7 @@ USE ieee.std_logic_1164.ALL;
 USE ieee.numeric_std.ALL; 
 --USE ieee.std_logic_arith.ALL; 
 use ieee.math_real.all;
-use work.fft_pkg .all; 
+--use work.fft_pkg .all; 
  
 entity fft_core_pipeline1 is 
   generic (  
@@ -91,6 +91,8 @@ signal xin_i_reg :  std_logic_vector(input_width-1 downto 0);
 signal t_ff: std_logic_vector(0 downto 0);
 signal en_t_ff:std_logic_vector(0 downto 0);
 signal clear_t_ff:std_logic;
+signal en_matts:std_logic;
+signal clr_matts:std_logic;
 
 
 --component declarations 
@@ -475,6 +477,9 @@ stages : for i in 1 to num_stages generate
   
 end generate stages; 
 
+en_matts <= ((en_t_ff(0) or clear_t_Ff) and enables(num_stages)(0))  or clear;
+clr_matts <= clear or clear_t_ff;
+
 --Frequency bin with bit reversal
 bit_reverse_index<=std_logic_vector(unsigned(counter_registers(num_stages+1))+1);
 
@@ -491,8 +496,8 @@ tff: shiftreg1 generic  map(
 )
   port map (
 		clock=>clock,
-		enable=>((en_t_ff(0) or clear_t_Ff) and enables(num_stages)(0))  or clear,
-		clear => clear or clear_t_ff,
+		enable=> en_matts,
+		clear => clr_matts,
         read_data=>t_ff,
         write_data=>en_t_ff, 
 		resetn=>resetn

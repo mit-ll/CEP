@@ -42,7 +42,7 @@ wire clk;
 wire [3:0] address;
 reg [data_width - 1:0] datar;
 reg [data_width - 1:0] datai;
-
+integer i;
 
 
   always @(posedge address or posedge clk) begin

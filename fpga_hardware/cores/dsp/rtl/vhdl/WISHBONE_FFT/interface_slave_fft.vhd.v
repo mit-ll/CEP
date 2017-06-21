@@ -42,7 +42,7 @@ clk
 parameter [31:0] N=1024;
 parameter [31:0] Log2N=10;
 parameter [31:0] Log2N3=13;
-parameter [31:0] data_wordwidth=32;
+parameter data_wordwidth=32;
 parameter [31:0] adress_wordwidth=32;
 parameter [31:0] reg_control=0;
 parameter [31:0] reg_data=4;
@@ -90,7 +90,7 @@ reg clear_out;
 wire clk;
 
 
-wire [Data_wordwidth - 1:0] OUT_AUX; wire [Data_wordwidth - 1:0] OUT_AUX1; wire [Data_wordwidth - 1:0] ZERO;
+wire [data_wordwidth - 1:0] OUT_AUX; wire [data_wordwidth - 1:0] OUT_AUX1; wire [data_wordwidth - 1:0] ZERO;
 wire [Log2N3 - 1:0] ADD_aux;
 reg ack_r; wire ack_w;
 
@@ -113,7 +113,7 @@ reg ack_r; wire ack_w;
   assign ADD_aux = (((ADR_I[Log2N3 - 1:0])) - ((reg_memory)));
   RAM_Memory #(
       .Add_WordWidth(Log2N),
-    .Data_WordWidth(Data_WordWidth))
+    .data_wordwidth(data_wordwidth))
   RAM(
       .DATi(sDAT_I),
     .DATo(OUT_AUX1),
@@ -128,19 +128,19 @@ reg ack_r; wire ack_w;
     if((WE_I == 1'b 1 && STB_I == 1'b 1)) begin
       //ESCRIBIR EN FFT
       case(ADR_I[Log2N3 - 1:0])
-        Reg_control: begin
-          clear_out<='1';
-          FFT_enable<='1';												                 sDAT_O<=ZERO;						
+        reg_control: begin
+          clear_out<=1'b1;
+          FFT_enable<=1'b1;												                 sDAT_O<=ZERO;						
         end
-        Reg_data,Log2N3)): begin
+        reg_data: begin
           sDAT_O<=OUT_AUX;
-          FFT_enable<='1';
-          clear_out<='0';
+          FFT_enable<=1'b1;
+          clear_out<=1'b0;
         end
         default : begin
           sDAT_O <= ZERO;
-          clear_out <= 1'b 0;
-          FFT_enable <= 1'b 0;
+          clear_out <= 1'b0;
+          FFT_enable <= 1'b0;
         end
       endcase
     end
@@ -154,9 +154,9 @@ reg ack_r; wire ack_w;
   //Decodificador de lectura
   always @(ADR_I or STB_I or WE_I or ZERO or OUT_AUX or OUT_AUX1 or FFT_finish_in) begin
     if((WE_I == 1'b 0 && STB_I == 1'b 1)) begin
-      if(ADR_I[Log2N3 - 1:0] == (((Reg_status)))) begin
+      if(ADR_I[Log2N3 - 1:0] == (((reg_status)))) begin
         DAT_O[0] <= FFT_finish_in;
-        DAT_O[Data_wordwidth - 1:1] <= ZERO[Data_wordwidth - 1:1];
+        DAT_O[data_wordwidth - 1:1] <= ZERO[data_wordwidth - 1:1];
       end
       else begin
         DAT_O <= OUT_AUX1;

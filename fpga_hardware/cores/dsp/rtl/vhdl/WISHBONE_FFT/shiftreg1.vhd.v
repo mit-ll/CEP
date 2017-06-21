@@ -52,7 +52,7 @@ wire resetn;
 // hds interface_end 
 //signal reg00 : std_logic_vector(data_width-1 downto 0); 
 
-  always @(posedge Clock or posedge resetn) begin
+  always @(posedge clock or posedge resetn) begin
     if((resetn == 1'b 0)) begin
       //      for                i in data_width-1 downto 0 loop 
       //    r eg00(i)<='0'; 

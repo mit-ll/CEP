@@ -1,6 +1,3 @@
-//typedef long unsigned int uint32_t;
-//typedef uint64_t vluint64_t;
-
 #ifndef uint32_t
 typedef unsigned int uint32_t;
 #endif

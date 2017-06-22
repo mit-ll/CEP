@@ -57,11 +57,15 @@ initial
 	$display("*********************************************************");
 	$display("\n");
 
-if(1)begin
-    $dumpfile("./iverilog/test.vcd");
-    $dumpvars(0,test);
-end
-
+//`ifdef WAVES
+//  	$shm_open("waves");
+//	$shm_probe("AS",test,"AS");
+//	$display("INFO: Signal dump enabled ...\n\n");
+//`endif
+    if(1)begin
+        $dumpfile("./iverilog/test.vcd");
+        $dumpvars(0,test);
+    end 
 	clk=0;
 
 	ZZZ=0;

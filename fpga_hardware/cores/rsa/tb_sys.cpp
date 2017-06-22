@@ -71,7 +71,7 @@ int main(int argc, char **argv, char **env) {
     printf("****************************************\r\n");
     printf("  Converting Output\r\n");
     printf("****************************************\r\n");
-    h2a(PMSG, SMSG, &DMSG);
+    h2a(GMSG, SMSG, &DMSG);
     printf("OUTPUT: %s\r\n", DMSG);
     
     printf("Completed\n\r");

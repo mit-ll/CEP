@@ -1,7 +1,7 @@
 #include "verilated.h"
 #include "Vdes3.h"
 
-#include "./src/3des.h"
+#include "./src/DES3.h"
 
 #if VM_TRACE 
 #include "verilated_vcd_c.h"
@@ -20,27 +20,8 @@ void evalModel() {
 void toggleClock() {
     top->clk = ~top->clk;
 }
-void printBinary(uint64_t binary, const char* name){
-    int i=0;
-    printf("%s\r\n", name);
-    for(i=0;i<64;i++){
-        if(((binary>>63-i)&0x000000000001)==1)printf("1");
-        else printf("0");
-        
-        if((i+1)%8==0)printf(" ");
-    }
-    printf("\r\n");
-}
-void remove_bit(uint64_t* buffer, int pos)
-{
-    uint64_t high_half = 0x000000000000;
-    uint64_t low_half =0x000000000000;
-    if (pos > 0)low_half= *buffer << (64 - pos) >> (64 - pos);
-    if (pos < 64) high_half = *buffer >> (pos+1) << (pos);
-    *buffer = high_half | low_half;
-}
 
-void write_key(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3) {
+void write_key(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3){
     int i=0;
 
     for(i=0;i<9;i++){
@@ -54,13 +35,11 @@ void write_key(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3) {
     top->key3=pKey3;
 }
 
-void write_decrypt(int pData) {
+void write_decrypt(int pData){
     top->decrypt=pData;
 }
-void write_des_sel(int pData) {
-    top->roundSel=pData;
-}
-void write_des_in(int pData) {
+
+void write_desIn(uint64_t pData){
     top->desIn=pData;
 }
 uint64_t read_desOut() {
@@ -68,53 +47,37 @@ uint64_t read_desOut() {
     return data;
 }
 
-/*
-uint32_t read_word(uint32_t pAddress) {
-    top->wb_stb_i=1;
-    top->wb_we_i=0;
-    top->wb_adr_i = pAddress;
-    runForClockCycles(1);
-    uint32_t data = top->wb_dat_o;
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
-    return data;
+void start(void) {
+    top->start = 1;
+    runForClockCycles(5);
+    top->start = 0;
 }
-
-void write_word(uint32_t pAddress, uint32_t pData) {
-    top->wb_stb_i=1;
-    top->wb_we_i=1;
-    top->wb_adr_i = pAddress;
-    top->wb_dat_i = pData;
-    runForClockCycles(1);
-    top->wb_stb_i=0;
-    top->wb_we_i=0;
+bool readyValid(void) {
+    return (top->out_valid != 0) ? true : false;
 }
-*/
 
 void init(){
+    // Initialize Inputs
     top->desOut   = 0x0000000000000000;
+    top->out_valid= 0;
+    top->start    = 0;
     top->desIn    = 0x0000000000000000;
     top->key1     = 0x00000000000000;
     top->key2     = 0x00000000000000;
     top->key3     = 0x00000000000000;
     top->decrypt  = 0;
-    top->roundSel = 0;
     top->clk      = 0;
     runForClockCycles(10);
 
-    //top->wb_rst_i = 1;
     printf("Reset complete\r\n");
-
-    //top->wb_rst_i = 1;
-    runForClockCycles(10);
 }
 
 int main(int argc, char **argv, char **env) {
-    int decrypt=0, select=0, cnt=0;
-    uint64_t exp_out, des_out;
+    int decrypt=0, select=0;
+    uint64_t des_out;
     bool success=true;
 
-	uint64_t x[16][5]={
+	uint64_t x[10][5]={
 	//       key1                key2                key3             Test data           Out data
 	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x95F8A5E5DD31D900, 0x8000000000000000},
 	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x9D64555A9A10B852, 0x0000001000000000},
@@ -144,34 +107,27 @@ int main(int argc, char **argv, char **env) {
     // Initialize Inputs
     init();
     
-	//
 	printf("\r\n");
 	printf("*********************************************************\r\n");
 	printf("* Area Optimized DES core simulation started ...        *\r\n");
 	printf("*********************************************************\r\n");
 	printf("\r\n");
 
-	printf("\r\n");
-	printf("**************************************\r\n");
-	printf("* Starting DES Test ...              *\r\n");
-	printf("**************************************\r\n");
-	printf("\r\n");
-	
 	for(decrypt=0;decrypt<2;decrypt=decrypt+1){
 	    write_decrypt(decrypt);
 		if(decrypt)	printf("Running Encrypt test ...\r\n\r\n");
     	else		printf("Running Decrypt test ...\r\n\r\n");
 
-	    for(select=0;select<16;select=select+1){
+	    for(select=0;select<10;select=select+1){
 	   	    write_key(x[select][0], x[select][1], x[select][2]);
-	   	    des_out=read_desOut();
-	   	    
-		    for(cnt=0;cnt<47;cnt=cnt+1)
-		    runForClockCycles(10);
-		    
-		    success=success&assertEquals(select, x[select][4-decrypt], read_desOut());
-	        }
-	
+	   	    write_desIn(x[select][3+decrypt]);
+   	    
+            start();
+            wait_ready();
+            des_out=read_desOut();
+
+		    success=success&assertEquals(select, x[select][4-decrypt], des_out);
+        }
 	}
 
 	printf("\r\n");
@@ -189,7 +145,4 @@ int main(int argc, char **argv, char **env) {
     delete top;
     exit(0);
 }
-
-
-
 

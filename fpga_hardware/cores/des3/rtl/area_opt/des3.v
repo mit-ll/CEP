@@ -43,13 +43,17 @@ input	[5:0]	roundSel;
 input		clk;
 
 wire	[1:48]	K_sub;
-wire	[1:64]	IP, FP;
+wire	[1:64]	IP, FP, tmp;
 reg	[1:64]	FP_R;
 reg	[1:32]	L, R;
 wire	[1:32]	Xin;
 wire	[1:32]	Lout;
 wire	[1:32]	Rout;
 wire	[1:32]	out;
+
+//assign Lout = (roundSel == 0) ? IP[33:64] : R;
+//assign Xin  = (roundSel == 0) ? IP[01:32] : L;
+
 
 assign Lout =	(roundSel == 0) ? IP[33:64] :
 		(	(roundSel == 16) ? FP_R[33:64] :
@@ -62,8 +66,27 @@ assign Xin  =	(roundSel == 0) ? IP[01:32] :
 					L	));
 
 
+
+/*
+always @(roundSel or IP or tmp or R or FP)
+	case(roundSel)
+		6'h0:	Lout = IP[33:64];
+		6'h10:	Lout = FP[33:64];
+		6'h20:	Lout = FP[33:64];
+		default: Lout = R;
+	endcase
+
+always @(roundSel or IP or tmp or L or FP)
+	case(roundSel)
+		6'h0:	Xin = IP[01:32];
+		6'h10:	Xin = FP[01:32];
+		6'h20:	Xin = FP[01:32];
+		default: Xin = L;
+	endcase
+*/
+
 always @(posedge clk)
-	FP_R <= FP;
+	FP_R <= #1 FP;
 
 assign Rout = Xin ^ out;
 assign FP = { Rout, Lout};
@@ -71,10 +94,10 @@ assign FP = { Rout, Lout};
 crp u0( .P(out), .R(Lout), .K_sub(K_sub) );
 
 always @(posedge clk)
-        L <= Lout;
+        L <= #1 Lout;
 
 always @(posedge clk)
-        R <= Rout;
+        R <= #1 Rout;
         
 // Select a subkey from key.
 key_sel3 u1(
@@ -85,6 +108,18 @@ key_sel3 u1(
 	.roundSel(	roundSel	),
 	.decrypt(	decrypt		)
 	);
+
+assign tmp[1:64] = {	desOut[06], desOut[14], desOut[22], desOut[30], desOut[38], desOut[46],
+			desOut[54], desOut[62], desOut[04], desOut[12], desOut[20], desOut[28],
+			desOut[36], desOut[44], desOut[52], desOut[60], desOut[02], desOut[10], 
+			desOut[18], desOut[26], desOut[34], desOut[42], desOut[50], desOut[58], 
+			desOut[00], desOut[08], desOut[16], desOut[24], desOut[32], desOut[40], 
+			desOut[48], desOut[56], desOut[07], desOut[15], desOut[23], desOut[31], 
+			desOut[39], desOut[47], desOut[55], desOut[63], desOut[05], desOut[13],
+			desOut[21], desOut[29], desOut[37], desOut[45], desOut[53], desOut[61],
+			desOut[03], desOut[11], desOut[19], desOut[27], desOut[35], desOut[43],
+			desOut[51], desOut[59], desOut[01], desOut[09], desOut[17], desOut[25],
+			desOut[33], desOut[41], desOut[49], desOut[57] };
 
 // Perform initial permutation
 assign IP[1:64] = {	desIn[06], desIn[14], desIn[22], desIn[30], desIn[38], desIn[46],
@@ -108,4 +143,6 @@ assign desOut = {	FP[40], FP[08], FP[48], FP[16], FP[56], FP[24], FP[64], FP[32]
 			FP[35], FP[03], FP[43], FP[11], FP[51], FP[19], FP[59], FP[27],
 			FP[34], FP[02], FP[42], FP[10], FP[50], FP[18], FP[58], FP[26], 
 			FP[33], FP[01], FP[41], FP[09], FP[49], FP[17], FP[57], FP[25] };
+
+
 endmodule

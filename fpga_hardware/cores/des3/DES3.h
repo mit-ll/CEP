@@ -1,9 +1,10 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 
-#ifndef uint32_t
-typedef unsigned int uint32_t;
-#endif
+//#ifndef uint32_t
+//typedef unsigned int uint32_t;
+//#endif
 //#ifndef uint64_t
 //typedef unsigned long long uint64_t;
 //#endif
@@ -76,10 +77,10 @@ void waitForValidOutput(){
 bool assertEquals(int index, uint32_t expected_1, uint32_t expected_2, uint32_t actual_1, uint32_t actual_2){
 
     if ((expected_1 == actual_1)&(expected_2 == actual_2)){
-    printf("*** PASSED   (%0d): %08x%08x Got %08x%08x\r\n", index, expected_1, expected_2, actual_1, actual_2);
+    printf("*** PASSED   (%0d): %08x%08x Got %08x%08x\r\n", index, (unsigned int) expected_1, (unsigned int) expected_2, (unsigned int) actual_1, (unsigned int) actual_2);
      return true;// success
     }else{                   
-    printf("*** Expected (%0d): %08x%08x Got %08x%08x\r\n", index, expected_1, expected_2, actual_1, actual_2);
+    printf("*** Expected (%0d): %08x%08x Got %08x%08x\r\n", index, (unsigned int) expected_1, (unsigned int) expected_2, (unsigned int) actual_1, (unsigned int) actual_2);
      return false;// failure
     }
 }
@@ -97,7 +98,7 @@ void printBinary(uint64_t binary, const char* name){
     int i=0;
     printf("%s\r\n", name);
     for(i=0;i<64;i++){
-        if(((binary>>63-i)&0x000000000001)==1)printf("1");
+        if(((binary>>(63-i))&0x000000000001)==1)printf("1");
         else printf("0");
         
         if((i+1)%8==0)printf(" ");
@@ -107,7 +108,7 @@ void printBinary(uint64_t binary, const char* name){
 
 void remove_bit32(uint32_t* buffer, int pos){
     uint32_t high_half = 0x00000000;
-    uint32_t low_half =0x00000000;
+    uint32_t low_half = 0x00000000;
     if (pos > 0)low_half= *buffer << (32 - pos) >> (32 - pos);
     high_half = *buffer >> (pos+1) << (pos);
     *buffer = high_half | low_half;
@@ -115,7 +116,7 @@ void remove_bit32(uint32_t* buffer, int pos){
 
 void remove_bit64(uint64_t* buffer, int pos){
     uint64_t high_half = 0x0000000000000000;
-    uint64_t low_half =0x0000000000000000;
+    uint64_t low_half = 0x0000000000000000;
     if (pos > 0)low_half= *buffer << (64 - pos) >> (64 - pos);
     high_half = *buffer >> (pos+1) << (pos);
     *buffer = high_half | low_half;

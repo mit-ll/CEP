@@ -57,7 +57,7 @@ int main(int argc, char **argv, char **env) {
     uint32_t ct[BLOCK_WORDS];
     bool success=true;
 
-	uint64_t x[10][10]={
+	const uint64_t x[10][10]={
 	//       key1                key2                key3             Test data           Out data
 	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x95F8A5E5DD31D900, 0x8000000000000000},
 	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x9D64555A9A10B852, 0x0000001000000000},
@@ -85,9 +85,9 @@ int main(int argc, char **argv, char **env) {
     	else		printf("Running Decrypt test ...\r\n\r\n");
 
 	    for(select=0;select<10;select=select+1){
-	        uint32_t key[6]={x[select][0]>>32, x[select][0], x[select][1]>>32, x[select][1], x[select][2]>>32, x[select][2]};
+	        uint32_t key[6]={(uint32_t)(x[select][0]>>32), (uint32_t)x[select][0], (uint32_t)(x[select][1]>>32), (uint32_t)x[select][1], (uint32_t)(x[select][2]>>32), (uint32_t)x[select][2]};
 	   	    setKey(key);
-	   	    uint32_t pt[2]={x[select][3+decrypt]>>32, x[select][3+decrypt]};
+	   	    uint32_t pt[2]={(uint32_t)(x[select][3+decrypt]>>32), (uint32_t)x[select][3+decrypt]};
 	   	    setPlaintext(pt);
    	    
             start();

@@ -105,8 +105,7 @@ void exp32bit_mod2048bit_test(){
         if(DEBUG) printf("Reading: %d -> %08X -> %08X\r\n", i, (unsigned int) RES[i], (unsigned int) OUT[i]);
     }
 
-    if (success) printf("*** ERROR: e65537_2048bit_modulus was NOT successful.\r\n");
-    else         printf("*** e65537_2048bit_modulus success.\r\n");
+    assertSuccess(success);
 }
 
 /*32-bit modulo exponentiation*/

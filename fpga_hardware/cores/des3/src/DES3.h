@@ -4,9 +4,9 @@
 #ifndef uint32_t
 typedef unsigned int uint32_t;
 #endif
-//#ifndef uint64_t
-//typedef unsigned long long uint64_t;
-//#endif
+#ifndef uint64_t
+typedef unsigned long long uint64_t;
+#endif
 #ifndef vluint64_t
 typedef unsigned long vluint64_t;
 #endif

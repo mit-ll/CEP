@@ -1,9 +1,5 @@
-#include "verilated.h"
-#include "Vdes3_top.h"
-
 #include "./src/DES3.h"
 
-Vdes3_top* top;
 // Need this to fully implement expected interface
 void toggleClock() {;}
 void evalModel() {;}

@@ -33,27 +33,27 @@
 /////////////////////////////////////////////////////////////////////
 
 module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
-    output[63:0] desOut;
-    output       out_valid;
-    input        start;
-    input [63:0] desIn;
-    input [55:0] key1;
-    input [55:0] key2;
-    input [55:0] key3;
-    input        decrypt;
-    input        clk;
+    output reg[63:0] desOut;
+    output           out_valid;
+    input            start;
+    input     [63:0] desIn;
+    input     [55:0] key1;
+    input     [55:0] key2;
+    input     [55:0] key3;
+    input            decrypt;
+    input            clk;
 /* verilator lint_off LITENDIAN */
-    wire  [1:48] K_sub;
-    wire  [1:64] IP, FP;
-    reg   [1:64] FP_R;
-    reg   [1:32] L, R;
-    wire  [1:32] Xin;
-    wire  [1:32] Lout;
-    wire  [1:32] Rout;
-    wire  [1:32] out;
+    wire [1:48] K_sub;
+    wire [1:64] IP, FP;
+    reg  [1:64] FP_R;
+    reg  [1:32] L, R;
+    wire [1:32] Xin;
+    wire [1:32] Lout;
+    wire [1:32] Rout;
+    wire [1:32] out;
 /* verilator lint_on LITENDIAN */
 
-    wire [5:0] roundSel;
+    reg [5:0] roundSel;
 
     reg start_r;
     always @(posedge clk) begin

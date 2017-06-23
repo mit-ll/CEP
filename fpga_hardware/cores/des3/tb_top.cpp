@@ -1,7 +1,7 @@
 #include "verilated.h"
 #include "Vdes3_top.h"
 
-#include "./src/DES3.h"
+#include "DES3.h"
 
 #if VM_TRACE 
 #include "verilated_vcd_c.h"

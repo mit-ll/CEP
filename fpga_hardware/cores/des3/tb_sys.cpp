@@ -1,4 +1,4 @@
-#include "./src/DES3.h"
+#include "DES3.h"
 
 // Need this to fully implement expected interface
 void toggleClock() {;}

@@ -2,15 +2,9 @@ default:
 	@echo "sys        : Create a VMEM file to be loaded onto a SoC"
 	@echo "top        : Verilator - verify the core with a Wishbone bus interface"
 	@echo "core       : Verilator - Verify the core"
-	@echo ""
 	@echo "vcd        : Verilator - Generate VCD for top"
 	@echo "vcd_core   : Verilator - Generate VCD for core"
-	@echo ""
-	@echo "ides3p     : iVerilog  - Verify the core plus a Wishbone bus interface"
-	@echo "idesp      : iVerilog  - Verify the core plus a Wishbone bus interface"
-	@echo "ides3      : iVerilog  - Verify the core plus a Wishbone bus interface"
-	@echo "ides       : iVerilog  - Verify the core plus a Wishbone bus interface"
-	@echo ""
+	@echo "iver       : iVerilog  - Runs original core testbench"
 	@echo "clean      : Remove all generated files"
 
 sys:
@@ -45,26 +39,6 @@ iver:
 	mkdir -p ./iverilog/
 	iverilog -Wall ./tb_core.v ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v -o ./iverilog/des3_core.sim
 	./iverilog/des3_core.sim
-
-ides3p:
-	mkdir -p ./iverilog/
-	iverilog -Wall ./tb/des3_test_po.v ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/perf_opt/key_sel.v ./rtl/perf_opt/des.v ./rtl/perf_opt/des3.v -o ./iverilog/des3_test_po.sim
-	./iverilog/des3_test_po.sim
-
-idesp:
-	mkdir -p ./iverilog/
-	iverilog -Wall ./tb/des_test_po.v ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/perf_opt/key_sel.v ./rtl/perf_opt/des.v -o ./iverilog/des_test_po.sim
-	./iverilog/des_test_po.sim
-
-ides3:
-	mkdir -p ./iverilog/
-	iverilog -Wall ./tb/des3_test_ao.v ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/area_opt/key_sel3.v ./rtl/area_opt/des3.v -o ./iverilog/des3_test_ao.sim
-	./iverilog/des3_test_ao.sim
-
-ides:
-	mkdir -p ./iverilog/
-	iverilog -Wall ./tb/des_test_ao.v ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/area_opt/key_sel.v ./rtl/area_opt/des.v -o ./iverilog/des_test_ao.sim
-	./iverilog/des_test_ao.sim
 
 clean:
 	rm -rf obj_dir *~

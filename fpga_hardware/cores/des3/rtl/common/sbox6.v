@@ -33,9 +33,11 @@
 /////////////////////////////////////////////////////////////////////
 
 module  sbox6(addr, dout);
+/* verilator lint_off LITENDIAN */
 input	[1:6] addr;
 output	[1:4] dout;
 reg	[1:4] dout;
+/* verilator lint_on LITENDIAN */
 
 always @(addr) begin
     case ({addr[1], addr[6], addr[2:5]})	//synopsys full_case parallel_case

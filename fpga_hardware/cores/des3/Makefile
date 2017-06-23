@@ -20,23 +20,23 @@ sys:
 	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
 
 top:
-	verilator -Wno-fatal --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v ./rtl/des3_top.v --top-module des3_top -exe tb_top.cpp
+	verilator --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v ./rtl/des3_top.v --top-module des3_top -exe tb_top.cpp
 	make -j -C obj_dir -f Vdes3_top.mk Vdes3_top
 	./obj_dir/Vdes3_top
 
 core:
-	verilator -Wno-fatal --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v --top-module des3 -exe tb_core.cpp
+	verilator --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v --top-module des3 -exe tb_core.cpp
 	make -j -C obj_dir -f Vdes3.mk Vdes3
 	./obj_dir/Vdes3
 
 vcd:
-	verilator -Wno-fatal --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v ./rtl/des3_top.v --top-module des3_top -exe tb_top.cpp
+	verilator --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v ./rtl/des3_top.v --top-module des3_top -exe tb_top.cpp
 	make -j -C obj_dir -f Vdes3_top.mk Vdes3_top
 	./obj_dir/Vdes3_top
 	gtkwave ./obj_dir/Vdes3_top.vcd
 
 vcd_core:
-	verilator -Wno-fatal --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v --top-module des3 -exe tb_core.cpp
+	verilator --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v --top-module des3 -exe tb_core.cpp
 	make -j -C obj_dir -f Vdes3.mk Vdes3
 	./obj_dir/Vdes3
 	gtkwave ./obj_dir/Vdes3.vcd

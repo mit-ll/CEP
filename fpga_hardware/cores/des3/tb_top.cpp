@@ -82,12 +82,14 @@ void setKey(uint32_t* pKey) {
         remove_bit32(&pKey[4], (8*i)-i);
         remove_bit32(&pKey[5], (8*i)-i);
     }
+    /*
     pKey[5]=pKey[5]<<4>>4|pKey[4]<<28;
     pKey[4]=pKey[4]>>4;
     pKey[3]=pKey[3]<<4>>4|pKey[2]<<28;
     pKey[2]=pKey[2]>>4;
     pKey[1]=pKey[1]<<4>>4|pKey[0]<<28;
     pKey[0]=pKey[0]>>4;
+    */
     //printBinary((uint64_t)pKey[0]<<32|pKey[1],"key1");
     //printBinary((uint64_t)pKey[2]<<32|pKey[3],"key2");
     //printBinary((uint64_t)pKey[4]<<32|pKey[5],"key3");

@@ -33,6 +33,7 @@
 /////////////////////////////////////////////////////////////////////
 
 module  crp(P, R, K_sub);
+/* verilator lint_off LITENDIAN */
 output	[1:32]	P;
 input	[1:32]	R;
 input	[1:48]	K_sub;
@@ -40,6 +41,7 @@ input	[1:48]	K_sub;
 wire	[1:48] E;
 wire	[1:48] X;
 wire	[1:32] S;
+/* verilator lint_on LITENDIAN */
 
 assign E[1:48] = {	R[32], R[1], R[2], R[3], R[4], R[5], R[4], R[5],
 			R[6], R[7], R[8], R[9], R[8], R[9], R[10], R[11],

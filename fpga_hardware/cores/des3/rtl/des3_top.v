@@ -34,9 +34,9 @@ module des3_top(
    reg [31:0] key   [0:5];
 
    wire [63:0] des_in={desIn[0], desIn[1]};
-   wire [63:0] key_1 ={key[0], key[1]};
-   wire [63:0] key_2 ={key[2], key[3]};
-   wire [63:0] key_3 ={key[4], key[5]};
+   wire [55:0] key_1 ={key[0][27:0], key[1][27:0]};
+   wire [55:0] key_2 ={key[2][27:0], key[3][27:0]};
+   wire [55:0] key_3 ={key[4][27:0], key[5][27:0]};
    wire [63:0] ct;
    wire ct_valid;
 

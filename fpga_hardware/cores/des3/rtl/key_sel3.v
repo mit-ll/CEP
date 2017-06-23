@@ -33,7 +33,9 @@
 /////////////////////////////////////////////////////////////////////
 
 module  key_sel3(K_sub, key1, key2, key3, roundSel, decrypt);
+/* verilator lint_off LITENDIAN */
 output	[1:48]	K_sub;
+/* verilator lint_on LITENDIAN */
 input	[55:0]	key1, key2, key3;
 input	[5:0]	roundSel;
 input		decrypt;
@@ -41,8 +43,10 @@ input		decrypt;
 wire		decrypt_int;
 reg	[55:0]	K;
 reg	[1:48]	K_sub;
+/* verilator lint_off LITENDIAN */
 wire	[1:48]	K1, K2, K3, K4, K5, K6, K7, K8, K9;
 wire	[1:48]	K10, K11, K12, K13, K14, K15, K16;
+/* verilator lint_on LITENDIAN */
 
 always @(roundSel or decrypt or key1 or key2 or key3)
     case ({decrypt, roundSel[5:4]})		// synopsys full_case parallel_case
@@ -52,6 +56,8 @@ always @(roundSel or decrypt or key1 or key2 or key3)
         3'b1_00:	K = key3;
         3'b1_01:	K = key2;
         3'b1_10:	K = key1;
+        3'b0_11:	K = 56'b0;
+        3'b1_11:	K = 56'b0;
     endcase
 
     assign decrypt_int = (roundSel[5:4]==2'h1) ? !decrypt : decrypt;

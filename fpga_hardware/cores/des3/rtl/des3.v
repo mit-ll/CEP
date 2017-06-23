@@ -42,7 +42,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
     input [55:0] key3;
     input        decrypt;
     input        clk;
-
+/* verilator lint_off LITENDIAN */
     wire  [1:48] K_sub;
     wire  [1:64] IP, FP;
     reg   [1:64] FP_R;
@@ -51,6 +51,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
     wire  [1:32] Lout;
     wire  [1:32] Rout;
     wire  [1:32] out;
+/* verilator lint_on LITENDIAN */
 
     wire [5:0] roundSel;
 
@@ -65,14 +66,14 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
 
     always @ (posedge clk) begin
         if(start_posedge) begin
-            roundSel <= 8'h00;
+            roundSel <= 6'h00;
         end
         else if(~out_valid) begin
             roundSel <= roundSel +1;
         end
     end
 
-       assign out_valid = (roundSel == 8'h30);
+       assign out_valid = (roundSel == 6'h30);
     
     always @ (posedge clk) begin
         if(!out_valid) begin

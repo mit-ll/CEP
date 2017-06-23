@@ -1,10 +1,10 @@
 default:
-	@echo "sys        : Create a VMEM file to be loaded onto a SoC"
-	@echo "top        : Verilator - verify the core with a Wishbone bus interface"
-	@echo "core       : Verilator - Verify the core"
-	@echo "vcd        : Verilator - Generate VCD for top"
-	@echo "vcd_core   : Verilator - Generate VCD for core"
-	@echo "clean      : Remove all generated files"
+	@echo "sys      : Create a VMEM file to be loaded onto a SoC"
+	@echo "top      : Verilator - verify the core with a Wishbone bus interface"
+	@echo "core     : Verilator - Verify the core"
+	@echo "vcd      : Verilator - Generate VCD for top"
+	@echo "vcd_core : Verilator - Generate VCD for core"
+	@echo "clean    : Remove all generated files"
 
 sys:
 	or1k-elf-g++ -Wall -Wno-long-long -pedantic -O3 ../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys

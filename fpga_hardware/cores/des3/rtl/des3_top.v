@@ -101,5 +101,5 @@ module des3_top(
     .key2(key_2),
     .key3(key_3),
     .decrypt(decrypt),
-    .clk(wb_clk_i);
+    .clk(wb_clk_i));
 endmodule

@@ -13,10 +13,11 @@ typedef unsigned long vluint64_t;
 
 const unsigned int BITS_PER_BYTE = 8;
 const unsigned int BYTES_PER_WORD = 4;
-const unsigned int KEY_BITS = 64;
+const unsigned int KEY_BITS = 64*3;
 const unsigned int BLOCK_BITS = 64;
 const unsigned int CLOCK_PERIOD = 10;
 const unsigned int DES3_START_BYTES = BYTES_PER_WORD;
+const unsigned int DES3_DECRYPT_BYTES = BYTES_PER_WORD;
 const unsigned int DES3_DONE_BYTES = BYTES_PER_WORD;
 
 // Automatically generated constants
@@ -30,7 +31,8 @@ const uint32_t DES3_BASE = 0x92000000;
 
 // Offset of DES3 data and control registers in device memory map
 const uint32_t DES3_START = DES3_BASE;
-const uint32_t DES3_IN_BASE = DES3_START + DES3_START_BYTES;
+const uint32_t DES3_DECRYPT = DES3_START + DES3_START_BYTES;
+const uint32_t DES3_IN_BASE = DES3_DECRYPT + DES3_DECRYPT_BYTES;
 const uint32_t DES3_KEY_BASE = DES3_IN_BASE + BLOCK_BYTES;
 const uint32_t DES3_DONE = DES3_KEY_BASE + KEY_BYTES;
 const uint32_t DES3_CT_BASE = DES3_DONE + DES3_DONE_BYTES;
@@ -64,20 +66,20 @@ void runForClockCycles(const unsigned int pCycles) {
 }
 
 /*Wait for modexp ready signal*/
-void wait_ready(){
+void waitForValidOutput(){
     while (!readyValid()) {
         runForClockCycles(1);
     }
 }
 
 /*Check if both inputs are equal*/
-bool assertEquals(int index, uint64_t expected, uint64_t actual){
+bool assertEquals(int index, uint32_t expected_1, uint32_t expected_2, uint32_t actual_1, uint32_t actual_2){
 
-    if (expected == actual){
-    printf("*** PASSED   (%0d): %08x%08x Got %08x%08x\r\n", index, expected>>32, expected, actual>>32, actual);
+    if ((expected_1 == actual_1)&(expected_2 == actual_2)){
+    printf("*** PASSED   (%0d): %08x%08x Got %08x%08x\r\n", index, expected_1, expected_2, actual_1, actual_2);
      return true;// success
     }else{                   
-    printf("*** Expected (%0d): %08x%08x Got %08x%08x\r\n", index, expected>>32, expected, actual>>32, actual);
+    printf("*** Expected (%0d): %08x%08x Got %08x%08x\r\n", index, expected_1, expected_2, actual_1, actual_2);
      return false;// failure
     }
 }
@@ -103,11 +105,19 @@ void printBinary(uint64_t binary, const char* name){
     printf("\r\n");
 }
 
-void remove_bit(uint64_t* buffer, int pos){
-    uint64_t high_half = 0x000000000000;
-    uint64_t low_half =0x000000000000;
+void remove_bit32(uint32_t* buffer, int pos){
+    uint32_t high_half = 0x00000000;
+    uint32_t low_half =0x00000000;
+    if (pos > 0)low_half= *buffer << (32 - pos) >> (32 - pos);
+    high_half = *buffer >> (pos+1) << (pos);
+    *buffer = high_half | low_half;
+}
+
+void remove_bit64(uint64_t* buffer, int pos){
+    uint64_t high_half = 0x0000000000000000;
+    uint64_t low_half =0x0000000000000000;
     if (pos > 0)low_half= *buffer << (64 - pos) >> (64 - pos);
-    if (pos < 64) high_half = *buffer >> (pos+1) << (pos);
+    high_half = *buffer >> (pos+1) << (pos);
     *buffer = high_half | low_half;
 }
 

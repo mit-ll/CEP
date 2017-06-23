@@ -1,7 +1,7 @@
 #include "verilated.h"
 #include "Vdes3_top.h"
 
-#include "./src/des3.h"
+#include "./src/DES3.h"
 
 #if VM_TRACE 
 #include "verilated_vcd_c.h"
@@ -53,7 +53,7 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
     runForClockCycles(10);
 }
 
-bool textValid(void) {
+bool readyValid(void) {
     return (readFromAddress(DES3_DONE) != 0) ? true : false;
 }
 
@@ -62,46 +62,43 @@ void start(void) {
     writeToAddress(DES3_START, 0x0);
 }
 
-void writeToKey(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3){
-    int i=0;
-
-    for(i=0;i<9;i++){
-        remove_bit(&pKey1, (8*i)-i);
-        remove_bit(&pKey2, (8*i)-i);
-        remove_bit(&pKey3, (8*i)-i);
-    }
-    
-    setKey(, pKey1, , pKey2, , pKey3)
+void writeToDecrypt(int i) {
+    if(i) writeToAddress(DES3_DECRYPT, 0x1);
+    else  writeToAddress(DES3_DECRYPT, 0x0);
 }
 
 void setPlaintext(uint32_t* pPT) {
-    printf("Plaintext:\t0x");
-    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
-        writeToAddress(DES3_PT_BASE + (((BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), pPT[i]);
-        printf("%08X", pPT[i]);
-    }
-    printf("\n");
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i)
+        writeToAddress(DES3_IN_BASE + (((BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), pPT[i]);
 }
 
 void setKey(uint32_t* pKey) {
-    printf("Key:\t\t0x");
-    for(unsigned int i = 0; i < KEY_WORDS; ++i) {
-        writeToAddress(DES3_KEY_BASE + (((KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
-        printf("%08X", pKey[i]);
+    unsigned int i;
+    for(i=0;i<5;i++){
+        remove_bit32(&pKey[0], (8*i)-i);
+        remove_bit32(&pKey[1], (8*i)-i);
+        remove_bit32(&pKey[2], (8*i)-i);
+        remove_bit32(&pKey[3], (8*i)-i);
+        remove_bit32(&pKey[4], (8*i)-i);
+        remove_bit32(&pKey[5], (8*i)-i);
     }
-    printf("\n");
+    pKey[5]=pKey[5]<<4>>4|pKey[4]<<28;
+    pKey[4]=pKey[4]>>4;
+    pKey[3]=pKey[3]<<4>>4|pKey[2]<<28;
+    pKey[2]=pKey[2]>>4;
+    pKey[1]=pKey[1]<<4>>4|pKey[0]<<28;
+    pKey[0]=pKey[0]>>4;
+    //printBinary((uint64_t)pKey[0]<<32|pKey[1],"key1");
+    //printBinary((uint64_t)pKey[2]<<32|pKey[3],"key2");
+    //printBinary((uint64_t)pKey[4]<<32|pKey[5],"key3");
+    for(i = 0; i < KEY_WORDS; ++i)
+        writeToAddress(DES3_KEY_BASE + (((KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
 }
 
-void write_decrypt(int pData){
-    top->decrypt=pData;
-}
-
-void write_desIn(uint64_t pData){
-    top->desIn=pData;
-}
-uint64_t read_desOut() {
-    uint64_t data = top->desOut;
-    return data;
+void saveCiphertext(uint32_t *pCT) {
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
+        pCT[(BLOCK_WORDS - 1) - i] = readFromAddress(DES3_CT_BASE + (i * BYTES_PER_WORD));
+    }
 }
 
 void init(){
@@ -118,21 +115,21 @@ void init(){
 
 int main(int argc, char **argv, char **env) {
     int decrypt=0, select=0;
-    uint64_t des_out;
+    uint32_t ct[BLOCK_WORDS];
     bool success=true;
 
-	uint32_t x[10][10]={
-	//        key1                    key2                    key3                 Test data               Out data
-	{0x0101010, 0x101010101, 0x01010101, 0x01010101, 0x01010101, 0x01010101, 0x95F8A5E5, 0xDD31D900, 0x80000000, 0x00000000},
-	{0x0101010, 0x101010101, 0x01010101, 0x01010101, 0x01010101, 0x01010101, 0x9D64555A, 0x9A10B852, 0x00000010, 0x00000000},
-	{0x3849674, 0xC2602319E, 0x3849674C, 0x2602319E, 0x3849674C, 0x2602319E, 0x51454B58, 0x2DDF440A, 0x7178876E, 0x01F19B2A},
-	{0x04B915B, 0xA43FEB5B6, 0x04B915BA, 0x43FEB5B6, 0x04B915BA, 0x43FEB5B6, 0x42FD4430, 0x59577FA2, 0xAF37FB42, 0x1F8C4095},
-	{0x0123456, 0x789ABCDEF, 0x01234567, 0x89ABCDEF, 0x01234567, 0x89ABCDEF, 0x736F6D65, 0x64617461, 0x3D124FE2, 0x198BA318},
-	{0x0123456, 0x789ABCDEF, 0x55555555, 0x55555555, 0x01234567, 0x89ABCDEF, 0x736F6D65, 0x64617461, 0xFBABA1FF, 0x9D05E9B1},
-	{0x0123456, 0x789ABCDEF, 0x55555555, 0x55555555, 0xFEDCBA98, 0x76543210, 0x736F6D65, 0x64617461, 0x18d748e5, 0x63620572},
-	{0x0352020, 0x767208217, 0x86028766, 0x59082198, 0x64056ABD, 0xFEA93457, 0x73717569, 0x67676C65, 0xc07d2a0f, 0xa566fa30},
-	{0x0101010, 0x101010101, 0x80010101, 0x01010101, 0x01010101, 0x01010102, 0x00000000, 0x00000000, 0xe6e6dd5b, 0x7e722974},
-	{0x1046103, 0x489988020, 0x9107D015, 0x89190101, 0x19079210, 0x981A0101, 0x00000000, 0x00000000, 0xe1ef62c3, 0x32fe825b}};
+	uint64_t x[10][10]={
+	//       key1                key2                key3             Test data           Out data
+	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x95F8A5E5DD31D900, 0x8000000000000000},
+	{0x0101010101010101, 0x0101010101010101, 0x0101010101010101, 0x9D64555A9A10B852, 0x0000001000000000},
+	{0x3849674C2602319E, 0x3849674C2602319E, 0x3849674C2602319E, 0x51454B582DDF440A, 0x7178876E01F19B2A},
+	{0x04B915BA43FEB5B6, 0x04B915BA43FEB5B6, 0x04B915BA43FEB5B6, 0x42FD443059577FA2, 0xAF37FB421F8C4095},
+	{0x0123456789ABCDEF, 0x0123456789ABCDEF, 0x0123456789ABCDEF, 0x736F6D6564617461, 0x3D124FE2198BA318},
+	{0x0123456789ABCDEF, 0x5555555555555555, 0x0123456789ABCDEF, 0x736F6D6564617461, 0xFBABA1FF9D05E9B1},
+	{0x0123456789ABCDEF, 0x5555555555555555, 0xFEDCBA9876543210, 0x736F6D6564617461, 0x18d748e563620572},
+	{0x0352020767208217, 0x8602876659082198, 0x64056ABDFEA93457, 0x7371756967676C65, 0xc07d2a0fa566fa30},
+	{0x0101010101010101, 0x8001010101010101, 0x0101010101010102, 0x0000000000000000, 0xe6e6dd5b7e722974},
+	{0x1046103489988020, 0x9107D01589190101, 0x19079210981A0101, 0x0000000000000000, 0xe1ef62c332fe825b}};
 
     Verilated::commandArgs(argc, argv);
 #if VM_TRACE
@@ -158,19 +155,21 @@ int main(int argc, char **argv, char **env) {
 	printf("\r\n");
 
 	for(decrypt=0;decrypt<2;decrypt=decrypt+1){
-	    write_decrypt(decrypt);
+	    writeToDecrypt(decrypt);
 		if(decrypt)	printf("Running Encrypt test ...\r\n\r\n");
     	else		printf("Running Decrypt test ...\r\n\r\n");
 
 	    for(select=0;select<10;select=select+1){
-	   	    write_key(x[select][0], x[select][1], x[select][2]);
-	   	    write_desIn(x[select][3+decrypt]);
+	        uint32_t key[6]={x[select][0]>>32, x[select][0], x[select][1]>>32, x[select][1], x[select][2]>>32, x[select][2]};
+	   	    setKey(key);
+	   	    uint32_t pt[2]={x[select][3+decrypt]>>32, x[select][3+decrypt]};
+	   	    setPlaintext(pt);
    	    
             start();
-            wait_ready();
-            des_out=read_desOut();
+            waitForValidOutput();
+            saveCiphertext(ct);
 
-		    success=success&assertEquals(select, x[select][4-decrypt], des_out);
+		    success=success&assertEquals(select, x[select][4-decrypt]>>32, x[select][4-decrypt], ct[1], ct[0]);
         }
 	}
 

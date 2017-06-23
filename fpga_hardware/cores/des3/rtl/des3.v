@@ -61,6 +61,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
 
     wire start_posedge = start & ~start_r;
     reg [7:0] validCounter;
+    wire [63:0] des;
 
     always @ (posedge clk) begin
         if(start_posedge) begin
@@ -71,7 +72,13 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
         end
     end
 
-       assign out_valid = (roundSel == 8'h2f);
+       assign out_valid = (roundSel == 8'h30);
+    
+    always @ (posedge clk) begin
+        if(!out_valid) begin
+            desOut <= des;
+        end
+    end
 
 
     crp u0(
@@ -106,7 +113,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
         R <= Rout;
 
     // Perform initial permutation
-    assign IP[1:64] = {    desIn[06], desIn[14], desIn[22], desIn[30], desIn[38], desIn[46],
+    assign IP[1:64] = {desIn[06], desIn[14], desIn[22], desIn[30], desIn[38], desIn[46],
     desIn[54], desIn[62], desIn[04], desIn[12], desIn[20], desIn[28],
     desIn[36], desIn[44], desIn[52], desIn[60], desIn[02], desIn[10], 
     desIn[18], desIn[26], desIn[34], desIn[42], desIn[50], desIn[58], 
@@ -119,7 +126,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
     desIn[33], desIn[41], desIn[49], desIn[57] };
 
     // Perform final permutation
-    assign desOut = {    FP[40], FP[08], FP[48], FP[16], FP[56], FP[24], FP[64], FP[32], 
+    assign des = {FP[40], FP[08], FP[48], FP[16], FP[56], FP[24], FP[64], FP[32], 
     FP[39], FP[07], FP[47], FP[15], FP[55], FP[23], FP[63], FP[31], 
     FP[38], FP[06], FP[46], FP[14], FP[54], FP[22], FP[62], FP[30], 
     FP[37], FP[05], FP[45], FP[13], FP[53], FP[21], FP[61], FP[29], 

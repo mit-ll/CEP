@@ -1,11 +1,11 @@
 default:
 	@echo "sys        : Create a VMEM file to be loaded onto a SoC"
-	@echo "ver        : Verilator - verify the core plus a Wishbone bus interface"
-	@echo "             INCOMPLETE: verilator bug"
-	@echo "ver_modexp : Verilator - Verify the core with original bus interface"
-	@echo "             INCOMPLETE: verilator bug"
-	@echo "vcd        : Verilator - Generate VCD for ver"
-	@echo "vcd_modexp : Verilator - Generate VCD for ver_modexp"
+	@echo "top        : Verilator - verify the core with a Wishbone bus interface"
+	@echo "core       : Verilator - Verify the core"
+	@echo ""
+	@echo "vcd        : Verilator - Generate VCD for top"
+	@echo "vcd_core   : Verilator - Generate VCD for core"
+	@echo ""
 	@echo "ides3p     : iVerilog  - Verify the core plus a Wishbone bus interface"
 	@echo "idesp      : iVerilog  - Verify the core plus a Wishbone bus interface"
 	@echo "ides3      : iVerilog  - Verify the core plus a Wishbone bus interface"
@@ -33,7 +33,7 @@ vcd:
 	verilator -Wno-fatal --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v ./rtl/des3_top.v --top-module des3_top -exe tb_top.cpp
 	make -j -C obj_dir -f Vdes3_top.mk Vdes3_top
 	./obj_dir/Vdes3_top
-	gtkwave ./obj_dir/Vdes3.vcd
+	gtkwave ./obj_dir/Vdes3_top.vcd
 
 vcd_core:
 	verilator -Wno-fatal --trace --trace-depth 5 --cc --clk clk --default-language 1364-2001 -I. ./rtl/common/crp.v ./rtl/common/sbox1.v ./rtl/common/sbox2.v ./rtl/common/sbox3.v ./rtl/common/sbox4.v ./rtl/common/sbox5.v ./rtl/common/sbox6.v  ./rtl/common/sbox7.v ./rtl/common/sbox8.v ./rtl/key_sel3.v ./rtl/des3.v --top-module des3 -exe tb_core.cpp

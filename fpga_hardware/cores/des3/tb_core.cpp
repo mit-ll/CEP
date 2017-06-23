@@ -20,29 +20,50 @@ void evalModel() {
 void toggleClock() {
     top->clk = ~top->clk;
 }
-
-void write_key(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3){
+///*
+void setKey(uint64_t pKey1, uint64_t pKey2, uint64_t pKey3){
     int i=0;
-
     for(i=0;i<9;i++){
-        remove_bit(&pKey1, (8*i)-i);
-        remove_bit(&pKey2, (8*i)-i);
-        remove_bit(&pKey3, (8*i)-i);
+        remove_bit64(&pKey1, (8*i)-i);
+        remove_bit64(&pKey2, (8*i)-i);
+        remove_bit64(&pKey3, (8*i)-i);
     }
+    
+    //printBinary(pKey1,"key1");
+    //printBinary(pKey2,"key2");
+    //printBinary(pKey3,"key3");
     
     top->key1=pKey1;
     top->key2=pKey2;
     top->key3=pKey3;
 }
+//*/
+/*
+void setKey(uint32_t* pKey){
+    int i=0;
 
-void write_decrypt(int pData){
+    for(i=0;i<5;i++){
+        remove_bit32(&pKey[0], (8*i)-i);
+        remove_bit32(&pKey[1], (8*i)-i);
+        remove_bit32(&pKey[2], (8*i)-i);
+        remove_bit32(&pKey[3], (8*i)-i);
+        remove_bit32(&pKey[4], (8*i)-i);
+        remove_bit32(&pKey[5], (8*i)-i);
+    }
+   
+    top->key1=(uint64_t)pKey[0]<<28|pKey[1];
+    top->key2=(uint64_t)pKey[2]<<28|pKey[3];
+    top->key3=(uint64_t)pKey[4]<<28|pKey[5];
+}
+*/
+void setDecrypt(int pData){
     top->decrypt=pData;
 }
 
-void write_desIn(uint64_t pData){
+void setPlainText(uint64_t pData){
     top->desIn=pData;
 }
-uint64_t read_desOut() {
+uint64_t readDesOut() {
     uint64_t data = top->desOut;
     return data;
 }
@@ -114,19 +135,22 @@ int main(int argc, char **argv, char **env) {
 	printf("\r\n");
 
 	for(decrypt=0;decrypt<2;decrypt=decrypt+1){
-	    write_decrypt(decrypt);
+	    setDecrypt(decrypt);
 		if(decrypt)	printf("Running Encrypt test ...\r\n\r\n");
     	else		printf("Running Decrypt test ...\r\n\r\n");
 
 	    for(select=0;select<10;select=select+1){
-	   	    write_key(x[select][0], x[select][1], x[select][2]);
-	   	    write_desIn(x[select][3+decrypt]);
+	        //uint32_t key[6]={x[select][0]>>32, x[select][0], x[select][1]>>32, x[select][1], x[select][2]>>32, x[select][2]};
+	        setKey(x[select][0], x[select][1], x[select][2]);
+	   	    //writeToKey(key);
+	   	    setPlainText(x[select][3+decrypt]);
    	    
             start();
-            wait_ready();
-            des_out=read_desOut();
+            waitForValidOutput();
+            des_out=readDesOut();
+            runForClockCycles(10);
 
-		    success=success&assertEquals(select, x[select][4-decrypt], des_out);
+		    success=success&assertEquals(select, x[select][4-decrypt]>>32, x[select][4-decrypt], des_out>>32, des_out);
         }
 	}
 

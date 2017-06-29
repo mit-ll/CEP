@@ -73,7 +73,7 @@ module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
         end
     end
 
-       assign out_valid = (roundSel == 6'h30);
+    assign out_valid = (roundSel == 6'h30);
     
     always @ (posedge clk) begin
         if(!out_valid) begin

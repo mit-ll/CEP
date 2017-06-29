@@ -132,6 +132,8 @@ int main(int argc, char **argv, char **env) {
 	}
 
 	printf("\r\n");
+    assertSuccess(success);
+	printf("\r\n");
 	printf("**************************************\r\n");
 	printf("* DES Test done ...                  *\r\n");
 	printf("**************************************\r\n");

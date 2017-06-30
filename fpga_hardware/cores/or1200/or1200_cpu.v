@@ -86,7 +86,6 @@ module or1200_cpu(
 	// SPR interface
 	supv, spr_addr, spr_dat_cpu, spr_dat_pic, spr_dat_tt, spr_dat_pm,
 	spr_dat_dmmu, spr_dat_immu, spr_dat_du, spr_cs, spr_we, mtspr_dc_done
-	, led_sr
 );
 
 parameter dw = `OR1200_OPERAND_WIDTH;
@@ -208,8 +207,6 @@ input   			mtspr_dc_done;
 input				sig_int;
 input				sig_tick;
 
-output 			led_sr;
-
 //
 // Internal wires
 //
@@ -293,7 +290,6 @@ wire 				fpcsr_we;
 wire				sr_we;
 wire	[`OR1200_SR_WIDTH-1:0]	to_sr;
 wire	[`OR1200_SR_WIDTH-1:0]	sr;
-assign led_sr = sr[0];
 wire    			dsx;
 wire				except_flushpipe;
 wire				except_start;

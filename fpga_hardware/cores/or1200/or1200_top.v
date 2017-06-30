@@ -91,8 +91,6 @@ module or1200_top(
 	pm_immu_gate_o, pm_tt_gate_o, pm_cpu_gate_o, pm_wakeup_o, pm_lvolt_o
 
 ,sig_tick
-,led_sr
-
 );
 
 parameter dw = `OR1200_OPERAND_WIDTH;
@@ -196,8 +194,6 @@ output			pm_tt_gate_o;
 output			pm_cpu_gate_o;
 output			pm_wakeup_o;
 output			pm_lvolt_o;
-
-output 			led_sr;
 
 //
 // Internal wires and regs
@@ -713,7 +709,6 @@ or1200_cpu(
 	.spr_cs(spr_cs),
 	.spr_we(spr_we),
         .mtspr_dc_done(mtspr_dc_done)
-   , .led_sr(led_sr)
 );
 
 //

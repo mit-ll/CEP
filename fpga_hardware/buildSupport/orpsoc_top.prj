@@ -1,3 +1,6 @@
+verilog work "cores/md5/pancham_round.v"
+verilog work "cores/md5/pancham.v"
+verilog work "cores/md5/md5_top.v"
 verilog work "cores/aes/table.v"
 verilog work "cores/aes/round.v"
 verilog work "cores/aes/aes_128.v"

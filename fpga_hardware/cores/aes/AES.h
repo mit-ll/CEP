@@ -15,12 +15,12 @@ const unsigned int KEY_WORDS = KEY_BYTES / BYTES_PER_WORD;
 const unsigned int BLOCK_BYTES = BLOCK_BITS / BITS_PER_BYTE;
 const unsigned int BLOCK_WORDS = BLOCK_BYTES / BYTES_PER_WORD;
 
-typedef unsigned int uint32_t;
+typedef unsigned long uint32_t;
 typedef unsigned long long uint64_t;
 typedef unsigned long vluint64_t;
 
 // Base address of the core on the bus
-const uint32_t AES_BASE = 0x92000000;
+const uint32_t AES_BASE = 0x95000000;
 
 // Offset of AES data and control registers in device memory map
 const uint32_t AES_START = AES_BASE;

@@ -681,7 +681,10 @@ module arbiter_dbus
 	16'bzzzzzzzzzzzz1zzz: wb_slave_sel_r <= 16'h0008; // RAM
 	16'bzzzzzzzzzzzz0zz1: wb_slave_sel_r <= 16'h0001; // DDR
 	16'bzzzzzzzzzzzz0z10: wb_slave_sel_r <= 16'h0002;
-	16'bzzzzzzzzzzz10z00: wb_slave_sel_r <= 16'h0010; 
+	16'bzzzzzzzzzzz10z00: wb_slave_sel_r <= 16'h0010;
+	16'bzzzzzzzzzz100z00: wb_slave_sel_r <= 16'h0020;
+	16'bzzzzzzzzz1000z00: wb_slave_sel_r <= 16'h0040;
+	16'bzzzzzzzz10000z00: wb_slave_sel_r <= 16'h0080;
 	default:              wb_slave_sel_r <= 16'h0004; // Byte bus
       endcase
    end      
@@ -945,33 +948,76 @@ module arbiter_dbus
    assign wbs_rty_o_mux_i[15] = wbs15_rty_o & wb_slave_sel_r[15];
    
    // Master out mux from slave in data
-   assign wbm_dat_i = wb_slave_sel_r[1] ? wbs_dat_o_mux_i[1] :
-		      wb_slave_sel_r[2] ? wbs_dat_o_mux_i[2] :
-		      wb_slave_sel_r[3] ? wbs_dat_o_mux_i[3] :
-		      wb_slave_sel_r[4] ? wbs_dat_o_mux_i[4] :
-		                          wbs_dat_o_mux_i[0];
-   
+   assign wbm_dat_i = wb_slave_sel_r[1] ?  wbs_dat_o_mux_i[1] :
+		      wb_slave_sel_r[2] ?  wbs_dat_o_mux_i[2] :
+		      wb_slave_sel_r[3] ?  wbs_dat_o_mux_i[3] :
+		      wb_slave_sel_r[4] ?  wbs_dat_o_mux_i[4] :
+		      wb_slave_sel_r[5] ?  wbs_dat_o_mux_i[5] :
+		      wb_slave_sel_r[6] ?  wbs_dat_o_mux_i[6] :
+		      wb_slave_sel_r[7] ?  wbs_dat_o_mux_i[7] :
+		      wb_slave_sel_r[8] ?  wbs_dat_o_mux_i[8] :
+		      wb_slave_sel_r[9] ?  wbs_dat_o_mux_i[9] :
+		      wb_slave_sel_r[10] ? wbs_dat_o_mux_i[10] :
+		      wb_slave_sel_r[11] ? wbs_dat_o_mux_i[11] :
+		      wb_slave_sel_r[12] ? wbs_dat_o_mux_i[12] :
+		      wb_slave_sel_r[13] ? wbs_dat_o_mux_i[13] :
+		      wb_slave_sel_r[14] ? wbs_dat_o_mux_i[14] :
+		      wb_slave_sel_r[15] ? wbs_dat_o_mux_i[15] :
+		                           wbs_dat_o_mux_i[0];
+
    // Master out acks, or together
    assign wbm_ack_i = wbs_ack_o_mux_i[0] |
 		      wbs_ack_o_mux_i[1] |
 		      wbs_ack_o_mux_i[2] |
 		      wbs_ack_o_mux_i[3] |
-		      wbs_ack_o_mux_i[4] ;
-   
-    
-   assign wbm_err_i = wbs_err_o_mux_i[0] |
+		      wbs_ack_o_mux_i[4] |
+		      wbs_ack_o_mux_i[5] |
+		      wbs_ack_o_mux_i[6] |
+		      wbs_ack_o_mux_i[7] |
+		      wbs_ack_o_mux_i[8] |
+		      wbs_ack_o_mux_i[9] |
+		      wbs_ack_o_mux_i[10] |
+		      wbs_ack_o_mux_i[11] |
+		      wbs_ack_o_mux_i[12] |
+		      wbs_ack_o_mux_i[13] |
+		      wbs_ack_o_mux_i[14] |
+		      wbs_ack_o_mux_i[15] ;
+
+      assign wbm_err_i = wbs_err_o_mux_i[0] |
 		      wbs_err_o_mux_i[1] |
 		      wbs_err_o_mux_i[2] |
 		      wbs_err_o_mux_i[3] |
-		      wbs_err_o_mux_i[4] ;
-   
-   
-   assign wbm_rty_i = wbs_rty_o_mux_i[0] |
+		      wbs_err_o_mux_i[4] |
+		      wbs_err_o_mux_i[5] |
+		      wbs_err_o_mux_i[6] |
+		      wbs_err_o_mux_i[7] |
+		      wbs_err_o_mux_i[8] |
+		      wbs_err_o_mux_i[9] |
+		      wbs_err_o_mux_i[10] |
+		      wbs_err_o_mux_i[11] |
+		      wbs_err_o_mux_i[12] |
+		      wbs_err_o_mux_i[13] |
+		      wbs_err_o_mux_i[14] |
+		      wbs_err_o_mux_i[15] ;
+
+      assign wbm_rty_i = wbs_rty_o_mux_i[0] |
 		      wbs_rty_o_mux_i[1] |
 		      wbs_rty_o_mux_i[2] |
 		      wbs_rty_o_mux_i[3] |
-		      wbs_rty_o_mux_i[4] ;
+		      wbs_rty_o_mux_i[4] |
+		      wbs_rty_o_mux_i[5] |
+		      wbs_rty_o_mux_i[6] |
+		      wbs_rty_o_mux_i[7] |
+		      wbs_rty_o_mux_i[8] |
+		      wbs_rty_o_mux_i[9] |
+		      wbs_rty_o_mux_i[10] |
+		      wbs_rty_o_mux_i[11] |
+		      wbs_rty_o_mux_i[12] |
+		      wbs_rty_o_mux_i[13] |
+		      wbs_rty_o_mux_i[14] |
+		      wbs_rty_o_mux_i[15] ;
 
+   // ModelSim doesn't like the compact way of doing the above
    //assign wbm_ack_i = ! wbs_ack_o_mux_i;
    //assign wbm_err_i = | wbs_err_o_mux_i;
    //assign wbm_rty_i = | wbs_rty_o_mux_i;   

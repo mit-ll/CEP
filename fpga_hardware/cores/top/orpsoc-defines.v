@@ -58,9 +58,9 @@
 // `define ETH0
  `define AES
  `define MD5
-// `define SHA
-// `define RSA
-// `define DES
+ `define SHA
+ `define RSA
+ `define DES
 // `define FFT
 // `define FIR
 // `define IIR

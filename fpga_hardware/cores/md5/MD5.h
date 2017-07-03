@@ -15,12 +15,12 @@ const unsigned int HASH_WORDS = HASH_BYTES / BYTES_PER_WORD;
 const unsigned int MESSAGE_BYTES = MESSAGE_BITS / BITS_PER_BYTE;
 const unsigned int MESSAGE_WORDS = MESSAGE_BYTES / BYTES_PER_WORD;
 
-typedef unsigned int uint32_t;
-typedef unsigned long long uint64_t;
+typedef long unsigned int uint32_t;
+typedef long unsigned long uint64_t;
 typedef unsigned long vluint64_t;
 
 // Base address of the core on the bus
-const uint32_t MD5_BASE = 0x92000000;
+const uint32_t MD5_BASE = 0x94000000;
 
 // Offset of MD5 data and control registers in device memory map
 const uint32_t MD5_READY = MD5_BASE;

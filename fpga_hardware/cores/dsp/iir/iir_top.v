@@ -34,9 +34,9 @@ module iir_top(
    reg [5:0] xSel;
    reg [5:0] ySel;
    reg [5:0] count;
-   reg [31:0] dataIn, dataW_In, dataW_addr, dataR_Out, dataR_addr;
-   
-   wire dataOut;
+   wire [31:0] dataIn, dataOut, dataR_Out;
+   reg [31:0] dataW_In, dataW_addr, dataR_addr;
+
    reg data_valid;
    wire next_out;
    reg dataW, dataR;

@@ -33,8 +33,9 @@ module dft_top_top(
    reg [63:0] dataY [0:31];
    reg [5:0] xSel;
    reg [5:0] ySel;
-   reg [63:0] dataIn, dataW_In, dataW_addr, dataR_Out, dataR_addr;
-wire [63:0]dataOut;
+   wire [63:0] dataIn, dataOut, dataR_Out;
+   reg [63:0] dataW_In, dataW_addr, dataR_addr;
+
    reg data_valid;
    wire next_out;
    reg dataW, dataR;

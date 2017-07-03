@@ -14,7 +14,7 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 }
 
 bool readyValid(void) {
-    return (readFromAddress(DES3_DONE) != 0) ? true : false;
+    return (readFromAddress(DES3_START+0x10) != 0) ? true : false;
 }
 
 void start(void) {
@@ -23,17 +23,17 @@ void start(void) {
 }
 
 void setInData(uint32_t i, uint32_t idata){
-    writeToAddress(0xC, idata); //Write data
-    writeToAddress(0x8, i);     //Write addr
-    writeToAddress(0x4, 0x1);   //Load
-    writeToAddress(0x4, 0x0);   //Stop
+    writeToAddress(DES3_START+0xC, idata); //Write data
+    writeToAddress(DES3_START+0x8, i);     //Write addr
+    writeToAddress(DES3_START+0x4, 0x1);   //Load
+    writeToAddress(DES3_START+0x4, 0x0);   //Stop
 }
 
 uint32_t getOutData(uint32_t i) {
     uint32_t temp;
     
-    writeToAddress(0x10, i);    //000100 00
-    temp=readFromAddress(0x1C); //000111 00
+    writeToAddress(DES3_START+0x10, i);    //000100 00
+    temp=readFromAddress(DES3_START+0x1C); //000111 00
     return temp;
 }
 
@@ -70,6 +70,7 @@ int main(int argc, char **argv, char **env) {
         setInData(i, i*4);
     
     start();
+    waitForValidOutput();
        
     for (i=0; i < 32; i++){
         dout=getOutData(i);

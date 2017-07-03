@@ -14,7 +14,7 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 }
 
 bool readyValid(void) {
-    return (readFromAddress(DES3_DONE) != 0) ? true : false;
+    return (readFromAddress(DES3_START+0x14) != 0) ? true : false;
 }
 
 void start(void) {
@@ -23,25 +23,25 @@ void start(void) {
 }
 
 void setX(uint16_t i, uint16_t pX0, uint16_t pX1, uint16_t pX2, uint16_t pX3){
-    writeToAddress(0xC, pX1<<16|pX0); //Write data
-    writeToAddress(0x8, i);           //Write addr
-    writeToAddress(0x4, 0x1);         //Load
-    writeToAddress(0x4, 0x0);         //Stop
-    writeToAddress(0x10, pX3<<16|pX2); //Write data
-    writeToAddress(0x8, i);           //Write addr
-    writeToAddress(0x4, 0x1);         //Load
-    writeToAddress(0x4, 0x0);         //Stop
+    writeToAddress(DES3_START+0xC, pX1<<16|pX0); //Write data
+    writeToAddress(DES3_START+0x8, i);           //Write addr
+    writeToAddress(DES3_START+0x4, 0x1);         //Load
+    writeToAddress(DES3_START+0x4, 0x0);         //Stop
+    writeToAddress(DES3_START+0x10, pX3<<16|pX2); //Write data
+    writeToAddress(DES3_START+0x8, i);           //Write addr
+    writeToAddress(DES3_START+0x4, 0x1);         //Load
+    writeToAddress(DES3_START+0x4, 0x0);         //Stop
 }
 
 void getY(uint16_t i, uint16_t *pY0, uint16_t *pY1, uint16_t *pY2, uint16_t *pY3) {
     uint32_t temp;
-    writeToAddress(0x14, i);    //000101 00
+    writeToAddress(DES3_START+0x14, i);    //000101 00
 
-    temp=readFromAddress(0x20); //001000 00
+    temp=readFromAddress(DES3_START+0x20); //001000 00
     *pY0=temp;
     *pY1=temp>>16;
 
-    temp=readFromAddress(0x24); //001001 00
+    temp=readFromAddress(DES3_START+0x24); //001001 00
     *pY2=temp;
     *pY3=temp>>16;
 }

@@ -506,7 +506,7 @@ end*/
  `ifndef VCD_DEPTH
   `define VCD_DEPTH 0
  `endif 
-	$dumpvars(4, orpsoc_testbench.dut); //orpsoc_testbench.dut.or1200_top0.or1200_cpu);
+	$dumpvars(1, orpsoc_testbench.dut); //orpsoc_testbench.dut.or1200_top0.or1200_cpu);
   
 /*for(r = 0; r < 1000; r = r + 1)begin 
   for(t = 0; t < 10; t = t + 1) begin

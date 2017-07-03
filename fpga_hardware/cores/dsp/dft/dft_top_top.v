@@ -33,12 +33,12 @@ module dft_top_top(
    reg [63:0] dataY [0:31];
    reg [5:0] xSel;
    reg [5:0] ySel;
-   reg [63:0] dataIn, dataOut, dataW_In, dataW_addr, dataR_Out, dataR_addr;
-
-   wire data_valid;
+   reg [63:0] dataIn, dataW_In, dataW_addr, dataR_Out, dataR_addr;
+wire [63:0]dataOut;
+   reg data_valid;
    wire next_out;
-   wire dataW, dataR;
-
+   reg dataW, dataR;
+wire next_posedge;
    // Implement MD5 I/O memory map interface
    // Write side
    always @(posedge wb_clk_i) begin
@@ -104,16 +104,16 @@ module dft_top_top(
         if(dataW_posedge) begin
             dataX[dataW_addr] <= dataW_In;
         end
+    	dataR_Out=dataY[dataR_addr];
    end
 
-    assign dataR_Out=dataY[dataR_addr];
 
     reg next_r;
     always @(posedge wb_clk_i) begin
         next_r <= next;
     end
 
-    wire next_posedge = next & ~next_r;
+    assign next_posedge = next & ~next_r;
         
    always @ (posedge wb_clk_i) begin
         if(next_posedge) begin
@@ -122,8 +122,8 @@ module dft_top_top(
         else if(xSel<6'b100000) begin
             xSel <= xSel +1;
         end
+dataIn = dataX[xSel];
    end
-   assign dataIn = dataX[xSel];
 
     reg next_out_r;
     always @(posedge wb_clk_i) begin

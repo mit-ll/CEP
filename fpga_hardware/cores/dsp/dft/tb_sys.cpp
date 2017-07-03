@@ -53,9 +53,6 @@ int main(int argc, char **argv, char **env) {
 
     printf("Initializing interface and resetting core\r\n");
 
-    // Initialize Inputs
-    init();
-    
 	printf("\r\n");
 	printf("*********************************************************\r\n");
 	printf("* DFT core simulation started ...                       *\r\n");

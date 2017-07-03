@@ -7,10 +7,10 @@ default:
 	@echo "clean    : Remove all generated files"
 
 sys:
-	or1k-elf-g++ -Wall -Wno-long-long -pedantic -O3 ../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys
+	or1k-elf-g++ -Wall -Wno-long-long -pedantic -O3 i../../../../software/ml509SRAM.S tb_sys.cpp -o tb_sys
 	or1k-elf-objdump -D tb_sys > tb_sys.S
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
-	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
+	../../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
 
 top:
 	verilator -Wno-fatal --cc --clk clk --default-language 1364-2001 -I. filter_fir.v fir_top.v --top-module fir_top -exe tb_top.cpp

@@ -34,11 +34,12 @@ module iir_top(
    reg [5:0] xSel;
    reg [5:0] ySel;
    reg [5:0] count;
-   reg [31:0] dataIn, dataOut, dataW_In, dataW_addr, dataR_Out, dataR_addr;
-
-   wire data_valid;
+   reg [31:0] dataIn, dataW_In, dataW_addr, dataR_Out, dataR_addr;
+   
+   wire dataOut;
+   reg data_valid;
    wire next_out;
-   wire dataW, dataR;
+   reg dataW, dataR;
 
    // Implement MD5 I/O memory map interface
    // Write side
@@ -93,9 +94,8 @@ module iir_top(
         if(dataW_posedge) begin
             dataX[dataW_addr] <= dataW_In;
         end
+    dataR_Out=dataY[dataR_addr];
    end
-
-    assign dataR_Out=dataY[dataR_addr];
 
     reg next_r;
     always @(posedge wb_clk_i) begin

@@ -105,9 +105,9 @@ wire next_posedge;
         if(dataW_posedge) begin
             dataX[dataW_addr] <= dataW_In;
         end
-    	dataR_Out=dataY[dataR_addr];
+    	//dataR_Out=dataY[dataR_addr];
    end
-
+   assign dataR_Out=dataY[dataR_addr];
 
     reg next_r;
     always @(posedge wb_clk_i) begin
@@ -123,8 +123,9 @@ wire next_posedge;
         else if(xSel<6'b100000) begin
             xSel <= xSel +1;
         end
-dataIn = dataX[xSel];
+        //dataIn = dataX[xSel];
    end
+   assign dataIn = dataX[xSel];
 
     reg next_out_r;
     always @(posedge wb_clk_i) begin

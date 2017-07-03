@@ -94,8 +94,9 @@ module iir_top(
         if(dataW_posedge) begin
             dataX[dataW_addr] <= dataW_In;
         end
-    dataR_Out=dataY[dataR_addr];
+    	//dataR_Out=dataY[dataR_addr];
    end
+   assign dataR_Out=dataY[dataR_addr];
 
     reg next_r;
     always @(posedge wb_clk_i) begin
@@ -110,10 +111,10 @@ module iir_top(
         end
         else if(xSel<6'b100000) begin
             xSel <= xSel +1;
-            dataIn = dataX[xSel];
+            //dataIn = dataX[xSel];
         end
    end
-   //assign dataIn = dataX[xSel];
+   assign dataIn = dataX[xSel];
    
    always @ (posedge wb_clk_i) begin
         if(next_posedge) begin

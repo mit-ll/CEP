@@ -47,7 +47,7 @@
  `define FPGA_BOARD_XILINX_ML501
  `define IOCONFIG_XILINX_ML501
 // `define BOARD_CLOCK_PERIOD 5000 // 200MHz (pS accuracy for Xilinx sims.) 
- `define BOARD_CLOCK_PERIOD 10 // 100MHz (nS) 
+ `define BOARD_CLOCK_PERIOD 20 // 50MHz (nS) 
 
 // `define ADV_DEBUG	 
 // `define JTAG_DEBUG
@@ -56,6 +56,13 @@
  `define UART0
 // `define GPIO0
  `define AES
+// `define MD5
+// `define SHA
+// `define RSA
+// `define DES
+// `define FFT
+// `define FIR
+// `define IIR
 
 // end of included module defines - keep this comment line here, scripts depend on it!!
 

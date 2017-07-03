@@ -67,7 +67,8 @@ module arbiter_dbus
    wbs1_err_o,
    wbs1_rty_o,
 
-   // Slave three - AES
+
+   // Slave three - Byte bus - default
    // Wishbone Slave interface
    wbs2_adr_i,
    wbs2_dat_i,
@@ -83,8 +84,7 @@ module arbiter_dbus
    wbs2_err_o,
    wbs2_rty_o,
 
-
-   // Slave four - Byte bus - default
+   // Slave four - ROM/RAM
    // Wishbone Slave interface
    wbs3_adr_i,
    wbs3_dat_i,
@@ -99,24 +99,6 @@ module arbiter_dbus
    wbs3_ack_o,
    wbs3_err_o,
    wbs3_rty_o,
-
-   // Slave five - ROM/RAM
-   // This should ALWAYS be the last slave to keep
-   // decoding simple with flexible ROM/RAM sizes
-   // Wishbone Slave interface
-   wbs4_adr_i,
-   wbs4_dat_i,
-   wbs4_sel_i,		    
-   wbs4_we_i,
-   wbs4_cyc_i,
-   wbs4_stb_i,
-   wbs4_cti_i,
-   wbs4_bte_i,
-  
-   wbs4_dat_o,
-   wbs4_ack_o,
-   wbs4_err_o,
-   wbs4_rty_o,
   
    wb_clk,
    wb_rst
@@ -126,7 +108,7 @@ module arbiter_dbus
    parameter wb_adr_width = 32;
 
    parameter wb_addr_match_width = 8;
-   parameter wb_num_slaves = 5; // defined in orpsoc-params and set in orpsoc_top
+   parameter wb_num_slaves = 4; // defined in orpsoc-params and set in orpsoc_top
 
    // Slave addresses - these should be defparam'd from top level
    // Declare them as you need them
@@ -135,13 +117,12 @@ module arbiter_dbus
    parameter slave2_adr = 0;
    parameter slave3_adr = 0;
    parameter slave4_adr = 0;
-   parameter slave0_addr_width = 28; // low
-   parameter slave1_addr_width = 8;  // high
-   parameter slave2_addr_width = 8;  // high
-   parameter slave3_addr_width = 8;  // high
-   parameter slave4_addr_width = 12; // low
-
-
+   parameter slave0_addr_width = 28;
+   parameter slave1_addr_width = 8;
+   parameter slave2_addr_width = 8;
+   parameter slave3_addr_width = 24;
+   parameter slave4_addr_width = 24;
+   
    // Select for slave 0
 `define WB_ARB_ADDR_MATCH_SEL wb_adr_width-1:wb_adr_width-wb_addr_match_width
 
@@ -236,34 +217,6 @@ module arbiter_dbus
    input 		     wbs3_err_o;
    input 		     wbs3_rty_o;
 
-   // Wishbone Slave interface
-   output [wb_adr_width-1:0] wbs4_adr_i;
-   output [wb_dat_width-1:0] wbs4_dat_i;
-   output [3:0]		     wbs4_sel_i;
-   output 		     wbs4_we_i;
-   output 		     wbs4_cyc_i;
-   output 		     wbs4_stb_i;
-   output [2:0] 	     wbs4_cti_i;
-   output [1:0] 	     wbs4_bte_i;
-   input [wb_dat_width-1:0]  wbs4_dat_o;
-   input 		     wbs4_ack_o;
-   input 		     wbs4_err_o;
-   input 		     wbs4_rty_o;
-
-   // Wishbone Slave interface
-   output [wb_adr_width-1:0] wbs1_adr_i;
-   output [wb_dat_width-1:0] wbs1_dat_i;
-   output [3:0]		     wbs1_sel_i;
-   output 		     wbs1_we_i;
-   output 		     wbs1_cyc_i;
-   output 		     wbs1_stb_i;
-   output [2:0] 	     wbs1_cti_i;
-   output [1:0] 	     wbs1_bte_i;
-   input [wb_dat_width-1:0]  wbs1_dat_o;
-   input 		     wbs1_ack_o;
-   input 		     wbs1_err_o;
-   input 		     wbs1_rty_o;
-
    reg 		     watchdog_err;
    
    // Master input mux output wires
@@ -329,31 +282,35 @@ module arbiter_dbus
    wire [wb_num_slaves-1:0]  wb_slave_sel;
    reg [wb_num_slaves-1:0]   wb_slave_sel_r;
 
-   // Register wb_slave_sel_r to break combinatorial loop when selecting default
-   // slave
-   always @(posedge wb_clk)
-     wb_slave_sel_r <= wb_slave_sel;
-   
    // Slave out mux in wires   
    wire [wb_dat_width-1:0]   wbs_dat_o_mux_i [0:wb_num_slaves-1];
-   wire 		     wbs_ack_o_mux_i [0:wb_num_slaves-1];
-   wire 		     wbs_err_o_mux_i [0:wb_num_slaves-1];
-   wire 		     wbs_rty_o_mux_i [0:wb_num_slaves-1];
+   wire [wb_num_slaves-1:0]  wbs_ack_o_mux_i;
+   wire [wb_num_slaves-1:0]  wbs_err_o_mux_i;
+   wire [wb_num_slaves-1:0]  wbs_rty_o_mux_i;
 
    //
    // Slave selects
    //
-     // ROM/RAM - Given least sig bits of address (usually 24)
-   assign wb_slave_sel[4] = ~|wbm_adr_o[wb_adr_width - 1:slave4_addr_width];
+     // ROM/RAM - Given priority
+   assign wb_slave_sel[3] = ~|wbm_adr_o[wb_adr_width - 1:slave3_addr_width];
      // DDR
-   assign wb_slave_sel[0] = ~wb_slave_sel[3] & ~|wbm_adr_o[wb_adr_width-1:slave0_addr_width];
+   assign wb_slave_sel[0] = ~|wbm_adr_o[wb_adr_width-1:slave0_addr_width];
      // Ethernet
    assign wb_slave_sel[1] = wbm_adr_o[`WB_ARB_ADDR_MATCH_SEL] == slave1_adr;
-   assign wb_slave_sel[2] = wbm_adr_o[`WB_ARB_ADDR_MATCH_SEL] == slave2_adr;
      // Auto select last slave when others are not selected
-   assign wb_slave_sel[3] = ~(wb_slave_sel_r[0] | wb_slave_sel_r[1] | wb_slave_sel_r[2] | wb_slave_sel_r[4]);
-   
+   assign wb_slave_sel[2] = 1'b1;
 
+   // Register wb_slave_sel_r to break combinatorial loop when selecting default
+   // slave
+   always @(posedge wb_clk) begin
+      casez(wb_slave_sel)
+	4'b1zzz: wb_slave_sel_r <= 4'h8; // RAM
+	4'b0zz1: wb_slave_sel_r <= 4'h1; // DDR
+	4'b0z10: wb_slave_sel_r <= 4'h2; 
+	default: wb_slave_sel_r <= 4'h4; // Byte bus
+      endcase
+   end      
+   
 `ifdef ARBITER_DBUS_WATCHDOG
    reg [`ARBITER_DBUS_WATCHDOG_TIMER_WIDTH:0] watchdog_timer;
    reg 			     wbm_stb_r; // Register strobe
@@ -445,46 +402,34 @@ module arbiter_dbus
    assign wbs_err_o_mux_i[3] = wbs3_err_o & wb_slave_sel_r[3];
    assign wbs_rty_o_mux_i[3] = wbs3_rty_o & wb_slave_sel_r[3];
 
-   // Slave 4 inputs
-   assign wbs4_adr_i = wbm_adr_o;
-   assign wbs4_dat_i = wbm_dat_o;
-   assign wbs4_sel_i = wbm_sel_o;
-   assign wbs4_cyc_i = wbm_cyc_o & wb_slave_sel_r[4];
-   assign wbs4_stb_i = wbm_stb_o & wb_slave_sel_r[4];   
-   assign wbs4_we_i =  wbm_we_o;
-   assign wbs4_cti_i = wbm_cti_o;
-   assign wbs4_bte_i = wbm_bte_o;
-   assign wbs_dat_o_mux_i[4] = wbs4_dat_o;
-   assign wbs_ack_o_mux_i[4] = wbs4_ack_o & wb_slave_sel_r[4];
-   assign wbs_err_o_mux_i[4] = wbs4_err_o & wb_slave_sel_r[4];
-   assign wbs_rty_o_mux_i[4] = wbs4_rty_o & wb_slave_sel_r[4];
-
    // Master out mux from slave in data
    assign wbm_dat_i = wb_slave_sel_r[0] ? wbs_dat_o_mux_i[0] :
 		      wb_slave_sel_r[1] ? wbs_dat_o_mux_i[1] :
 		      wb_slave_sel_r[2] ? wbs_dat_o_mux_i[2] :
 		      wb_slave_sel_r[3] ? wbs_dat_o_mux_i[3] :
-		      wb_slave_sel_r[4] ? wbs_dat_o_mux_i[4] :
 		      wbs_dat_o_mux_i[0];
    
    // Master out acks, or together
    assign wbm_ack_i = wbs_ack_o_mux_i[0] |
 		      wbs_ack_o_mux_i[1] |
 		      wbs_ack_o_mux_i[2] |
-		      wbs_ack_o_mux_i[3] |
-		      wbs_ack_o_mux_i[4] ;
+		      wbs_ack_o_mux_i[3] ;
    
+    
    assign wbm_err_i = wbs_err_o_mux_i[0] |
 		      wbs_err_o_mux_i[1] |
 		      wbs_err_o_mux_i[2] |
-		      wbs_err_o_mux_i[3] |
-		      wbs_err_o_mux_i[4] ;
+		      wbs_err_o_mux_i[3] ;
+   
    
    assign wbm_rty_i = wbs_rty_o_mux_i[0] |
 		      wbs_rty_o_mux_i[1] |
 		      wbs_rty_o_mux_i[2] |
-		      wbs_rty_o_mux_i[3] |
-		      wbs_rty_o_mux_i[4] ;
+		      wbs_rty_o_mux_i[3] ;
+
+   //assign wbm_ack_i = ! wbs_ack_o_mux_i;
+   //assign wbm_err_i = | wbs_err_o_mux_i;
+   //assign wbm_rty_i = | wbs_rty_o_mux_i;   
    
 endmodule // arbiter_dbus
 

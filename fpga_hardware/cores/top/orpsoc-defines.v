@@ -56,7 +56,7 @@
  `define UART0
 // `define GPIO0
  `define AES
-// `define MD5
+ `define MD5
 // `define SHA
 // `define RSA
 // `define DES

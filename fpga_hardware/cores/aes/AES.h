@@ -20,7 +20,7 @@ typedef unsigned long long uint64_t;
 typedef unsigned long vluint64_t;
 
 // Base address of the core on the bus
-const uint32_t AES_BASE = 0x95000000;
+const uint32_t AES_BASE = 0x93000000;
 
 // Offset of AES data and control registers in device memory map
 const uint32_t AES_START = AES_BASE;

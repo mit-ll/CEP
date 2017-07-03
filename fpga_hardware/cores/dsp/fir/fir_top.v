@@ -31,8 +31,8 @@ module fir_top(
    reg next;
    reg [31:0] dataX [0:31];
    reg [31:0] dataY [0:31];
-   reg [5:0] xSel;
-   reg [5:0] ySel;
+   reg [5:0] xSel=6'b0;
+   reg [5:0] ySel=6'b0;
    reg [5:0] count;
    wire [31:0] dataIn, dataOut, dataR_Out;
    reg [31:0] dataW_In, dataW_addr, dataR_addr;
@@ -114,7 +114,7 @@ module fir_top(
             //dataIn = dataX[xSel];
         end
    end
-   assign dataIn = dataX[xSel];
+   assign dataIn = (xSel<6'b100000) ? dataX[xSel] : 32'b0;//dataX[xSel];
    
    always @ (posedge wb_clk_i) begin
         if(next_posedge) begin

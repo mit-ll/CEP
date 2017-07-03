@@ -1,56 +1,16 @@
-#include "verilated.h"
-#include "Viir_top.h"
+#include "FIR.h"
 
-#include "IIR.h"
+// Need this to fully implement expected interface
+void toggleClock() {;}
+void evalModel() {;}
 
-#if VM_TRACE 
-#include "verilated_vcd_c.h"
-VerilatedVcdC* tfp = new VerilatedVcdC;
-#endif 
-
-Viir_top* top;
-
-void evalModel() {
-    top->eval();
-#if VM_TRACE
-    tfp->dump(main_time);
-#endif
-}
-
-void toggleClock() {
-    top->wb_clk_i = ~top->wb_clk_i;
-}
-
-void waitForACK() {
-    while(top->wb_ack_o == 0) {
-        runForClockCycles(1);
-    }
-}
-
+// Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t readFromAddress(uint32_t pAddress) {
-    top->wb_adr_i = pAddress;
-    top->wb_dat_i = 0x00000000;
-    top->wb_we_i = 0;
-    top->wb_stb_i = 1;
-    runForClockCycles(10);
-    waitForACK();
-    uint32_t data = top->wb_dat_o;
-    top->wb_stb_i = 0;
-    runForClockCycles(10);
-    
-    return data;
+    return *((volatile uint32_t *)pAddress);
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
-    top->wb_adr_i = pAddress;
-    top->wb_dat_i = pData;
-    top->wb_we_i = 1;
-    top->wb_stb_i = 1;
-    runForClockCycles(10);
-    waitForACK();
-    top->wb_stb_i = 0;
-    top->wb_we_i = 0;
-    runForClockCycles(10);
+    *((volatile uint32_t *)pAddress) = pData;
 }
 
 bool readyValid(void) {
@@ -94,18 +54,6 @@ int main(int argc, char **argv, char **env) {
     uint32_t dout=0x00000000;
     bool success=true;
 
-    Verilated::commandArgs(argc, argv);
-#if VM_TRACE
-    Verilated::traceEverOn(true);
-#endif
-    top = new Viir_top;
-
-#if VM_TRACE
-    printf("Initializing traces and opening VCD file\r\n");
-    top->trace (tfp, 99);//VCD file gen 
-    tfp->open("./obj_dir/Viir_top.vcd");//VCD file gen
-#endif
-
     printf("Initializing interface and resetting core\r\n");
 
     // Initialize Inputs
@@ -113,7 +61,7 @@ int main(int argc, char **argv, char **env) {
     
 	printf("\r\n");
 	printf("*********************************************************\r\n");
-	printf("* IIR core simulation started ...                       *\r\n");
+	printf("* FIR core simulation started ...                       *\r\n");
 	printf("*********************************************************\r\n");
 	printf("\r\n");
 
@@ -127,25 +75,17 @@ int main(int argc, char **argv, char **env) {
         dout=getOutData(i);
         success=success&assertEquals(i, exp_1[i], dout);
     }
-    
-    
-    runForClockCycles(10);
 
 	printf("\r\n");
     assertSuccess(success);
 	printf("\r\n");
 	printf("**************************************\r\n");
-	printf("* IIR Test done ...                  *\r\n");
+	printf("* FIR Test done ...                  *\r\n");
 	printf("**************************************\r\n");
 	printf("\r\n");
     
     printf("Completed\r\n");
 
-#if VM_TRACE    
-    tfp->close();
-#endif
-    top->final();
-    delete top;
     exit(0);
 }
 

@@ -90,7 +90,7 @@ void init(){
 }
 
 int main(int argc, char **argv, char **env) {
-    int test=2, j=0, i=0;
+    int i=0;
     uint32_t dout=0x00000000;
     bool success=true;
 
@@ -118,14 +118,14 @@ int main(int argc, char **argv, char **env) {
 	printf("\r\n");
 
     //Set Inputs and check Outputs
-    for (j=0; j < 32; j++)
-        setInData(j, j*4);
+    for (i=0; i < 32; i++)
+        setInData(i, i*4);
     
     start();
        
-    for (j=0; j < 32; j++){
-        dout=getOutData(j);
-        success=success&assertEquals(j, exp_1[j], dout);
+    for (i=0; i < 32; i++){
+        dout=getOutData(i);
+        success=success&assertEquals(i, exp_1[i], dout);
     }
     
     

@@ -9,9 +9,9 @@
 //#ifndef uint64_t
 //typedef unsigned long long uint64_t;
 //#endif
-//#ifndef vluint64_t
-//typedef unsigned long vluint64_t;
-//#endif
+#ifndef vluint64_t
+typedef unsigned long vluint64_t;
+#endif
 
 const unsigned int BITS_PER_BYTE = 8;
 const unsigned int BYTES_PER_WORD = 4;

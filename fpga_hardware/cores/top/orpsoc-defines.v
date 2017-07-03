@@ -55,6 +55,7 @@
  `define RAM_WB
  `define UART0
 // `define GPIO0
+// `define ETH0
  `define AES
  `define MD5
 // `define SHA

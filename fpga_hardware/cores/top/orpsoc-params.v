@@ -164,17 +164,32 @@ parameter ibus_arb_slave1_addr_width = wbs_i_mc0_addr_width; // DDR
 // Data bus              //
 //                       //
 ///////////////////////////
-// Has auto foward to last slave when no address hits
+
 parameter dbus_arb_wb_addr_match_width = 8;
-parameter dbus_arb_wb_num_slaves = 5;
-// Slave addresses
+parameter dbus_arb_wb_num_slaves = 16;
+
+// Fixed slaves (these have special decoding built into the bus arbiter)
 parameter dbus_arb_slave0_addr_width = wbs_d_mc0_addr_width; // DDR
 parameter dbus_arb_slave1_adr = aes_wb_adr; // AES
 parameter dbus_arb_slave1_addr_width = wbs_d_aes_addr_width;
+    // Has auto foward to last slave when no address hits
 parameter dbus_arb_slave2_addr_width = dbus_arb_wb_addr_match_width; // Byte bus
 parameter dbus_arb_slave3_addr_width = wbs_d_rom0_addr_width; // ROM/RAM
+  // Arbitrary SoC cores
 parameter dbus_arb_slave4_adr = md5_wb_adr; // MD5
 parameter dbus_arb_slave4_addr_width = wbs_d_md5_addr_width;
+parameter dbus_arb_slave5_adr = sha_wb_adr; // SHA
+parameter dbus_arb_slave5_addr_width = wbs_d_sha_addr_width;
+parameter dbus_arb_slave6_adr = rsa_wb_adr; // RSA
+parameter dbus_arb_slave6_addr_width = wbs_d_rsa_addr_width;
+parameter dbus_arb_slave7_adr = des_wb_adr; // 3DES
+parameter dbus_arb_slave7_addr_width = wbs_d_des_addr_width;
+parameter dbus_arb_slave8_adr = fft_wb_adr; // FFT
+parameter dbus_arb_slave8_addr_width = wbs_d_fft_addr_width;
+parameter dbus_arb_slave9_adr = fir_wb_adr; // FIR
+parameter dbus_arb_slave9_addr_width = wbs_d_fir_addr_width;
+parameter dbus_arb_slave10_adr = iir_wb_adr; // IIR
+parameter dbus_arb_slave10_addr_width = wbs_d_iir_addr_width;
 
 ///////////////////////////////
 //                           //

@@ -887,19 +887,6 @@ module orpsoc_top
       .wbs15_err_o			(empty_slot_err_o),
       .wbs15_rty_o			(empty_slot_rty_o),
 
-      .wbs16_adr_i			(),
-      .wbs16_dat_i			(),
-      .wbs16_sel_i			(),
-      .wbs16_we_i			(),
-      .wbs16_cyc_i			(),
-      .wbs16_stb_i			(),
-      .wbs16_cti_i			(),
-      .wbs16_bte_i			(),
-      .wbs16_dat_o			(empty_slot_dat_o),
-      .wbs16_ack_o			(empty_slot_ack_o),
-      .wbs16_err_o			(empty_slot_err_o),
-      .wbs16_rty_o			(empty_slot_rty_o),
-
       // Clock, reset inputs
       .wb_clk			(wb_clk),
       .wb_rst			(wb_rst));

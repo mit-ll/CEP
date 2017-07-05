@@ -37,18 +37,6 @@ uint32_t getOutData(uint32_t i) {
     return temp;
 }
 
-void init(){
-    // Initialize Inputs
-    top->wb_clk_i = 0;
-    top->wb_dat_i = 0;
-    top->wb_we_i  = 0;
-    top->wb_adr_i = 0;
-    top->wb_stb_i = 0;
-    runForClockCycles(100);
-
-    printf("Reset complete\r\n");
-}
-
 int main(int argc, char **argv, char **env) {
     int i=0;
     uint32_t dout=0x00000000;
@@ -57,7 +45,6 @@ int main(int argc, char **argv, char **env) {
     printf("Initializing interface and resetting core\r\n");
 
     // Initialize Inputs
-    init();
     
 	printf("\r\n");
 	printf("*********************************************************\r\n");

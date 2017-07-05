@@ -2,7 +2,7 @@
 #define DISPLAY               0
 #define DEBUG                 0
 
-#define ADDR_BASE             0x92000000
+#define ADDR_BASE             0x96000000
 
 #define OPERAND_WIDTH         32
 #define ADDRESS_WIDTH         8

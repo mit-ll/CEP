@@ -116,23 +116,28 @@ parameter rsa_wb_adr = 8'h96;
 parameter wbs_d_rsa_data_width = 32;
 parameter wbs_d_rsa_addr_width = 10;
 
-// 3DES defines
-parameter des_wb_adr = 8'h97;
-parameter wbs_d_des_data_width = 32;
-parameter wbs_d_des_addr_width = 10;
+// DES3 defines
+parameter des3_wb_adr = 8'h97;
+parameter wbs_d_des3_data_width = 32;
+parameter wbs_d_des3_addr_width = 10;
 
-// FFT defines
-parameter fft_wb_adr = 8'h98;
-parameter wbs_d_fft_data_width = 32;
-parameter wbs_d_fft_addr_width = 10;
+// DFT defines
+parameter dft_wb_adr = 8'h98;
+parameter wbs_d_dft_data_width = 32;
+parameter wbs_d_dft_addr_width = 10;
+
+// IDFT defines
+parameter idft_wb_adr = 8'h99;
+parameter wbs_d_idft_data_width = 32;
+parameter wbs_d_idft_addr_width = 10;
 
 // FIR defines
-parameter fir_wb_adr = 8'h99;
+parameter fir_wb_adr = 8'h9A;
 parameter wbs_d_fir_data_width = 32;
 parameter wbs_d_fir_addr_width = 10;
 
 // IIR defines
-parameter iir_wb_adr = 8'h9A;
+parameter iir_wb_adr = 8'h9B;
 parameter wbs_d_iir_data_width = 32;
 parameter wbs_d_iir_addr_width = 10;
 
@@ -182,14 +187,16 @@ parameter dbus_arb_slave5_adr = sha_wb_adr; // SHA
 parameter dbus_arb_slave5_addr_width = wbs_d_sha_addr_width;
 parameter dbus_arb_slave6_adr = rsa_wb_adr; // RSA
 parameter dbus_arb_slave6_addr_width = wbs_d_rsa_addr_width;
-parameter dbus_arb_slave7_adr = des_wb_adr; // 3DES
-parameter dbus_arb_slave7_addr_width = wbs_d_des_addr_width;
-parameter dbus_arb_slave8_adr = fft_wb_adr; // FFT
-parameter dbus_arb_slave8_addr_width = wbs_d_fft_addr_width;
-parameter dbus_arb_slave9_adr = fir_wb_adr; // FIR
-parameter dbus_arb_slave9_addr_width = wbs_d_fir_addr_width;
-parameter dbus_arb_slave10_adr = iir_wb_adr; // IIR
-parameter dbus_arb_slave10_addr_width = wbs_d_iir_addr_width;
+parameter dbus_arb_slave7_adr = des3_wb_adr; // DES3
+parameter dbus_arb_slave7_addr_width = wbs_d_des3_addr_width;
+parameter dbus_arb_slave8_adr = dft_wb_adr; // DFT
+parameter dbus_arb_slave8_addr_width = wbs_d_dft_addr_width;
+parameter dbus_arb_slave9_adr = idft_wb_adr; // IDFT
+parameter dbus_arb_slave9_addr_width = wbs_d_idft_addr_width;
+parameter dbus_arb_slave10_adr = fir_wb_adr; // FIR
+parameter dbus_arb_slave10_addr_width = wbs_d_fir_addr_width;
+parameter dbus_arb_slave11_adr = iir_wb_adr; // IIR
+parameter dbus_arb_slave11_addr_width = wbs_d_iir_addr_width;
 
 ///////////////////////////////
 //                           //

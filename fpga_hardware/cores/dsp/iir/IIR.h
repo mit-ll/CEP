@@ -29,7 +29,7 @@ const unsigned int BLOCK_BYTES = BLOCK_BITS / BITS_PER_BYTE;
 const unsigned int BLOCK_WORDS = BLOCK_BYTES / BYTES_PER_WORD;
 
 // Base address of the core on the bus
-const uint32_t DES3_BASE = 0x92000000;
+const uint32_t DES3_BASE = 0x9b000000;
 
 // Offset of DES3 data and control registers in device memory map
 const uint32_t DES3_START = DES3_BASE;

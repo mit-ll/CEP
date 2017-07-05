@@ -80,7 +80,7 @@ int main(int argc, char **argv, char **env) {
     //Set Inputs and check Outputs
     for (j=0; j < 32+8; j++){
         if(j<32) setInData(j*4);
-        else     runForClockCycles(1);
+        else     setInData(0);
         
         if(j>7){
             dout=getOutData();

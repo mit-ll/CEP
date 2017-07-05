@@ -125,7 +125,7 @@ module iir_top(
         end
    end
    
-   assign next_out = (count == 4'b1001);
+   assign next_out = (count == 4'b1000);
    
     reg next_out_r;
     always @(posedge wb_clk_i) begin

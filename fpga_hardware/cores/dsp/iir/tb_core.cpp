@@ -78,13 +78,13 @@ int main(int argc, char **argv, char **env) {
 	printf("\r\n");
 
     //Set Inputs and check Outputs
-    for (j=0; j < 32+9; j++){
+    for (j=0; j < 32+8; j++){
         if(j<32) setInData(j*4);
-        else     runForClockCycles(1);
+        else     setInData(0);
         
-        if(j>8){
+        if(j>7){
             dout=getOutData();
-            success=success&assertEquals(j-9, exp_1[j-9], dout);
+            success=success&assertEquals(j-8, exp_1[j-8], dout);
         }
     }
     

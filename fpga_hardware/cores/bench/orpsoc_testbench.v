@@ -472,7 +472,7 @@ module orpsoc_testbench;
    
 `endif
 
-`define VCD
+//`define VCD
 `ifdef VCD
    reg vcd_go = 0;
    always @(vcd_go)

@@ -119,27 +119,27 @@ parameter wbs_d_rsa_addr_width = 10;
 // DES3 defines
 parameter des3_wb_adr = 8'h97;
 parameter wbs_d_des3_data_width = 32;
-parameter wbs_d_des3_addr_width = 10;
+parameter wbs_d_des3_addr_width = 6;
 
 // DFT defines
 parameter dft_wb_adr = 8'h98;
 parameter wbs_d_dft_data_width = 32;
-parameter wbs_d_dft_addr_width = 10;
+parameter wbs_d_dft_addr_width = 6;
 
 // IDFT defines
 parameter idft_wb_adr = 8'h99;
 parameter wbs_d_idft_data_width = 32;
-parameter wbs_d_idft_addr_width = 10;
+parameter wbs_d_idft_addr_width = 6;
 
 // FIR defines
 parameter fir_wb_adr = 8'h9A;
 parameter wbs_d_fir_data_width = 32;
-parameter wbs_d_fir_addr_width = 10;
+parameter wbs_d_fir_addr_width = 6;
 
 // IIR defines
 parameter iir_wb_adr = 8'h9B;
 parameter wbs_d_iir_data_width = 32;
-parameter wbs_d_iir_addr_width = 10;
+parameter wbs_d_iir_addr_width = 6;
 
 //////////////////////////////////////////////////////
 //                                                  //

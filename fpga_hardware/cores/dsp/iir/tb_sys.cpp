@@ -52,7 +52,7 @@ int main(int argc, char **argv, char **env) {
 
     //Set Inputs and check Outputs
     for (i=0; i < 32; i++)
-        setInData(i, i*4);
+       setInData(i, i*4);
     
     start();
     waitForValidOutput();

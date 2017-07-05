@@ -56,15 +56,15 @@
  `define UART0
 // `define GPIO0
 // `define ETH0
-// `define AES //0x93000000
-// `define MD5 //0x94000000
-// `define SHA //0x95000000
-// `define RSA //0x96000000
-// `define DES3 //0x97000000
- `define DFT //0x98000000
-// `define IDFT//0x99000000
-// `define FIR //0x9a000000
-// `define IIR //0x9b000000
+// `define AES  
+// `define MD5
+// `define SHA
+// `define RSA
+// `define DES3
+// `define DFT
+// `define IDFT
+// `define FIR
+// `define IIR
 
 // end of included module defines - keep this comment line here, scripts depend on it!!
 

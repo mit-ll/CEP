@@ -37,4 +37,8 @@ vcd_core:
 clean:
 	rm -rf obj_dir *~
 	rm -rf iverilog *~
+	rm -f tb_sys
+	rm -f tb_sys.S
+	rm -f tb_sys.bin
+	rm -f tb_sys.vmem
 

@@ -34,30 +34,29 @@ module idft_top_top(
    reg [5:0] xSel;
    reg [5:0] ySel;
    wire [63:0] dataIn, dataOut, dataR_Out;
-   reg [63:0] dataW_In, dataW_addr, dataR_addr;
+   reg [63:0] data_In_data, data_In_addr, data_Out_addr;
 
-   reg data_valid;
-   wire next_out;
-   reg dataW, dataR;
-wire next_posedge;
+   reg data_valid, data_In_write;
+   wire next_out, next_posedge;
+   
    // Implement MD5 I/O memory map interface
    // Write side
    always @(posedge wb_clk_i) begin
      if(wb_rst_i) begin
-         next           <= 0;
-         dataW          <= 0;
-         dataW_addr     <= 0;
-         dataW_In[31:0] <= 0;
-         dataW_In[63:32]<= 0;
+         next               <= 0;
+         data_In_write      <= 0;
+         data_In_addr       <= 0;
+         data_In_data[31:0] <= 0;
+         data_In_data[63:32]<= 0;
      end
      else if(wb_stb_i & wb_we_i)
        case(wb_adr_i[5:2])
-         0: next           <= wb_dat_i[0];
-         1: dataW          <= wb_dat_i[0];
-         2: dataW_addr     <= wb_dat_i;
-         3: dataW_In[31:0] <= wb_dat_i;
-         4: dataW_In[63:32]<= wb_dat_i;
-         5: dataR_addr     <= wb_dat_i;
+         0: next               <= wb_dat_i[0];
+         1: data_In_write      <= wb_dat_i[0];
+         2: data_In_addr       <= wb_dat_i;
+         3: data_In_data[31:0] <= wb_dat_i;
+         4: data_In_data[63:32]<= wb_dat_i;
+         5: data_Out_addr      <= wb_dat_i;
          default: ;
        endcase
    end // always @ (posedge wb_clk_i)
@@ -67,15 +66,14 @@ wire next_posedge;
    always @(*) begin
       case(wb_adr_i[5:2])
          0: wb_dat_o = {31'b0, next};
-         1: wb_dat_o = {31'b0, dataW};
-         2: wb_dat_o = dataW_addr;
-         3: wb_dat_o = dataW_In[31:0];
-         4: wb_dat_o = dataW_In[63:32];
-         5: wb_dat_o = {31'b0, data_valid};
-         6: wb_dat_o = {31'b0, dataR};
-         7: wb_dat_o = dataR_addr;
-         8: wb_dat_o = dataR_Out[31:0];
-         9: wb_dat_o = dataR_Out[63:32];
+         1: wb_dat_o = {31'b0, data_In_write};
+         2: wb_dat_o = data_In_addr;
+         3: wb_dat_o = data_In_data[31:0];
+         4: wb_dat_o = data_In_data[63:32];
+         5: wb_dat_o = data_Out_addr;
+         6: wb_dat_o = dataR_Out[31:0];
+         7: wb_dat_o = dataR_Out[63:32];
+         8: wb_dat_o = {31'b0, data_valid};
          default: wb_dat_o = 32'b0;
       endcase
    end // always @ (*)
@@ -94,20 +92,19 @@ wire next_posedge;
     .Y2(dataOut[47:32]),
     .Y3(dataOut[63:48]));
 
-    reg dataW_r;
+    reg data_In_write_r;
     always @(posedge wb_clk_i) begin
-        dataW_r <= dataW;
+        data_In_write_r <= data_In_write;
     end
 
-    wire dataW_posedge = dataW & ~dataW_r;
+    wire data_In_write_posedge = data_In_write & ~data_In_write_r;
         
    always @ (posedge wb_clk_i) begin
-        if(dataW_posedge) begin
-            dataX[dataW_addr] <= dataW_In;
+        if(data_In_write_posedge) begin
+            dataX[data_In_addr] <= data_In_data;
         end
-    	//dataR_Out=dataY[dataR_addr];
    end
-   assign dataR_Out=dataY[dataR_addr];
+   assign dataR_Out=dataY[data_Out_addr];
 
     reg next_r;
     always @(posedge wb_clk_i) begin
@@ -123,7 +120,6 @@ wire next_posedge;
         else if(xSel<6'b100000) begin
             xSel <= xSel +1;
         end
-        //dataIn = dataX[xSel];
    end
    assign dataIn = dataX[xSel];
 
@@ -137,12 +133,10 @@ wire next_posedge;
    always @ (posedge wb_clk_i) begin
         if(next_out_posedge) begin
             ySel <= 6'h00;
-            //data_valid <= 0;
         end
         else if(ySel<6'b100000) begin
             ySel <= ySel +1;
             dataY[ySel] = dataOut;
-            //data_valid <= 1;
         end
    end
 
@@ -154,6 +148,4 @@ wire next_posedge;
             data_valid <= 1;
         end
    end
-   
-   //assign data_valid = (ySel == 6'b100000);
 endmodule

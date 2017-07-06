@@ -13,31 +13,26 @@
 typedef unsigned long vluint64_t;
 #endif
 
-const unsigned int BITS_PER_BYTE = 8;
-const unsigned int BYTES_PER_WORD = 4;
-const unsigned int KEY_BITS = 64*3;
-const unsigned int BLOCK_BITS = 64;
-const unsigned int CLOCK_PERIOD = 10;
-const unsigned int DES3_START_BYTES = BYTES_PER_WORD;
-const unsigned int DES3_DECRYPT_BYTES = BYTES_PER_WORD;
-const unsigned int DES3_DONE_BYTES = BYTES_PER_WORD;
+const unsigned int BITS_PER_BYTE   = 8;
+const unsigned int BYTES_PER_WORD  = 4;
+const unsigned int BLOCK_BITS      = 32;
+const unsigned int CLOCK_PERIOD    = 10;
 
 // Automatically generated constants
-const unsigned int KEY_BYTES = KEY_BITS / BITS_PER_BYTE;
-const unsigned int KEY_WORDS = KEY_BYTES / BYTES_PER_WORD;
 const unsigned int BLOCK_BYTES = BLOCK_BITS / BITS_PER_BYTE;
 const unsigned int BLOCK_WORDS = BLOCK_BYTES / BYTES_PER_WORD;
 
 // Base address of the core on the bus
-const uint32_t DES3_BASE = 0x9a000000;
+const uint32_t FIR_BASE = 0x9a000000;
 
-// Offset of DES3 data and control registers in device memory map
-const uint32_t DES3_START = DES3_BASE;
-const uint32_t DES3_DECRYPT = DES3_START + DES3_START_BYTES;
-const uint32_t DES3_IN_BASE = DES3_DECRYPT + DES3_DECRYPT_BYTES;
-const uint32_t DES3_KEY_BASE = DES3_IN_BASE + BLOCK_BYTES;
-const uint32_t DES3_DONE = 0x14;//DES3_KEY_BASE + KEY_BYTES;
-const uint32_t DES3_CT_BASE = DES3_DONE + DES3_DONE_BYTES;
+// Offset of FIR data and control registers in device memory map
+const uint32_t FIR_START    = FIR_BASE;
+const uint32_t FIR_IN_WRITE = FIR_START    + BYTES_PER_WORD;
+const uint32_t FIR_IN_ADDR  = FIR_IN_WRITE + BYTES_PER_WORD;
+const uint32_t FIR_IN_DATA  = FIR_IN_ADDR  + BLOCK_BYTES;
+const uint32_t FIR_OUT_ADDR = FIR_IN_DATA  + BLOCK_BYTES;
+const uint32_t FIR_OUT_DATA = FIR_OUT_ADDR + BLOCK_BYTES;
+const uint32_t FIR_DONE     = FIR_OUT_DATA + BLOCK_BYTES;
 
 // Current simulation time
 vluint64_t main_time = 0;

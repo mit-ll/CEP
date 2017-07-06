@@ -14,34 +14,35 @@ void writeToAddress(uint32_t pAddress, uint32_t pData) {
 }
 
 bool readyValid(void) {
-    return (readFromAddress(DES3_START+0x14) != 0) ? true : false;
+    return (readFromAddress(IDFT_DONE) != 0) ? true : false;
 }
 
 void start(void) {
-    writeToAddress(DES3_START, 0x1);
-    writeToAddress(DES3_START, 0x0);
+    writeToAddress(IDFT_START, 0x1);
+    writeToAddress(IDFT_START, 0x0);
 }
 
 void setX(uint16_t i, uint16_t pX0, uint16_t pX1, uint16_t pX2, uint16_t pX3){
-    writeToAddress(DES3_START+0xC, pX1<<16|pX0); //Write data
-    writeToAddress(DES3_START+0x8, i);           //Write addr
-    writeToAddress(DES3_START+0x4, 0x1);         //Load
-    writeToAddress(DES3_START+0x4, 0x0);         //Stop
-    writeToAddress(DES3_START+0x10, pX3<<16|pX2); //Write data
-    writeToAddress(DES3_START+0x8, i);           //Write addr
-    writeToAddress(DES3_START+0x4, 0x1);         //Load
-    writeToAddress(DES3_START+0x4, 0x0);         //Stop
+    writeToAddress(IDFT_IN_DATA, pX1<<16|pX0);             //Write data
+    writeToAddress(IDFT_IN_ADDR, i);                       //Write addr
+    writeToAddress(IDFT_IN_WRITE, 0x1);                    //Load data
+    writeToAddress(IDFT_IN_WRITE, 0x0);                    //Stop
+    
+    writeToAddress(IDFT_IN_DATA+BLOCK_BYTES, pX3<<16|pX2); //Write data
+    writeToAddress(IDFT_IN_ADDR, i);                       //Write addr
+    writeToAddress(IDFT_IN_WRITE, 0x1);                    //Load data
+    writeToAddress(IDFT_IN_WRITE, 0x0);                    //Stop
 }
 
 void getY(uint16_t i, uint16_t *pY0, uint16_t *pY1, uint16_t *pY2, uint16_t *pY3) {
     uint32_t temp;
-    writeToAddress(DES3_START+0x14, i);    //000101 00
+    writeToAddress(IDFT_OUT_ADDR, i);                //Write addr
 
-    temp=readFromAddress(DES3_START+0x20); //001000 00
+    temp=readFromAddress(IDFT_OUT_DATA);             //Read data
     *pY0=temp;
     *pY1=temp>>16;
 
-    temp=readFromAddress(DES3_START+0x24); //001001 00
+    temp=readFromAddress(IDFT_OUT_DATA+BLOCK_BYTES); //Read data
     *pY2=temp;
     *pY3=temp>>16;
 }

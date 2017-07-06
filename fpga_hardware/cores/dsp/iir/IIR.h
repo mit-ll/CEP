@@ -73,10 +73,10 @@ void waitForValidOutput(){
 bool assertEquals(int index, uint32_t expected, uint32_t actual){
 
     if (expected == actual){
-    printf("*** PASSED   (%02d): %08x Got: %08x\r\n", index, expected, actual);
+    printf("*** PASSED   (%02d): %08x Got: %08x\r\n", index, (unsigned int)expected, (unsigned int)actual);
      return true;// success
     }else{                   
-    printf("*** Expected (%02d): %08x Got: %08x\r\n", index, expected, actual);
+    printf("*** Expected (%02d): %08x Got: %08x\r\n", index, (unsigned int)expected, (unsigned int)actual);
      return false;// failure
     }
 }

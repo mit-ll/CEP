@@ -48,6 +48,8 @@
  `define IOCONFIG_XILINX_ML501
 // `define BOARD_CLOCK_PERIOD 5000 // 200MHz (pS accuracy for Xilinx sims.) 
  `define BOARD_CLOCK_PERIOD 20 // 50MHz (nS) 
+`define SYNTHESIS
+
 
 // `define ADV_DEBUG	 
 // `define JTAG_DEBUG

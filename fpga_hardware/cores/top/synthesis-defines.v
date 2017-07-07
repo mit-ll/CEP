@@ -1,3 +1,0 @@
-`define SYNTHESIS
-`define XILINX
-

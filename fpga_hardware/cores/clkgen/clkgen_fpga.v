@@ -33,7 +33,6 @@
 //////////////////////////////////////////////////////////////////////
 
 `include "orpsoc-defines.v"
-`include "synthesis-defines.v"
 
 module clkgen
   (

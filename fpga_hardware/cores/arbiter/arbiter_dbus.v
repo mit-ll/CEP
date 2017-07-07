@@ -693,7 +693,7 @@ module arbiter_dbus
 	16'bzz10000000000z00: wb_slave_sel_r <= 16'h2000;
 	16'bz100000000000z00: wb_slave_sel_r <= 16'h4000;
 	16'b1000000000000z00: wb_slave_sel_r <= 16'h8000;
-    default:              wb_slave_sel_r <= 16'h0004; // Byte bus
+    default:                  wb_slave_sel_r <= 16'h0004; // Byte bus
       endcase
    end      
    

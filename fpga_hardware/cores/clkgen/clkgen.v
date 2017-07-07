@@ -43,11 +43,11 @@ module clkgen
    wb_clk_o,
    wb_rst_o,
 
-      // JTAG clock
+   // JTAG clock
 `ifdef JTAG_DEBUG
    tck_pad_i,
    dbg_tck_o,
-`endif 
+`endif      
 
    // Asynchronous, active low reset in
    rst_n_pad_i
@@ -62,7 +62,8 @@ module clkgen
 `ifdef JTAG_DEBUG
    input  tck_pad_i;
    output dbg_tck_o;
-`endif  
+`endif      
+   
 
    // Asynchronous, active low reset (pushbutton, typically)
    input  rst_n_pad_i;
@@ -77,10 +78,11 @@ module clkgen
 
    // Everyone likes active-high reset signals...
    assign async_rst = ~async_rst_n;
-
-  `ifdef JTAG_DEBUG   
-    assign dbg_tck_o = tck_pad_i;
-  `endif
+   
+   
+`ifdef JTAG_DEBUG   
+   assign dbg_tck_o = tck_pad_i;
+`endif
 
    //
    // Declare synchronous reset wires here
@@ -91,11 +93,73 @@ module clkgen
 
    // An active-low synchronous reset from ethernet PLL
    wire   sync_eth_rst_n;
+   
+`ifdef SYNTHESIS   
+   wire       sys_clk_in_200;
+   /* DCM0 wires */
+   wire 	   dcm0_clk0_prebufg, dcm0_clk0;
+   wire 	   dcm0_clkfx_prebufg, dcm0_clkfx;
+   wire 	   dcm0_clkdv_prebufg, dcm0_clkdv;
+   wire 	   dcm0_locked;
 
+   /* Dif. input buffer for 200MHz board clock, generate SE 200MHz */
+   IBUFGDS_LVPECL_25 sys_clk_in_ibufds
+     (
+      .O(sys_clk_in_200),
+      .I(sys_clk_in_p),
+      .IB(sys_clk_in_n));
+   
+   /* DCM providing main system/Wishbone clock */
+   DCM_BASE dcm0
+     (
+      // Outputs
+      .CLK0                              (dcm0_clk0_prebufg),
+      .CLK180                            (),
+      .CLK270                            (),
+      .CLK2X180                          (),
+      .CLK2X                             (),
+      .CLK90                             (),
+      .CLKDV                             (dcm0_clkdv_prebufg),
+      .CLKFX180                          (),
+      .CLKFX                             (dcm0_clkfx_prebufg),
+      .LOCKED                            (dcm0_locked),
+      // Inputs
+      .CLKFB                             (dcm0_clk0),
+      .CLKIN                             (sys_clk_in_200),
+      .RST                               (1'b0));
+   
+   // Generate 200 MHz from CLKFX
+   defparam    dcm0.CLKFX_MULTIPLY    = 3;
+   defparam    dcm0.CLKFX_DIVIDE      = 4;
 
+   // Generate 50 MHz from CLKDV
+   defparam    dcm0.CLKDV_DIVIDE      = 4;
+
+   BUFG dcm0_clk0_bufg
+     (// Outputs
+      .O                                 (dcm0_clk0),
+      // Inputs
+      .I                                 (dcm0_clk0_prebufg));
+
+   BUFG dcm0_clkfx_bufg
+     (// Outputs
+      .O                                 (dcm0_clkfx),
+      // Inputs
+      .I                                 (dcm0_clkfx_prebufg));
+
+   BUFG dcm0_clkdv_bufg
+     (// Outputs
+      .O                                 (dcm0_clkdv),
+      // Inputs
+      .I                                 (dcm0_clkdv_prebufg));
+
+   assign wb_clk_o = dcm0_clkdv;
+   assign sync_rst_n = dcm0_locked;
+
+`else
    assign wb_clk_o = sys_clk_in_p;
    assign sync_rst_n = 1'b1;
-   
+`endif
    //
    // Reset generation
    //
@@ -109,7 +173,7 @@ module clkgen
      else
        wb_rst_shr <= {wb_rst_shr[14:0], ~(sync_rst_n)};
    
-   assign wb_rst_o = wb_rst_shr[15];
+   assign wb_rst_o = wb_rst_shr[15];  
    
    
 endmodule // clkgen

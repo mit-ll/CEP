@@ -34,7 +34,6 @@
 //////////////////////////////////////////////////////////////////////
 
 `include "orpsoc-defines.v"
-`include "orpsoc-testbench-defines.v"
 `include "test-defines.v"
 `include "timescale.v"
 
@@ -472,7 +471,6 @@ module orpsoc_testbench;
    
 `endif
 
-//`define VCD
 `ifdef VCD
    reg vcd_go = 0;
    always @(vcd_go)
@@ -506,27 +504,7 @@ end*/
  `ifndef VCD_DEPTH
   `define VCD_DEPTH 0
  `endif 
-    `ifdef RSA
-        $dumpvars(3, orpsoc_testbench.dut.rsa);
-    `else
-        `ifdef DES3
-            $dumpvars(3, orpsoc_testbench.dut.des3);
-        `else
-            `ifdef IIR
-                $dumpvars(3, orpsoc_testbench.dut.iir);
-            `else
-                `ifdef FIR
-                    $dumpvars(3, orpsoc_testbench.dut.fir);
-                `else
-                    `ifdef DFT
-                        $dumpvars(3, orpsoc_testbench.dut.dft);
-                    `else 
-                        $dumpvars(1, orpsoc_testbench.dut); //orpsoc_testbench.dut.or1200_top0.or1200_cpu);
-                    `endif
-                `endif
-            `endif
-        `endif
-    `endif
+    $dumpvars(`VCD_DEPTH, orpsoc_testbench.dut); //orpsoc_testbench.dut.or1200_top0.or1200_cpu);
   
 /*for(r = 0; r < 1000; r = r + 1)begin 
   for(t = 0; t < 10; t = t + 1) begin

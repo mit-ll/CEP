@@ -53,8 +53,7 @@ module orpsoc_top
     sram_adv_ld_n, sram_mode,
 `endif    
 `ifdef UART0
-    uart0_srx_pad_i, uart0_stx_pad_o,
-    uart0_srx_expheader_pad_i, uart0_stx_expheader_pad_o,
+    uart0_srx_pad_i, uart0_stx_pad_o, uart0_rts_pad_o, uart0_cts_pad_i,
 `endif
 `ifdef SPI0
     spi0_mosi_o, spi0_ss_o,/* spi0_sck_o, spi0_miso_i,via STARTUP_VIRTEX5*/
@@ -138,9 +137,8 @@ module orpsoc_top
 `ifdef UART0
    input 	 uart0_srx_pad_i;
    output 	 uart0_stx_pad_o;
-   // Duplicates of the UART signals, this time to the USB debug cable
-   input 	 uart0_srx_expheader_pad_i;
-   output 	 uart0_stx_expheader_pad_o;
+   output       uart0_rts_pad_o;
+   input        uart0_cts_pad_i;
 `endif
 `ifdef SPI0
    output 	 spi0_mosi_o;
@@ -1986,9 +1984,8 @@ module orpsoc_top
    assign wbs_d_uart0_rty_o = 0;
 
    // Two UART lines coming to single one (ensure they go high when unconnected)
-   assign uart0_srx = uart0_srx_pad_i & uart0_srx_expheader_pad_i;
+   assign uart0_srx = uart0_srx_pad_i;
    assign uart0_stx_pad_o = uart0_stx;
-   assign uart0_stx_expheader_pad_o = uart0_stx;
    
    
    uart_top uart16550_0
@@ -2007,12 +2004,12 @@ module orpsoc_top
 
       .int_o				(uart0_irq),
       .stx_pad_o			(uart0_stx),
-      .rts_pad_o			(),
+      .rts_pad_o			(uart0_rts_pad_o),
       .dtr_pad_o			(),
       //      .baud_o				(),
       // Inputs
       .srx_pad_i			(uart0_srx),
-      .cts_pad_i			(1'b0),
+      .cts_pad_i			(uart0_cts_pad_i),
       .dsr_pad_i			(1'b0),
       .ri_pad_i				(1'b0),
       .dcd_pad_i			(1'b0));

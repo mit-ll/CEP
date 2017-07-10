@@ -12,6 +12,9 @@ Here are the basic steps of the compile and conversion process:
 * Rename the resulting sram file `sram.vmem` and replace the file in `fpga_hardware/cores/ram_wb`
 * If you get illegal instruction exceptions (0x700), you may need to move `sram.vmem` to `fpga_hardware/`
 
+## Enabling/disabling cores
+Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/orpsoc-defines.v.
+
 ## Simualate using ModelSim
 * Comment-out the synthesis define in fpga_hardware/cores/top/orpsoc-defines.v
 * Run `vsim` to compile the Verilog files into the `work` library. If this is your first time trying to compile in ModelSim, you may need to create a `work` library (after you delete the empty one that points to nothing).
@@ -20,6 +23,7 @@ Here are the basic steps of the compile and conversion process:
 * Copy the vmem file to fpga_hardware/sram.vmem
 * Run `sh runVSIM.sh` in fpga_hardware
 * Once vsim finishes loading the design, type `run -all`
+* To change simulation parameters, such as VCD printing or test name, modify fpga_hardware/cores/bench/test-defines.v
 
 ## Synthesize using Vivado
 * Uncomment the synthesis define in fpga_hardware/cores/top/orpsoc-defines.v

@@ -50,9 +50,11 @@
  `define BOARD_CLOCK_PERIOD 20 // 50MHz (nS) 
 `define SYNTHESIS
 
-
+// No need for debugging during simulation
+`ifdef SYNTHESIS
 // `define ADV_DEBUG	 
 // `define JTAG_DEBUG
+`endif
 // `define ROM_WB
  `define RAM_WB
  `define UART0

@@ -498,9 +498,8 @@ end*/
  `else
   `define VCD_SUFFIX   ".vcd"
  `endif
- `define TEST_NAME_STRING "a2"
-	$display("* VCD in %s\n", {"",`TEST_NAME_STRING,`VCD_SUFFIX});
-	$dumpfile({"",`TEST_NAME_STRING,`VCD_SUFFIX});
+  $display("* VCD in %s\n", {"",`TEST_NAME_STRING,`VCD_SUFFIX});
+  $dumpfile({"",`TEST_NAME_STRING,`VCD_SUFFIX});
  `ifndef VCD_DEPTH
   `define VCD_DEPTH 0
  `endif 

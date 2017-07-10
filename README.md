@@ -1,6 +1,17 @@
 # CEP
 Common Evaluation Platform
 
+## Changing the program loaded into memory
+
+Now that you have simulated the provided program or built and run an FPGA implementation of the default program, you may want to simulate/run your own programs.  In order to do that, you will need to write (in C or assembly), compile (using the OR1K gcc toolchain and newlib), and convert the resulting binary into a vmem file suitable for loading directly loading to memory.
+
+Here are the basic steps of the compile and conversion process:
+* Compile your program using the [OR1K toolchain](http://opencores.org/or1k/OpenRISC_GNU_tool_chain)
+* Convert the resulting binary file to a bin file using `or1k-elf-objdump -O binary`
+* Convert the bin file to a vmem file using the `bin2vmem` utility in `software/utils`
+* Rename the resulting sram file `sram.vmem` and replace the file in `fpga_hardware/cores/ram_wb`
+* If you get illegal instruction exceptions (0x700), you may need to move `sram.vmem` to `fpga_hardware/`
+
 ## Simualate using ModelSim
 * Comment-out the synthesis define in fpga_hardware/cores/top/orpsoc-defines.v
 * Run `vsim` to compile the Verilog files into the `work` library. If this is your first time trying to compile in ModelSim, you may need to create a `work` library (after you delete the empty one that points to nothing).

@@ -78,6 +78,8 @@ module orpsoc_testbench;
 `ifdef UART0
    wire uart0_stx_pad_o;
    wire uart0_srx_pad_i;
+   wire uart0_cts_pad_i;
+   wire uart0_rts_pad_o;
 `endif
 `ifdef GPIO0
    wire [gpio0_io_width-1:0] gpio0_io;
@@ -117,6 +119,12 @@ module orpsoc_testbench;
    wire 		     sram_flash_we_n;
    wire 		     sram_mode;
 `endif
+`ifdef DEBUGGING_GPIO
+   wire                      button_W;
+   wire                      button_N;
+   wire                      button_E;
+   wire                      button_S;
+`endif
 
    orpsoc_top dut
      (
@@ -135,8 +143,8 @@ module orpsoc_testbench;
 `ifdef UART0      
       .uart0_stx_pad_o			(uart0_stx_pad_o),
       .uart0_srx_pad_i			(uart0_srx_pad_i),
-      .uart0_stx_expheader_pad_o	(uart0_stx_pad_o),
-      .uart0_srx_expheader_pad_i	(uart0_srx_pad_i),
+      .uart0_rts_pad_o                  (uart0_rts_pad_o),
+      .uart0_cts_pad_i                  (uart0_cts_pad_i),
 `endif
 `ifdef SPI0
       /*
@@ -158,7 +166,14 @@ module orpsoc_testbench;
 `ifdef GPIO0
       .gpio0_io				(gpio0_io),
 `endif
-
+`ifdef DEBUGGING_GPIO
+      .button_W                         (buttonW),
+      .button_N                         (buttonN),
+      .button_E                         (buttonE),
+      .button_S                         (buttonS),
+      .GPIO_LED                         (),
+`endif
+      
       .sys_clk_in_p                     (clk_p),
       .sys_clk_in_n                     (clk_n),
 
@@ -561,14 +576,15 @@ end
    
    // Loopback UART lines
    assign uart0_srx_pad_i = uart0_stx_pad_o;
-
+   assign uart0_cts_pad_i = 1'b0;
 `endif //  `ifdef UART0
+
+`ifdef DEBUGGING_GPIO
+   assign buttonN = 1'b0;
+   assign buttonE = 1'b0;
+   assign buttonS = 1'b0;
+   assign buttonW = 1'b0;
+`endif
    
 endmodule // orpsoc_testbench
-
-// Local Variables:
-// verilog-library-directories:("." "../../rtl/verilog/orpsoc_top")
-// verilog-library-files:()
-// verilog-library-extensions:(".v" ".h")
-// End:
 

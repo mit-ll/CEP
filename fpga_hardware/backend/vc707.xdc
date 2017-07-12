@@ -1,6 +1,6 @@
 # Reset - center button
-set_property PACKAGE_PIN AV39 [get_ports rst_n_pad_i]
-set_property IOSTANDARD LVCMOS18 [get_ports rst_n_pad_i]
+set_property PACKAGE_PIN AV39 [get_ports rst_pad_i]
+set_property IOSTANDARD LVCMOS18 [get_ports rst_pad_i]
 
 # 200 MHz system clock
 set_property PACKAGE_PIN E19 [get_ports sys_clk_in_p]

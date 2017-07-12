@@ -48,19 +48,20 @@
  `define IOCONFIG_XILINX_ML501
 // `define BOARD_CLOCK_PERIOD 5000 // 200MHz (pS accuracy for Xilinx sims.) 
  `define BOARD_CLOCK_PERIOD 20 // 50MHz (nS) 
-`define SYNTHESIS
+//`define SYNTHESIS
 
 // No need for debugging during simulation
 `ifdef SYNTHESIS
 // `define ADV_DEBUG	 
 // `define JTAG_DEBUG
+`define RESET_HIGH
 `endif
 // `define ROM_WB
  `define RAM_WB
  `define UART0
 // `define GPIO0
 // `define ETH0
-// `define AES  
+ `define AES  
 // `define MD5
 // `define SHA
 // `define RSA
@@ -69,9 +70,7 @@
 // `define IDFT
 // `define FIR
 // `define IIR
-
-// end of included module defines - keep this comment line here, scripts depend on it!!
-
+ `define DEBUGGING_GPIO
 
 //
 // Arbiter defines

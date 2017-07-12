@@ -83,15 +83,21 @@ module orpsoc_top
 `endif
     
     sys_clk_in_p,sys_clk_in_n,
+`ifdef RESET_HIGH
+    rst_pad_i
+`else
     rst_n_pad_i
-
+`endif
     );
 
 `include "orpsoc-params.v"   
 
    input sys_clk_in_p,sys_clk_in_n;
-   
-   input rst_n_pad_i;
+`ifdef RESET_HIGH
+    input rst_pad_i;
+`else
+    input rst_n_pad_i;
+`endif   
    
 `ifdef JTAG_DEBUG    
    output tdo_pad_o;
@@ -218,13 +224,12 @@ module orpsoc_top
 `endif
 
       // Asynchronous active low reset
-      .rst_n_pad_i               (rst_n_pad_i)
-      );
-
-`ifdef DEBUGGING_GPIO
-   // Buttons map I-bus address bits onto user LEDs (for debugging)
-   assign GPIO_LED[7:0] = button_W ? wbm_i_or12_adr_o[31:24] : button_N ? wbm_i_or12_adr_o[23:16] : button_E ? wbm_i_or12_adr_o[15:8] : wbm_i_or12_adr_o[7:0];
+`ifdef RESET_HIGH
+       .rst_n_pad_i               (~rst_pad_i)
+`else
+       .rst_n_pad_i               (rst_n_pad_i)
 `endif
+      );
    
    ////////////////////////////////////////////////////////////////////////
    //
@@ -2282,6 +2287,11 @@ module orpsoc_top
    ////////////////////////////////////////////////////////////////////////
 `endif // !`ifdef GPIO0
    
+`ifdef DEBUGGING_GPIO
+   // Buttons map I-bus address bits onto user LEDs (for debugging)
+   assign GPIO_LED[7:0] = button_W ? wbm_i_or12_adr_o[31:24] : button_N ? wbm_i_or12_adr_o[23:16] : button_E ? wbm_i_or12_adr_o[15:8] : wbm_i_or12_adr_o[7:0];
+`endif
+
    ////////////////////////////////////////////////////////////////////////
    //
    // OR1200 Interrupt assignment

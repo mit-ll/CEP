@@ -59,6 +59,7 @@ Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/
 
 Core(s)  |LUT |LUTRAM|FF   |BRAM|DSP  |BUFG|Static Power|Dynamic Power
 ---------|---:|-----:|----:|---:|----:|---:|-----------:|------------:
+**`base`**|**4074**|**36** |**2582**|**513**|**4**|**3**|**0.771 W**|**28.483 W**
 aes      |76% |444%  |227% |19% |     |    |827%        |776%
 md5      |57% |      |31%  |    |     |    |295%        |113%
 sha      |45% |      |61%  |    |     |    |128%        |68%

@@ -54,3 +54,20 @@ Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/
    * Add the pinout information to the appropiate .xdc file in fpga_hardware/backend/
 * Add the HDL files to the list of project files in ModelSim and re-compile
 * Add the HDL files to the list of project files in Vivado and re-build
+
+## VC707 implementation results
+
+Core(s)|LUT|LUTRAM|FF|BRAM|DSP|BUFG|Static Power|Dynamic Power
+-------|---|------|--|----|---|----|------------|-------------
+aes|76%|444%|227%|19%|827%|776%
+md5|57%|31%|295%|113%
+sha|45%|61%|128%|68%
+rsa|20%|10%|1%|33%|30%|22%
+des3|22%|15%| |129%|68%
+crypto|222%|444%|344%|21%|33%|828%|1028%
+dft|60%|3017%|91%|7%|500%|762%|179%
+idft|60%|3017%|91%|7%|500%|706%|173%
+fir|22%|156%|25%| | |97%|56%
+iir|40%|156%|40%|139%|71%
+dsp|185%|6344%|246%|13%|1000%|822|466%
+all|404%|6789%|590%|34%|1000%|33%|838%|1703%

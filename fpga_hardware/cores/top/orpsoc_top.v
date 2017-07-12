@@ -77,10 +77,14 @@ module orpsoc_top
     eth0_rst_n_o,
  `endif
 `endif
-  
+    
+`ifdef DEBUGGING_GPIO
+    GPIO_LED, button_W, button_N, button_E, button_S,
+`endif
+    
     sys_clk_in_p,sys_clk_in_n,
+    rst_n_pad_i
 
-    rst_n_pad_i  
     );
 
 `include "orpsoc-params.v"   
@@ -173,7 +177,12 @@ module orpsoc_top
  `ifdef ETH0_PHY_RST
    output 		      eth0_rst_n_o;
  `endif
-`endif //  `ifdef ETH0
+`endif
+`ifdef DEBUGGING_GPIO
+   output [7:0] GPIO_LED;
+   input 	button_W, button_N, button_E, button_S;
+`endif
+   
 
    ////////////////////////////////////////////////////////////////////////
    //
@@ -212,6 +221,10 @@ module orpsoc_top
       .rst_n_pad_i               (rst_n_pad_i)
       );
 
+`ifdef DEBUGGING_GPIO
+   // Buttons map I-bus address bits onto user LEDs (for debugging)
+   assign GPIO_LED[7:0] = button_W ? wbm_i_or12_adr_o[31:24] : button_N ? wbm_i_or12_adr_o[23:16] : button_E ? wbm_i_or12_adr_o[15:8] : wbm_i_or12_adr_o[7:0];
+`endif
    
    ////////////////////////////////////////////////////////////////////////
    //
@@ -1983,10 +1996,8 @@ module orpsoc_top
    assign wbs_d_uart0_err_o = 0;
    assign wbs_d_uart0_rty_o = 0;
 
-   // Two UART lines coming to single one (ensure they go high when unconnected)
    assign uart0_srx = uart0_srx_pad_i;
    assign uart0_stx_pad_o = uart0_stx;
-   
    
    uart_top uart16550_0
      (
@@ -2004,7 +2015,7 @@ module orpsoc_top
 
       .int_o				(uart0_irq),
       .stx_pad_o			(uart0_stx),
-      .rts_pad_o			(uart0_rts_pad_o),
+      .rts_pad_o			(uart0_rts_pad_0),
       .dtr_pad_o			(),
       //      .baud_o				(),
       // Inputs
@@ -2013,7 +2024,6 @@ module orpsoc_top
       .dsr_pad_i			(1'b0),
       .ri_pad_i				(1'b0),
       .dcd_pad_i			(1'b0));
-
    ////////////////////////////////////////////////////////////////////////          
 `else // !`ifdef UART0
    

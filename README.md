@@ -30,6 +30,24 @@ Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/
 * Start Vivado and create a new project (ideally targeting the VC707 dev. board).
     * Targeting a different development board requires that you create a .xdc file (see fpga_hardware/backend/vc707.xdc for an example) with pinout and constraints for that board.  It may also require you to modify fpga_hardware/core/clkgen/clkgen.v if the input clock is not 200 MHz or doesn't use differential signaling.
     
+### VC707 implementation results
+
+Core(s)  |LUT |LUTRAM|FF   |BRAM|DSP  |BUFG|Static Power|Dynamic Power
+---------|---:|-----:|----:|---:|----:|---:|-----------:|------------:
+**`base`**|**4074**|**36** |**2582**|**513**|**4**|**3**|**0.771 W**|**28.483 W**
+aes      |76% |444%  |227% |19% |     |    |827%        |776%
+md5      |57% |      |31%  |    |     |    |295%        |113%
+sha      |45% |      |61%  |    |     |    |128%        |68%
+rsa      |20% |      |10%  |1%  |     |33% |30%         |22%
+des3     |22% |      |15%  |    |     |    |129%        |68%
+**`crypto`**|**222%**|**444%** |**344%** |**21%** |     |**33%** |**828%**        |**1028%**
+dft      |60% |3017% |91%  |7%  |500% |    |762%        |179%
+idft     |60% |3017% |91%  |7%  |500% |    |706%        |173%
+fir      |22% |156%  |25%  |    |     |    |97%         |56%
+iir      |40% |156%  |40%  |    |     |    |139%        |71%
+**`dsp`**|**185%**|**6344%**|**246%**|**13%**|**1000%**| |**822%**|**466%**
+**`all`**|**404%**|**6789%**|**590%**|**34%**|**1000%**|**33%**|**838%**|**1703%**
+    
 ## Adding a core to the SoC
 * Add a define that will control whether the core is included in the SoC to fpga_hardware/cores/top/orpsoc-defines.v
 * Add the core's bus address and width information to fpga_hardware/cores/top/orpsoc-params.v
@@ -55,20 +73,6 @@ Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/
 * Add the HDL files to the list of project files in ModelSim and re-compile
 * Add the HDL files to the list of project files in Vivado and re-build
 
-## VC707 implementation results
+## Addressing the accelerators
 
-Core(s)  |LUT |LUTRAM|FF   |BRAM|DSP  |BUFG|Static Power|Dynamic Power
----------|---:|-----:|----:|---:|----:|---:|-----------:|------------:
-**`base`**|**4074**|**36** |**2582**|**513**|**4**|**3**|**0.771 W**|**28.483 W**
-aes      |76% |444%  |227% |19% |     |    |827%        |776%
-md5      |57% |      |31%  |    |     |    |295%        |113%
-sha      |45% |      |61%  |    |     |    |128%        |68%
-rsa      |20% |      |10%  |1%  |     |33% |30%         |22%
-des3     |22% |      |15%  |    |     |    |129%        |68%
-**`crypto`**|**222%**|**444%** |**344%** |**21%** |     |**33%** |**828%**        |**1028%**
-dft      |60% |3017% |91%  |7%  |500% |    |762%        |179%
-idft     |60% |3017% |91%  |7%  |500% |    |706%        |173%
-fir      |22% |156%  |25%  |    |     |    |97%         |56%
-iir      |40% |156%  |40%  |    |     |    |139%        |71%
-**`dsp`**|**185%**|**6344%**|**246%**|**13%**|**1000%**| |**822%**|**466%**
-**`all`**|**404%**|**6789%**|**590%**|**34%**|**1000%**|**33%**|**838%**|**1703%**
+The accelerator cores are accessed via memory-mapped IO.  That is to say, you read from and write to accelerator cores just as you would memory, using word granularity addresses.  The base address for each core is defined for hardware in `fpga_hardware/cores/top/orpsoc-params.v` and for software in the header file for that core, e.g., `fpga_hardware/cores/aes/AES.h`.  Also defined in the software header file are aliases for specific offesets in a core's interface.  To understand how the hardware and software work together, see the Wishbone bus interface for the core, e.g., `fpga_hardware/cores/aes/aes_top.v`.

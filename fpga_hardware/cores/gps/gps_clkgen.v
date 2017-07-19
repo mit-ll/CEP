@@ -12,7 +12,7 @@ module gps_clkgen (
 
    gps_clk_fast,
    gps_clk_slow,
-   gps_rst,
+   gps_rst
 );
 
    input  sys_clk_in_p;
@@ -21,8 +21,6 @@ module gps_clkgen (
    output gps_clk_fast;
    output gps_clk_slow;
    output gps_rst;
-   output wb_rst_o;
-   output wb_clk_o;
    
 `ifdef SYNTHESIS
    wire       sys_clk_in_200;
@@ -111,15 +109,19 @@ module gps_clkgen (
    reg [2:0] count;
    reg gps_clk_slow_r;
    always @(posedge gps_clk_fast) begin
-      if(sync_rst_in)
+      if(sync_rst_in) begin
          count <= 3'h0;
          gps_clk_slow_r <= 1'b0;
-      else
-         if(count == 3'h4)
+      end
+      else begin
+         if(count == 3'h4) begin
             count <= 3'h0;
             gps_clk_slow_r <= ~gps_clk_slow_r;
-         else
+         end
+         else begin
             count <= count + 3'h1;
+         end
+      end
    end
 
    assign gps_clk_slow = gps_clk_slow_r;
@@ -127,3 +129,4 @@ module gps_clkgen (
 `endif
 
 endmodule // gps_clkgen
+

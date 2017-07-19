@@ -51,10 +51,6 @@ pcode dut(
     .rst(tb_rst),
     .en(tb_en),
     .sat(tb_sat),
-    .ini_x1a(tb_x1a),
-    .ini_x1b(tb_x1b),
-    .ini_x2a(tb_x2a),
-    .ini_x2b(tb_x2b),
     .preg(tb_preg)
 );
 
@@ -97,10 +93,6 @@ task init_sim();
         tb_rst  = 0;
         tb_en   = 0;
         tb_sat  = 6'b000000;
-        tb_x1a  = 12'h000;
-        tb_x1b  = 12'h000;
-        tb_x2a  = 12'h000;
-        tb_x2b  = 12'h000;
     end
 endtask // init_sim
 
@@ -111,10 +103,6 @@ task timing_verification();
 integer i;
 begin
 
-tb_x1a=001001001000;
-tb_x1b=010101010100;
-tb_x2a=100100100101;
-tb_x2b=010101010100;
 
 tb_rst=1;
         #(2*CLK_PERIOD);
@@ -151,6 +139,7 @@ tb_rst=0;
 */
 
         #(100000*CLK_PERIOD);
+        /*
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
@@ -230,7 +219,7 @@ tb_rst=0;
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
-
+*/
 
 end
 endtask // exp32bit_mod2048bit_test

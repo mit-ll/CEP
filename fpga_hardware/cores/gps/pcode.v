@@ -1,21 +1,24 @@
 module pcode(
     clk, rst, en, sat,
-    ini_x1a, ini_x1b, ini_x2a, ini_x2b,
     preg
 );
     parameter SAT_WIDTH = 6;
     parameter SREG_WIDTH = 37;
     parameter XREG_WIDTH = 12;
     //parameter PREG_WIDTH = 32;
-    
+    parameter ini_x1a=001001001000;
+    parameter ini_x1b=010101010100;
+    parameter ini_x2a=100100100101;
+    parameter ini_x2b=010101010100;
+    //tb_x1a=001001001000;
+    //tb_x1b=010101010100;
+    //tb_x2a=100100100101;
+    //tb_x2b=010101010100;
+
     input clk;
     input rst;
     input en;
     input [ SAT_WIDTH-1:0] sat;
-    input [XREG_WIDTH-1:0] ini_x1a;
-    input [XREG_WIDTH-1:0] ini_x1b;
-    input [XREG_WIDTH-1:0] ini_x2a;
-    input [XREG_WIDTH-1:0] ini_x2b;
 `ifdef PREG_WIDTH
     output reg [PREG_WIDTH-1:0] preg;
 `else
@@ -29,12 +32,12 @@ module pcode(
     reg[SREG_WIDTH-1:0] sreg;
     
     wire x1a_rst, x1b_rst, x2a_rst, x2b_rst;
-    wire x1a_cnt_d, x1b_cnt_d, x2a_cnt_d, x2b_cnt_d, x_cnt_d, z_cnt_d;
+    wire x1a_cnt_d, x1b_cnt_d, x2a_cnt_d, x2b_cnt_d, x_cnt_d, z_cnt_eow, z_cnt_sow;
     reg[XREG_WIDTH-1:0] x1a_cnt, x1b_cnt, x2a_cnt, x2b_cnt;
     reg[SAT_WIDTH-1:0] x_cnt;
     reg[18:0] z_cnt;
     
-    reg x1b_en, x2a_en, x2b_en, z_en;
+    reg x1b_en, x2a_en, x2b_en;
     wire x1b_res, x2a_res, x2b_res;
     wire x1b_halt, x2a_halt, x2b_halt;
 
@@ -44,18 +47,11 @@ module pcode(
     assign x1b_res = x1a_cnt_d & x1a_rst;
     assign x1b_halt= x1b_cnt_d & x1b_rst;
     
-    assign x2a_res = !z_en|x_cnt_d;
-    assign x2a_halt= (z_en|x2a_cnt_d) & x2a_rst;
+    assign x2a_res = z_cnt_sow|x_cnt_d;
+    assign x2a_halt= (z_cnt_eow|x2a_cnt_d) & x2a_rst;
     
     assign x2b_res = x2a_res;
-    assign x2b_halt= (z_en|x2b_cnt_d) & x2b_rst;
-
-    always @(posedge clk) begin
-        if(z_cnt_d & x1b_res)
-            z_en<=1;
-        else
-            z_en<=0;
-    end
+    assign x2b_halt= (z_cnt_eow|x2b_cnt_d) & x2b_rst;
 
     //////////////////////////////////////////
     //Clock Control Signals
@@ -109,7 +105,8 @@ module pcode(
     assign x2a_cnt_d = (x2a_cnt==12'd3750)   ? 1:0;
     assign x2b_cnt_d = (x2b_cnt==12'd3749)   ? 1:0;
     assign x_cnt_d   = (x_cnt  ==6'd37)      ? 1:0;
-    assign z_cnt_d   = (z_cnt  ==19'd403200) ? 1:0;
+    assign z_cnt_sow = ((z_cnt  ==19'd000000)& x1b_res==1) ? 1:0;
+    assign z_cnt_eow = ((z_cnt  ==19'd403200)& x1b_res==1) ? 1:0;
 
 
     always @(posedge clk) begin

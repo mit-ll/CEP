@@ -38,13 +38,27 @@ gps_clkgen gps_clk(
 // Combine SoC and clkgen resets
 wire rst_combined = sync_rst_in | gps_clk_rst;
 
+// Look for rising edge of start
+reg startRound_r;
+wire startRoundPosEdge = ~startRound_r & startRound;
+always @(posedge gps_clk_fast)begin
+   if(rst_combined)begin
+      startRound_r <= 0;
+   end
+   else begin
+      startRound_r <= startRound;
+   end
+end 
+
 // Control code generators
 reg code_gen_en;
+reg [3:0] ca_bit_count;
+reg [7:0] p_bit_count;
 always @(posedge gps_clk_fast)begin
-   if(rst_combined | startRound)begin
-      code_gen_en <= startRound;
+   if(rst_combined | startRoundPosEdge)begin
+      code_gen_en <= startRoundPosEdge;
    end
-   else if(p_bit_count == 8'd128)begin
+   else if(p_bit_count == 8'd128 && ca_bit_count == 4'd13)begin
       code_gen_en <= 1'b0;
    end
 end
@@ -59,18 +73,25 @@ cacode ca(
    ca_code_bit
 );
 
-// Save 13 ca-code bits
-reg [3:0] ca_bit_count;
+// Deal with clock differences by using code gen edge for slow clock
+reg code_gen_en_r;
+wire codeGenPosEdge = ~code_gen_en_r & code_gen_en;
 always @(posedge gps_clk_slow)begin
-   if(rst_combined | startRound)begin
-      ca_bit_count <= 0;
-      ca_code <= 13'h0;
+   if(rst_combined)begin
+      code_gen_en_r <= 0;
    end
    else begin
-      if(ca_bit_count == 4'd13)begin
-         ;
-      end
-      else begin
+      code_gen_en_r <= code_gen_en;
+   end
+end 
+
+// Save 13 ca-code bits
+always @(posedge gps_clk_slow)begin
+   if(rst_combined | codeGenPosEdge)begin
+      ca_bit_count <= 0;
+   end
+   else begin
+      if(ca_bit_count < 4'd13)begin
          ca_bit_count <= ca_bit_count + 1;
          ca_code <= {ca_code[11:0], ca_code_bit};
       end
@@ -88,18 +109,13 @@ pcode p(
 );
 
 // Save 128 p-code bits, encrypt and send as py_code
-reg [7:0] p_bit_count;
 reg [127:0] p_pt;
 always @(posedge gps_clk_fast)begin
-   if(rst_combined | startRound)begin
+   if(rst_combined | startRoundPosEdge)begin
       p_bit_count <= 0;
-      p_pt <= 128'h0;
    end
    else begin
-      if(p_bit_count == 8'd128)begin
-         ;
-      end
-      else begin
+      if(p_bit_count < 8'd128)begin
          p_bit_count <= p_bit_count + 1;
          p_pt <= {p_pt [126:0], p_code_bit};
       end

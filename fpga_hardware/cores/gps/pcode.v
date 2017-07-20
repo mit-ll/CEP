@@ -10,10 +10,6 @@ module pcode(
     parameter ini_x1b=12'b010101010100;
     parameter ini_x2a=12'b100100100101;
     parameter ini_x2b=12'b010101010100;
-    //tb_x1a=001001001000;
-    //tb_x1b=010101010100;
-    //tb_x2a=100100100101;
-    //tb_x2b=010101010100;
 
     input clk;
     input rst;
@@ -107,7 +103,6 @@ module pcode(
     assign x_cnt_d   = (x_cnt  ==6'd37)      ? 1:0;
     assign z_cnt_sow = ((z_cnt  ==19'd000000)& x1b_res==1) ? 1:0;
     assign z_cnt_eow = ((z_cnt  ==19'd403200)& x1b_res==1) ? 1:0;
-
 
     always @(posedge clk) begin
         if(rst)

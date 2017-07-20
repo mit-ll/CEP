@@ -141,6 +141,11 @@ parameter iir_wb_adr = 8'h9B;
 parameter wbs_d_iir_data_width = 32;
 parameter wbs_d_iir_addr_width = 6;
 
+// GPS defines
+parameter gps_wb_adr = 8'h9C;
+parameter wbs_d_gps_data_width = 32;
+parameter wbs_d_gps_addr_width = 6;
+
 //////////////////////////////////////////////////////
 //                                                  //
 // Wishbone bus parameters                          //
@@ -197,6 +202,8 @@ parameter dbus_arb_slave10_adr = fir_wb_adr; // FIR
 parameter dbus_arb_slave10_addr_width = wbs_d_fir_addr_width;
 parameter dbus_arb_slave11_adr = iir_wb_adr; // IIR
 parameter dbus_arb_slave11_addr_width = wbs_d_iir_addr_width;
+parameter dbus_arb_slave12_adr = gps_wb_adr; // GPS
+parameter dbus_arb_slave12_addr_width = wbs_d_gps_addr_width;
 
 ///////////////////////////////
 //                           //

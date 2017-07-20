@@ -6,8 +6,7 @@
  */
 
 module gps_clkgen (
-   sys_clk_in_p,
-   sys_clk_in_n,
+   sys_clk_50,
    sync_rst_in,
 
    gps_clk_fast,
@@ -15,47 +14,37 @@ module gps_clkgen (
    gps_rst
 );
 
-   input  sys_clk_in_p;
-   input  sys_clk_in_n;
+   input sys_clk_50;
    input  sync_rst_in;
    output gps_clk_fast;
    output gps_clk_slow;
    output gps_rst;
    
 `ifdef SYNTHESIS
-   wire       sys_clk_in_200;
    wire       clk_fb;
    wire       clk_out0_prebufg, clk_out0;
    wire       locked_int;
  
-   /* Dif. input buffer for 200MHz board clock, generate SE 200MHz */
-   IBUFGDS_LVPECL_25 sys_clk_in_ibufds
-     (
-      .O(sys_clk_in_200),
-      .I(sys_clk_in_p),
-      .IB(sys_clk_in_n)
-   );
-
  MMCME2_ADV
    #(
     .BANDWIDTH            ("OPTIMIZED"),
     .CLKOUT4_CASCADE      ("FALSE"),
     .COMPENSATION         ("ZHOLD"),
     .STARTUP_WAIT         ("FALSE"),
-    .DIVCLK_DIVIDE        (13),
-    .CLKFBOUT_MULT_F      (48.375),
+    .DIVCLK_DIVIDE        (1),
+    .CLKFBOUT_MULT_F      (16.750),
     .CLKFBOUT_PHASE       (0.000),
     .CLKFBOUT_USE_FINE_PS ("FALSE"),
-    .CLKOUT0_DIVIDE_F     (72.750),
+    .CLKOUT0_DIVIDE_F     (81.875),
     .CLKOUT0_PHASE        (0.000),
     .CLKOUT0_DUTY_CYCLE   (0.500),
     .CLKOUT0_USE_FINE_PS  ("FALSE"),
-    .CLKIN1_PERIOD        (5.000))
+    .CLKIN1_PERIOD        (20.000))
    mmcm_adv_inst (
     .CLKFBOUT            (clk_fb),
     .CLKOUT0             (clk_out0),
     .CLKFBIN             (clk_fb),
-    .CLKIN1              (sys_clk_in_200),
+    .CLKIN1              (sys_clk_50),
     .CLKIN2              (1'b0),
     .CLKINSEL            (1'b1),
     .DADDR               (7'h0),
@@ -71,9 +60,9 @@ module gps_clkgen (
     .RST                 (1'b0)
    );
 
-   BUFG gps_clk_fast_buf (
-      .O (clk_out0),
-      .I (clk_out0_prebufg));
+//   BUFG gps_clk_fast_buf (
+//      .O (clk_out0),
+//      .I (clk_out0_prebufg));
 
    assign gps_clk_fast = clk_out0;
    assign gps_rst = sync_rst_in | ~locked_int;
@@ -99,7 +88,7 @@ module gps_clkgen (
       end
    end
 `else
-   assign gps_clk_fast = sys_clk_in_p;
+   assign gps_clk_fast = sys_clk_50;
 
    reg [2:0] count = 3'h0;
    reg gps_clk_slow_r = 1'b0;

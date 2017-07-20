@@ -1,6 +1,4 @@
 module gps_top (
-   sys_clk_in_p,
-   sys_clk_in_n,
    wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
    wb_stb_i, wb_we_i,
    wb_ack_o, wb_err_o, wb_dat_o,
@@ -10,8 +8,6 @@ module gps_top (
    parameter dw = 32;
    parameter aw = 32;
 
-   input  sys_clk_in_p;
-   input  sys_clk_in_n;
    input [aw-1:0] wb_adr_i;
    input	  wb_cyc_i;
    input [dw-1:0] wb_dat_i;
@@ -74,8 +70,7 @@ module gps_top (
    end // always @ (*)
 
 gps gps(
-   sys_clk_in_p,
-   sys_clk_in_n,
+   wb_clk_i,
    wb_rst_i,
    6'd12,
    genNext,

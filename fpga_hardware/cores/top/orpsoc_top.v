@@ -476,7 +476,8 @@ module orpsoc_top
    wire 				  wbs_d_aes_ack_o;
    wire 				  wbs_d_aes_err_o;
    wire 				  wbs_d_aes_rty_o;
-
+   wire aes_irq;
+   
    // MD5 slave wires
    wire [31:0] 				  wbs_d_md5_adr_i;
    wire [wbs_d_md5_data_width-1:0] 	  wbs_d_md5_dat_i;
@@ -490,7 +491,8 @@ module orpsoc_top
    wire 				  wbs_d_md5_ack_o;
    wire 				  wbs_d_md5_err_o;
    wire 				  wbs_d_md5_rty_o;
-
+   wire md5_irq;
+   
    // SHA slave wires
    wire [31:0] 				  wbs_d_sha_adr_i;
    wire [wbs_d_sha_data_width-1:0] 	  wbs_d_sha_dat_i;
@@ -504,7 +506,8 @@ module orpsoc_top
    wire 				  wbs_d_sha_ack_o;
    wire 				  wbs_d_sha_err_o;
    wire 				  wbs_d_sha_rty_o;
-
+   wire sha_irq;
+   
    // RSA slave wires
    wire [31:0] 				  wbs_d_rsa_adr_i;
    wire [wbs_d_rsa_data_width-1:0] 	  wbs_d_rsa_dat_i;
@@ -518,7 +521,8 @@ module orpsoc_top
    wire 				  wbs_d_rsa_ack_o;
    wire 				  wbs_d_rsa_err_o;
    wire 				  wbs_d_rsa_rty_o;
-
+   wire rsa_irq;
+   
    // DES3 slave wires
    wire [31:0] 				  wbs_d_des3_adr_i;
    wire [wbs_d_des3_data_width-1:0] 	  wbs_d_des3_dat_i;
@@ -532,7 +536,8 @@ module orpsoc_top
    wire 				  wbs_d_des3_ack_o;
    wire 				  wbs_d_des3_err_o;
    wire 				  wbs_d_des3_rty_o;
-
+   wire des3_irq;
+   
    // DFT slave wires
    wire [31:0] 				  wbs_d_dft_adr_i;
    wire [wbs_d_dft_data_width-1:0] 	  wbs_d_dft_dat_i;
@@ -546,8 +551,9 @@ module orpsoc_top
    wire 				  wbs_d_dft_ack_o;
    wire 				  wbs_d_dft_err_o;
    wire 				  wbs_d_dft_rty_o;
-
-   // DFT slave wires
+   wire dft_irq;
+   
+   // iDFT slave wires
    wire [31:0] 				  wbs_d_idft_adr_i;
    wire [wbs_d_idft_data_width-1:0] 	  wbs_d_idft_dat_i;
    wire [3:0] 				  wbs_d_idft_sel_i;
@@ -560,7 +566,8 @@ module orpsoc_top
    wire 				  wbs_d_idft_ack_o;
    wire 				  wbs_d_idft_err_o;
    wire 				  wbs_d_idft_rty_o;
-
+   wire idft_irq;
+   
    // FIR slave wires
    wire [31:0] 				  wbs_d_fir_adr_i;
    wire [wbs_d_fir_data_width-1:0] 	  wbs_d_fir_dat_i;
@@ -574,7 +581,8 @@ module orpsoc_top
    wire 				  wbs_d_fir_ack_o;
    wire 				  wbs_d_fir_err_o;
    wire 				  wbs_d_fir_rty_o;
-
+   wire fir_irq;
+   
    // IIR slave wires
    wire [31:0] 				  wbs_d_iir_adr_i;
    wire [wbs_d_iir_data_width-1:0] 	  wbs_d_iir_dat_i;
@@ -588,7 +596,8 @@ module orpsoc_top
    wire 				  wbs_d_iir_ack_o;
    wire 				  wbs_d_iir_err_o;
    wire 				  wbs_d_iir_rty_o;
-
+   wire iir_irq;
+   
    // GPS slave wires
    wire [31:0] 				  wbs_d_gps_adr_i;
    wire [wbs_d_gps_data_width-1:0] 	  wbs_d_gps_dat_i;
@@ -602,6 +611,7 @@ module orpsoc_top
    wire 				  wbs_d_gps_ack_o;
    wire 				  wbs_d_gps_err_o;
    wire 				  wbs_d_gps_rty_o;
+   wire gps_irq;
    
    //
    // Wishbone instruction bus arbiter
@@ -1688,7 +1698,7 @@ module orpsoc_top
    assign wbs_d_aes_err_o = 0;
    assign wbs_d_aes_ack_o = 0;
    assign wbs_d_aes_rty_o = 0;
-   assign aes_irg = 0;
+   assign aes_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1726,7 +1736,7 @@ module orpsoc_top
    assign wbs_d_md5_err_o = 0;
    assign wbs_d_md5_ack_o = 0;
    assign wbs_d_md5_rty_o = 0;
-   assign md5_irg = 0;
+   assign md5_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1764,7 +1774,7 @@ module orpsoc_top
    assign wbs_d_sha_err_o = 0;
    assign wbs_d_sha_ack_o = 0;
    assign wbs_d_sha_rty_o = 0;
-   assign sha_irg = 0;
+   assign sha_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1802,7 +1812,7 @@ module orpsoc_top
    assign wbs_d_rsa_err_o = 0;
    assign wbs_d_rsa_ack_o = 0;
    assign wbs_d_rsa_rty_o = 0;
-   assign rsa_irg = 0;
+   assign rsa_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
  
@@ -1840,7 +1850,7 @@ module orpsoc_top
    assign wbs_d_des3_err_o = 0;
    assign wbs_d_des3_ack_o = 0;
    assign wbs_d_des3_rty_o = 0;
-   assign des3_irg = 0;
+   assign des3_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1878,7 +1888,7 @@ module orpsoc_top
    assign wbs_d_dft_err_o = 0;
    assign wbs_d_dft_ack_o = 0;
    assign wbs_d_dft_rty_o = 0;
-   assign dft_irg = 0;
+   assign dft_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1916,7 +1926,7 @@ module orpsoc_top
    assign wbs_d_idft_err_o = 0;
    assign wbs_d_idft_ack_o = 0;
    assign wbs_d_idft_rty_o = 0;
-   assign idft_irg = 0;
+   assign idft_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1954,7 +1964,7 @@ module orpsoc_top
    assign wbs_d_iir_err_o = 0;
    assign wbs_d_iir_ack_o = 0;
    assign wbs_d_iir_rty_o = 0;
-   assign iir_irg = 0;
+   assign iir_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -1992,7 +2002,7 @@ module orpsoc_top
    assign wbs_d_fir_err_o = 0;
    assign wbs_d_fir_ack_o = 0;
    assign wbs_d_fir_rty_o = 0;
-   assign fir_irg = 0;
+   assign fir_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 
@@ -2006,8 +2016,6 @@ module orpsoc_top
    gps_top gps
    (
       // Wishbone Slave interface
-      .sys_clk_in_p(sys_clk_in_p),
-      .sys_clk_in_n(sys_clk_in_n),
       .wb_clk_i(wb_clk),
       .wb_rst_i(wb_rst),
       .wb_dat_i(wbs_d_gps_dat_i),
@@ -2032,7 +2040,7 @@ module orpsoc_top
    assign wbs_d_gps_err_o = 0;
    assign wbs_d_gps_ack_o = 0;
    assign wbs_d_gps_rty_o = 0;
-   assign gps_irg = 0;
+   assign gps_irq = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
 

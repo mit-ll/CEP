@@ -1,7 +1,6 @@
 // From the GPS transmitter's perspective
 module gps(
-   sys_clk_in_p,
-   sys_clk_in_n,
+   sys_clk_50,
    sync_rst_in,
    sv_num,
    startRound,
@@ -11,8 +10,7 @@ module gps(
    py_code_valid
 );
 
-   input  sys_clk_in_p;
-   input  sys_clk_in_n;
+   input  sys_clk_50;
    input  sync_rst_in;
    input [5:0] sv_num;
    input startRound;
@@ -27,8 +25,7 @@ wire gps_clk_fast;
 wire gps_clk_slow;
 wire gps_clk_rst;
 gps_clkgen gps_clk(
-   sys_clk_in_p,
-   sys_clk_in_n,
+   sys_clk_50,
    sync_rst_in,
    gps_clk_fast,
    gps_clk_slow,

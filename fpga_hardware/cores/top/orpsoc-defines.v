@@ -61,15 +61,15 @@
  `define UART0
 // `define GPIO0
 // `define ETH0
-// `define AES  
-// `define MD5
-// `define SHA
-// `define RSA
-// `define DES3
-// `define DFT
-// `define IDFT
-// `define FIR
-// `define IIR
+ `define AES  
+ `define MD5
+ `define SHA
+ `define RSA
+ `define DES3
+ `define DFT
+ `define IDFT
+ `define FIR
+ `define IIR
  `define GPS
 // `define DEBUGGING_GPIO
 

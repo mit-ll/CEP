@@ -100,46 +100,20 @@ endtask // init_sim
 // timing_verification
 //----------------------------------------------------------------
 task timing_verification();
-integer i;
-begin
-
-
-tb_rst=1;
+    begin
+        tb_rst=1;
         #(2*CLK_PERIOD);
-tb_rst=0;
+        tb_rst=0;
 
-//for(i=0;i<500;i++)
+        tb_en = 1;
         #(1000*CLK_PERIOD);
+        tb_en = 0;
+        #(1000*CLK_PERIOD);
+        tb_en = 1;
+        #(1000*CLK_PERIOD);
+
+        #(100000*CLK_PERIOD);
 /*
-tb_x1a=12'd4092;
-tb_rst=1;
-        #(CLK_PERIOD);
-tb_rst=0;
-
-        #(1000*CLK_PERIOD);
-
-tb_x1b=12'd4093;
-tb_rst=1;
-        #(CLK_PERIOD);
-tb_rst=0;
-
-        #(1000*CLK_PERIOD);
-
-tb_x2a=12'd4092;
-tb_rst=1;
-        #(CLK_PERIOD);
-tb_rst=0;
-
-        #(1000*CLK_PERIOD);
-
-tb_x2b=12'd4093;
-tb_rst=1;
-        #(CLK_PERIOD);
-tb_rst=0;
-*/
-
-        #(100000*CLK_PERIOD);
-        /*
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
@@ -220,9 +194,8 @@ tb_rst=0;
         #(100000*CLK_PERIOD);
         #(100000*CLK_PERIOD);
 */
-
 end
-endtask // exp32bit_mod2048bit_test
+endtask // timing_verification
 
 //----------------------------------------------------------------
 // main

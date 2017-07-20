@@ -59,34 +59,34 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x1b_en<=1;
-        else if(x1b_halt)
-            x1b_en<=0;
-        else if(x1b_res)
-            x1b_en<=1;
-        else
-            x1b_en<=x1b_en;
+        else if(en) begin
+            if(x1b_halt)
+                x1b_en<=0;
+            else if(x1b_res)
+                x1b_en<=1;
+        end
     end
     
     always @(posedge clk) begin
         if(rst)
             x2a_en<=1;
-        else if(x2a_halt)
-            x2a_en<=0;
-        else if(x2a_res)
-            x2a_en<=1;
-        else
-            x2a_en<=x2a_en;
+        else if(en) begin
+            if(x2a_halt)
+                x2a_en<=0;
+            else if(x2a_res)
+                x2a_en<=1;
+        end
     end
     
     always @(posedge clk) begin
         if(rst)
             x2b_en<=1;
-        else if(x2b_halt)
-            x2b_en<=0;
-        else if(x2b_res)
-            x2b_en<=1;
-        else
-            x2b_en<=x2b_en;
+        else if(en) begin
+            if(x2b_halt)
+                x2b_en<=0;
+            else if(x2b_res)
+                x2b_en<=1;
+        end
     end
 
     //////////////////////////////////////////
@@ -112,7 +112,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x1a_cnt  <=0;
-        else if(x1a_rst==1) begin
+        else if(en & x1a_rst) begin
             if(x1a_cnt < 12'd3750)
                 x1a_cnt <= x1a_cnt+1;
             else
@@ -123,7 +123,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x1b_cnt <=0;
-        else if(x1b_rst==1) begin
+        else if(en &x1b_rst) begin
             if(x1b_cnt < 12'd3749)
                 x1b_cnt <= x1b_cnt+1;
             else
@@ -134,7 +134,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x2a_cnt<=0;
-        else if(x2a_rst==1) begin
+        else if(en &x2a_rst) begin
             if(x2a_cnt < 12'd3750)
                 x2a_cnt <= x2a_cnt+1;
             else
@@ -145,7 +145,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x2b_cnt  <=0;
-        else if(x2b_rst==1) begin
+        else if(en &x2b_rst) begin
             if(x2b_cnt < 12'd3749)
                 x2b_cnt <= x2b_cnt+1;
             else
@@ -156,7 +156,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             x_cnt<=0;
-        else if((x2a_res&x2a_cnt_d)==1) begin
+        else if(en & x2a_res & x2a_cnt_d) begin
             if(x_cnt < 6'd37)
                 x_cnt <= x_cnt+1;
             else
@@ -167,7 +167,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             z_cnt<=0;
-        else if(x1b_res==1) begin
+        else if(en & x1b_res) begin
             if(z_cnt < 19'd403200)
                 z_cnt <= z_cnt+1;
             else
@@ -181,28 +181,28 @@ module pcode(
     always @(posedge clk) begin
         if(rst|x1a_rst)
             x1a<=ini_x1a;
-        else
+        else if(en)
             x1a<={x1a[XREG_WIDTH-2:0],x1a[5]^x1a[7]^x1a[10]^x1a[11]};
     end
     
     always @(posedge clk) begin
         if(rst|x1b_rst)
             x1b<=ini_x1b;
-        else if (x1b_en)
+        else if (en & x1b_en)
             x1b<={x1b[XREG_WIDTH-2:0],x1b[0]^x1b[1]^x1b[4]^x1b[7]^x1b[8]^x1b[9]^x1b[10]^x1b[11]};
     end
 
     always @(posedge clk) begin
         if(rst|x2a_rst)
             x2a<=ini_x2a;
-        else if (x2a_en)
+        else if (en & x2a_en)
             x2a<={x2a[XREG_WIDTH-2:0],x2a[0]^x2a[2]^x2a[3]^x2a[4]^x2a[6]^x2a[7]^x2a[8]^x2a[9]^x2a[10]^x2a[11]};
     end
 
     always @(posedge clk) begin
         if(rst|x2b_rst)
             x2b<=ini_x2b;
-        else if (x2b_en)
+        else if (en & x2b_en)
             x2b<={x2b[XREG_WIDTH-2:0],x2b[1]^x2b[2]^x2b[3]^x2b[7]^x2b[8]^x2b[11]};
     end
     
@@ -210,7 +210,7 @@ module pcode(
     always @(posedge clk) begin
         if(rst)
             sreg<=32'b0;
-        else
+        else if(en)
             sreg<={sreg[SREG_WIDTH-2:0],(x2a[XREG_WIDTH-1]^x2b[XREG_WIDTH-1])};
     end
     
@@ -221,7 +221,7 @@ module pcode(
 `else
             preg<=1'b0;
 `endif
-        else
+        else if(en)
 `ifdef PREG_WIDTH
             preg<={preg[PREG_WIDTH-2:0],(x1a[XREG_WIDTH-1]^x1b[XREG_WIDTH-1])^sreg[sat]};
 `else

@@ -589,6 +589,20 @@ module orpsoc_top
    wire 				  wbs_d_iir_err_o;
    wire 				  wbs_d_iir_rty_o;
 
+   // GPS slave wires
+   wire [31:0] 				  wbs_d_gps_adr_i;
+   wire [wbs_d_gps_data_width-1:0] 	  wbs_d_gps_dat_i;
+   wire [3:0] 				  wbs_d_gps_sel_i;
+   wire 				  wbs_d_gps_we_i;
+   wire 				  wbs_d_gps_cyc_i;
+   wire 				  wbs_d_gps_stb_i;
+   wire [2:0] 				  wbs_d_gps_cti_i;
+   wire [1:0] 				  wbs_d_gps_bte_i;   
+   wire [wbs_d_gps_data_width-1:0] 	  wbs_d_gps_dat_o;   
+   wire 				  wbs_d_gps_ack_o;
+   wire 				  wbs_d_gps_err_o;
+   wire 				  wbs_d_gps_rty_o;
+   
    //
    // Wishbone instruction bus arbiter
    //
@@ -851,18 +865,18 @@ module orpsoc_top
       .wbs11_err_o			(wbs_d_iir_err_o),
       .wbs11_rty_o			(wbs_d_iir_rty_o),
 
-      .wbs12_adr_i			(),
-      .wbs12_dat_i			(),
-      .wbs12_sel_i			(),
-      .wbs12_we_i			(),
-      .wbs12_cyc_i			(),
-      .wbs12_stb_i			(),
-      .wbs12_cti_i			(),
-      .wbs12_bte_i			(),
-      .wbs12_dat_o			(empty_slot_dat_o),
-      .wbs12_ack_o			(empty_slot_ack_o),
-      .wbs12_err_o			(empty_slot_err_o),
-      .wbs12_rty_o			(empty_slot_rty_o),
+      .wbs12_adr_i			(wbs_d_gps_adr_i),
+      .wbs12_dat_i			(wbs_d_gps_dat_i),
+      .wbs12_sel_i			(wbs_d_gps_sel_i),
+      .wbs12_we_i			(wbs_d_gps_we_i),
+      .wbs12_cyc_i			(wbs_d_gps_cyc_i),
+      .wbs12_stb_i			(wbs_d_gps_stb_i),
+      .wbs12_cti_i			(wbs_d_gps_cti_i),
+      .wbs12_bte_i			(wbs_d_gps_bte_i),
+      .wbs12_dat_o			(wbs_d_gps_dat_o),
+      .wbs12_ack_o			(wbs_d_gps_ack_o),
+      .wbs12_err_o			(wbs_d_gps_err_o),
+      .wbs12_rty_o			(wbs_d_gps_rty_o),
 
       .wbs13_adr_i			(),
       .wbs13_dat_i			(),
@@ -931,7 +945,9 @@ module orpsoc_top
    defparam arbiter_dbus0.slave10_addr_width = dbus_arb_slave10_addr_width;   
    defparam arbiter_dbus0.slave11_adr = dbus_arb_slave11_adr;
    defparam arbiter_dbus0.slave11_addr_width = dbus_arb_slave11_addr_width;   
-
+   defparam arbiter_dbus0.slave12_adr = dbus_arb_slave12_adr;
+   defparam arbiter_dbus0.slave12_addr_width = dbus_arb_slave12_addr_width; 
+   
    //
    // Wishbone byte-wide bus arbiter
    //   
@@ -1979,6 +1995,47 @@ module orpsoc_top
    assign fir_irg = 0;
    ////////////////////////////////////////////////////////////////////////
 `endif
+
+`ifdef GPS
+   ////////////////////////////////////////////////////////////////////////
+   //
+   // GPS
+   //
+   ////////////////////////////////////////////////////////////////////////
+
+   gps_top gps
+   (
+      // Wishbone Slave interface
+      .sys_clk_in_p(sys_clk_in_p),
+      .sys_clk_in_n(sys_clk_in_n),
+      .wb_clk_i(wb_clk),
+      .wb_rst_i(wb_rst),
+      .wb_dat_i(wbs_d_gps_dat_i),
+      .wb_adr_i(wbs_d_gps_adr_i),
+      .wb_sel_i(wbs_d_gps_sel_i[3:0]),
+      .wb_we_i (wbs_d_gps_we_i),
+      .wb_cyc_i(wbs_d_gps_cyc_i),
+      .wb_stb_i(wbs_d_gps_stb_i),
+      .wb_dat_o(wbs_d_gps_dat_o),
+      .wb_err_o(wbs_d_gps_err_o),
+      .wb_ack_o(wbs_d_gps_ack_o),
+      
+      // Processor interrupt
+      .int_o(gps_irq)
+    );   
+   
+   assign wbs_d_gps_rty_o = 0;
+   
+   ////////////////////////////////////////////////////////////////////////
+`else
+   assign wbs_d_gps_dat_o = 0;
+   assign wbs_d_gps_err_o = 0;
+   assign wbs_d_gps_ack_o = 0;
+   assign wbs_d_gps_rty_o = 0;
+   assign gps_irg = 0;
+   ////////////////////////////////////////////////////////////////////////
+`endif
+
 
 `ifdef UART0
    ////////////////////////////////////////////////////////////////////////

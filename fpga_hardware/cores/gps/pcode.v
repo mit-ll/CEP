@@ -6,10 +6,10 @@ module pcode(
     parameter SREG_WIDTH = 37;
     parameter XREG_WIDTH = 12;
     //parameter PREG_WIDTH = 32;
-    parameter ini_x1a=001001001000;
-    parameter ini_x1b=010101010100;
-    parameter ini_x2a=100100100101;
-    parameter ini_x2b=010101010100;
+    parameter ini_x1a=12'b001001001000;
+    parameter ini_x1b=12'b010101010100;
+    parameter ini_x2a=12'b100100100101;
+    parameter ini_x2b=12'b010101010100;
     //tb_x1a=001001001000;
     //tb_x1b=010101010100;
     //tb_x2a=100100100101;

@@ -17,7 +17,7 @@ module gps(
    output ca_code;
    output p_code;
    output [127:0] py_code;
-   output py_code_valide;
+   output py_code_valid;
 
 // Generate the clocks for the C/A code and P-code generators
 // Assumes 200 MHz input clock
@@ -37,7 +37,7 @@ gps_clkgen gps_clk(
 wire rst_combined = sync_rst_in | gps_clk_rst;
 
 // Generate C/A code
-cacode ca_code(
+cacode ca(
    gps_clk_slow,
    rst_combined,
    sv_num,
@@ -46,7 +46,7 @@ cacode ca_code(
 );
 
 // Generate P-code
-pcode p_code (
+pcode p(
     gps_clk_fast,
     rst_combined,
     1'b1,

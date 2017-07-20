@@ -86,41 +86,30 @@ module gps_clkgen (
       .I   (clk_out0_prebufg)
    );
 
-   reg [2:0] count;
+   reg [2:0] count = 3'h0;
    reg enable_slow_clk;
    always @(posedge clk_out0) begin
       enable_slow_clk <= 1'b0;
-      if(sync_rst_in | ~locked_int) begin
-         count <= 3'h0;   
+      if(count == 3'h4) begin
+         count <= 3'h0;
+         enable_slow_clk <= 1'b1;
       end
       else begin
-         if(count == 3'h4) begin
-            count <= 3'h0;
-            enable_slow_clk <= 1'b1;
-         end
-         else begin
-            count <= count + 3'h1;
-         end
+         count <= count + 3'h1;
       end
    end
 `else
    assign gps_clk_fast = sys_clk_in_p;
 
-   reg [2:0] count;
-   reg gps_clk_slow_r;
+   reg [2:0] count = 3'h0;
+   reg gps_clk_slow_r = 1'b0;
    always @(posedge gps_clk_fast) begin
-      if(sync_rst_in) begin
+      if(count == 3'h4) begin
          count <= 3'h0;
-         gps_clk_slow_r <= 1'b0;
+         gps_clk_slow_r <= ~gps_clk_slow_r;
       end
       else begin
-         if(count == 3'h4) begin
-            count <= 3'h0;
-            gps_clk_slow_r <= ~gps_clk_slow_r;
-         end
-         else begin
-            count <= count + 3'h1;
-         end
+         count <= count + 3'h1;
       end
    end
 

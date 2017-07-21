@@ -30,7 +30,7 @@ module gps_top (
 
    // Internal registers
    reg genNext;
-   wire [127:0] ca_code;
+   wire [12:0] ca_code;
    wire [127:0] p_code;
    wire [127:0] l_code;
    wire codes_valid;
@@ -53,18 +53,15 @@ module gps_top (
    always @(*) begin
       case(wb_adr_i[5:2])
         0: wb_dat_o = {31'b0, codes_valid};
-        1: wb_dat_o = ca_code[31:0];
-        2: wb_dat_o = ca_code[63:32];
-        3: wb_dat_o = ca_code[95:64];
-        4: wb_dat_o = ca_code[127:96];
-        5: wb_dat_o = p_code[31:0];
-        6: wb_dat_o = p_code[63:32];
-        7: wb_dat_o = p_code[95:64];
-        8: wb_dat_o = p_code[127:96];
-        9: wb_dat_o = l_code[31:0];
-        10: wb_dat_o = l_code[63:32];
-        11: wb_dat_o = l_code[95:64];
-        12: wb_dat_o = l_code[127:96];
+        1: wb_dat_o = {19'b0, ca_code};
+        2: wb_dat_o = p_code[31:0];
+        3: wb_dat_o = p_code[63:32];
+        4: wb_dat_o = p_code[95:64];
+        5: wb_dat_o = p_code[127:96];
+        6: wb_dat_o = l_code[31:0];
+        7: wb_dat_o = l_code[63:32];
+        8: wb_dat_o = l_code[95:64];
+        9: wb_dat_o = l_code[127:96];
         default: wb_dat_o = 32'b0;
       endcase
    end // always @ (*)

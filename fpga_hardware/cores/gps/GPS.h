@@ -37,6 +37,7 @@ double sc_time_stamp () {
 void evalModel();
 void toggleClock(void);
 bool codeReady(void);
+void saveCode(uint32_t *pCT, unsigned pBytes, uint32_t pBaseAddress);
 
 void runForClockCycles(const unsigned int pCycles) {
     int doubleCycles = pCycles << 2;
@@ -52,4 +53,36 @@ void waitForValidOutput(void) {
     while (!codeReady()) {
         runForClockCycles(1);
     }
+}
+
+bool compareCode(uint32_t* pC, const char *pExpectedHexString, uint32_t pBytes) {
+  char longTemp[GPS_P_BYTES + 1];
+    
+  // Convert the calculated code into a text string
+  char *temp = longTemp;
+  for(int i = (pBytes / BYTES_PER_WORD - 1); i >= 0; --i) {
+    sprintf(temp, "%8.8x", (unsigned int)(pC[i]));
+    temp += 8;
+  }
+    
+  // Now we can compare them as hex strings
+  // 2 string characters per byte
+  if(strncmp(longTemp, pExpectedHexString, (pBytes * 2)) == 0) {
+    return true;
+  }
+    
+  return false;
+}
+
+void verifyCode(const char *pExpectedHexString, const char * pTestString, uint32_t pBytes, uint32_t pBaseAddress) {
+  uint32_t c[GPS_P_BYTES / BYTES_PER_WORD];
+  printf("Expected:\t0x%s\n", pExpectedHexString);
+  /*saveCode(c, pBytes, pBaseAddress);
+    
+  if(compareCode(c, pExpectedHexString, pBytes)) {
+    printf("PASSED: %s\n", pTestString);
+  } else {
+    printf("Expected:\t0x%s\n", pExpectedHexString);
+    printf("FAILED: %s\n", pTestString);
+    }*/
 }

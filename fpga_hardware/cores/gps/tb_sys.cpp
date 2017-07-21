@@ -52,25 +52,5 @@ int main(int argc, char **argv, char **env) {
     reportCode("L", GPS_L_BYTES, GPS_L_BASE);
     verifyCode("FD86C6D34155A750E284B05AC643BC27", "L code", GPS_L_BYTES, GPS_L_BASE);
 
-    printf("Generating next code batch\n");
-    generateNextCode();
-    waitForValidOutput();
-    reportCode("CA", GPS_CA_BYTES, GPS_CA_BASE);
-    verifyCode("00001712", "C/A code", GPS_CA_BYTES, GPS_CA_BASE);
-    reportCode("P", GPS_P_BYTES, GPS_P_BASE);
-    verifyCode("F179327E0A19F1FA119030D8BFE6CE6A", "P code", GPS_P_BYTES, GPS_P_BASE);
-    reportCode("L", GPS_L_BYTES, GPS_L_BASE);
-    verifyCode("A23F8D16E63A0F97CDB6543F249C8121", "L code", GPS_L_BYTES, GPS_L_BASE);
-
-    printf("Generating next code batch\n");
-    generateNextCode();
-    waitForValidOutput();
-    reportCode("CA", GPS_CA_BYTES, GPS_CA_BASE);
-    verifyCode("0478", "C/A code", GPS_CA_BYTES, GPS_CA_BASE);
-    reportCode("P", GPS_P_BYTES, GPS_P_BASE);
-    verifyCode("7368AEA4E6718ED6AB53420F3C73E4D4", "P code", GPS_P_BYTES, GPS_P_BASE);
-    reportCode("L", GPS_L_BYTES, GPS_L_BASE);
-    verifyCode("FE7F90ED518A163AE36B6448166B7DA2", "L code", GPS_L_BYTES, GPS_L_BASE);
-    
     return 0;
 }

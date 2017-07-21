@@ -1,4 +1,4 @@
-#include "AES.h"
+#include "GPS.h"
 
 // Need this to fully implement expected interface
 void toggleClock() {;}
@@ -44,7 +44,7 @@ int main(int argc, char **argv, char **env) {
     
     printf("Generating next code batch\n");
     
-    start();
+    generateNextCode();
     
     waitForValidOutput();
     reportCACode();

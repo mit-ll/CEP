@@ -36,7 +36,7 @@ double sc_time_stamp () {
 // Level-dependent functions
 void evalModel();
 void toggleClock(void);
-void codeReady(void);
+bool codeReady(void);
 
 void runForClockCycles(const unsigned int pCycles) {
     int doubleCycles = pCycles << 2;

@@ -20,8 +20,8 @@ initial begin
 end
 
 wire [12:0] ca_code;
-wire [127:0] p_code, py_code;
-wire py_code_valid;
-gps gps(clk,~clk,rst_o,6'd12,start,ca_code,p_code,py_code,py_code_valid);
+wire [127:0] p_code, l_code;
+wire l_code_valid;
+gps gps(clk,~clk,rst_o,6'd12,start,ca_code,p_code,l_code,l_code_valid);
 
 endmodule

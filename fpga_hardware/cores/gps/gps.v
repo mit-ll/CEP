@@ -6,8 +6,8 @@ module gps(
    startRound,
    ca_code,
    p_code,
-   py_code,
-   py_code_valid
+   l_code,
+   l_code_valid
 );
 
    input  sys_clk_50;
@@ -16,8 +16,8 @@ module gps(
    input startRound;
    output reg [12:0] ca_code;
    output [127:0] p_code;
-   output [127:0] py_code;
-   output py_code_valid;
+   output [127:0] l_code;
+   output l_code_valid;
 
 // Generate the clocks for the C/A code and P-code generators
 // Assumes 200 MHz input clock
@@ -105,7 +105,7 @@ pcode p(
     p_code_bit
 );
 
-// Save 128 p-code bits, encrypt and send as py_code
+// Save 128 p-code bits, encrypt and send as l_code
 reg [127:0] p_pt;
 always @(posedge gps_clk_fast)begin
    if(rst_combined | startRoundPosEdge)begin
@@ -133,8 +133,8 @@ aes_192 aes (
    encrypt,
    p_pt,
    192'hAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,
-   py_code,
-   py_code_valid
+   l_code,
+   l_code_valid
 );
 
 endmodule

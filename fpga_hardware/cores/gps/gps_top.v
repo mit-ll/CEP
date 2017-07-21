@@ -32,7 +32,7 @@ module gps_top (
    reg genNext;
    wire [127:0] ca_code;
    wire [127:0] p_code;
-   wire [127:0] py_code;
+   wire [127:0] l_code;
    wire codes_valid;
    
    // Implement GPS I/O memory map interface
@@ -61,10 +61,10 @@ module gps_top (
         6: wb_dat_o = p_code[63:32];
         7: wb_dat_o = p_code[95:64];
         8: wb_dat_o = p_code[127:96];
-        9: wb_dat_o = py_code[31:0];
-        10: wb_dat_o = py_code[63:32];
-        11: wb_dat_o = py_code[95:64];
-        12: wb_dat_o = py_code[127:96];
+        9: wb_dat_o = l_code[31:0];
+        10: wb_dat_o = l_code[63:32];
+        11: wb_dat_o = l_code[95:64];
+        12: wb_dat_o = l_code[127:96];
         default: wb_dat_o = 32'b0;
       endcase
    end // always @ (*)
@@ -76,7 +76,7 @@ gps gps(
    genNext,
    ca_code,
    p_code,
-   py_code,
+   l_code,
    codes_valid
 );
 

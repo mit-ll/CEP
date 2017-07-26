@@ -3,8 +3,8 @@ set_property PACKAGE_PIN AV39 [get_ports rst_pad_i]
 set_property IOSTANDARD LVCMOS18 [get_ports rst_pad_i]
 
 # 200 MHz system clock
-set_property PACKAGE_PIN E19 [get_ports sys_clk_in_p]
 set_property IOSTANDARD LVDS [get_ports sys_clk_in_p]
+set_property PACKAGE_PIN E19 [get_ports sys_clk_in_p]
 set_property PACKAGE_PIN E18 [get_ports sys_clk_in_n]
 set_property IOSTANDARD LVDS [get_ports sys_clk_in_n]
 
@@ -45,3 +45,5 @@ set_property PACKAGE_PIN AU38 [get_ports button_E]
 set_property IOSTANDARD LVCMOS18 [get_ports button_E]
 set_property PACKAGE_PIN AW40 [get_ports button_W]
 set_property IOSTANDARD LVCMOS18 [get_ports button_W]
+
+create_clock -period 5.000 -name sys_clk_in_p -waveform {0.000 2.500} [get_ports -filter { NAME =~  "*sys_clk_in_p*" && DIRECTION == "IN" }]

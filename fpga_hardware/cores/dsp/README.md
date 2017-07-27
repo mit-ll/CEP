@@ -82,5 +82,5 @@ Debug Output|**`Off`**|**`Off`**
 
 ## Warning
 
-Modifying the parameters used to generate the cores at your own risk.  Some parameter changes will require you to modify the Wishbone bus interface and software drivers.
+Modify the parameters used to generate the cores at your own risk.  Some parameter changes will require you to modify the Wishbone bus interface and software drivers.
 

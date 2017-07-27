@@ -2,11 +2,11 @@
 
 The core DSP blocks (DFT/IDFT/IIR/FIR) were generated using the free online hardware generators provided by the [Spiral Project](http://www.spiral.net/). Due to licensing restrictions, we cannot include the generated files for the DSP blocks. To include these cores in the SoC, you must regenerate the cores and add the source files to the CEP file structure as described:
 
-## Generator Websites:
+## Generator Websites
 * DFT/iDFT: [Spiral Project DFT Gen](http://www.spiral.net/hardware/dftgen.html)
 * IIR/FIR: [Spiral Project Filter Gen](http://www.spiral.net/hardware/filter.html)
 
-## Generator Settings:
+## Generator Settings
 * Note: We indicate deviations from the default generator setting as **`modified`**
 
 * DFT/iDFT:

@@ -149,3 +149,9 @@ Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/
 License Description:  LGPL 2.1
 License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function:  This code provides a basic test input and output using the RS-232 protocol.  It will be integrated as a basic building block into the SoC.
+
+Title:  software/utils
+Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/sw/utils
+License Description:  LGPL 2.1
+License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function:  This code provides a programs that convert program binaries to VMEM formatted files that are used to load Block-RAM directly.

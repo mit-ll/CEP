@@ -79,7 +79,7 @@ iir      |40% |156%  |40%  |    |     |    |139%        |71%
 The accelerator cores are accessed via memory-mapped IO.  That is to say, you read from and write to accelerator cores just as you would memory, using word granularity addresses.  The base address for each core is defined for hardware in `fpga_hardware/cores/top/orpsoc-params.v` and for software in the header file for that core, e.g., `fpga_hardware/cores/aes/AES.h`.  Also defined in the software header file are aliases for specific offesets in a core's interface.  To understand how the hardware and software work together, see the Wishbone bus interface for the core, e.g., `fpga_hardware/cores/aes/aes_top.v`.
 
 
-####################################################################################
+------------------------------------------------------------------------------------
 - DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
 -
 - This material is based upon work supported by the Assistant Secretary of Defense
@@ -99,4 +99,4 @@ The accelerator cores are accessed via memory-mapped IO.  That is to say, you re
 - 252.227-7014 as detailed above. Use of this work other than as specifically
 - authorized by the U.S. Government may violate any copyrights that exist in this
 - work.
-####################################################################################
+------------------------------------------------------------------------------------

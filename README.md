@@ -3,7 +3,7 @@ Common Evaluation Platform
 
 ## Changing the program loaded into memory
 
-Now that you have simulated the provided program or built and run an FPGA implementation of the default program, you may want to simulate/run your own programs.  In order to do that, you will need to write (in C or assembly), compile (using the OR1K gcc toolchain and newlib), and convert the resulting binary into a vmem file suitable for loading directly loading to memory.
+Now that you have simulated the provided program or built and run an FPGA implementation of the default program, you may want to simulate/run your own programs.  In order to do that, you will need to write (in C or assembly), compile (using the OR1K gcc toolchain and newlib), and convert the resulting binary into a vmem file suitable for loading directly to memory.
 
 Here are the basic steps of the compile and conversion process:
 * Compile your program using the [OR1K toolchain](http://opencores.org/or1k/OpenRISC_GNU_tool_chain)

@@ -15,8 +15,8 @@ Here are the basic steps of the compile and conversion process:
 ## Enabling/disabling cores
 Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/orpsoc-defines.v.
 
-## Simualate using ModelSim
-* Comment-out the synthesis define in fpga_hardware/cores/top/orpsoc-defines.v
+## Simulate using ModelSim
+* Comment-out (`define SYNTHESIS) in fpga_hardware/cores/top/orpsoc-defines.v
 * Run `vsim` to compile the Verilog files into the `work` library. If this is your first time trying to compile in ModelSim, you may need to create a `work` library (after you delete the empty one that points to nothing).
 * Exit ModelSim
 * Compile the desired program, convert it to a bin file, then convert the bin file to a vmem file.

@@ -1,0 +1,24 @@
+# Mac Directory Files
+*.DS_Store
+
+# Changes to IVL Submodule
+iverilog/*
+
+# C/C++ Object Files
+*.o
+
+# Graphviz Files
+*.dot
+*.pdf
+!graphs/test.dot
+!graphs/test.pdf
+
+# Netlist Files
+*.v
+*.vm
+!netlists/test.v
+!netlists/test_std_cell_defs.vm
+
+# compiled IVL tgt modules and configs 
+*.conf
+*.tgt

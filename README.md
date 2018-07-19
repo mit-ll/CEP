@@ -4,30 +4,32 @@ Common Evaluation Platform
 Release Notes:
 * Directory structure has been reorganized (details below)
 * Upgraded to the non-deprecated mor1kx (added as a subnodule)
-* Verified with both the pre-build and build-your-own version of the Newlib toolchain as described on [http://openrisc.io](http://openrisc.io)
+* Verified with both the pre-built and build-your-own version of the Newlib toolchain as described on [http://openrisc.io](http://openrisc.io)
 * In addition to test vectors for each of the cores, some additional test_software, such as "hello world", have been added for reference
 * Expanded testbench (details below)
 * Bug fixes and general code cleanup [Additional details in the git commit history]
 
 ## General Overview
-* The CEP is targetted to be a representative, open source, System on a Chip (SoC) test platform.  Wherever possible, dependance on specific FPGA hardware has been avoided with a goal of ASIC synthesis.  However, there are two components cores (clkgen & ram_wb) will need to be modified to for your target.
+* The CEP is targetted to be a representative, open source, System on a Chip (SoC) test platform.  Wherever possible, dependance on specific FPGA hardware has been avoided with a goal of ASIC synthesis.  However, there are two components cores (clkgen & ram_wb) will need to be modified to for your target
 
 ## Repository Directory Structure
 ```
 CEP ----- fpga/
        |     |
-       |     |-- constraints/ - Constraint file(s) for those boards for which the CEP has been targetted
+       |     |-- constraints/ - Constraint file(s) for FPGA Development boards for which the CEP has been built
        |     |
        |     |-- implSummaries/ - .png snapshots of each core's utilization summary
        |     |
        |     |-- vc707example/ - Vivado project for targetting the CEP to the VC-707 FPGA Development Board
        |
-       |-- hdl_cores/ - Source for all the components within the CEP (with the exception of the mor1kx).  
-       |                 All the blocks that implement algorithms also have corresponding test vectors.
+       |-- hdl_cores/ - Source for all the components within the CEP (with the exception of the mor1kx and generated DSP).  
+       |                All the blocks that implement algorithms also have corresponding test vectors.
+       |
+       |-- generated_dsp_code/  - Placeholder for the generated DSP code
        |
        |-- simulation/
        |     |
-       |     |-- run_sim.do - TCL script for simulation of the CEP with modelsim (tested with Quest 10.6c)
+       |     |-- run_sim.do - TCL script for simulation of the CEP with modelsim (tested with Questa 10.6c)
        |     |
        |     |-- testbench/ - Testbench source files
        |
@@ -54,7 +56,7 @@ Change to the `./software/utils` directory.  Run `make`.
 The mor1k reads it's instructions from the ram_wb component, which is initialized using the verilog $readmemh method.  The initialization (.vmem) file is specified through the definition of the **SRAM\_INITIALIZATION\_FILE** verilog define. Setting of this value is included in both the simulation TCL script and `vc707example.xpr` vivado project.  Examples of how to create these files are included in the test\_software directory as well as the test vectors for the various algorithmic cores.  Please examine the corresponding Makefiles.
 
 ## Enabling/disabling cores
-Modify via commenting/uncommenting the desired alogrithmic cores in `./hdl_cores/top/orpsoc-defines.v`.  By default, all the cores are included.  The ram\_wb component must be inclued, and it is recommended that you keep the UART to support debug.
+Modify via commenting/uncommenting the desired alogrithmic cores in `./hdl_cores/top/orpsoc-defines.v`.  By default, all the cores are included.  The ram\_wb component must be included, and it is recommended that you keep the UART to support debug.
 
 ## Note regarding DSP cores
 Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR components are not included with the CEP repository.  Instructions for generating these cores can be found in the `./hdl_cores/dsp/README.md` file.  Once created per those instructions, the `run_sim.do` file and Vivado projects will need to be updated to point to these files.  Scripts assume that the DSP generated code has been placed in `<CEP_ROOT>/generared_dsp_code`
@@ -62,7 +64,7 @@ Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR comp
 ## Simulate using Modelsim
 Edit `run_sim.do`.... change the **DESIGN_ROOT** and **GENERATED_DSP_ROOT** variables to point to checkedout CEP repo and genrated DSP files accordingly.
 
-One the desired has been "loaded" into memory as described above, running modelsim is accomplished by running the following command in the ./simulation directory:
+Once the desired program has been "loaded" into memory as described above, simulation is accomplished by running modelsim using following command in the ./simulation directory:
     `vsim -do run_sim.do`
 
 Alternatively, a non-gui simulation can be run by simply adding the -c switch:

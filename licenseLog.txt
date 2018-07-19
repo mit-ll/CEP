@@ -1,7 +1,7 @@
-Title:  OR1200
-Source:  http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/or1200/
-License Description:  LGPL 2.1
-License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Title:  mor1kx
+Source:  https://github.com/openrisc/mor1kx
+License Description:  Open Hardware Description License (OHDL)
+License terms: Open Hardware Description License (OHDL)
 Function:  This core serves as the Central Processing Unit (CPU) for our System-on-Chip (SOC).
 
 Title:  SoC (top)
@@ -108,35 +108,11 @@ License Description:  LGPL 2.1
 License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function:  This set of three cores implement the Wishbone bus standard.  The Wishbone bus relies on a central arbitrator that these cores implement for the instruction bus, data bus, and peripheral bus.  The bus arbiters connect the cores to the CPU to form the SoC.
 
-Title:  adv_debug_sys
-Source: https://opencores.org/project,adv_debug_sys
-License Description:  LGPL 2.1
-License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function:  This core provides a JTAG debugging interface that goes through Xilinx's programming interface to the SoC allowing users to load code onto the SoC and inspect execution.  It will be integrated as a basic building block into the SoC.
-
 Title:  clkgen
 Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/clkgen/
 License Description:  LGPL 2.1
 License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function:  This core generates a the clock and reset signals used by all of the hardware modules in the SoC.
-
-Title:  dbg_if
-Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/dbg_if/
-License Description:  LGPL 2.1
-License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function:  This core provides a JTAG debugging interface that goes directly to IO pins to the SoC allowing users to load code onto the SoC and inspect execution.  It will be integrated as a basic building block into the SoC.
-
-Title:  ethmac
-Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/ethmac/
-License Description:  LGPL 2.1
-License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function:  This core implements an Ethernet controller used to connect the SoC to existing networks.  It will be integrated as a HW accelerator into the system.  It will be integrated as a basic building block into the SoC.
-
-Title:  jtag_tap
-Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/jtag_tap/
-License Description:  LGPL 2.1
-License terms: https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function:  This core is used by the other debugging cores to implement a JTAG test-access-port interface without requiring special blocks from an FPGA vendor.  It will be integrated as a basic building block into the SoC.
 
 Title:  test bench
 Source: http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/bench/verilog/

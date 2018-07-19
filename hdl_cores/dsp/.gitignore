@@ -1,0 +1,2 @@
+# Ignore all the files placed in the generated_ip directory
+generated_ip/**

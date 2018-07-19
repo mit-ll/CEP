@@ -1,57 +1,89 @@
-# CEP
+# CEP v1.1
 Common Evaluation Platform
 
+Release Notes:
+* Directory structure has been reorganized (details below)
+* Upgraded to the non-deprecated mor1kx (added as a subnodule)
+* Verified with both the pre-build and build-your-own version of the Newlib toolchain as described on [http://openrisc.io](http://openrisc.io)
+* In addition to test vectors for each of the cores, some additional test_software, such as "hello world", have been added for reference
+* Expanded testbench (details below)
+* Bug fixes and general code cleanup [Additional details in the git commit history]
+
+## General Overview
+* The CEP is targetted to be a representative, open source, System on a Chip (SoC) test platform.  Wherever possible, dependance on specific FPGA hardware has been avoided with a goal of ASIC synthesis.  However, there are two components cores (clkgen & ram_wb) will need to be modified to for your target.
+
+## Repository Directory Structure
+```
+CEP ----- fpga/
+       |     |
+       |     |-- constraints/ - Constraint file(s) for those boards for which the CEP has been targetted
+       |     |
+       |     |-- implSummaries/ - .png snapshots of each core's utilization summary
+       |     |
+       |     |-- vc707example/ - Vivado project for targetting the CEP to the VC-707 FPGA Development Board
+       |
+       |-- hdl_cores/ - Source for all the components within the CEP (with the exception of the mor1kx).  
+       |                 All the blocks that implement algorithms also have corresponding test vectors.
+       |
+       |-- simulation/
+       |     |
+       |     |-- run_sim.do - TCL script for simulation of the CEP with modelsim (tested with Quest 10.6c)
+       |     |
+       |     |-- testbench/ - Testbench source files
+       |
+       |-- software/
+       |     |
+       |     |-- bootloader/ - board specific mor1k bootloaders
+       |     |
+       |     |-- test_software/ - Additional software tests beyond those provided with the individual cores
+       |     |
+       |     |-- utils/ - Utilities containing tools for creation of appropriated formatted images for memory 
+       |                  initialization.  Makefile contained within
+       |
+       |-- submodules/ - Location of any git submodules used in the CEP (currently the mor1kx).  The 
+                         --recurse-submodules switch should be used when cloning the CEP repo
+```
+
+## Install the or1k toolchain
+Follow the instructions on [http://openrisc.io](http://openrisc.io) (tested with both pre-built and compiled versions)
+        
+## Compile the memory conversion utilities
+Change to the `./software/utils` directory.  Run `make`.
+                  
 ## Changing the program loaded into memory
-
-Now that you have simulated the provided program or built and run an FPGA implementation of the default program, you may want to simulate/run your own programs.  In order to do that, you will need to write (in C or assembly), compile (using the OR1K gcc toolchain and newlib), and convert the resulting binary into a vmem file suitable for loading directly to memory.
-
-Here are the basic steps of the compile and conversion process:
-* Compile your program using the [OR1K toolchain](http://opencores.org/or1k/OpenRISC_GNU_tool_chain)
-* Convert the resulting binary file to a bin file using `or1k-elf-objdump -O binary`
-* Convert the bin file to a vmem file using the `bin2vmem` utility in `software/utils`
-* Rename the resulting sram file `sram.vmem` and replace the file in `fpga_hardware/cores/ram_wb`
-* If you get illegal instruction exceptions (0x700), you may need to move `sram.vmem` to `fpga_hardware/`
+The mor1k reads it's instructions from the ram_wb component, which is initialized using the verilog $readmemh method.  The initialization (.vmem) file is specified through the definition of the **SRAM\_INITIALIZATION\_FILE** verilog define. Setting of this value is included in both the simulation TCL script and `vc707example.xpr` vivado project.  Examples of how to create these files are included in the test\_software directory as well as the test vectors for the various algorithmic cores.  Please examine the corresponding Makefiles.
 
 ## Enabling/disabling cores
-Modify via commenting/uncommenting the desired cores in fpga_hardware/cores/top/orpsoc-defines.v.
+Modify via commenting/uncommenting the desired alogrithmic cores in `./hdl_cores/top/orpsoc-defines.v`.  By default, all the cores are included.  The ram\_wb component must be inclued, and it is recommended that you keep the UART to support debug.
 
-## Simulate using ModelSim
-* Comment-out (`define SYNTHESIS) in fpga_hardware/cores/top/orpsoc-defines.v
-* Run `vsim` to compile the Verilog files into the `work` library. If this is your first time trying to compile in ModelSim, you may need to create a `work` library (after you delete the empty one that points to nothing).
-* Exit ModelSim
-* Compile the desired program, convert it to a bin file, then convert the bin file to a vmem file.
-* Copy the vmem file to fpga_hardware/sram.vmem
-* Run `sh runVSIM.sh` in fpga_hardware
-* Once vsim finishes loading the design, type `run -all`
-* To change simulation parameters, such as VCD printing or test name, modify fpga_hardware/cores/bench/test-defines.v
+## Note regarding DSP cores
+Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR components are not included with the CEP repository.  Instructions for generating these cores can be found in the `./hdl_cores/dsp/README.md` file.  Once created per those instructions, the `run_sim.do` file and Vivado projects will need to be updated to point to these files.  Scripts assume that the DSP generated code has been placed in `<CEP_ROOT>/generared_dsp_code`
 
-## Synthesize using Vivado
-* Uncomment the synthesis define in fpga_hardware/cores/top/orpsoc-defines.v
-* Start Vivado and create a new project (ideally targeting the VC707 dev. board).
-    * Targeting a different development board requires that you create a .xdc file (see fpga_hardware/backend/vc707.xdc for an example) with pinout and constraints for that board.  It may also require you to modify fpga_hardware/core/clkgen/clkgen.v if the input clock is not 200 MHz or doesn't use differential signaling.
-    
-### VC707 implementation results
+## Simulate using Modelsim
+Edit `run_sim.do`.... change the **DESIGN_ROOT** and **GENERATED_DSP_ROOT** variables to point to checkedout CEP repo and genrated DSP files accordingly.
 
-Core(s)  |LUT |LUTRAM|FF   |BRAM|DSP  |BUFG|Static Power|Dynamic Power
----------|---:|-----:|----:|---:|----:|---:|-----------:|------------:
-**`base`**|**4074**|**36** |**2582**|**513**|**4**|**3**|**0.771 W**|**28.483 W**
-aes      |76% |444%  |227% |19% |     |    |827%        |776%
-md5      |57% |      |31%  |    |     |    |295%        |113%
-sha      |45% |      |61%  |    |     |    |128%        |68%
-rsa      |20% |      |10%  |1%  |     |33% |30%         |22%
-des3     |22% |      |15%  |    |     |    |129%        |68%
-**`crypto`**|**222%**|**444%** |**344%** |**21%** |     |**33%** |**828%**        |**1028%**
-dft      |60% |3017% |91%  |7%  |500% |    |762%        |179%
-idft     |60% |3017% |91%  |7%  |500% |    |706%        |173%
-fir      |22% |156%  |25%  |    |     |    |97%         |56%
-iir      |40% |156%  |40%  |    |     |    |139%        |71%
-**`dsp`**|**185%**|**6344%**|**246%**|**13%**|**1000%**| |**822%**|**466%**
-**`gps`**|**71%**|**406%**|**197%**|**19%**| |**67%**|**346%**|**121%**
-**`all`**|**469%**|**7639%**|**878%**|**45%**|**1000%**|**100%**|**846%**|**1829%**
-    
+One the desired has been "loaded" into memory as described above, running modelsim is accomplished by running the following command in the ./simulation directory:
+    `vsim -do run_sim.do`
+
+Alternatively, a non-gui simulation can be run by simply adding the -c switch:
+    `vsim -c -do run_sim.do`
+
+## Synthesize using Vivado (tested with Vivado 2018.1)
+Select the desired set of cores and the program to load as described above.
+
+Change to the `./fpga/vc707example` directory
+
+Launch vivado and load the `vc707example.xpr` project.
+
+Add the generated DSP source code as noted above.
+
+Select Generate Bitstream within the Vivado GUI.  Once the bitstream is generated, launch the hardware manager.  Option is to run via JTAG or load in the on-board BPI flash.
+
+Flash instructions can be found at [https://scholar.princeton.edu/jbalkind/blog/programming-vc707-virtex-7-bpi-flash](https://scholar.princeton.edu/jbalkind/blog/programming-vc707-virtex-7-bpi-flash)
+
 ## Adding a core to the SoC
-* Add a define that will control whether the core is included in the SoC to fpga_hardware/cores/top/orpsoc-defines.v
-* Add the core's bus address and width information to fpga_hardware/cores/top/orpsoc-params.v
+* Add a define that will control whether the core is included in the SoC to `./hdl_cores/top/orpsoc-defines.v`
+* Add the core's bus address and width information to `./hdl_cores/top/orpsoc-params.v`
    * Use the Ethernet core as an example
    * Make sure to use an available address prefix for "XX_wb_adr"
    * Refer to the number of bytes actually used by the new core's bus interface to determine the address width
@@ -59,8 +91,8 @@ iir      |40% |156%  |40%  |    |     |    |139%        |71%
    * Update the configuration of the appropriate bus(es) (i.e., instruction, data, byte-wide)
       * Increment the number of slaves
       * Insert the new core in an empty slot (the data bus can hold up to 16 slaves)
-         * If the desired bus doesn't have an empty slot, the easiest thing to do is to steal a slot from another slave.  Failing that, the bus arbiter (e.g., fpga_hardware/cores/arbiter/arbiter_dbus.v) will need to be modified to support more slaves.
-* In cores/top/orpsoc_top.v
+         * If the desired bus doesn't have an empty slot, the easiest thing to do is to steal a slot from another slave.  Failing that, the bus arbiter (e.g., `./hdl_cores/arbiter/arbiter_dbus.v`) will need to be modified to support more slaves.
+* In `./hdl_cores/top/orpsoc_top.v`
    * Add any pin connections required by the new core to the interface of this module
    * Create a set of bus slave wires to connect the new core and the appropriate bus arbiter
    * Connect the new core to the appropriate slot in the appropriate aribter using the wires created in the previous step
@@ -70,13 +102,12 @@ iir      |40% |156%  |40%  |    |     |    |139%        |71%
    * If the new core has an interrupt line, using the define, conditionally connect it to the processor's interrupt controller
 * If the core requires pin I/O connections:
    * Bring the signals up through the hierarchy
-   * Add the pinout information to the appropiate .xdc file in fpga_hardware/backend/
+   * Add the pinout information to the appropiate .xdc
 * Add the HDL files to the list of project files in ModelSim and re-compile
 * Add the HDL files to the list of project files in Vivado and re-build
 
 ## Addressing the accelerators
-
-The accelerator cores are accessed via memory-mapped IO.  That is to say, you read from and write to accelerator cores just as you would memory, using word granularity addresses.  The base address for each core is defined for hardware in `fpga_hardware/cores/top/orpsoc-params.v` and for software in the header file for that core, e.g., `fpga_hardware/cores/aes/AES.h`.  Also defined in the software header file are aliases for specific offesets in a core's interface.  To understand how the hardware and software work together, see the Wishbone bus interface for the core, e.g., `fpga_hardware/cores/aes/aes_top.v`.
+The accelerator cores are accessed via memory-mapped IO.  That is to say, you read from and write to accelerator cores just as you would memory, using word granularity addresses.  The base address for each core is defined for hardware in `./hdl_cores/top/orpsoc-params.v` and for software in the header file for that core, e.g., `./hdl_cores/aes/AES.h`.  Also defined in the software header file are aliases for specific offesets in a core's interface.  To understand how the hardware and software work together, see the Wishbone bus interface for the core, e.g., `./hdl_cores/aes/aes_top.v`.
 
 
 ------------------------------------------------------------------------------------
@@ -89,7 +120,7 @@ The accelerator cores are accessed via memory-mapped IO.  That is to say, you re
 - reflect the views of the Assistant Secretary of Defense for Research and
 - Engineering.
 -
-- © 2017 Massachusetts Institute of Technology.
+- © 2019 Massachusetts Institute of Technology.
 -
 - The software/firmware is provided to you on an As-Is basis
 -

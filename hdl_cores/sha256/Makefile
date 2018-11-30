@@ -1,3 +1,11 @@
+#************************************************************************
+# Copyright (C) 2018 Massachusetts Institute of Technology
+#
+# File Name:      Makefile 
+# Program:        Common Evaluation Platform (CEP)
+# Description:    
+# Notes:          
+#************************************************************************
 default:
 	@echo "core: Verify just the core"
 	@echo "top:  Verify the core plus a Wishbone bus interface"
@@ -19,8 +27,8 @@ sys:
 	or1k-elf-objdump -D tb_sys > tb_sys.S
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
-	cp tb_sys.vmem ../ram_wb/sram.vmem
+	cp tb_sys.vmem ../ram/sram.vmem
 
 clean:
-	rm -rf obj_dir *~ tb_sys.S tb_sys.bin tb_sys.vmem tb_sys
+	rm -rf obj_dir iverilog *~ *.S *.bin *.vmem `find . -type f -executable`
 

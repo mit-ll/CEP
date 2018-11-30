@@ -37,11 +37,13 @@ uint32_t readFromAddress(uint32_t pAddress) {
     uint32_t data = top->wb_dat_o;
     top->wb_stb_i = 0;
     runForClockCycles(10);
+//    printf("readFromAddress: (addr = 0x%.8x, data = 0x%.8x\n", pAddress, data);
     
     return data;
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
+//    printf("writeToAddress: (addr = 0x%.8x, data = 0x%.8x\n", pAddress, pData);
     top->wb_adr_i = pAddress;
     top->wb_dat_i = pData;
     top->wb_we_i = 1;

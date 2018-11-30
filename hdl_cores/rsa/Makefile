@@ -1,3 +1,11 @@
+#************************************************************************
+# Copyright (C) 2018 Massachusetts Institute of Technology
+#
+# File Name:      Makefile 
+# Program:        Common Evaluation Platform (CEP)
+# Description:    
+# Notes:          
+#************************************************************************
 default:
 	@echo "sys        : Create a VMEM file to be loaded onto a SoC"
 	@echo "ver        : Verilator - verify the core plus a Wishbone bus interface"
@@ -30,7 +38,7 @@ sys:
 	or1k-elf-objdump -D tb_sys > tb_sys.S
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
-	cp tb_sys.vmem ../ram_wb/sram.vmem
+	cp tb_sys.vmem ../ram/sram.vmem
 
 ver:
 	verilator --cc --clk clk --default-language 1364-2001 -I. ./rtl/modexp_top.v ./rtl/modexp_core.v ./rtl/montprod.v ./rtl/residue.v ./rtl/adder.v ./rtl/shl.v ./rtl/shr.v ./rtl/blockmem1r1w.v ./rtl/blockmem2r1w.v ./rtl/blockmem2r1wptr.v  ./rtl/blockmem2rptr1w.v --top-module modexp_top -exe tb_top.cpp
@@ -126,15 +134,6 @@ tTop:
 	more ./gen/gText.txt
 
 clean:
-	rm -rf obj_dir *~
-	rm -rf iverilog *~
-	rm -rf gen *~
-	rm -f ./extKeys
-	rm -f ./a2h
-	rm -f ./h2a
-	rm -f ./file
-	rm -f tb_sys
-	rm -f tb_sys.S
-	rm -f tb_sys.bin
-	rm -f tb_sys.vmem
+	rm -rf obj_dir iverilog gen extKeys a2h h2a *~ *.S *.bin *.vmem `find . -type f -executable`
+
 

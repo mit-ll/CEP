@@ -69,7 +69,7 @@ void reportAppended() {
     printf("Padded input:\n");
     for(int i = MESSAGE_WORDS - 1; i >= 0; --i) {
 	    uint32_t dataPart = readFromAddress(MD5_MSG_BASE + (i * BYTES_PER_WORD));
-        printf("0x%08X\n", dataPart);
+        printf("Address = 0x%08X, Data = 0x%08X\n", MD5_MSG_BASE + (i * BYTES_PER_WORD), dataPart);
     }
 }
 
@@ -138,8 +138,12 @@ int main(int argc, char **argv, char **env) {
 
   cout << "Reset complete" << endl;
 
+  hashString("The quick brown fox jumps over the lazy dog", hash);
+  compareHash(hash, "500ab6613c6db7fbd30c62f5ff573d0f", "single character");
+
+/*
   hashString("a", hash);
-  compareHash(hash, "0cc175b9c0f1b6a831c399e269772661", "single character");
+  compareHash(hash, "0cc175b9c0f1b6a831c399e269772661", "sngle character");
     
   hashString("abc", hash);
   compareHash(hash, "900150983cd24fb0d6963f7d28e17f72", "three character");
@@ -169,6 +173,7 @@ int main(int argc, char **argv, char **env) {
   } else {
     cout << "ERROR: unable to open input.txt" << endl;
   }
+*/
 
 #if VM_TRACE    
     tfp->close(); //VCD file gen

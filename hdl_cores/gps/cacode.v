@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
 
 //////////////////////////////////////////////////////////////////////////////////
 // Description:    Generate 1023 chip sequence for SV PRN number prn_num.

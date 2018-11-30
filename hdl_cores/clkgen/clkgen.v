@@ -32,16 +32,14 @@
 ////                                                              ////
 //////////////////////////////////////////////////////////////////////
 
-`include "orpsoc-defines.v"
-
 module clkgen
        (
            // Main clocks in, depending on board
            sys_clk_in_p, sys_clk_in_n,
 
-           // Wishbone clock and reset out
-           wb_clk_o,
-           wb_rst_o,
+           // Core clock and reset out
+           core_clk_o,
+           core_rst_o,
 
            // Asynchronous, active low reset in
            rst_n_pad_i
@@ -50,8 +48,8 @@ module clkgen
 
 input  sys_clk_in_p,sys_clk_in_n;
 
-output wb_rst_o;
-output wb_clk_o;
+output core_rst_o;
+output core_clk_o;
 
 `ifdef JTAG_DEBUG
 input  tck_pad_i;
@@ -91,7 +89,7 @@ wire     dcm0_clkfx_prebufg, dcm0_clkfx;
 wire     dcm0_clkdv_prebufg, dcm0_clkdv;
 wire     dcm0_locked;
 
-/* Dif. input buffer for 200MHz board clock, generate SE 200MHz */
+/* Differential input buffer for 200MHz board clock, generate SE 200MHz */
 IBUFGDS_LVPECL_25 sys_clk_in_ibufds
                   (
                       .O(sys_clk_in_200),
@@ -142,11 +140,11 @@ BUFG dcm0_clkdv_bufg
          // Inputs
          .I                                 (dcm0_clkdv_prebufg));
 
-assign wb_clk_o = dcm0_clkdv;
+assign core_clk_o = dcm0_clkdv;
 assign sync_rst_n = dcm0_locked;
 
 `else
-assign wb_clk_o = sys_clk_in_p;
+assign core_clk_o = sys_clk_in_p;
 assign sync_rst_n = 1'b1;
 `endif
 //
@@ -156,13 +154,13 @@ assign sync_rst_n = 1'b1;
 
 // Reset generation for wishbone
 reg [15:0]     wb_rst_shr;
-always @(posedge wb_clk_o or posedge async_rst)
+always @(posedge core_clk_o or posedge async_rst)
     if (async_rst)
         wb_rst_shr <= 16'hffff;
     else
         wb_rst_shr <= {wb_rst_shr[14:0], ~(sync_rst_n)};
 
-assign wb_rst_o = wb_rst_shr[15];
+assign core_rst_o = wb_rst_shr[15];
 
 
 endmodule // clkgen

@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
 module pcode(
            clk, rst, en, sat,
            preg

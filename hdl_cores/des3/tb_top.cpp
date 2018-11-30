@@ -68,12 +68,18 @@ void writeToDecrypt(int i) {
 }
 
 void setPlaintext(uint32_t* pPT) {
-    for(unsigned int i = 0; i < BLOCK_WORDS; ++i)
+    for(unsigned int i = 0; i < BLOCK_WORDS; ++i) {
+        printf("pPT[%d] = %.8x\n", i, pPT[i]);
         writeToAddress(DES3_IN_BASE + (((BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), pPT[i]);
+    }
 }
 
 void setKey(uint32_t* pKey) {
     unsigned int i;
+    for(i = 0; i < KEY_WORDS; ++i) {
+        printf("pKey_before[%d] = %.8x\n", i, pKey[i]);
+    }
+    
     for(i=0;i<5;i++){
         remove_bit32(&pKey[0], (8*i)-i);
         remove_bit32(&pKey[1], (8*i)-i);
@@ -82,8 +88,10 @@ void setKey(uint32_t* pKey) {
         remove_bit32(&pKey[4], (8*i)-i);
         remove_bit32(&pKey[5], (8*i)-i);
     }
-    for(i = 0; i < KEY_WORDS; ++i)
+    for(i = 0; i < KEY_WORDS; ++i) {
+        printf("pKey_after[%d] = %.8x\n", i, pKey[i]);
         writeToAddress(DES3_KEY_BASE + (((KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
+    }
 }
 
 void saveCiphertext(uint32_t *pCT) {

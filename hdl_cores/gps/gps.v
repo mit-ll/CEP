@@ -1,6 +1,10 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
 // From the GPS transmitter's perspective
 module gps(
-           sys_clk_50,
+           gps_clk_fast,
+           gps_clk_slow,
            sync_rst_in,
            sv_num,
            startRound,
@@ -10,7 +14,8 @@ module gps(
            l_code_valid
        );
 
-input  sys_clk_50;
+input gps_clk_fast;
+input gps_clk_slow;
 input  sync_rst_in;
 input [5:0] sv_num;
 input startRound;
@@ -19,21 +24,7 @@ output [127:0] p_code;
 output [127:0] l_code;
 output l_code_valid;
 
-// Generate the clocks for the C/A code and P-code generators
-// Assumes 200 MHz input clock
-wire gps_clk_fast;
-wire gps_clk_slow;
-wire gps_clk_rst;
-gps_clkgen gps_clk(
-               sys_clk_50,
-               sync_rst_in,
-               gps_clk_fast,
-               gps_clk_slow,
-               gps_clk_rst
-           );
-
-// Combine SoC and clkgen resets
-wire rst_combined = sync_rst_in | gps_clk_rst;
+wire rst_combined = sync_rst_in;
 
 // Look for rising edge of start
 reg startRound_r;
@@ -146,13 +137,14 @@ always @(posedge gps_clk_fast)
             encrypt <= 1'b1;
     end
 
-aes_192 aes (
-            gps_clk_fast,
-            encrypt,
-            p_pt,
-            192'hAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA,
-            l_code,
-            l_code_valid
-        );
+  aes_192 aes_192_inst (
+    .clk        (gps_clk_fast),
+    .rst        (rst_combined),
+    .start      (encrypt),
+    .state      (p_pt),
+    .key        (192'hAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA),
+    .out        (l_code),
+    .out_valid  (l_code_valid)
+  );
 
 endmodule

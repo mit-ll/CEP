@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
 /*
  *
  * Clock generation for GPS modules

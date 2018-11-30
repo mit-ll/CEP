@@ -6,7 +6,9 @@ void evalModel() {;}
 
 // Need volatile to make sure the compiler doesn't make bus writes/read disappear
 uint32_t readFromAddress(uint32_t pAddress) {
-    return *((volatile uint32_t *)pAddress);
+    uint32_t rData;
+    rData = *((volatile uint32_t *)pAddress);
+    return rData;
 }
 
 void writeToAddress(uint32_t pAddress, uint32_t pData) {
@@ -29,7 +31,7 @@ void saveCode(uint32_t *pCT, unsigned pBytes, uint32_t pBaseAddress) {
 }
 
 void reportCode(const char * pCode, unsigned pBytes, uint32_t pBaseAddress) {
-    printf("%s code:\t0x", pCode);
+    printf("GPS: %s code:\t0x", pCode);
     uint32_t ct[GPS_P_BYTES / BYTES_PER_WORD + 1];
 
     saveCode(ct, pBytes, pBaseAddress);
@@ -39,17 +41,13 @@ void reportCode(const char * pCode, unsigned pBytes, uint32_t pBaseAddress) {
     printf("\n");
 }
 
-int main(int argc, char **argv, char **env) {
-    printf("Reset complete\n");
-    
-    printf("Generating next code batch\n");
+int main(int argc, char **argv, char **env) {;
+    printf("GPS: Generating next code batch\n");
     generateNextCode();
     waitForValidOutput();
-    reportCode("CA", GPS_CA_BYTES, GPS_CA_BASE);
+
     verifyCode("00001F43", "C/A code", GPS_CA_BYTES, GPS_CA_BASE);
-    reportCode("P", GPS_P_BYTES, GPS_P_BASE);
     verifyCode("9DDFDD9CE127D8D95394BF2838E7EF54", "P code", GPS_P_BYTES, GPS_P_BASE);
-    reportCode("L", GPS_L_BYTES, GPS_L_BASE);
     verifyCode("FD86C6D34155A750E284B05AC643BC27", "L code", GPS_L_BYTES, GPS_L_BASE);
 
     return 0;

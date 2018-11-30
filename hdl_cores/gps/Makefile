@@ -1,3 +1,11 @@
+#************************************************************************
+# Copyright (C) 2018 Massachusetts Institute of Technology
+#
+# File Name:      Makefile 
+# Program:        Common Evaluation Platform (CEP)
+# Description:    
+# Notes:          
+#************************************************************************
 default:
 	@echo "sys      : Create a VMEM file to be loaded onto a SoC"
 	@echo "vcd_core : Verilator - Generate VCD for core"
@@ -9,7 +17,7 @@ sys:
 	or1k-elf-objdump -D tb_sys > tb_sys.S
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
-	cp tb_sys.vmem ../ram_wb/sram.vmem
+	cp tb_sys.vmem ../ram/sram.vmem
 
 pcode:
 	mkdir -p ./iverilog/
@@ -18,10 +26,4 @@ pcode:
 	gtkwave ./iverilog/tb_pcode.vcd
 
 clean:
-	rm -rf obj_dir *~
-	rm -rf iverilog *~
-	rm -f tb_sys
-	rm -f tb_sys.S
-	rm -f tb_sys.bin
-	rm -f tb_sys.vmem
-
+	rm -rf obj_dir iverilog *~ *.S *.bin *.vmem `find . -type f -executable`

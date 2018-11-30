@@ -1,15 +1,24 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
+// File         : gps_top.v
+// Project      : Common Evaluation Platform (CEP)
+// Description  : This file provides a wishbone based-GPS core
+//
+
 module gps_top (
            wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
            wb_stb_i, wb_we_i,
            wb_ack_o, wb_err_o, wb_dat_o,
-           wb_clk_i, wb_rst_i, int_o
+           wb_clk_i, wb_rst_i,
+           gps_clk_fast, gps_clk_slow
        );
 
 parameter dw = 32;
 parameter aw = 32;
 
 input [aw-1:0] wb_adr_i;
-input   wb_cyc_i;
+input wb_cyc_i;
 input [dw-1:0] wb_dat_i;
 input [3:0]   wb_sel_i;
 input   wb_stb_i;
@@ -18,15 +27,15 @@ input   wb_we_i;
 output   wb_ack_o;
 output   wb_err_o;
 output reg [dw-1:0]  wb_dat_o;
-output         int_o;
 
 input   wb_clk_i;
 input   wb_rst_i;
+input   gps_clk_fast;
+input   gps_clk_slow;
 
 
 assign wb_ack_o = 1'b1;
 assign wb_err_o = 1'b0;
-assign int_o = 1'b0;
 
 // Internal registers
 reg genNext;
@@ -83,14 +92,15 @@ always @(*)
     end // always @ (*)
 
 gps gps(
-        wb_clk_i,
-        wb_rst_i,
-        6'd12,
-        genNext,
-        ca_code,
-        p_code,
-        l_code,
-        codes_valid
+        .gps_clk_fast   (gps_clk_fast),
+        .gps_clk_slow   (gps_clk_slow),
+        .sync_rst_in    (wb_rst_i),
+        .sv_num         (6'd12),
+        .startRound     (genNext),
+        .ca_code        (ca_code),
+        .p_code         (p_code),
+        .l_code         (l_code),
+        .l_code_valid   (codes_valid)
     );
 
 endmodule

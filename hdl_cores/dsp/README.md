@@ -31,9 +31,9 @@ Permutation Method|**`DATE'09 [4] (patent Free)`**|**`DATE'09 [4] (patent Free)`
 
 Core(s)  |IIR |FIR
 ---------|---:|---:
-Example Filter| 6| 6
+Example Filter| Custom Filter| Custom Filter
 Filter Taps a_k|1.000000e+000|**`1`**
-||8.274631e-016|**`0`**
+||8.274631e-016|**`1`**
 ||1.479294e+000|**`0`**
 ||1.089388e-015|**`0`**
 ||7.013122e-001|**`0`**

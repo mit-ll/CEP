@@ -1,3 +1,6 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
 module gps_clkgen_test (fast, slow, rst);
 
 output fast, slow, rst;

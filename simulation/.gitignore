@@ -1,4 +1,6 @@
 *
-!run_sim.do
-!testbech
+!*.do
+!*.sv
+!testbench
 !.gitignore
+!*.sh

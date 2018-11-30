@@ -1,3 +1,11 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
+// File         : iir_top.v
+// Project      : Common Evaluation Platform (CEP)
+// Description  : This file provides a wishbone based-IIR core
+//
+
 module iir_top(
            wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
            wb_stb_i, wb_we_i,
@@ -99,46 +107,55 @@ IIR_filter IIR_filter(
                .outData(dataOut));
 
 reg data_In_write_r;
-always @(posedge wb_clk_i)
+always @(posedge wb_clk_i or posedge wb_rst_i)
     begin
-        data_In_write_r <= data_In_write;
+        if (wb_rst_i)
+            data_In_write_r <= 0;    
+        else
+            data_In_write_r <= data_In_write;
     end
 
 wire data_In_write_posedge = data_In_write & ~data_In_write_r;
 
-always @ (posedge wb_clk_i)
+reg [15:0] i;
+
+always @ (posedge wb_clk_i or posedge wb_rst_i)
     begin
-        if(data_In_write_posedge)
-            begin
-                dataX[data_In_addr] <= data_In_data;
-            end
+        if (wb_rst_i)
+            for (i = 0; i < 32; i = i + 1)
+                dataX[i]        <= 0;
+        else
+            dataX[data_In_addr] <= data_In_data;
     end
-assign data_Out=dataY[data_Out_addr];
+assign data_Out = dataY[data_Out_addr];
 
 reg next_r;
-always @(posedge wb_clk_i)
+always @(posedge wb_clk_i or posedge wb_rst_i)
     begin
-        next_r <= next;
+        if (wb_rst_i)
+            next_r      <= 0;
+        else
+            next_r      <= next;
     end
 
 wire next_posedge = next & ~next_r;
 
-always @ (posedge wb_clk_i)
+always @ (posedge wb_clk_i or posedge wb_rst_i)
     begin
-        if(next_posedge)
-            begin
-                xSel <= 6'h00;
-            end
+        if (wb_rst_i)
+            xSel    <= 0;
+        else if(next_posedge)
+            xSel    <= 6'h00;
         else if(xSel<6'b100000)
-            begin
-                xSel <= xSel +1;
-            end
+            xSel    <= xSel + 1;
     end
 assign dataIn = (xSel<6'b100000) ? dataX[xSel] : 32'b0;
 
-always @ (posedge wb_clk_i)
+always @ (posedge wb_clk_i or posedge wb_rst_i)
     begin
-        if(next_posedge)
+        if (wb_rst_i)
+            count       <= 0;
+        else if(next_posedge)
             begin
                 count <= 6'h00;
             end
@@ -151,16 +168,23 @@ always @ (posedge wb_clk_i)
 assign next_out = (count == 4'b1000);
 
 reg next_out_r;
-always @(posedge wb_clk_i)
+always @(posedge wb_clk_i or posedge wb_rst_i)
     begin
-        next_out_r <= next_out;
+        if (wb_rst_i)
+            next_out_r  <= 0;
+        else
+            next_out_r <= next_out;
     end
 
 wire next_out_posedge = next_out & ~next_out_r;
 
-always @ (posedge wb_clk_i)
+always @ (posedge wb_clk_i or posedge wb_rst_i)
     begin
-        if(next_out_posedge)
+        if (wb_rst_i) begin
+            ySel    <= 0;
+            for (i = 0; i < 32; i = i + 1)
+                dataY[i]   <= 0;
+        end else if(next_out_posedge)
             begin
                 ySel <= 6'h00;
             end
@@ -171,9 +195,11 @@ always @ (posedge wb_clk_i)
             end
     end
 
-always @ (posedge wb_clk_i)
+always @ (posedge wb_clk_i or posedge wb_rst_i)
     begin
-        if(next_posedge)
+        if (wb_rst_i)
+            data_valid     <= 0;
+        else if(next_posedge)
             begin
                 data_valid <= 0;
             end

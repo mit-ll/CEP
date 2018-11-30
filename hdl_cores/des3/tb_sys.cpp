@@ -34,14 +34,6 @@ void setPlaintext(uint32_t* pPT) {
 
 void setKey(uint32_t* pKey) {
     unsigned int i;
-    for(i=0;i<5;i++){
-        remove_bit32(&pKey[0], (8*i)-i);
-        remove_bit32(&pKey[1], (8*i)-i);
-        remove_bit32(&pKey[2], (8*i)-i);
-        remove_bit32(&pKey[3], (8*i)-i);
-        remove_bit32(&pKey[4], (8*i)-i);
-        remove_bit32(&pKey[5], (8*i)-i);
-    }
     for(i = 0; i < KEY_WORDS; ++i)
         writeToAddress(DES3_KEY_BASE + (((KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
 }

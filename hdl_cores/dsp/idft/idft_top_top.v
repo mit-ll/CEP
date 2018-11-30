@@ -1,3 +1,11 @@
+//
+// Copyright (C) 2018 Massachusetts Institute of Technology
+//
+// File         : idft_top_top.v
+// Project      : Common Evaluation Platform (CEP)
+// Description  : This file provides a wishbone based-IDFT core
+//
+
 module idft_top_top(
            wb_adr_i, wb_cyc_i, wb_dat_i, wb_sel_i,
            wb_stb_i, wb_we_i,

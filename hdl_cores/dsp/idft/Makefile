@@ -1,3 +1,11 @@
+#************************************************************************
+# Copyright (C) 2018 Massachusetts Institute of Technology
+#
+# File Name:      Makefile 
+# Program:        Common Evaluation Platform (CEP)
+# Description:    
+# Notes:          
+#************************************************************************
 default:
 	@echo "sys      : Create a VMEM file to be loaded onto a SoC"
 	@echo "top      : Verilator - verify the core with a Wishbone bus interface"
@@ -12,7 +20,7 @@ sys:
 	or1k-elf-objdump -D tb_sys > tb_sys.S
 	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
-	cp tb_sys.vmem ../../ram_wb/sram.vmem
+	cp tb_sys.vmem ../../ram/sram.vmem
 
 top:
 	verilator -Wno-fatal --cc --clk clk --default-language 1364-2001 -I. filter_idft.v idft_top_top.v --top-module idft_top_top -exe tb_top.cpp
@@ -42,10 +50,4 @@ iver:
 	./iverilog/idft.sim
 
 clean:
-	rm -rf obj_dir *~
-	rm -rf iverilog *~
-	rm -f tb_sys
-	rm -f tb_sys.S
-	rm -f tb_sys.bin
-	rm -f tb_sys.vmem
-
+	rm -rf obj_dir iverilog *~ *.S *.bin *.vmem `find . -type f -executable`

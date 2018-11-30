@@ -1,0 +1,334 @@
+Copyright 1986-2018 Xilinx, Inc. All Rights Reserved.
+---------------------------------------------------------------------------------------------------------------------
+| Tool Version : Vivado v.2018.2 (lin64) Build 2258646 Thu Jun 14 20:02:38 MDT 2018
+| Date         : Fri Nov  9 10:19:14 2018
+| Host         : cep-or1k-br24169 running 64-bit Ubuntu 16.04.5 LTS
+| Command      : report_drc -file orpsoc_top_drc_opted.rpt -pb orpsoc_top_drc_opted.pb -rpx orpsoc_top_drc_opted.rpx
+| Design       : orpsoc_top
+| Device       : xc7vx485tffg1761-2
+| Speed File   : -2
+| Design State : Synthesized
+---------------------------------------------------------------------------------------------------------------------
+
+Report DRC
+
+Table of Contents
+-----------------
+1. REPORT SUMMARY
+2. REPORT DETAILS
+
+1. REPORT SUMMARY
+-----------------
+            Netlist: netlist
+          Floorplan: design_1
+      Design limits: <entire design considered>
+           Ruledeck: default
+             Max violations: <unlimited>
+             Violations found: 57
++-----------+----------+-----------------------------------------------------+------------+
+| Rule      | Severity | Description                                         | Violations |
++-----------+----------+-----------------------------------------------------+------------+
+| CFGBVS-1  | Warning  | Missing CFGBVS and CONFIG_VOLTAGE Design Properties | 1          |
+| CHECK-3   | Warning  | Report rule limit reached                           | 2          |
+| DPOP-1    | Warning  | PREG Output pipelining                              | 1          |
+| DPOP-2    | Warning  | MREG Output pipelining                              | 13         |
+| REQP-1839 | Warning  | RAMB36 async control check                          | 20         |
+| REQP-1840 | Warning  | RAMB18 async control check                          | 20         |
++-----------+----------+-----------------------------------------------------+------------+
+
+2. REPORT DETAILS
+-----------------
+CFGBVS-1#1 Warning
+Missing CFGBVS and CONFIG_VOLTAGE Design Properties  
+Neither the CFGBVS nor CONFIG_VOLTAGE voltage property is set in the current_design.  Configuration bank voltage select (CFGBVS) must be set to VCCO or GND, and CONFIG_VOLTAGE must be set to the correct configuration voltage, in order to determine the I/O voltage support for the pins in bank 0.  It is suggested to specify these either using the 'Edit Device Properties' function in the GUI or directly in the XDC file using the following syntax:
+
+ set_property CFGBVS value1 [current_design]
+ #where value1 is either VCCO or GND
+
+ set_property CONFIG_VOLTAGE value2 [current_design]
+ #where value2 is the voltage provided to configuration bank 0
+
+Refer to the device configuration user guide for more information.
+Related violations: <none>
+
+CHECK-3#1 Warning
+Report rule limit reached  
+REQP-1839 rule limit reached: 20 violations have been found.
+Related violations: <none>
+
+CHECK-3#2 Warning
+Report rule limit reached  
+REQP-1840 rule limit reached: 20 violations have been found.
+Related violations: <none>
+
+DPOP-1#1 Warning
+PREG Output pipelining  
+DSP mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10__0 output mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10__0/P[47:0] is not pipelined (PREG=0). Pipelining the DSP48 output will improve performance and often saves power so it is suggested whenever possible to fully pipeline this function.  If this DSP48 function was inferred, it is suggested to describe an additional register stage after this function.  If the DSP48 was instantiated in the design, it is suggested to set the PREG attribute to 1.
+Related violations: <none>
+
+DPOP-2#1 Warning
+MREG Output pipelining  
+DSP dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage12/codeBlockIsnt18833/m17115/q_reg[1] multiplier stage dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage12/codeBlockIsnt18833/m17115/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#2 Warning
+MREG Output pipelining  
+DSP dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage15/codeBlockIsnt18878/m17436/q_reg[1] multiplier stage dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage15/codeBlockIsnt18878/m17436/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#3 Warning
+MREG Output pipelining  
+DSP dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage3/codeBlockIsnt18714/m16285/q_reg[1] multiplier stage dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage3/codeBlockIsnt18714/m16285/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#4 Warning
+MREG Output pipelining  
+DSP dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage6/codeBlockIsnt18751/m16551/q_reg[1] multiplier stage dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage6/codeBlockIsnt18751/m16551/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#5 Warning
+MREG Output pipelining  
+DSP dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage9/codeBlockIsnt18788/m16825/q_reg[1] multiplier stage dft_top_axi4lite_inst/dft_top_top_inst/dft_top/stage9/codeBlockIsnt18788/m16825/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#6 Warning
+MREG Output pipelining  
+DSP idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage12/codeBlockIsnt69695/m67977/q_reg[1] multiplier stage idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage12/codeBlockIsnt69695/m67977/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#7 Warning
+MREG Output pipelining  
+DSP idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage15/codeBlockIsnt69740/m68298/q_reg[1] multiplier stage idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage15/codeBlockIsnt69740/m68298/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#8 Warning
+MREG Output pipelining  
+DSP idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage3/codeBlockIsnt69576/m67147/q_reg[1] multiplier stage idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage3/codeBlockIsnt69576/m67147/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#9 Warning
+MREG Output pipelining  
+DSP idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage6/codeBlockIsnt69613/m67413/q_reg[1] multiplier stage idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage6/codeBlockIsnt69613/m67413/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#10 Warning
+MREG Output pipelining  
+DSP idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage9/codeBlockIsnt69650/m67687/q_reg[1] multiplier stage idft_top_axi4lite_inst/idft_top_top_inst/idft_top/stage9/codeBlockIsnt69650/m67687/q_reg[1]/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#11 Warning
+MREG Output pipelining  
+DSP mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10 multiplier stage mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#12 Warning
+MREG Output pipelining  
+DSP mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10__0 multiplier stage mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result10__0/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+DPOP-2#13 Warning
+MREG Output pipelining  
+DSP mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result1_reg__0 multiplier stage mor1kx_top_axi4lite_inst/mor1kx_inst/mor1kx_cpu/cappuccino.mor1kx_cpu/mor1kx_execute_alu/threestagemultiply.mul_result1_reg__0/P[47:0] is not pipelined (MREG=0). Pipelining the multiplier function will improve performance and will save significant power so it is suggested whenever possible to fully pipeline this function.  If this multiplier was inferred, it is suggested to describe an additional register stage after this function.  If there is no registered adder/accumulator following the multiply function, two pipeline stages are suggested to allow both the MREG and PREG registers to be used.  If the DSP48 was instantiated in the design, it is suggested to set both the MREG and PREG attributes to 1 when performing multiply functions.
+Related violations: <none>
+
+REQP-1839#1 Warning
+RAMB36 async control check  
+The RAMB36E1 dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg has an input control pin dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg/ADDRARDADDR[10] (net: dft_top_axi4lite_inst/dft_top_top_inst/ADDRARDADDR[4]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#2 Warning
+RAMB36 async control check  
+The RAMB36E1 dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg has an input control pin dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg/ADDRARDADDR[6] (net: dft_top_axi4lite_inst/dft_top_top_inst/ADDRARDADDR[0]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#3 Warning
+RAMB36 async control check  
+The RAMB36E1 dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg has an input control pin dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg/ADDRARDADDR[7] (net: dft_top_axi4lite_inst/dft_top_top_inst/ADDRARDADDR[1]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#4 Warning
+RAMB36 async control check  
+The RAMB36E1 dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg has an input control pin dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg/ADDRARDADDR[8] (net: dft_top_axi4lite_inst/dft_top_top_inst/ADDRARDADDR[2]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#5 Warning
+RAMB36 async control check  
+The RAMB36E1 dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg has an input control pin dft_top_axi4lite_inst/dft_top_top_inst/dataY_reg/ADDRARDADDR[9] (net: dft_top_axi4lite_inst/dft_top_top_inst/ADDRARDADDR[3]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#6 Warning
+RAMB36 async control check  
+The RAMB36E1 idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg has an input control pin idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg/ADDRARDADDR[10] (net: idft_top_axi4lite_inst/idft_top_top_inst/ADDRARDADDR[4]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#7 Warning
+RAMB36 async control check  
+The RAMB36E1 idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg has an input control pin idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg/ADDRARDADDR[6] (net: idft_top_axi4lite_inst/idft_top_top_inst/ADDRARDADDR[0]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#8 Warning
+RAMB36 async control check  
+The RAMB36E1 idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg has an input control pin idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg/ADDRARDADDR[7] (net: idft_top_axi4lite_inst/idft_top_top_inst/ADDRARDADDR[1]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#9 Warning
+RAMB36 async control check  
+The RAMB36E1 idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg has an input control pin idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg/ADDRARDADDR[8] (net: idft_top_axi4lite_inst/idft_top_top_inst/ADDRARDADDR[2]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#10 Warning
+RAMB36 async control check  
+The RAMB36E1 idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg has an input control pin idft_top_axi4lite_inst/idft_top_top_inst/dataY_reg/ADDRARDADDR[9] (net: idft_top_axi4lite_inst/idft_top_top_inst/ADDRARDADDR[3]) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#11 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[10] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[5]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[5]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#12 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[11] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[6]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[6]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#13 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[12] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[7]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[7]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#14 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[5] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[0]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[0]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#15 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[6] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[1]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[1]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#16 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[7] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[2]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[2]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#17 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[8] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[3]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[3]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#18 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRARDADDR[9] (net: modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[4]) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/exponent_mem/ptr_reg_reg[4]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#19 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRBWRADDR[12] (net: rsa_top_axi4lite_inst_n_14) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/loop_counter_reg_reg[0]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1839#20 Warning
+RAMB36 async control check  
+The RAMB36E1 modexp_top_inst/core_inst/exponent_mem/mem_reg has an input control pin modexp_top_inst/core_inst/exponent_mem/mem_reg/ADDRBWRADDR[12] (net: rsa_top_axi4lite_inst_n_14) which is driven by a register (rsa_top_axi4lite_inst/modexp_top_inst/core_inst/loop_counter_reg_reg[10]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#1 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[10] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[6]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[14]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#2 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[11] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[7]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#3 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[4] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[0]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[8]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#4 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[5] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[1]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[9]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#5 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[6] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[2]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[10]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#6 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[7] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[3]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[11]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#7 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[8] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[4]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[12]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#8 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRARDADDR[9] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[5]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[13]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#9 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[10] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[14]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[22]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#10 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[11] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[15]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[23]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#11 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[4] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[8]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[16]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#12 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[5] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[9]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[17]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#13 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[6] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[10]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[18]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#14 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[7] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[11]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[19]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#15 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[8] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[12]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[20]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#16 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ADDRBWRADDR[9] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/Q[13]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[21]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#17 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ENARDEN (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg_ENARDEN_cooolgate_en_sig_2) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#18 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg/ENBWREN (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_1/out_reg_ENBWREN_cooolgate_en_sig_3) which is driven by a register (clkgen_inst/wb_rst_shr_reg[15]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#19 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/out_reg/ADDRARDADDR[10] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/Q[14]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[30]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+REQP-1840#20 Warning
+RAMB18 async control check  
+The RAMB18E1 aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/out_reg has an input control pin aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/out_reg/ADDRARDADDR[11] (net: aes_top_axi4lite_inst/aes/aes/a0/S4_0/S_3/Q[15]) which is driven by a register (aes_top_axi4lite_inst/aes/aes/k0_reg[31]) that has an active asychronous set or reset. This may cause corruption of the memory contents and/or read values when the set/reset is asserted and is not analyzed by the default static timing analysis. It is suggested to eliminate the use of a set/reset to registers driving this RAMB pin or else use a synchronous reset in which the assertion of the reset is timed by default.
+Related violations: <none>
+
+

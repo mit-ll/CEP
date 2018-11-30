@@ -1,0 +1,6 @@
+obj_dir/
+iverilog/
+tb_sys.S
+tb_sys.bin
+tb_sys.vmem
+tb_sys

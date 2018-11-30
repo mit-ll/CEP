@@ -1,0 +1,285 @@
+verilator --cc --clk clk --default-language 1364-2001 -I. crp.v sbox1.v sbox2.v sbox3.v sbox4.v sbox5.v sbox6.v  sbox7.v sbox8.v key_sel3.v des3.v des3_top.sv --top-module des3_top -exe tb_top.cpp
+make -j -C obj_dir -f Vdes3_top.mk Vdes3_top
+make[1]: Entering directory '/home/BR24169/projects/CEP/hdl_cores/des3/obj_dir'
+make[1]: 'Vdes3_top' is up to date.
+make[1]: Leaving directory '/home/BR24169/projects/CEP/hdl_cores/des3/obj_dir'
+./obj_dir/Vdes3_top
+Initializing interface and resetting core
+Reset complete
+
+*********************************************************
+* Area Optimized DES core simulation started ...        *
+*********************************************************
+
+Running Decrypt test ...
+
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 01010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010101
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 00000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000000
+*** PASSED   (0): 8000000000000000 Got 8000000000000000
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 01010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010101
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 00000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000000
+*** PASSED   (1): 0000001000000000 Got 0000001000000000
+pKey_before[0] = 3849674c
+pKey_before[1] = 2602319e
+pKey_before[2] = 3849674c
+pKey_before[3] = 2602319e
+pKey_before[4] = 3849674c
+pKey_before[5] = 2602319e
+pKey_after[0] = 038919a6
+pKey_after[1] = 02604c4f
+pKey_after[2] = 038919a6
+pKey_after[3] = 02604c4f
+pKey_after[4] = 038919a6
+pKey_after[5] = 02604c4f
+*** PASSED   (2): 7178876e01f19b2a Got 7178876e01f19b2a
+pKey_before[0] = 04b915ba
+pKey_before[1] = 43feb5b6
+pKey_before[2] = 04b915ba
+pKey_before[3] = 43feb5b6
+pKey_before[4] = 04b915ba
+pKey_before[5] = 43feb5b6
+pKey_after[0] = 0057055d
+pKey_after[1] = 043fed5b
+pKey_after[2] = 0057055d
+pKey_after[3] = 043fed5b
+pKey_after[4] = 0057055d
+pKey_after[5] = 043fed5b
+*** PASSED   (3): af37fb421f8c4095 Got af37fb421f8c4095
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 01234567
+pKey_before[3] = 89abcdef
+pKey_before[4] = 01234567
+pKey_before[5] = 89abcdef
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 00045133
+pKey_after[3] = 08957377
+pKey_after[4] = 00045133
+pKey_after[5] = 08957377
+*** PASSED   (4): 3d124fe2198ba318 Got 3d124fe2198ba318
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 55555555
+pKey_before[3] = 55555555
+pKey_before[4] = 01234567
+pKey_before[5] = 89abcdef
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 054a952a
+pKey_after[3] = 054a952a
+pKey_after[4] = 00045133
+pKey_after[5] = 08957377
+*** PASSED   (5): fbaba1ff9d05e9b1 Got fbaba1ff9d05e9b1
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 55555555
+pKey_before[3] = 55555555
+pKey_before[4] = fedcba98
+pKey_before[5] = 76543210
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 054a952a
+pKey_after[3] = 054a952a
+pKey_after[4] = 0ffbaecc
+pKey_after[5] = 076a8c88
+*** PASSED   (6): 18d748e563620572 Got 18d748e563620572
+pKey_before[0] = 03520207
+pKey_before[1] = 67208217
+pKey_before[2] = 86028766
+pKey_before[3] = 59082198
+pKey_before[4] = 64056abd
+pKey_before[5] = fea93457
+pKey_after[0] = 002a4083
+pKey_after[1] = 0664208b
+pKey_after[2] = 086061b3
+pKey_after[3] = 0581084c
+pKey_after[4] = 06409ade
+pKey_after[5] = 0ff50d2b
+*** PASSED   (7): c07d2a0fa566fa30 Got c07d2a0fa566fa30
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 80010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010102
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 08000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000001
+*** PASSED   (8): e6e6dd5b7e722974 Got e6e6dd5b7e722974
+pKey_before[0] = 10461034
+pKey_before[1] = 89988020
+pKey_before[2] = 9107d015
+pKey_before[3] = 89190101
+pKey_before[4] = 19079210
+pKey_before[5] = 981a0101
+pKey_after[0] = 0108c41a
+pKey_after[1] = 08932010
+pKey_after[2] = 0900f40a
+pKey_after[3] = 08830000
+pKey_after[4] = 0180e488
+pKey_after[5] = 09834000
+*** PASSED   (9): e1ef62c332fe825b Got e1ef62c332fe825b
+Running Encrypt test ...
+
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 01010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010101
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 00000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000000
+*** PASSED   (0): 95f8a5e5dd31d900 Got 95f8a5e5dd31d900
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 01010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010101
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 00000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000000
+*** PASSED   (1): 9d64555a9a10b852 Got 9d64555a9a10b852
+pKey_before[0] = 3849674c
+pKey_before[1] = 2602319e
+pKey_before[2] = 3849674c
+pKey_before[3] = 2602319e
+pKey_before[4] = 3849674c
+pKey_before[5] = 2602319e
+pKey_after[0] = 038919a6
+pKey_after[1] = 02604c4f
+pKey_after[2] = 038919a6
+pKey_after[3] = 02604c4f
+pKey_after[4] = 038919a6
+pKey_after[5] = 02604c4f
+*** Expected (2): 51454b582ddf440a Got d0f5a83f105aa4a8
+pKey_before[0] = 04b915ba
+pKey_before[1] = 43feb5b6
+pKey_before[2] = 04b915ba
+pKey_before[3] = 43feb5b6
+pKey_before[4] = 04b915ba
+pKey_before[5] = 43feb5b6
+pKey_after[0] = 0057055d
+pKey_after[1] = 043fed5b
+pKey_after[2] = 0057055d
+pKey_after[3] = 043fed5b
+pKey_after[4] = 0057055d
+pKey_after[5] = 043fed5b
+*** Expected (3): 42fd443059577fa2 Got acadc0aabd4528e8
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 01234567
+pKey_before[3] = 89abcdef
+pKey_before[4] = 01234567
+pKey_before[5] = 89abcdef
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 00045133
+pKey_after[3] = 08957377
+pKey_after[4] = 00045133
+pKey_after[5] = 08957377
+*** Expected (4): 736f6d6564617461 Got d7792a57afc4f7f1
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 55555555
+pKey_before[3] = 55555555
+pKey_before[4] = 01234567
+pKey_before[5] = 89abcdef
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 054a952a
+pKey_after[3] = 054a952a
+pKey_after[4] = 00045133
+pKey_after[5] = 08957377
+*** Expected (5): 736f6d6564617461 Got 94bd83e0a98d4b2e
+pKey_before[0] = 01234567
+pKey_before[1] = 89abcdef
+pKey_before[2] = 55555555
+pKey_before[3] = 55555555
+pKey_before[4] = fedcba98
+pKey_before[5] = 76543210
+pKey_after[0] = 00045133
+pKey_after[1] = 08957377
+pKey_after[2] = 054a952a
+pKey_after[3] = 054a952a
+pKey_after[4] = 0ffbaecc
+pKey_after[5] = 076a8c88
+*** Expected (6): 736f6d6564617461 Got 68644e0daa2dca2a
+pKey_before[0] = 03520207
+pKey_before[1] = 67208217
+pKey_before[2] = 86028766
+pKey_before[3] = 59082198
+pKey_before[4] = 64056abd
+pKey_before[5] = fea93457
+pKey_after[0] = 002a4083
+pKey_after[1] = 0664208b
+pKey_after[2] = 086061b3
+pKey_after[3] = 0581084c
+pKey_after[4] = 06409ade
+pKey_after[5] = 0ff50d2b
+*** Expected (7): 7371756967676c65 Got e261af1b424b41f6
+pKey_before[0] = 01010101
+pKey_before[1] = 01010101
+pKey_before[2] = 80010101
+pKey_before[3] = 01010101
+pKey_before[4] = 01010101
+pKey_before[5] = 01010102
+pKey_after[0] = 00000000
+pKey_after[1] = 00000000
+pKey_after[2] = 08000000
+pKey_after[3] = 00000000
+pKey_after[4] = 00000000
+pKey_after[5] = 00000001
+*** Expected (8): 0000000000000000 Got 3be778add3003d73
+pKey_before[0] = 10461034
+pKey_before[1] = 89988020
+pKey_before[2] = 9107d015
+pKey_before[3] = 89190101
+pKey_before[4] = 19079210
+pKey_before[5] = 981a0101
+pKey_after[0] = 0108c41a
+pKey_after[1] = 08932010
+pKey_after[2] = 0900f40a
+pKey_after[3] = 08830000
+pKey_after[4] = 0180e488
+pKey_after[5] = 09834000
+*** Expected (9): 0000000000000000 Got d81ffde728329b4d
+
+*** Test    -> FAILED
+
+**************************************
+* DES Test done ...                  *
+**************************************
+
+Completed

@@ -1,3 +1,11 @@
+<p align="center">
+   v2.0
+   <br>
+   Copyright 2019 Massachusetts Institute of Technology
+</p>
+
+<br>
+
 # CEP-DSP: Core blocks
 
 The core DSP blocks (DFT/IDFT/IIR/FIR) were generated using the free online hardware generators provided by the [Spiral Project](http://www.spiral.net/). Due to licensing restrictions, we cannot include the generated files for the DSP blocks. To include these cores in the SoC, you must regenerate the cores and add the source files to the CEP file structure as described:

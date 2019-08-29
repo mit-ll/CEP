@@ -17,13 +17,13 @@
 
 // This is a fully unrolled implementation
 module aes_192 (clk, rst, start, state, key, out, out_valid);
-    input           clk; 
-    input           rst; 
-    input           start;
-    input  [127:0]  state;
-    input  [191:0]  key;
-    output [127:0]  out;
-    output          out_valid;
+    input wire          clk; 
+    input wire          rst; 
+    input wire          start;
+    input wire [127:0]  state;
+    input wire [191:0]  key;
+    output wire [127:0] out;
+    output wire         out_valid;
 
     // Internals signals and such
     reg    [127:0]  s0;
@@ -32,10 +32,12 @@ module aes_192 (clk, rst, start, state, key, out, out_valid);
     wire   [191:0]  k1, k2, k3, k4, k5, k6, k7, k8, k9, k10, k11;
     wire   [127:0]  k0b, k1b, k2b, k3b, k4b, k5b, k6b, k7b, k8b, k9b, k10b, k11b;
     reg             start_r;
-    wire            start_posedge = start & ~start_r;
+    wire            start_posedge;
     reg    [4:0]    validCounter;
     
-    always @(posedge clk or posedge rst)
+    assign start_posedge = start & ~start_r;
+
+    always @(posedge clk)
     begin
         if (rst)
             start_r <= 1'b0;
@@ -43,7 +45,7 @@ module aes_192 (clk, rst, start, state, key, out, out_valid);
             start_r <= start;
     end // end always
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst) begin
             s0              <= 0;
@@ -97,12 +99,12 @@ endmodule
 
 /* expand k0,k1,k2,k3 for every two clock cycles */
 module expand_key_type_A_192 (clk, rst, in, rcon, out_1, out_2);
-    input              clk;
-    input              rst;
-    input      [191:0] in;
-    input      [7:0]   rcon;
-    output reg [191:0] out_1;
-    output     [127:0] out_2;
+    input wire          clk;
+    input wire          rst;
+    input wire  [191:0] in;
+    input wire  [7:0]   rcon;
+    output reg  [191:0] out_1;
+    output wire [127:0] out_2;
 
     // Internal signals
     wire       [31:0]  k0, k1, k2, k3, k4, k5, v0, v1, v2, v3;
@@ -116,7 +118,7 @@ module expand_key_type_A_192 (clk, rst, in, rcon, out_1, out_2);
     assign v2 = v1 ^ k2;
     assign v3 = v2 ^ k3;
 
-    always @ (posedge clk or posedge rst) 
+    always @ (posedge clk) 
     begin
         if (rst)
             {k0a, k1a, k2a, k3a, k4a, k5a} <= {32'd0, 32'd0, 32'd0, 32'd0, 32'd0, 32'd0};
@@ -132,7 +134,7 @@ module expand_key_type_A_192 (clk, rst, in, rcon, out_1, out_2);
     assign k3b = k3a ^ k6a;
     assign {k4b, k5b} = {k4a, k5a};
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             out_1 <= 0;
@@ -147,13 +149,13 @@ endmodule   // end module expand_key_type_A_192
 
 /* expand k2,k3,k4,k5 for every two clock cycles */
 module expand_key_type_B_192 (clk, rst, in, out_1, out_2);
-    input              clk;
-    input              rst;
-    input      [191:0] in;
-    output reg [191:0] out_1;
-    output     [127:0] out_2;
-    wire       [31:0]  k0, k1, k2, k3, k4, k5, v2, v3, v4, v5;
-    reg        [31:0]  k0a, k1a, k2a, k3a, k4a, k5a;
+    input wire          clk;
+    input wire          rst;
+    input wire  [191:0] in;
+    output reg  [191:0] out_1;
+    output wire [127:0] out_2;
+    wire        [31:0]  k0, k1, k2, k3, k4, k5, v2, v3, v4, v5;
+    reg         [31:0]  k0a, k1a, k2a, k3a, k4a, k5a;
 
     assign {k0, k1, k2, k3, k4, k5} = in;
 
@@ -162,7 +164,7 @@ module expand_key_type_B_192 (clk, rst, in, out_1, out_2);
     assign v4 = v3 ^ k4;
     assign v5 = v4 ^ k5;
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             {k0a, k1a, k2a, k3a, k4a, k5a} <= {32'd0, 32'd0, 32'd0, 32'd0, 32'd0, 32'd0};
@@ -170,7 +172,7 @@ module expand_key_type_B_192 (clk, rst, in, out_1, out_2);
             {k0a, k1a, k2a, k3a, k4a, k5a} <= {k0, k1, v2, v3, v4, v5};
     end // end always
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             out_1   <= 0;
@@ -186,12 +188,12 @@ endmodule   // end expand_key_type_B_192
 
 /* expand k0,k1,k4,k5 for every two clock cycles */
 module expand_key_type_C_192 (clk, rst, in, rcon, out_1, out_2);
-    input              clk;
-    input              rst;
-    input      [191:0] in;
-    input      [7:0]   rcon;
-    output reg [191:0] out_1;
-    output     [127:0] out_2;
+    input wire          clk;
+    input wire          rst;
+    input wire  [191:0] in;
+    input wire  [7:0]   rcon;
+    output reg  [191:0] out_1;
+    output wire [127:0] out_2;
 
     wire       [31:0]  k0, k1, k2, k3, k4, k5, v4, v5, v0, v1;
     reg        [31:0]  k0a, k1a, k2a, k3a, k4a, k5a;
@@ -204,7 +206,7 @@ module expand_key_type_C_192 (clk, rst, in, rcon, out_1, out_2);
     assign v0 = {k0[31:24] ^ rcon, k0[23:0]};
     assign v1 = v0 ^ k1;
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             {k0a, k1a, k2a, k3a, k4a, k5a} <= {32'd0, 32'd0, 32'd0, 32'd0, 32'd0, 32'd0};
@@ -218,7 +220,7 @@ module expand_key_type_C_192 (clk, rst, in, rcon, out_1, out_2);
     assign k1b = k1a ^ k6a;
     assign {k2b, k3b, k4b, k5b} = {k2a, k3a, k4a, k5a};
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             out_1   <= 0;
@@ -232,12 +234,12 @@ endmodule   // end expand_key_type_C_192
 
 /* expand k0,k1 for every two clock cycles */
 module expand_key_type_D_192 (clk, rst, in, rcon, out_1, out_2);
-    input              clk;
-    input              rst;
-    input      [191:0] in;
-    input      [7:0]   rcon;
-    output reg [191:0] out_1;
-    output     [127:0] out_2;
+    input wire          clk;
+    input wire          rst;
+    input wire  [191:0] in;
+    input wire  [7:0]   rcon;
+    output reg  [191:0] out_1;
+    output wire [127:0] out_2;
     wire       [31:0]  k0, k1, k2, k3, k4, k5, v0, v1;
     reg        [31:0]  k0a, k1a, k2a, k3a, k4a, k5a;
     wire       [31:0]  k0b, k1b, k2b, k3b, k4b, k5b, k6a;
@@ -247,7 +249,7 @@ module expand_key_type_D_192 (clk, rst, in, rcon, out_1, out_2);
     assign v0 = {k0[31:24] ^ rcon, k0[23:0]};
     assign v1 = v0 ^ k1;
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             {k0a, k1a, k2a, k3a, k4a, k5a}  <= {32'd0, 32'd0, 32'd0, 32'd0, 32'd0, 32'd0};
@@ -261,7 +263,7 @@ module expand_key_type_D_192 (clk, rst, in, rcon, out_1, out_2);
     assign k1b = k1a ^ k6a;
     assign {k2b, k3b, k4b, k5b} = {k2a, k3a, k4a, k5a};
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
     begin
         if (rst)
             out_1   <= 0;

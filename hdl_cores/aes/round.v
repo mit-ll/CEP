@@ -79,7 +79,7 @@ assign z1 = {p10, p21, p32, p03} ^ k1;
 assign z2 = {p20, p31, p02, p13} ^ k2;
 assign z3 = {p30, p01, p12, p23} ^ k3;
 
-always @ (posedge clk or posedge rst)
+always @ (posedge clk)
     if (rst)
       state_out <= 0;
     else

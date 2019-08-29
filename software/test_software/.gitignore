@@ -1,5 +1,0 @@
-obj_dir/
-*.S
-*.bin
-*.vmem
-cep_regression

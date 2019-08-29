@@ -1,37 +1,15 @@
-Common Evaluation Platform v1.2 Licensing Information
-
-Title               : mor1kx
-Source              : https://github.com/openrisc/mor1kx.git
-License Description : Open Hardware Description License (OHDL)
-License terms       : Open Hardware Description License (OHDL)
-Function            : This core serves as the Central Processing Unit (CPU) for our System-on-Chip (SOC).
-
-Title               : SoC (top)
-Source              : http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/orpsoc_top/
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This module connects together the CPU and various other cores into a System-on-Chip.  Essentially, this module simply instantiates and connects other cores together.
+Common Evaluation Platform v2.0 Licensing Information
 
 Title               : aes
 Source              : https://opencores.org/project,tiny_aes
+CEP Directory       : ./hdl_cores/aes
 License Description : Apache 2.0
 License terms       : http://www.apache.org/licenses/LICENSE-2.0.html
 Function            : This core provides a standard AES encryption function, where the key is 192 bits long.  It will be integrated as a HW accelerator into the SoC.
 
-Title               : md5
-Source              : http://pancham.sourceforge.net/
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
-
-Title               : gps
-Source              : MIT Lincoln Laboratory
-License Description : BSD 2-Clause
-License terms       : https://opensource.org/licenses/BSD-2-Clause
-Function            : Surrogate GPS core for CA, P, and L code generation
-
 Title               : des3
 Source              : http://asics.ws/v6/free-ip-cores/#
+CEP Directory       : ./hdl_cores/des3
 License Description : BSD-based
 License terms       :
                         Copyright (C) 2000-2009, ASICs World Services, LTD. , AUTHORS All rights reserved. Redistribution and use in source, netlist, 
@@ -50,8 +28,38 @@ License terms       :
                         OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            :  This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
 
+Title               : gps
+Source              : MIT Lincoln Laboratory
+CEP Directory       : ./hdl_cores/gps
+License Description : BSD 2-Clause
+License terms       : https://opensource.org/licenses/BSD-2-Clause
+Function            : Surrogate GPS core for CA, P, and L code generation
+                    : L-code leverages the aes core mentioned above
+
+Title               : md5
+Source              : http://pancham.sourceforge.net/
+CEP Directory       : ./hdl_cores/md5
+License Description : LGPL 2.1
+License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
+Function            : This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
+
+Title               : axi
+Source              : https://github.com/pulp-platform/axi.git
+CEP Directory       : ./hdl_cores/pulp_axi
+License Description : SOLDERPAD HARDWARE LICENSE version 0.51
+License Terms       : http://solderpad.org/licenses/SHL-0.51/
+Function            : A variety of AXI4 / AXI4-Lite / AXI4-Stream functional blocks
+
+Title               : common_cells
+Source              : https://github.com/pulp-platform/common_cells.git
+CEP Directory       : ./hdl_cores/pulp_axi
+License Description : SOLDERPAD HARDWARE LICENSE version 0.51
+License Terms       : http://solderpad.org/licenses/SHL-0.51/
+Function            : Common functions from the Pulp Platform
+
 Title               : rsa
 Source              : http://git.level2crm.com/cryptech/core-math-modexp/tree/master
+CEP Directory       : ./hdl_cores/rsa
 License Description : LGPL-ish
 License terms       :
                         // Author: Joachim Strombergson
@@ -84,8 +92,9 @@ License terms       :
                         // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function:  This core provides the mathematical base (modular exponentiation) required to implement a standard 2048-bit RSA public-key encryption function.  It will be integrated as a HW accelerator into the SoC.
 
-Title               : sha
+Title               : sha256
 Source              : http://git.level2crm.com/cryptech/core-hash-sha256/tree/master
+CEP Directory       : ./hdl_cores/sha256
 License Description : LGPL-ish
 License terms       :
                         // Author: Joachim Strombergson
@@ -118,76 +127,39 @@ License terms       :
                         // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            : This core provides a standard SHA hash function, where the resulting hash value is 256 bits.  It will be integrated as a HW accelerator into the SoC.
 
-Title               : clkgen
-Source              : http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/clkgen/
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This core generates a the clock and reset signals used by all of the hardware modules in the SoC.
-
 Title               : testbenches (derived from)
 Source              : http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/bench/verilog/
+CEP Directory       : ./simulation/testbenches
 License Description : LGPL 2.1
 License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function            : This core provides the setup and monitoring code for Register Transfer Level (RTL) simulation and debugging.  It is only used during debugging.
 
-Title               : UART
-Source: http        : https://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/rtl/verilog/uart16550/
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This code provides a basic test input and output using the RS-232 protocol.  It will be integrated as a basic building block into the SoC.
+-- LICENSES TODO --
+Title               : dsp (code not directly included in the CEP repository)
+Source              : Copyright (c) 2005-2014 Peter A. Milder for the Spiral Project, Carnegie Mellon University
+CEP Directory       : ./hdl_cores/dsp
+License Description : Unknown
+License Terms       : Unknown
+Function            : Provides logic for the FIR, IIR, DFT, and IDFT cores.
 
-Title               : software/utils
-Source              : http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/sw/utils
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This code provides a programs that convert program binaries to VMEM formatted files that are used to load Block-RAM directly.
+Title               : freedom
+Source              : https://github.com/sifive/freedom
+CEP Directory       : ./hdl_cores/freedom
+License Description : Apache 2.0
+License Terms       : https://github.com/sifive/freedom/blob/master/LICENSE
+Function            : Provides the core of the Common Evaluation Platform, the SiFive Freedom U500.  Only those sub-repostorities which have customizations have beend included in the CEP repository.
 
-Title               : hdl_cores/axil2wb/axil2wb.vhd
-Source              : https://github.com/wzab/vextproj.git
-License Description : Creative Commons CC0 license
-License terms       : https://creativecommons.org/publicdomain/zero/1.0/legalcode
-Function            : AXI4-Lite to Wishbone bridge
+Title               : freedom_u_sdk
+Source              : https://github.com/mcd500/freedom-u-sdk
+CEP Directory       : ./software/freedom-u-sdk
+License Description : Mix
+License Terms       : The freedom-u-sdk repository and its dependencies have a mix of liceneses, including GPLv3 for most of the linux stuff.  None of this is included directly in the CEP repository.
+Function            : Provides the Linux build for the Common Evaluation Platform.
 
-Title               : submodules/axi
-Source              : https://github.com/pulp-platform/axi.git
-License Description : SOLDERPAD HARDWARE LICENSE version 0.51
-License Terms       : http://solderpad.org/licenses/SHL-0.51/
-Function            : A variety of AXI4 / AXI4-Lite / AXI4-Stream functional blocks
-
-Title               : submodules/common_cells
-Source              : https://github.com/pulp-platform/common_cells.git
-License Description : SOLDERPAD HARDWARE LICENSE version 0.51
-License Terms       : http://solderpad.org/licenses/SHL-0.51/
-Function            : Common functions from the Pulp Platform
-
-Title               : submodules/wb-axi
-Source              : https://github.com/bluecmd/wb-axi.git
-License Description : 
-    // Copyright (c) 2015, Christian Svensson <blue@cmd.nu>
-    // All rights reserved.
-    //
-    // Redistribution and use in source and non-source forms, with or without
-    // modification, are permitted provided that the following conditions are
-    // met:
-    //    * Redistributions of source code must retain the above copyright
-    //       notice, this list of conditions and the following disclaimer.
-    //     * Redistributions in non-source form must reproduce the above
-    //       copyright notice, this list of conditions and the following
-    //       disclaimer in the documentation and/or other materials provided
-    //       with the distribution.
-    //
-    // THIS WORK IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-    // AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO,
-    // THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
-    // PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR
-    // CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL,
-    // EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-    // PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
-    // LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
-    // AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
-    // OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF
-    // THE USE OF THIS WORK, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-    //
-License Terms       : 
-Function            : Wishbone to AXI4 and AXI4-Lite bridges
- 
+Title               : wb2axip
+Source              : https://github.com/ZipCPU/wb2axip
+CEP Directory       : ./hdl_cores/wb2axip
+License Description : GPLv3
+License Terms       : https://github.com/ZipCPU/wb2axip/blob/master/doc/gpl-3.0.pdf
+Function            : Provides AXI4-Lite to Wishbone Conversion functions.  It is NOT used in the CEP build, but supports unit level simulation of the individual cores.  Integration into the CEP would
+                      require additional license scrutiny, given the nature of GPL.

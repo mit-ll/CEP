@@ -1,0 +1,10 @@
+/builds
+
+# sbt directories
+/target
+/project/target
+
+# vivado products
+vivado.log
+vivado.jou
+/.Xil

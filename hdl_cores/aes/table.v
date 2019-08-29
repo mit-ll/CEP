@@ -73,7 +73,7 @@ module S (clk, rst, in, out);
     input [7:0] in;
     output reg [7:0] out;
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
         if (rst)
             out <= 8'd0;
         else
@@ -344,7 +344,7 @@ module xS (clk, rst, in, out);
     input [7:0] in;
     output reg [7:0] out;
 
-    always @ (posedge clk or posedge rst)
+    always @ (posedge clk)
         if (rst)
             out <= 8'd0;
         else

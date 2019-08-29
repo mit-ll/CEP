@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2018 Massachusetts Institute of Technology
+// Copyright (C) 2019 Massachusetts Institute of Technology
 //
 // From the GPS transmitter's perspective
 module gps(

@@ -34,9 +34,12 @@ default:
 	@echo "clean      : Remove all generated files"
 
 sys:
-	or1k-elf-g++ -Wall -pedantic -O3 ../../software/bootloader/vc707_CEP.S tb_sys.cpp -o tb_sys
-	or1k-elf-objdump -D tb_sys > tb_sys.S
-	or1k-elf-objcopy -O binary tb_sys tb_sys.bin
+	riscv64-unknown-elf-g++ -Wall -pedantic -03 tb_sys.cpp -o tb_sys
+	 #or1k-elf-g++ -Wall -pedantic -O3 ../../software/bootloader/vc707_CEP.S tb_sys.cpp -o tb_sys
+	riscv64-unknown-elf-objdump -D tb_sys > tb_sys.S
+	 #or1k-elf-objdump -D tb_sys > tb_sys.S
+	riscv64-unknown-elf-objcopy -O binary tb_sys tb_sys.bin
+	 #or1k-elf-objcopy -O binary tb_sys tb_sys.bin
 	../../software/utils/bin2vmem tb_sys.bin > tb_sys.vmem
 	cp tb_sys.vmem ../ram/sram.vmem
 

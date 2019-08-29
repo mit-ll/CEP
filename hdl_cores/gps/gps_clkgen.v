@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2018 Massachusetts Institute of Technology
+// Copyright (C) 2019 Massachusetts Institute of Technology
 //
 /*
  *
@@ -75,7 +75,7 @@ assign gps_rst = sync_rst_in | ~locked_int;
 BUFGCE gps_clk_slow_buf(
            .O   (gps_clk_slow),
            .CE  (enable_slow_clk),
-           .I   (clk_out0_prebufg)
+           .I   (clk_out0)
        );
 
 reg [2:0] count = 3'h0;

@@ -1,3 +1,11 @@
+<p align="center">
+   v2.0
+   <br>
+   Copyright 2019 Massachusetts Institute of Technology
+</p>
+
+<br>
+
 # GPS code generator
 
 Generates three codes used for GPS signal correlation (from the perspective of a space vehicle): C/A-code, P-code, and a secure form of P-code that we call L-code.  The combination of the P-code generator and the L-code is meant to serve as a surrogate for the M-code generator found in modern secure GPS systems.  The goal of this core is to provide reference implementations for items that a GPS designer would like to protect from an untrusted manufacturer; it is not a fully-functional GPS unit.

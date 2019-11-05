@@ -32,13 +32,15 @@
 ////                                                             ////
 /////////////////////////////////////////////////////////////////////
 
-module  key_sel3(K_sub, key1, key2, key3, roundSel, decrypt);
+module  key_sel3(clk, reset, K_sub, key1, key2, key3, roundSel, decrypt);
 /* verilator lint_off LITENDIAN */
 output [1:48] K_sub;
 /* verilator lint_on LITENDIAN */
 input [55:0] key1, key2, key3;
 input [5:0] roundSel;
 input  decrypt;
+input clk;
+input reset;
 
 wire  decrypt_int;
 reg [55:0] K;
@@ -48,7 +50,11 @@ wire [1:48] K1, K2, K3, K4, K5, K6, K7, K8, K9;
 wire [1:48] K10, K11, K12, K13, K14, K15, K16;
 /* verilator lint_on LITENDIAN */
 
-always @(roundSel or decrypt or key1 or key2 or key3)
+always @(clk)
+    begin
+        if (reset)
+            K = 56'b0;
+        else
     case ({decrypt, roundSel[5:4]})  // synopsys full_case parallel_case
         3'b0_00:
             K = key1;
@@ -67,45 +73,50 @@ always @(roundSel or decrypt or key1 or key2 or key3)
         3'b1_11:
             K = 56'b0;
     endcase
+end
 
 assign decrypt_int = (roundSel[5:4]==2'h1) ? !decrypt : decrypt;
 
-always @(K1 or K2 or K3 or K4 or K5 or K6 or K7 or K8 or K9 or K10
-             or K11 or K12 or K13 or K14 or K15 or K16 or roundSel)
-    case(roundSel[3:0])  // synopsys full_case parallel_case
-        0:
-            K_sub = K1;
-        1:
-            K_sub = K2;
-        2:
-            K_sub = K3;
-        3:
-            K_sub = K4;
-        4:
-            K_sub = K5;
-        5:
-            K_sub = K6;
-        6:
-            K_sub = K7;
-        7:
-            K_sub = K8;
-        8:
-            K_sub = K9;
-        9:
-            K_sub = K10;
-        10:
-            K_sub = K11;
-        11:
-            K_sub = K12;
-        12:
-            K_sub = K13;
-        13:
-            K_sub = K14;
-        14:
-            K_sub = K15;
-        15:
-            K_sub = K16;
-    endcase
+always @(clk)
+    begin
+        if (reset)
+            K_sub = 48'b0;
+        else
+            case(roundSel[3:0])  // synopsys full_case parallel_case
+                0:
+                    K_sub = K1;
+                1:
+                    K_sub = K2;
+                2:
+                    K_sub = K3;
+                3:
+                    K_sub = K4;
+                4:
+                    K_sub = K5;
+                5:
+                    K_sub = K6;
+                6:
+                    K_sub = K7;
+                7:
+                    K_sub = K8;
+                8:
+                    K_sub = K9;
+                9:
+                    K_sub = K10;
+                10:
+                    K_sub = K11;
+                11:
+                    K_sub = K12;
+                12:
+                    K_sub = K13;
+                13:
+                    K_sub = K14;
+                14:
+                    K_sub = K15;
+                15:
+                    K_sub = K16;
+            endcase
+    end
 
 
 assign K16[1] = decrypt_int ? K[47] : K[40];

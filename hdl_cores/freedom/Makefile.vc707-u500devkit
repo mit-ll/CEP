@@ -23,6 +23,41 @@ VSRCS := \
     $(base_dir)/../aes/aes_192.v \
     $(base_dir)/../aes/round.v \
     $(base_dir)/../aes/table.v \
-    $(base_dir)/../../generated_dsp_code/FIR_filter.v
+    $(base_dir)/../../generated_dsp_code/FIR_filter.v \
+    $(base_dir)/../../generated_dsp_code/IIR_filter.v \
+    $(base_dir)/../../generated_dsp_code/dft_top.v \
+    $(base_dir)/../../generated_dsp_code/idft_top.v \
+    $(base_dir)/../des3/des3.v \
+    $(base_dir)/../des3/key_sel3.v \
+    $(base_dir)/../des3/crp.v \
+    $(base_dir)/../des3/sbox1.v \
+    $(base_dir)/../des3/sbox2.v \
+    $(base_dir)/../des3/sbox3.v \
+    $(base_dir)/../des3/sbox4.v \
+    $(base_dir)/../des3/sbox5.v \
+   	$(base_dir)/../des3/sbox6.v \
+   	$(base_dir)/../des3/sbox7.v \
+	$(base_dir)/../des3/sbox8.v \
+    $(base_dir)/../md5/pancham.v \
+    $(base_dir)/../md5/pancham_round.v \
+    $(base_dir)/../md5/pancham_round.v \
+    $(base_dir)/../gps/gps.v \
+    $(base_dir)/../gps/gps_clkgen.v \
+    $(base_dir)/../gps/cacode.v \
+    $(base_dir)/../gps/pcode.v \
+    $(base_dir)/../rsa/rtl/modexp_core.v \
+    $(base_dir)/../rsa/rtl/montprod.v \
+    $(base_dir)/../rsa/rtl/residue.v \
+    $(base_dir)/../rsa/rtl/blockmem2r1w.v \
+    $(base_dir)/../rsa/rtl/blockmem2r1w.v \
+    $(base_dir)/../rsa/rtl/blockmem2r1wptr.v \
+    $(base_dir)/../rsa/rtl/blockmem2rptr1w.v \
+    $(base_dir)/../rsa/rtl/blockmem1r1w.v \
+    $(base_dir)/../rsa/rtl/shr.v \
+    $(base_dir)/../rsa/rtl/shl.v \
+    $(base_dir)/../rsa/rtl/adder.v \
+    $(base_dir)/../sha256/sha256.v \
+    $(base_dir)/../sha256/sha256_k_constants.v \
+    $(base_dir)/../sha256/sha256_w_mem.v 
 
 include common.mk

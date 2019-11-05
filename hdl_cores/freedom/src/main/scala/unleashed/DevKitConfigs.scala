@@ -14,9 +14,21 @@ import sifive.blocks.devices.spi._
 import sifive.blocks.devices.uart._
 
 import mitllBlocks.cep_addresses._
-import mitllBlocks.aes._
 import mitllBlocks.cep_registers._
+
+
+import mitllBlocks.aes._
+import mitllBlocks.dft._
+import mitllBlocks.idft._
 import mitllBlocks.fir._
+import mitllBlocks.iir._
+import mitllBlocks.des3._
+import mitllBlocks.gps._
+import mitllBlocks.md5._
+import mitllBlocks.sha256._
+import mitllBlocks.rsa._
+
+//import mitllBlocks.testreg._
 
 // Default FreedomU500Config
 class FreedomU500Config extends Config(
@@ -28,12 +40,28 @@ class FreedomU500Config extends Config(
 
 // Freedom U500 Dev Kit Peripherals
 class U500DevKitPeripherals extends Config((site, here, up) => {
+  case PeripheryDES3Key => List(
+    DES3Params(address = BigInt(CEPBaseAddresses.des3_base_addr)))
   case PeripheryAESKey => List(
     AESParams(address = BigInt(CEPBaseAddresses.aes_base_addr)))
+  case PeripheryIIRKey => List(
+    IIRParams(address = BigInt(CEPBaseAddresses.iir_base_addr)))
+  case PeripheryIDFTKey => List(
+    IDFTParams(address = BigInt(CEPBaseAddresses.idft_base_addr)))  
+  case PeripheryGPSKey => List(
+    GPSParams(address = BigInt(CEPBaseAddresses.gps_base_addr)))    
+  case PeripheryMD5Key => List(
+    MD5Params(address = BigInt(CEPBaseAddresses.md5_base_addr)))         
+  case PeripheryDFTKey => List(
+    DFTParams(address = BigInt(CEPBaseAddresses.dft_base_addr)))
+  case PeripheryFIRKey => List(
+     FIRParams(address = BigInt(CEPBaseAddresses.fir_base_addr)))  
+  case PeripherySHA256Key => List(
+     SHA256Params(address = BigInt(CEPBaseAddresses.sha256_base_addr)))   
+  case PeripheryRSAKey => List(
+     RSAParams(address = BigInt(CEPBaseAddresses.rsa_base_addr)))  
   case PeripheryCEPRegistersKey => List(
     CEPREGSParams(address = BigInt(CEPBaseAddresses.cepregisters_base_addr)))
-  case PeripheryFIRKey => List(
-    FIRParams(address = BigInt(CEPBaseAddresses.fir_base_addr)))
   case PeripheryUARTKey => List(
     UARTParams(address = BigInt(0x64000000L)))
   case PeripherySPIKey => List(

@@ -26,9 +26,21 @@ import sifive.fpgashells.shell._
 import sifive.fpgashells.clocks._
 
 import mitllBlocks.cep_addresses._
-import mitllBlocks.aes._
 import mitllBlocks.cep_registers._
+
+import mitllBlocks.aes._
+import mitllBlocks.rsa._
+import mitllBlocks.sha256._
 import mitllBlocks.fir._
+import mitllBlocks.iir._
+import mitllBlocks.idft._
+import mitllBlocks.des3._
+import mitllBlocks.md5._
+import mitllBlocks.gps._
+import mitllBlocks.dft._
+
+
+//import mitllBlocks.testreg._
 
 object PinGen {
   def apply(): BasePin = {
@@ -71,10 +83,18 @@ case object DevKitFPGAFrequencyKey extends Field[Double](100.0)
 
 class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) extends RocketSubsystem
   with HasPeripheryCEPRegisters
-  with HasPeripheryAES
-  with HasPeripheryFIR
-  with HasPeripheryMaskROMSlave    
+  with HasPeripheryMaskROMSlave
   with HasPeripheryDebug
+  with HasPeripheryAES
+  with HasPeripheryRSA
+  with HasPeripherySHA256
+  with HasPeripheryFIR
+  with HasPeripheryIIR
+  with HasPeripheryIDFT
+  with HasPeripheryDFT
+  with HasPeripheryDES3
+  with HasPeripheryGPS
+  with HasPeripheryMD5
 {
   val tlclock = new FixedClockResource("tlclk", p(DevKitFPGAFrequencyKey))
 

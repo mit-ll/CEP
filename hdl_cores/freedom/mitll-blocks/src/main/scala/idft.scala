@@ -1,15 +1,15 @@
 //
 // Copyright (C) 2019 Massachusetts Institute of Technology
 //
-// File         : fir.scala
+// File         : idft.scala
 // Project      : Common Evaluation Platform (CEP)
-// Description  : TileLink interface to the verilog FIR core
-// Note         : The "control" logic described in the FIR abstract class
-//                is intended to mimic the verilog in the fir_top_wb.v
+// Description  : TileLink interface to the verilog idft core
+// Note         : The "control" logic described in the idft abstract class
+//                is intended to mimic the verilog in the idft_top_wb.v
 //                module.
 //
 
-package mitllBlocks.fir
+package mitllBlocks.idft
 
 import Chisel._
 import freechips.rocketchip.config.Field
@@ -24,39 +24,39 @@ import mitllBlocks.cep_addresses._
 //--------------------------------------------------------------------------------------
 // BEGIN: Classes, Objects, and Traits to support connecting to TileLink
 //--------------------------------------------------------------------------------------
-case object PeripheryFIRKey extends Field[Seq[FIRParams]]
+case object PeripheryIDFTKey extends Field[Seq[IDFTParams]]
 
-trait HasPeripheryFIR { this: BaseSubsystem =>
-  val FIRNodes = p(PeripheryFIRKey).map { ps =>
-    FIR.attach(FIRAttachParams(ps, pbus))   // pbus = Periphery Bus
+trait HasPeripheryIDFT { this: BaseSubsystem =>
+  val IDFTNodes = p(PeripheryIDFTKey).map { ps =>
+    IDFT.attach(IDFTAttachParams(ps, pbus))   // pbus = Periphery Bus
   }
 }
 
-case class FIRParams(address: BigInt)
+case class IDFTParams(address: BigInt)
 
-case class FIRAttachParams(
-  firparams         : FIRParams,
+case class IDFTAttachParams(
+  idftparams         : IDFTParams,
   controlBus        : TLBusWrapper)
   (implicit val p   : Parameters)
 
-class TLFIR(busWidthBytes: Int, params: FIRParams)(implicit p: Parameters)
-  extends FIR(busWidthBytes, params) with HasTLControlRegMap
+class TLIDFT(busWidthBytes: Int, params: IDFTParams)(implicit p: Parameters)
+  extends IDFT(busWidthBytes, params) with HasTLControlRegMap
 
-object FIR {
+object IDFT {
 
-  def attach(params: FIRAttachParams): TLFIR = {
+  def attach(params: IDFTAttachParams): TLIDFT = {
     implicit val p = params.p
-    val fir = LazyModule(new TLFIR(params.controlBus.beatBytes, params.firparams))
+    val idft = LazyModule(new TLIDFT(params.controlBus.beatBytes, params.idftparams))
 
     // Connect our module to the specified bus (per the controlBus parameter)
-    params.controlBus.coupleTo(s"slave_named_fir") {
-      fir.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    params.controlBus.coupleTo(s"slave_named_idft") {
+      idft.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
     }
 
-    InModuleBody { fir.module.clock := params.controlBus.module.clock }
-    InModuleBody { fir.module.reset := params.controlBus.module.reset }
+    InModuleBody { idft.module.clock := params.controlBus.module.clock }
+    InModuleBody { idft.module.reset := params.controlBus.module.reset }
 
-    fir
+    idft
   }
 
 }
@@ -66,48 +66,47 @@ object FIR {
 
 
 //--------------------------------------------------------------------------------------
-// BEGIN: FIR TileLink Module
+// BEGIN: idft TileLink Module
 //--------------------------------------------------------------------------------------
-abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
+abstract class IDFT(busWidthBytes: Int, val c: IDFTParams)(implicit p: Parameters)
     extends RegisterRouter (
       RegisterRouterParams(
-        name = "fir",
-        compat = Seq("mitll,fir"), 
+        name = "idft",
+        compat = Seq("mitll,idft"), 
         base = c.address,
         size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
         beatBytes = busWidthBytes))
     {
 
-        ResourceBinding {Resource(ResourceAnchors.aliases, "fir").bind(ResourceAlias(device.label))}
+        ResourceBinding {Resource(ResourceAnchors.aliases, "idft").bind(ResourceAlias(device.label))}
 
         lazy val module = new LazyModuleImp(this) {
 
             // Macro definition for creating rising edge detectors
             def rising_edge(x: Bool)    = x && !RegNext(x)
 
-            // Instantitate the FIR blackbox
-            val blackbox                = Module(new FIR_filter)
+            // Instantitate the idft blackbox
+            val blackbox                = Module(new idft_top)
 
             // Instantiate the input and output data memories (32 words of input and output data)
-            val datain_mem              = Mem(32, UInt(32.W))     // for holding the input data
-            val dataout_mem             = Mem(32, UInt(32.W))     // for holding the output data
+            val datain_mem              = Mem(32, UInt(64.W))     // for holding the input data
+            val dataout_mem             = Mem(32, UInt(64.W))     // for holding the output data
 
-            // Define registers / wires for interfacing to the FIR blackbox
-            val start                   = RegInit(false.B)      // start bit driven by cepregression
+            // Define registers / wires for interfacing to the idft blackbox
+            val start                   = RegInit(false.B)      // Start bit controlled via register mappings
             val datain_we               = RegInit(false.B)      // Controlled via register mappings
             val datain_write_idx        = RegInit(0.U(6.W))     // Controlled via register mappings
-            val datain_write_data       = RegInit(0.U(32.W))    // Controlled via register mappings
-            val datain_read_idx         = RegInit(0.U(6.W))     // Data read address generated from start bit
-            val datain_read_data        = Wire(UInt(32.W))      // Data output to cepregression
+            val datain_write_data       = RegInit(0.U(64.W))    // Controlled via register mappings
+            val datain_read_idx         = RegInit(0.U(6.W))     // Generated read address from start bit
+            val datain_read_data        = Wire(UInt(64.W))      // Data read from intermediate buffer into idft_top.v 
 
-            val dataout_write_idx       = RegInit(0.U(6.W))     // Data address generated from next_out from FIR_filter.v 
-            val dataout_write_data      = RegInit(0.U(32.W))    // Data output from FIR_filter.v
+            val dataout_write_idx       = RegInit(0.U(6.W))     // Data output address generated from next_out
+            val dataout_write_data      = RegInit(0.U(64.W))    // Data output
             val dataout_read_idx        = RegInit(0.U(6.W))     // Controlled via register mappings
-            val dataout_read_data       = Wire(UInt(32.W))      // Controlled via register mappings
-            val dataout_valid           = RegInit(false.B)      // data valid bit output
+            val dataout_read_data       = Wire(UInt(64.W))      // Controlled via register mappings
+            val dataout_valid           = RegInit(false.B)      // Data valid output bit drive by idft_top.v
 
-            val count                   = RegInit(0.U(6.W))     // Counter used to generate next_out
-            val next_out                = Wire(Bool())          // next_out bit resets data_out_write address counter
+            val next_out                = RegInit(false.B)
 
             // Write to the input data memory when a rising edge is detected on the write enable
             when (rising_edge(datain_we)) {
@@ -125,18 +124,9 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
                 datain_read_idx         := datain_read_idx + 1.U
             }
 
-            // The following counter "counts" the propagation through the FIR filter
-            when (rising_edge(start)) {
-                count                   := 0.U
-            } .elsewhen (datain_read_idx < 10.U) {
-                count                   := count + 1.U
-            }
-
-            // Assert next out when the count reaches the appropriate value
-            next_out                    := (count === 9.U)
-
             // Generate the write index for the output data memory (and write)
-            when (rising_edge(next_out)) {
+            //hen (rising_edge(next_out)) {
+            when (next_out) {
                 dataout_write_idx       := 0.U;
             } .elsewhen (dataout_write_idx < 32.U) {
                 dataout_write_idx       := dataout_write_idx + 1.U
@@ -153,31 +143,38 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
 
             // Map the blackbox I/O 
             blackbox.io.clk             := clock                    // Implicit module clock
-            blackbox.io.reset           := ~reset                   // FIR filter has an active low reset (signal name is misleading)
-            blackbox.io.inData			:= Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
-                											        // Map the FIR input data only when pointing to
+            blackbox.io.reset           := reset                    // idft has an active low reset (signal name is misleading)
+
+            blackbox.io.X0          := Mux(datain_read_idx < 32.U, datain_read_data(15,0), 0.U)
+            blackbox.io.X1          := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U)
+            blackbox.io.X2          := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U)
+            blackbox.io.X3          := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U)
+            blackbox.io.next        := rising_edge(start) 
+                											        // Map the idft input data only when pointing to
                 											        // a valid memory location
-            dataout_write_data          := blackbox.io.outData      // FIR output data
+            // Map the blackbox outputs
+            dataout_write_data      := Cat(blackbox.io.Y0,blackbox.io.Y1,blackbox.io.Y2,blackbox.io.Y3)      // idft output data
+            next_out                := blackbox.io.next_out
 
             // Define the register map
             // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
             regmap (
-                FIRAddresses.fir_ctrlstatus_addr    -> RegFieldGroup("fir_ctrlstatus",Some(""), Seq(
-                    RegField    (1, start               ),      // Start passing data to the FIR blackbox
+                IDFTAddresses.idft_ctrlstatus_addr    -> RegFieldGroup("idft_ctrlstatus",Some(""), Seq(
+                    RegField    (1, start               ),      // Start passing data to the idft blackbox
                     RegField    (1, datain_we           ),      // Write enable for the datain memory
                     RegField.r  (1, dataout_valid       ))),    // Data Out Valid
-                FIRAddresses.fir_datain_addr_addr   -> Seq(RegField     (5,  datain_write_idx)),
-                FIRAddresses.fir_datain_data_addr   -> Seq(RegField     (32, datain_write_data)),
-                FIRAddresses.fir_dataout_addr_addr  -> Seq(RegField     (5,  dataout_read_idx)),
-                FIRAddresses.fir_dataout_data_addr  -> Seq(RegField.r   (32, dataout_read_data))
+                IDFTAddresses.idft_datain_addr_addr   -> Seq(RegField     (5,  datain_write_idx)),
+                IDFTAddresses.idft_datain_data_addr   -> Seq(RegField     (64, datain_write_data)),
+                IDFTAddresses.idft_dataout_addr_addr  -> Seq(RegField     (5,  dataout_read_idx)),
+                IDFTAddresses.idft_dataout_data_addr  -> Seq(RegField.r   (64, dataout_read_data))
             )  // regmap
 
 
         } // lazy val module
 
-    }  // abstract class FIR
+    }  // abstract class idft
 //--------------------------------------------------------------------------------------
-// END: FIR TileLink Module
+// END: idft TileLink Module
 //--------------------------------------------------------------------------------------
 
 
@@ -188,18 +185,27 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
 //   declared within much match the name, width, and direction of
 //   the Verilog module.
 //--------------------------------------------------------------------------------------
-class FIR_filter() extends BlackBox {
+class idft_top() extends BlackBox {
 
   val io = IO(new Bundle {
     // Clock and Reset
-    val clk         = Clock(INPUT)
-    val reset       = Bool(INPUT)
+    val clk     = Clock(INPUT)
+    val reset   = Bool(INPUT)
+
+    val next    = Bool(INPUT)
+    val next_out= Bool(OUTPUT)
 
     // Inputs
-    val inData      = Bits(INPUT,32)
+    val X0      = Bits(INPUT,16)
+    val X1      = Bits(INPUT,16)
+    val X2      = Bits(INPUT,16)
+    val X3      = Bits(INPUT,16)
 
       // Outputs
-    val outData     = Bits(OUTPUT,32)
+    val Y0      = Bits(OUTPUT,16)
+    val Y1      = Bits(OUTPUT,16)
+    val Y2      = Bits(OUTPUT,16)
+    val Y3      = Bits(OUTPUT,16)
 
   })
 

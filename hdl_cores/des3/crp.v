@@ -32,11 +32,13 @@
 ////                                                             ////
 /////////////////////////////////////////////////////////////////////
 
-module  crp(P, R, K_sub);
+module  crp(clk,reset, P, R, K_sub);
 /* verilator lint_off LITENDIAN */
 output [1:32] P;
 input [1:32] R;
 input [1:48] K_sub;
+input reset;
+input clk;
 
 wire [1:48] E;
 wire [1:48] X;
@@ -53,14 +55,15 @@ assign E[1:48] = { R[32], R[1], R[2], R[3], R[4], R[5], R[4], R[5],
 
 assign X = E ^ K_sub;
 
-sbox1 u0( .addr(X[01:06]), .dout(S[01:04]) );
-sbox2 u1( .addr(X[07:12]), .dout(S[05:08]) );
-sbox3 u2( .addr(X[13:18]), .dout(S[09:12]) );
-sbox4 u3( .addr(X[19:24]), .dout(S[13:16]) );
-sbox5 u4( .addr(X[25:30]), .dout(S[17:20]) );
-sbox6 u5( .addr(X[31:36]), .dout(S[21:24]) );
-sbox7 u6( .addr(X[37:42]), .dout(S[25:28]) );
-sbox8 u7( .addr(X[43:48]), .dout(S[29:32]) );
+sbox1 u0( .addr(X[01:06]), .dout(S[01:04]) , .reset(reset), .clk(clk));
+sbox2 u1( .addr(X[07:12]), .dout(S[05:08]) , .reset(reset), .clk(clk));
+sbox3 u2( .addr(X[13:18]), .dout(S[09:12]) , .reset(reset), .clk(clk));
+sbox4 u3( .addr(X[19:24]), .dout(S[13:16]) , .reset(reset), .clk(clk));
+sbox5 u4( .addr(X[25:30]), .dout(S[17:20]) , .reset(reset), .clk(clk));
+sbox6 u5( .addr(X[31:36]), .dout(S[21:24]) , .reset(reset), .clk(clk));
+sbox7 u6( .addr(X[37:42]), .dout(S[25:28]) , .reset(reset), .clk(clk));
+sbox8 u7( .addr(X[43:48]), .dout(S[29:32]) , .reset(reset), .clk(clk));
+
 
 assign P[1:32] = { S[16], S[7], S[20], S[21], S[29], S[12], S[28],
                    S[17], S[1], S[15], S[23], S[26], S[5], S[18],

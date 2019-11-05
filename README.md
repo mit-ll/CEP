@@ -2,7 +2,7 @@
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.0
+   v2.1
    <br>
    Copyright 2019 Massachusetts Institute of Technology
 </p>
@@ -13,7 +13,7 @@ The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip
 
 Additional information on the objectives of the CEP may be found in [./CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
-CEP v2.0 has been based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
+CEP v2.1 has been based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
 
 Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development Board.  Longer term plans include migrating to other platforms with the eventual goal of taping out an ASIC.
 
@@ -29,10 +29,10 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 
 
 ## Pre-requisites (validated test/build configuration):
-The following items describe the configuration of the system that CEP v2.0 has been developed and tested on:
+The following items describe the configuration of the system that CEP v2.1 has been developed and tested on:
 * Ubuntu 16.04 LTS x86_64
 * Modelsim Questa Sim-64 v10.6c (for unit-level simulation)
-* Xilinx Vivado 2016.4 (Design or System Edition)
+* Xilinx Vivado 2018.3 (Design or System Edition)
   - Plus Digilent Adept Drivers for programming the VC-707, https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads)
 * Terminal emulator (such as `minicom`)
 * bash
@@ -57,7 +57,7 @@ appending these directories to the `.gitignore` file.  Additional usage info can
 To build the CEP, several packages and toolsets must be installed and built.  Follow the steps listed below.
 
 ### Installing Vivado and Modelsim
-It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2016.4 System Edition, albeit Design Edition should also work.  It is noted that some of the libraties pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2016.4/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not `source` this file in the bash shell you use to build the RISC-V tools.
+It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraties pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not `source` this file in the bash shell you use to build the RISC-V tools.
 
 Modelsim is only required if you intend to run the unit-level simulations on the CEP cores located in `<CEP_ROOT>/simulation`.  Other simulators may work, but they have not been explicitly tested.
 
@@ -144,7 +144,7 @@ Install the required dependencies by running the following command:
 
 ```
 
-## Note regarding DSP cores (not supported in CEP v2.0)
+## Note regarding DSP cores
 Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR components are not included with the CEP repository.  Instructions for generating these cores can be found in the [./hdl_cores/dsp/README.md](./hdl_cores/dsp/README.md) file.  Scripts assume that the DSP generated code has been placed in `<CEP_ROOT>/generated_dsp_code`.
 
 ## Building the CEP
@@ -164,12 +164,12 @@ Configure your VC-707 with the following DIP switch settings (SW11):
 
 These steps assume prerequisites have been installed and all external dependencies have been fetched.
 
-There are two primary build steps for CEP v2.0, the hardware and the software.
+There are two primary build steps for CEP v2.1, the hardware and the software.
 
 ## Building the Hardware
-Ensure that you have sourced the setup scripts for Xilinx Vivado 2016.4.
+Ensure that you have sourced the setup scripts for Xilinx Vivado 2018.3.
 
-Example : `source /opt/Xilinx/Vivado/2016.4/settings64.sh`
+Example : `source /opt/Xilinx/Vivado/2018.3/settings64.sh`
 
 Change to the `<CEP_ROOT>/hdl_cores/freedom` directory and execute the following commands:
 
@@ -226,7 +226,7 @@ You should see the following logo/text appear:
 ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
   .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
                                                               
-            Common Evaluation Platform v2.0                   
+            Common Evaluation Platform v2.1                   
    Copyright 2019 Massachusetts Institute of Technology       
                                                               
      Built upon the SiFive Freedom U500 Platform using        
@@ -244,21 +244,36 @@ At the command prompt, you can run the CEP Regression suite by commanding `cepre
 A partial output should be similar to:
 
 ```
-**************************************************************
-*    Common Evaluation Platform (v2.0) Regression Suite      *
-**************************************************************
+****************************************************************                                                                                                                                 
+*    Common Evaluation Platform (v02.10) Regression Suite      *                                                                                                                                 
+****************************************************************                                                                                                                                 
+                                                                                                                                                                                                 
+Initializing CEP Cores                                                                                                                                                                           
+AES              @ 0x70000000                                                                                                                                                                    
+MD5              @ 0x70010000                                                                                                                                                                    
+SHA256           @ 0x70020000                                                                                                                                                                    
+RSA              @ 0x70030000                                                                                                                                                                    
+DES3             @ 0x70040000                                                                                                                                                                    
+DFT              @ 0x70050000                                                                                                                                                                    
+IDFT             @ 0x70060000                                                                                                                                                                    
+FIR              @ 0x70070000                                                                                                                                                                    
+IIR              @ 0x70080000                                                                                                                                                                    
+GPS              @ 0x70090000                                                                                                                                                                    
+CEP Version      @ 0x700f0000                                                                                                                                                                    
+                                                                                                                                                                                                 
+AES: *********************************************************                                                                                                                                   
+AES: * AES test started ...                                  *                                                                                                                                   
+AES: *********************************************************                                                                                                                                   
+                                                                                                                                                                                                 
+AES: Plaintext:         0x3243F6A8885A308D313198A2E0370734                                                                                                                                       
+AES: Key:               0x2B7E151628AED2A6ABF7158809CF4F3C2B7E151628AED2A6                                                                                                                       
+AES: Ciphertext:        0x4fcb8db85784a2c1bb77db7ede3217ac                                                                                                                                       
+AES: PASSED:            test 1                                                                                                                                                                   
+AES: Plaintext:         0x00112233445566778899AABBCCDDEEFF                                                                                                                                       
+AES: Key:               0x000102030405060708090A0B0C0D0E0F0001020304050607                                                                                                                       
+AES: Ciphertext:        0x65d50128b115a7780981475a6bd64a0e                                                                                                                                       
+AES: PASSED:            test 2                                         
 
-Initializing CEP Cores
-AES              @ 0x70000000
-
-AES: *********************************************************
-AES: * AES test started ...                                  *
-AES: *********************************************************
-
-AES: Plaintext:         0x3243F6A8885A308D313198A2E0370734
-AES: Key:               0x2B7E151628AED2A6ABF7158809CF4F3C2B7E151628AED2A6
-AES: Ciphertext:        0x4fcb8db85784a2c1bb77db7ede3217ac
-AES: PASSED:            test 1
 ```
 
 You should now have a functioning CEP!
@@ -298,6 +313,9 @@ v1.2 - (15 November 2018)
 
 v2.0 - (16 August 2019)
 * Major Update: mor1k proceesor core replaced with the UCB Rocket-Chip within the SiFive Freedom U500 Platform.  All modules have been updated to support TileLink natively.  Currently only the AES and FIR cores have been integrated, but v2.1 will include the re-release of all the CEP cores.   
+
+v2.1 - (31 October 2019)
+* Integrated DES3, GPS, MD5, RSA, SHA256, DFT, IDFT, and IIR cores.
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  

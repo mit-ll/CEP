@@ -1,15 +1,15 @@
 //
 // Copyright (C) 2019 Massachusetts Institute of Technology
 //
-// File         : fir.scala
+// File         : iir.scala
 // Project      : Common Evaluation Platform (CEP)
-// Description  : TileLink interface to the verilog FIR core
-// Note         : The "control" logic described in the FIR abstract class
-//                is intended to mimic the verilog in the fir_top_wb.v
+// Description  : TileLink interface to the verilog IIR core
+// Note         : The "control" logic described in the IIR abstract class
+//                is intended to mimic the verilog in the iir_top_wb.v
 //                module.
 //
 
-package mitllBlocks.fir
+package mitllBlocks.iir
 
 import Chisel._
 import freechips.rocketchip.config.Field
@@ -24,39 +24,39 @@ import mitllBlocks.cep_addresses._
 //--------------------------------------------------------------------------------------
 // BEGIN: Classes, Objects, and Traits to support connecting to TileLink
 //--------------------------------------------------------------------------------------
-case object PeripheryFIRKey extends Field[Seq[FIRParams]]
+case object PeripheryIIRKey extends Field[Seq[IIRParams]]
 
-trait HasPeripheryFIR { this: BaseSubsystem =>
-  val FIRNodes = p(PeripheryFIRKey).map { ps =>
-    FIR.attach(FIRAttachParams(ps, pbus))   // pbus = Periphery Bus
+trait HasPeripheryIIR { this: BaseSubsystem =>
+  val IIRNodes = p(PeripheryIIRKey).map { ps =>
+    IIR.attach(IIRAttachParams(ps, pbus))   // pbus = Periphery Bus
   }
 }
 
-case class FIRParams(address: BigInt)
+case class IIRParams(address: BigInt)
 
-case class FIRAttachParams(
-  firparams         : FIRParams,
+case class IIRAttachParams(
+  iirparams         : IIRParams,
   controlBus        : TLBusWrapper)
   (implicit val p   : Parameters)
 
-class TLFIR(busWidthBytes: Int, params: FIRParams)(implicit p: Parameters)
-  extends FIR(busWidthBytes, params) with HasTLControlRegMap
+class TLIIR(busWidthBytes: Int, params: IIRParams)(implicit p: Parameters)
+  extends IIR(busWidthBytes, params) with HasTLControlRegMap
 
-object FIR {
+object IIR {
 
-  def attach(params: FIRAttachParams): TLFIR = {
+  def attach(params: IIRAttachParams): TLIIR = {
     implicit val p = params.p
-    val fir = LazyModule(new TLFIR(params.controlBus.beatBytes, params.firparams))
+    val iir = LazyModule(new TLIIR(params.controlBus.beatBytes, params.iirparams))
 
     // Connect our module to the specified bus (per the controlBus parameter)
-    params.controlBus.coupleTo(s"slave_named_fir") {
-      fir.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    params.controlBus.coupleTo(s"slave_named_iir") {
+      iir.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
     }
 
-    InModuleBody { fir.module.clock := params.controlBus.module.clock }
-    InModuleBody { fir.module.reset := params.controlBus.module.reset }
+    InModuleBody { iir.module.clock := params.controlBus.module.clock }
+    InModuleBody { iir.module.reset := params.controlBus.module.reset }
 
-    fir
+    iir
   }
 
 }
@@ -66,48 +66,52 @@ object FIR {
 
 
 //--------------------------------------------------------------------------------------
-// BEGIN: FIR TileLink Module
+// BEGIN: IIR TileLink Module
 //--------------------------------------------------------------------------------------
-abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
+abstract class IIR(busWidthBytes: Int, val c: IIRParams)(implicit p: Parameters)
     extends RegisterRouter (
       RegisterRouterParams(
-        name = "fir",
-        compat = Seq("mitll,fir"), 
+        name = "iir",
+        compat = Seq("mitll,iir"), 
         base = c.address,
         size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
         beatBytes = busWidthBytes))
     {
 
-        ResourceBinding {Resource(ResourceAnchors.aliases, "fir").bind(ResourceAlias(device.label))}
+        ResourceBinding {Resource(ResourceAnchors.aliases, "iir").bind(ResourceAlias(device.label))}
 
         lazy val module = new LazyModuleImp(this) {
 
             // Macro definition for creating rising edge detectors
             def rising_edge(x: Bool)    = x && !RegNext(x)
 
-            // Instantitate the FIR blackbox
-            val blackbox                = Module(new FIR_filter)
+            // Instantitate the IIR blackbox
+            val blackbox                = Module(new IIR_filter)
 
             // Instantiate the input and output data memories (32 words of input and output data)
             val datain_mem              = Mem(32, UInt(32.W))     // for holding the input data
             val dataout_mem             = Mem(32, UInt(32.W))     // for holding the output data
 
-            // Define registers / wires for interfacing to the FIR blackbox
-            val start                   = RegInit(false.B)      // start bit driven by cepregression
+            // Define registers / wires for interfacing to the IIR blackbox
+            val start                   = RegInit(false.B)      // Start bit
+            val iir_reset               = RegInit(false.B)      // Addressable reset
+            val iir_reset_re            = RegInit(false.B)      // Rising edge detection for addressable reset   
             val datain_we               = RegInit(false.B)      // Controlled via register mappings
             val datain_write_idx        = RegInit(0.U(6.W))     // Controlled via register mappings
             val datain_write_data       = RegInit(0.U(32.W))    // Controlled via register mappings
-            val datain_read_idx         = RegInit(0.U(6.W))     // Data read address generated from start bit
-            val datain_read_data        = Wire(UInt(32.W))      // Data output to cepregression
+            val datain_read_idx         = RegInit(0.U(6.W))     // Generated write read address from start bit
+            val datain_read_data        = Wire(UInt(32.W))      // Data read from intermediate buffer into IIR_filter.v    
 
-            val dataout_write_idx       = RegInit(0.U(6.W))     // Data address generated from next_out from FIR_filter.v 
-            val dataout_write_data      = RegInit(0.U(32.W))    // Data output from FIR_filter.v
+            val dataout_write_idx       = RegInit(0.U(6.W))     // Data output address generated from next_out
+            val dataout_write_data      = RegInit(0.U(32.W))    // Data output
             val dataout_read_idx        = RegInit(0.U(6.W))     // Controlled via register mappings
             val dataout_read_data       = Wire(UInt(32.W))      // Controlled via register mappings
-            val dataout_valid           = RegInit(false.B)      // data valid bit output
+            val dataout_valid           = RegInit(false.B)      // Data valid output bit
 
-            val count                   = RegInit(0.U(6.W))     // Counter used to generate next_out
-            val next_out                = Wire(Bool())          // next_out bit resets data_out_write address counter
+            val count                   = RegInit(0.U(6.W))     // Count syncs output buffers with filter propagation
+            val next_out                = Wire(Bool())          // Bit driven high to designate start of the output sequence
+
+            iir_reset_re := rising_edge(iir_reset)
 
             // Write to the input data memory when a rising edge is detected on the write enable
             when (rising_edge(datain_we)) {
@@ -125,7 +129,7 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
                 datain_read_idx         := datain_read_idx + 1.U
             }
 
-            // The following counter "counts" the propagation through the FIR filter
+            // The following counter "counts" the propagation through the IIR filter
             when (rising_edge(start)) {
                 count                   := 0.U
             } .elsewhen (datain_read_idx < 10.U) {
@@ -153,31 +157,32 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
 
             // Map the blackbox I/O 
             blackbox.io.clk             := clock                    // Implicit module clock
-            blackbox.io.reset           := ~reset                   // FIR filter has an active low reset (signal name is misleading)
+            blackbox.io.reset           := ~(reset | iir_reset_re)  // IIR filter has an active low reset (signal name is misleading)
             blackbox.io.inData			:= Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
-                											        // Map the FIR input data only when pointing to
+                											        // Map the IIR input data only when pointing to
                 											        // a valid memory location
-            dataout_write_data          := blackbox.io.outData      // FIR output data
+            dataout_write_data          := blackbox.io.outData      // IIR output data
 
             // Define the register map
             // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
             regmap (
-                FIRAddresses.fir_ctrlstatus_addr    -> RegFieldGroup("fir_ctrlstatus",Some(""), Seq(
-                    RegField    (1, start               ),      // Start passing data to the FIR blackbox
+                IIRAddresses.iir_ctrlstatus_addr    -> RegFieldGroup("iir_ctrlstatus",Some(""), Seq(
+                    RegField    (1, start               ),      // Start passing data to the IIR blackbox
                     RegField    (1, datain_we           ),      // Write enable for the datain memory
                     RegField.r  (1, dataout_valid       ))),    // Data Out Valid
-                FIRAddresses.fir_datain_addr_addr   -> Seq(RegField     (5,  datain_write_idx)),
-                FIRAddresses.fir_datain_data_addr   -> Seq(RegField     (32, datain_write_data)),
-                FIRAddresses.fir_dataout_addr_addr  -> Seq(RegField     (5,  dataout_read_idx)),
-                FIRAddresses.fir_dataout_data_addr  -> Seq(RegField.r   (32, dataout_read_data))
+                IIRAddresses.iir_reset_addr                 -> Seq(RegField     (1,  iir_reset)),
+                IIRAddresses.iir_datain_addr_addr   -> Seq(RegField     (5,  datain_write_idx)),
+                IIRAddresses.iir_datain_data_addr   -> Seq(RegField     (32, datain_write_data)),
+                IIRAddresses.iir_dataout_addr_addr  -> Seq(RegField     (5,  dataout_read_idx)),
+                IIRAddresses.iir_dataout_data_addr  -> Seq(RegField.r   (32, dataout_read_data))
             )  // regmap
 
 
         } // lazy val module
 
-    }  // abstract class FIR
+    }  // abstract class IIR
 //--------------------------------------------------------------------------------------
-// END: FIR TileLink Module
+// END: IIR TileLink Module
 //--------------------------------------------------------------------------------------
 
 
@@ -188,7 +193,7 @@ abstract class FIR(busWidthBytes: Int, val c: FIRParams)(implicit p: Parameters)
 //   declared within much match the name, width, and direction of
 //   the Verilog module.
 //--------------------------------------------------------------------------------------
-class FIR_filter() extends BlackBox {
+class IIR_filter() extends BlackBox {
 
   val io = IO(new Bundle {
     // Clock and Reset

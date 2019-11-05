@@ -149,7 +149,8 @@ wire          clk;
 wire          rst;
 wire  [511:0] msg_padded;
 wire          msg_in_valid;
-
+reg          msg_in_valid_reg;
+wire         msg_in_valid_pos_edge;
 // output
 wire  [127:0] msg_output;
 reg           msg_out_valid;
@@ -252,6 +253,15 @@ wire [31:0] m13 = msg_padded[447:416];
 wire [31:0] m14 = msg_padded[479:448];
 wire [31:0] m15 = msg_padded[511:480];
 
+
+
+always @ (posedge (clk))begin
+    msg_in_valid_reg <= msg_in_valid;
+end
+
+assign msg_in_valid_pos_edge = msg_in_valid & ~msg_in_valid_reg;
+
+
 //--------------------------------
 //
 // Actual code starts here
@@ -259,7 +269,7 @@ wire [31:0] m15 = msg_padded[511:480];
 //--------------------------------
 
 always @(current_state
-             or    msg_in_valid
+             or    msg_in_valid_pos_edge
              or    A
              or    B
              or    C
@@ -298,7 +308,7 @@ always @(current_state
                     ascii_state = "IDLE";
                     // synopsys translate_on
 
-                    if (msg_in_valid)
+                    if (msg_in_valid_pos_edge)
                         next_state = ROUND1[7:0];
                 end // }
 

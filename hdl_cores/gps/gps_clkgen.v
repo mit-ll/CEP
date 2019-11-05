@@ -23,6 +23,7 @@ output gps_clk_fast;
 output gps_clk_slow;
 output gps_rst;
 
+
 `ifdef SYNTHESIS
 wire       clk_fb;
 wire       clk_out0_prebufg, clk_out0;
@@ -35,17 +36,17 @@ MMCME2_ADV
         .COMPENSATION         ("ZHOLD"),
         .STARTUP_WAIT         ("FALSE"),
         .DIVCLK_DIVIDE        (1),
-        .CLKFBOUT_MULT_F      (16.750),
+        .CLKFBOUT_MULT_F      (20), // CLKIN = 50 MHz, 50 Mhz * 20 / 100 = 10 MHz 
         .CLKFBOUT_PHASE       (0.000),
         .CLKFBOUT_USE_FINE_PS ("FALSE"),
-        .CLKOUT0_DIVIDE_F     (81.875),
+        .CLKOUT0_DIVIDE_F     (100),
         .CLKOUT0_PHASE        (0.000),
         .CLKOUT0_DUTY_CYCLE   (0.500),
         .CLKOUT0_USE_FINE_PS  ("FALSE"),
         .CLKIN1_PERIOD        (20.000))
     mmcm_adv_inst (
         .CLKFBOUT            (clk_fb),
-        .CLKOUT0             (clk_out0),
+        .CLKOUT0             (clk_out0_prebufg),
         .CLKFBIN             (clk_fb),
         .CLKIN1              (sys_clk_50),
         .CLKIN2              (1'b0),
@@ -63,11 +64,11 @@ MMCME2_ADV
         .RST                 (1'b0)
     );
 
-//   BUFG gps_clk_fast_buf (
-//      .O (clk_out0),
-//      .I (clk_out0_prebufg));
+  BUFG gps_clk_fast_buf (
+     .O (gps_clk_fast),
+     .I (clk_out0_prebufg));
 
-assign gps_clk_fast = clk_out0;
+//assign gps_clk_fast = clk_out0;
 assign gps_rst = sync_rst_in | ~locked_int;
 
 
@@ -75,12 +76,12 @@ assign gps_rst = sync_rst_in | ~locked_int;
 BUFGCE gps_clk_slow_buf(
            .O   (gps_clk_slow),
            .CE  (enable_slow_clk),
-           .I   (clk_out0)
+           .I   (clk_out0_prebufg)
        );
 
 reg [2:0] count = 3'h0;
 reg enable_slow_clk;
-always @(posedge clk_out0)
+always @(posedge gps_clk_fast)
     begin
         enable_slow_clk <= 1'b0;
         if(count == 3'h4)
@@ -93,8 +94,12 @@ always @(posedge clk_out0)
                 count <= count + 3'h1;
             end
     end
+
+
+
+
 `else
-assign gps_clk_fast = sys_clk_50;
+//assign gps_clk_fast = sys_clk_50;
 
 reg [2:0] count = 3'h0;
 reg gps_clk_slow_r = 1'b0;

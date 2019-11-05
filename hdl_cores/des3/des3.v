@@ -32,7 +32,7 @@
 ////                                                             ////
 /////////////////////////////////////////////////////////////////////
 
-module des3(desOut, out_valid, start, desIn, key1, key2, key3, decrypt, clk);
+module des3(clk, reset, desOut, out_valid, start, desIn, key1, key2, key3, decrypt);
 output reg[63:0] desOut;
 output           out_valid;
 input            start;
@@ -42,6 +42,8 @@ input     [55:0] key2;
 input     [55:0] key3;
 input            decrypt;
 input            clk;
+input            reset;
+
 /* verilator lint_off LITENDIAN */
 wire [1:48] K_sub;
 wire [1:64] IP, FP;
@@ -58,7 +60,10 @@ reg [5:0] roundSel;
 reg start_r;
 always @(posedge clk)
     begin
-        start_r <= start;
+        if (reset)
+          start_r <= 1'b0;
+        else
+          start_r <= start;
     end
 
 wire start_posedge = start & ~start_r;
@@ -67,7 +72,7 @@ wire [63:0] des;
 
 always @ (posedge clk)
     begin
-        if(start_posedge)
+        if (reset | start_posedge)
             begin
                 roundSel <= 6'h00;
             end
@@ -81,20 +86,28 @@ assign out_valid = (roundSel == 6'h30);
 
 always @ (posedge clk)
     begin
-        if(!out_valid)
-            begin
-                desOut <= des;
-            end
+        if (reset)
+          begin
+            desOut <= 64'h0000000000000000;
+          end
+        else if(!out_valid)
+          begin
+            desOut <= des;
+          end
     end
 
 
 crp u0(
+        .clk(clk),
+        .reset(reset),
         .P(out),
         .R(Lout),
         .K_sub(K_sub));
 
 // Select a subkey from key.
 key_sel3 u1(
+             .clk(clk),
+             .reset(reset),
              .K_sub(K_sub),
              .key1(key1),
              .key2(key2),
@@ -107,17 +120,26 @@ assign Lout = (roundSel ==  0) ? IP[33:64] : ((roundSel == 16) ? FP_R[33:64] : (
 
 assign Xin  = (roundSel ==  0) ? IP[01:32] : ((roundSel == 16) ? FP_R[01:32] : ((roundSel == 32) ? FP_R[01:32] : L));
 
-always @(posedge clk)
-    FP_R <= FP;
 
 assign Rout = Xin ^ out;
 assign FP = { Rout, Lout};
 
 always @(posedge clk)
-    L <= Lout;
+  begin
+    if (reset)
+      begin
+        FP_R <= 0;
+        L <= 0;
+        R <= 0;
+      end 
+    else
+      begin
+        L <= Lout;
+        R <= Rout;
+        FP_R <= FP;
+      end
+  end
 
-always @(posedge clk)
-    R <= Rout;
 
 // Perform initial permutation
 assign IP[1:64] = {desIn[06], desIn[14], desIn[22], desIn[30], desIn[38], desIn[46],

@@ -3,8 +3,7 @@
 //
 // From the GPS transmitter's perspective
 module gps(
-           gps_clk_fast,
-           gps_clk_slow,
+           sys_clk_50,
            sync_rst_in,
            sv_num,
            startRound,
@@ -13,9 +12,7 @@ module gps(
            l_code,
            l_code_valid
        );
-
-input gps_clk_fast;
-input gps_clk_slow;
+input  sys_clk_50;
 input  sync_rst_in;
 input [5:0] sv_num;
 input startRound;
@@ -24,14 +21,11 @@ output [127:0] p_code;
 output [127:0] l_code;
 output l_code_valid;
 
-wire rst_combined = sync_rst_in;
-
-// Look for rising edge of start
 reg startRound_r;
-wire startRoundPosEdge = ~startRound_r & startRound;
+
 always @(posedge gps_clk_fast)
     begin
-        if(rst_combined)
+        if(sync_rst_in)
             begin
                 startRound_r <= 0;
             end
@@ -40,14 +34,14 @@ always @(posedge gps_clk_fast)
                 startRound_r <= startRound;
             end
     end
-
+wire startRoundPosEdge = ~startRound_r & startRound;
 // Control code generators
 reg code_gen_en;
 reg [3:0] ca_bit_count;
 reg [7:0] p_bit_count;
 always @(posedge gps_clk_fast)
     begin
-        if(rst_combined | startRoundPosEdge)
+        if(sync_rst_in | startRoundPosEdge)
             begin
                 code_gen_en <= startRoundPosEdge;
             end
@@ -57,11 +51,13 @@ always @(posedge gps_clk_fast)
             end
     end
 
+
+
 // Generate C/A code
 wire ca_code_bit;
 cacode ca(
            gps_clk_slow,
-           rst_combined,
+           sync_rst_in,
            sv_num,
            code_gen_en,
            ca_code_bit
@@ -72,7 +68,7 @@ reg code_gen_en_r;
 wire codeGenPosEdge = ~code_gen_en_r & code_gen_en;
 always @(posedge gps_clk_slow)
     begin
-        if(rst_combined)
+        if(sync_rst_in)
             begin
                 code_gen_en_r <= 0;
             end
@@ -85,9 +81,10 @@ always @(posedge gps_clk_slow)
 // Save 13 ca-code bits
 always @(posedge gps_clk_slow)
     begin
-        if(rst_combined | codeGenPosEdge)
+        if(sync_rst_in | codeGenPosEdge)
             begin
-                ca_bit_count <= 0;
+                ca_bit_count <= 1'b0;
+                ca_code  <= 13'b0;
             end
         else
             begin
@@ -103,7 +100,7 @@ always @(posedge gps_clk_slow)
 wire p_code_bit;
 pcode p(
           gps_clk_fast,
-          rst_combined,
+          sync_rst_in,
           code_gen_en,
           sv_num,
           p_code_bit
@@ -113,7 +110,7 @@ pcode p(
 reg [127:0] p_pt;
 always @(posedge gps_clk_fast)
     begin
-        if(rst_combined | startRoundPosEdge)
+        if(sync_rst_in | startRoundPosEdge)
             begin
                 p_bit_count <= 0;
             end
@@ -137,9 +134,17 @@ always @(posedge gps_clk_fast)
             encrypt <= 1'b1;
     end
 
+  gps_clkgen gps_clkgen_inst(
+    .sys_clk_50(sys_clk_50),
+    .sync_rst_in(sync_rst_in),
+
+    .gps_clk_fast(gps_clk_fast),
+    .gps_clk_slow(gps_clk_slow),
+    .gps_rst());
+
   aes_192 aes_192_inst (
     .clk        (gps_clk_fast),
-    .rst        (rst_combined),
+    .rst        (sync_rst_in),
     .start      (encrypt),
     .state      (p_pt),
     .key        (192'hAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA),

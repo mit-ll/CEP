@@ -9,7 +9,7 @@
 
     // CEP Verion String
     const uint8_t CEP_MAJOR_VERSION = 0x02;
-    const uint8_t CEP_MINOR_VERSION = 0x00;
+    const uint8_t CEP_MINOR_VERSION = 0x10;
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;
@@ -47,15 +47,15 @@
     // all the CEP cores (indexed by the constants above)
     const cep_core_info_t cep_core_info[CEP_TOTAL_CORES] = {
         {"AES",             0x70000000, true},      // AES
-        {"MD5",             0x70010000, false},     // MD5
-        {"SHA256",          0x70020000, false},     // SHA256
-        {"RSA",             0x70030000, false},     // RSA
-        {"DES3",            0x70040000, false},     // DES3
-        {"DFT",             0x70050000, false},     // DFT
-        {"IDFT",            0x70060000, false},     // IDFT
+        {"MD5",             0x70010000, true},      // MD5
+        {"SHA256",          0x70020000, true},     // SHA256
+        {"RSA",             0x70030000, true},     // RSA
+        {"DES3",            0x70040000, true},      // DES3
+        {"DFT",             0x70050000, true},     // DFT
+        {"IDFT",            0x70060000, true},     // IDFT
         {"FIR",             0x70070000, true},      // FIR
-        {"IIR",             0x70080000, false},     // IIR
-        {"GPS",             0x70090000, false},     // GPS
+        {"IIR",             0x70080000, true},     // IIR
+        {"GPS",             0x70090000, true},     // GPS
         {"CEP Version",     0x700F0000, true}       // CEP Version Register
     };
 
@@ -100,8 +100,9 @@
     // Constants from MD5.h
     const uint32_t MD5_HASH_BITS = 128;  
     const uint32_t MD5_MESSAGE_BITS = 512;
-    const uint32_t MD5_READY_BYTES = 4;
-    const uint32_t MD5_HASH_DONE_BYTES = 4;
+    const uint32_t MD5_READY_BYTES = 8;
+    // const uint32_t MD5_HASH_DONE_BYTES = 8;
+    const uint32_t MD5_HASH_DONE_BYTES = 0;
 
     // Automatically generated constants
     const uint32_t MD5_HASH_BYTES = MD5_HASH_BITS / BITS_PER_BYTE;
@@ -115,6 +116,8 @@
     const uint32_t MD5_HASH_DONE = MD5_MSG_BASE + MD5_MESSAGE_BYTES;
     const uint32_t MD5_HASH_BASE = MD5_HASH_DONE + MD5_HASH_DONE_BYTES;
     const uint32_t MD5_RST = MD5_HASH_BASE + MD5_HASH_BYTES;
+    const uint32_t MD5_MSG_IN_VALID = MD5_RST + BYTES_PER_WORD;
+    const uint32_t MD5_MSG_OUT_VALID = MD5_MSG_IN_VALID + BYTES_PER_WORD;
 
     // Constants from SHA256.h
     const uint32_t SHA256_HASH_BITS = 256;
@@ -123,35 +126,41 @@
     const uint32_t SHA256_HASH_DONE_BYTES = BYTES_PER_WORD;
 
     // Automatically generated constants
-    const uint32_t SHA256_HASH_BYTES = SHA256_HASH_BITS / BITS_PER_BYTE;
-    const uint32_t SHA256_HASH_WORDS = SHA256_HASH_BYTES / BYTES_PER_WORD;
-    const uint32_t SHA256_MESSAGE_BYTES = SHA256_MESSAGE_BITS / BITS_PER_BYTE;
-    const uint32_t SHA256_MESSAGE_WORDS = SHA256_MESSAGE_BYTES / BYTES_PER_WORD;
+    const uint32_t SHA256_HASH_BYTES = SHA256_HASH_BITS / BITS_PER_BYTE; // 256 / 8 = 32
+    const uint32_t SHA256_HASH_WORDS = SHA256_HASH_BYTES / BYTES_PER_WORD; // 32 / 8 = 4
+    const uint32_t SHA256_MESSAGE_BYTES = SHA256_MESSAGE_BITS / BITS_PER_BYTE; // 512 / 8 = 64
+    const uint32_t SHA256_MESSAGE_WORDS = SHA256_MESSAGE_BYTES / BYTES_PER_WORD; // 64 / 8 = 8
 
     // Offset of SHA256 data and control registers in device memory map
     const uint32_t SHA256_READY = 0;
-    const uint32_t SHA256_MSG_BASE = SHA256_READY + SHA256_READY_BYTES;
-    const uint32_t SHA256_HASH_DONE = SHA256_MSG_BASE + SHA256_MESSAGE_BYTES;
-    const uint32_t SHA256_HASH_BASE = SHA256_HASH_DONE + SHA256_HASH_DONE_BYTES;
+    const uint32_t SHA256_MSG_BASE = SHA256_READY + SHA256_READY_BYTES; // 0 + 8 = 8 h08
+    const uint32_t SHA256_HASH_DONE = SHA256_MSG_BASE + SHA256_MESSAGE_BYTES; // 8 + 64 = 72 h48
+    const uint32_t SHA256_HASH_BASE = SHA256_HASH_DONE + SHA256_HASH_DONE_BYTES; // 72 + 8 = 80 h50
     const uint32_t SHA256_NEXT_INIT = 0;
 
     // Constants from the RSA core's define.h
-    const uint32_t RSA_ADDR_NAME1            = (0x01<<2);
-    const uint32_t RSA_ADDR_VERSION          = (0x02<<2);
-    const uint32_t RSA_ADDR_CTRL             = (0x08<<2);
-    const uint32_t RSA_ADDR_STATUS           = (0x09<<2);   
-    const uint32_t RSA_ADDR_CYCLES_HIGH      = (0x10<<2);
-    const uint32_t RSA_ADDR_CYCLES_LOW       = (0x11<<2);
-    const uint32_t RSA_ADDR_MODULUS_LENGTH   = (0x20<<2);
-    const uint32_t RSA_ADDR_EXPONENT_LENGTH  = (0x21<<2);
-    const uint32_t RSA_ADDR_MODULUS_PTR_RST  = (0x30<<2);
-    const uint32_t RSA_ADDR_MODULUS_DATA     = (0x31<<2);
-    const uint32_t RSA_ADDR_EXPONENT_PTR_RST = (0x40<<2);
-    const uint32_t RSA_ADDR_EXPONENT_DATA    = (0x41<<2);
-    const uint32_t RSA_ADDR_MESSAGE_PTR_RST  = (0x50<<2);
-    const uint32_t RSA_ADDR_MESSAGE_DATA     = (0x51<<2);
-    const uint32_t RSA_ADDR_RESULT_PTR_RST   = (0x60<<2);
-    const uint32_t RSA_ADDR_RESULT_DATA      = (0x61<<2);
+    const uint32_t RSA_ADDR_STATUS           = 0; 
+    const uint32_t RSA_ADDR_CTRL             = 0;
+
+    const uint32_t RSA_ADDR_EXPONENT_PTR_RST = RSA_ADDR_CTRL + BYTES_PER_WORD;  
+    const uint32_t RSA_ADDR_EXPONENT_DATA    = RSA_ADDR_EXPONENT_PTR_RST + BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_EXPONENT_CTRL    = RSA_ADDR_EXPONENT_DATA + BYTES_PER_WORD;
+
+    const uint32_t RSA_ADDR_MODULUS_PTR_RST  = RSA_ADDR_EXPONENT_CTRL+ BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_MODULUS_DATA     = RSA_ADDR_MODULUS_PTR_RST + BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_MODULUS_CTRL     = RSA_ADDR_MODULUS_DATA + BYTES_PER_WORD;
+
+    const uint32_t RSA_ADDR_MESSAGE_PTR_RST  = RSA_ADDR_MODULUS_CTRL + BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_MESSAGE_DATA     = RSA_ADDR_MESSAGE_PTR_RST+ BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_MESSAGE_CTRL     = RSA_ADDR_MESSAGE_DATA+ BYTES_PER_WORD;
+
+    const uint32_t RSA_ADDR_MODULUS_LENGTH   = RSA_ADDR_MESSAGE_CTRL + BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_EXPONENT_LENGTH  = RSA_ADDR_MODULUS_LENGTH + BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_RESULT_PTR_RST   = RSA_ADDR_EXPONENT_LENGTH+ BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_RESULT_DATA      = RSA_ADDR_RESULT_PTR_RST+ BYTES_PER_WORD;
+    const uint32_t RSA_ADDR_RESULT_CTRL      = RSA_ADDR_RESULT_DATA+ BYTES_PER_WORD;
+
+    const uint32_t RSA_ADDR_CYCLES           = RSA_ADDR_RESULT_CTRL + BYTES_PER_WORD;   
 
     // Constants from GPS.h
     const uint32_t GPS_GEN_NEXT_BYTES = BYTES_PER_WORD;
@@ -163,42 +172,47 @@
     const uint32_t GPS_CA_BASE = GPS_GEN_NEXT + GPS_GEN_NEXT_BYTES;
     const uint32_t GPS_P_BASE = GPS_CA_BASE + GPS_CA_BYTES;
     const uint32_t GPS_L_BASE = GPS_P_BASE + GPS_P_BYTES;
+    const uint32_t GPS_SV_NUM = GPS_L_BASE + GPS_L_BYTES;
+    const uint32_t GPS_RESET = GPS_SV_NUM + BYTES_PER_WORD;
 
     // Constants from DFT.h
     const uint32_t DFT_BLOCK_BITS    = 32;
     const uint32_t DFT_BLOCK_BYTES   = DFT_BLOCK_BITS / BITS_PER_BYTE;
-    const uint32_t DFT_BLOCK_WORDS   = DFT_BLOCK_BYTES / BYTES_PER_WORD; 
+    const uint32_t DFT_BLOCK_WORDS   = DFT_BLOCK_BYTES / BYTES_PER_WORD;
     const uint32_t DFT_START         = 0;
-    const uint32_t DFT_IN_WRITE      = DFT_START    + BYTES_PER_WORD;
+    const uint32_t DFT_IN_WRITE      = 0;  
     const uint32_t DFT_IN_ADDR       = DFT_IN_WRITE + BYTES_PER_WORD;
-    const uint32_t DFT_IN_DATA       = DFT_IN_ADDR  + DFT_BLOCK_BYTES;
-    const uint32_t DFT_OUT_ADDR      = DFT_IN_DATA  + DFT_BLOCK_BYTES + DFT_BLOCK_BYTES;
-    const uint32_t DFT_OUT_DATA      = DFT_OUT_ADDR + DFT_BLOCK_BYTES;
-    const uint32_t DFT_DONE          = DFT_OUT_DATA + DFT_BLOCK_BYTES + DFT_BLOCK_BYTES;
+    const uint32_t DFT_IN_DATA       = DFT_IN_ADDR  + BYTES_PER_WORD;  
+    const uint32_t DFT_OUT_ADDR      = DFT_IN_DATA  + BYTES_PER_WORD;
+    const uint32_t DFT_OUT_DATA      = DFT_OUT_ADDR + BYTES_PER_WORD; 
+    const uint32_t DFT_DONE          = 0;
 
     // Constants from IDFT.h
     const uint32_t IDFT_BLOCK_BITS   = 32;
     const uint32_t IDFT_BLOCK_BYTES  = IDFT_BLOCK_BITS / BITS_PER_BYTE;
     const uint32_t IDFT_BLOCK_WORDS  = IDFT_BLOCK_BYTES / BYTES_PER_WORD; 
     const uint32_t IDFT_START        = 0;
-    const uint32_t IDFT_IN_WRITE     = IDFT_START    + BYTES_PER_WORD;
+    const uint32_t IDFT_IN_WRITE     = 0;
     const uint32_t IDFT_IN_ADDR      = IDFT_IN_WRITE + BYTES_PER_WORD;
-    const uint32_t IDFT_IN_DATA      = IDFT_IN_ADDR  + IDFT_BLOCK_BYTES;
-    const uint32_t IDFT_OUT_ADDR     = IDFT_IN_DATA  + IDFT_BLOCK_BYTES + IDFT_BLOCK_BYTES;
-    const uint32_t IDFT_OUT_DATA     = IDFT_OUT_ADDR + IDFT_BLOCK_BYTES;
-    const uint32_t IDFT_DONE         = IDFT_OUT_DATA + IDFT_BLOCK_BYTES + IDFT_BLOCK_BYTES;
+    const uint32_t IDFT_IN_DATA      = IDFT_IN_ADDR  + BYTES_PER_WORD;
+    const uint32_t IDFT_OUT_ADDR     = IDFT_IN_DATA  + BYTES_PER_WORD;
+    const uint32_t IDFT_OUT_DATA     = IDFT_OUT_ADDR + BYTES_PER_WORD;
+    const uint32_t IDFT_DONE         = 0;
 
     // Constants from IIR.h
     const uint32_t IIR_BLOCK_BITS    = 32;
     const uint32_t IIR_BLOCK_BYTES   = IIR_BLOCK_BITS / BITS_PER_BYTE;
     const uint32_t IIR_BLOCK_WORDS   = IIR_BLOCK_BYTES / BYTES_PER_WORD;
     const uint32_t IIR_START         = 0;
-    const uint32_t IIR_IN_WRITE      = IIR_START    + BYTES_PER_WORD;
+    const uint32_t IIR_IN_WRITE      = 0;
     const uint32_t IIR_IN_ADDR       = IIR_IN_WRITE + BYTES_PER_WORD;
-    const uint32_t IIR_IN_DATA       = IIR_IN_ADDR  + IIR_BLOCK_BYTES;
-    const uint32_t IIR_OUT_ADDR      = IIR_IN_DATA  + IIR_BLOCK_BYTES;
-    const uint32_t IIR_OUT_DATA      = IIR_OUT_ADDR + IIR_BLOCK_BYTES;
-    const uint32_t IIR_DONE          = IIR_OUT_DATA + IIR_BLOCK_BYTES;
+    const uint32_t IIR_IN_DATA       = IIR_IN_ADDR  + BYTES_PER_WORD;
+    const uint32_t IIR_OUT_ADDR      = IIR_IN_DATA  + BYTES_PER_WORD;
+    const uint32_t IIR_OUT_DATA      = IIR_OUT_ADDR + BYTES_PER_WORD;
+    const uint32_t IIR_DONE          = 0;
+    const uint32_t IIR_RESET = 40;
+    const uint32_t IIR_SHIFT = 48;
+    const uint32_t IIR_SHIFT2= 56;
 
     // Constants from FIR.h
     const uint32_t FIR_BLOCK_BITS    = 32;

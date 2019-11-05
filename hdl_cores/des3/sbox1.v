@@ -32,16 +32,23 @@
 ////                                                             ////
 /////////////////////////////////////////////////////////////////////
 
-module  sbox1(addr, dout);
+module  sbox1(addr, dout, reset, clk);
 /* verilator lint_off LITENDIAN */
 input [1:6] addr;
 output [1:4] dout;
 reg [1:4] dout;
+input reset;
+input clk;
+
+reg [1:4] dout;
 /* verilator lint_on LITENDIAN */
 
-always @(addr)
+always @(clk)
     begin
-        case ({addr[1], addr[6], addr[2:5]}) //synopsys full_case parallel_case
+        if (reset)
+            dout = 0;
+        else
+        case ({ addr[1], addr[6], addr[2:5]}) //synopsys full_case parallel_case
             0:
                 dout =  14;
             1:

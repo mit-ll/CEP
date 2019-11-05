@@ -28,8 +28,8 @@ always @ (posedge clk)
             g1 <= 10'b1111111111;
             g2 <= 10'b1111111111;
         end
-    else
-        if (enb)
+    
+    else if (enb)
             begin
                 g1[10:1] <= {g1[9:1], g1[3] ^ g1[10]};
                 g2[10:1] <= {g2[9:1], g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10]};
@@ -37,6 +37,10 @@ always @ (posedge clk)
 
 
 always @(*)
+    begin
+        if(rst)
+           chip <= 1'b0; 
+       else
     begin
         case (prn_num)
             6'd1 :
@@ -118,11 +122,17 @@ always @(*)
                 chip <= 1'b0;  //invalid prn_num
         endcase
     end
+end
 
 
 // reclock for timing
 always @ (posedge clk)
-    chip_out <= chip;
+    begin
+        if(rst)
+            chip_out<= 1'b0;
+        else
+            chip_out <= chip;
+    end
 
 
 endmodule

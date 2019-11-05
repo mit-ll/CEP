@@ -87,6 +87,19 @@ $(bit): $(romgen) $(f)
 		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
 		-board "$(BOARD)"
 
+xpr := $(BUILD_DIR)/obj/$(MODEL).xpr
+$(xpr): $(romgen) $(f)
+	cd $(BUILD_DIR); vivado \
+		-nojournal -mode batch \
+		-source $(fpga_common_script_dir)/vivado_build_proj_only.tcl \
+		-tclargs \
+		-top-module "$(MODEL)" \
+		-F "$(f)" \
+		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
+		-board "$(BOARD)"
+
+.PHONY: xpr
+xpr: $(xpr)
 
 # Build .mcs
 mcs := $(BUILD_DIR)/obj/$(MODEL).mcs

@@ -1,6 +1,0 @@
-*
-!*.do
-!*.sv
-!testbench
-!.gitignore
-!*.sh

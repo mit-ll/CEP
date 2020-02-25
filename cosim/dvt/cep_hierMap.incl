@@ -1,0 +1,48 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
+
+`define TOP_LEVEL_TB `TB_NAME
+`define DVT_PATH     `TB_NAME.v2cd
+`define TIME2DUMP    `TB_NAME.v2cd.time2Dump
+`define TGL_CLK      `TB_NAME.clk100
+`define SYS_CLK      `TB_NAME.clk100
+
+`define WAIT4RESTART_FLAG `TB_NAME.waitForRestartFlag
+
+`define DRIVER_PATH     `TB_NAME.driver
+
+`define DVT_FLAGS     `TB_NAME.driver.dvtFlags
+`define DVT_FLAG      `TB_NAME.v2cd.dvtFlags
+
+`define SHUTDOWN_PATH  `TB_NAME.driver.asicShutDown
+//
+// Path to cores
+//
+`define CORE0_PATH    fpga.topDesign.topMod.tile
+`define CORE1_PATH    fpga.topDesign.topMod.tile_1
+`define CORE2_PATH    fpga.topDesign.topMod.tile_2
+`define CORE3_PATH    fpga.topDesign.topMod.tile_3
+
+`define CORE0_TL_PATH    fpga.topDesign.topMod.tile.tl_master
+`define CORE1_TL_PATH    fpga.topDesign.topMod.tile_1.tl_master
+`define CORE2_TL_PATH    fpga.topDesign.topMod.tile_2.tl_master
+`define CORE3_TL_PATH    fpga.topDesign.topMod.tile_3.tl_master
+`define FPGA_RESET_PATH  fpga.topDesign.wrangler
+`define RESET_PATH       fpga.topDesign.wrangler
+`define FIR_PATH         fpga.topDesign.topMod.fir   
+//
+// in bare metal
+//
+`define MIG_PATH         fpga.topDesign.topMod.mig.island.blackbox
+`define BOOTROM_PATH     fpga.topDesign.topMod.maskROM.rom
+  
+
+
+

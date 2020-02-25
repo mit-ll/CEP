@@ -1,0 +1,326 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
+
+`include "dpi_common.incl"
+
+//
+//
+//
+
+//
+// Loop to turn on the shIPC thread
+//
+//reg [63:0] r_data	;
+reg __playBackEnable;
+reg __shIpc_CheckpointEnable;
+reg __shIpc_EnableMode;
+reg __shIpc_Active;
+reg __shIpc_InProgress;
+reg __shIpc_Time2Shutdown;
+reg [3:0]  __mSlotId, __mCpuId;
+reg __shIpc_cmdValid=0;
+reg __shIpc_remoteReq=0;
+reg [31:0] __shIpc_cmd;
+reg [63:0] __shIpc_address;
+reg [31:0] __shIpc_p0;
+reg [31:0] __shIpc_p1;
+reg [31:0] __shIpc_p2;
+reg [31:0] __shIpc_p3;
+reg [31:0] __shIpc_p4;
+reg [31:0] __shIpc_p5;
+reg [31:0] __shIpc_p6;
+reg [31:0] __shIpc_p7;
+//reg [31:0] __simTime;
+reg __shIpc_C_not_active=1;
+
+initial begin
+  __shIpc_CheckpointEnable = 0;
+  __simTime = 0;
+  __playBackEnable = 0;
+  __shIpc_Active = 1;
+  __shIpc_InProgress = 0; 
+  __shIpc_Time2Shutdown = 0;		
+  __shIpc_EnableMode = 0;
+  __shIpc_cmdValid = 0;
+  __shIpc_remoteReq = 0;
+  #1 __mSlotId = MY_SLOT_ID ;
+  __mCpuId = MY_LOCAL_ID;
+end
+always @(posedge `SHIPC_CLK ) __simTime = __simTime + 1;
+
+
+task processCmd;
+  begin
+      case (__shIpc_cmd)
+//
+// WRITE32_64
+//
+	`SHIPC_WRITE32_64 : begin 
+`ifdef SHIPC_WRITE32_64_TASK
+	`SHIPC_WRITE32_64_TASK;
+`undef SHIPC_WRITE32_64_TASK
+`else
+	unsupportTask("SHIPC_WRITE32_64");
+`endif
+	end
+
+//
+// WRITE64_64
+//
+	`SHIPC_WRITE64_64 : begin 
+`ifdef SHIPC_WRITE64_64_TASK
+	`SHIPC_WRITE64_64_TASK;
+`undef SHIPC_WRITE64_64_TASK
+`else
+	unsupportTask("SHIPC_WRITE64_64");
+`endif
+	end
+
+//
+// READ32_64
+//
+	`SHIPC_READ32_64 : begin 
+`ifdef SHIPC_READ32_64_TASK
+	`SHIPC_READ32_64_TASK;
+`undef SHIPC_READ32_64_TASK
+`else
+	unsupportTask("SHIPC_READ32_64");
+`endif
+	end
+
+//
+// READ64_64
+//
+	`SHIPC_READ64_64 : begin 
+`ifdef SHIPC_READ64_64_TASK
+	`SHIPC_READ64_64_TASK;
+`undef SHIPC_READ64_64_TASK
+`else
+	unsupportTask("SHIPC_READ64_64");
+`endif
+	end
+
+//
+// PRINTF
+//
+	`SHIPC_PRINTF : begin 
+`ifdef SHIPC_PRINTF_TASK
+	`SHIPC_PRINTF_TASK;
+`undef SHIPC_PRINTF_TASK
+`else
+	unsupportTask("SHIPC_PRINTF");
+`endif
+	end
+//
+// WRITE_STATUS
+//
+	`SHIPC_WRITE_STATUS : begin 
+`ifdef SHIPC_WRITE_STATUS_TASK
+	`SHIPC_WRITE_STATUS_TASK;
+`undef SHIPC_WRITE_STATUS_TASK
+`else
+	unsupportTask("SHIPC_WRITE_STATUS");
+`endif
+	end
+//
+// READ_STATUS
+//
+	`SHIPC_READ_STATUS : begin 
+`ifdef SHIPC_READ_STATUS_TASK
+	`SHIPC_READ_STATUS_TASK;
+`undef SHIPC_READ_STATUS_TASK
+`else
+	unsupportTask("SHIPC_READ_STATUS");
+`endif
+	end
+
+//
+// WRITE_DVT_FLAG
+//
+	`SHIPC_WRITE_DVT_FLAG : begin 
+`ifdef SHIPC_WRITE_DVT_FLAG_TASK
+	`SHIPC_WRITE_DVT_FLAG_TASK;
+`undef SHIPC_WRITE_DVT_FLAG_TASK
+`else
+	unsupportTask("SHIPC_WRITE_DVT_FLAG");
+`endif
+	end
+//
+// READ_DVT_FLAG
+//
+	`SHIPC_READ_DVT_FLAG : begin 
+`ifdef SHIPC_READ_DVT_FLAG_TASK
+	`SHIPC_READ_DVT_FLAG_TASK;
+`undef SHIPC_READ_DVT_FLAG_TASK
+`else
+	unsupportTask("SHIPC_READ_DVT_FLAG");
+`endif
+	end
+
+//
+// SHIPC_READ_ERROR_CNT
+//
+	`SHIPC_READ_ERROR_CNT : begin 
+`ifdef SHIPC_READ_ERROR_CNT_TASK
+	`SHIPC_READ_ERROR_CNT_TASK;
+`undef SHIPC_READ_ERROR_CNT_TASK
+`else
+	unsupportTask("SHIPC_READ_ERROR_CNT");
+`endif
+	end
+
+//
+// FRAMER_RDWR
+//
+    `SHIPC_FRAMER_RDWR : begin 
+`ifdef SHIPC_FRAMER_RDWR_TASK
+	`SHIPC_FRAMER_RDWR_TASK;
+`undef SHIPC_FRAMER_RDWR_TASK
+`else
+	unsupportTask("SHIPC_FRAMER_RDWR");
+`endif
+	end
+
+    `SHIPC_SAMPLE_RDWR : begin 
+`ifdef SHIPC_SAMPLE_RDWR_TASK
+	`SHIPC_SAMPLE_RDWR_TASK;
+`undef SHIPC_SAMPLE_RDWR_TASK
+`else
+	unsupportTask("SHIPC_SAMPLE_RDWR");
+`endif
+	end
+
+//
+// Common Task
+//
+      	`SHIPC_GET_SIM_TIME: r_data = {2{__simTime}};
+      	`SHIPC_RUNCLK  : RUNCLK(__shIpc_p0);
+	`SHIPC_SHUTDOWN: __shIpc_Time2Shutdown = 1;
+	`SHIPC_SIMV_SAVE: begin
+	    // set the flag!!
+	    //`WAIT4RESTART_FLAG = 1;
+	    __shIpc_CheckpointEnable = 1;
+	end
+      	default        : $display("ERROR: %m __shIpc_cmd=%x NOT SUPPORTED!!!!\n",__shIpc_cmd);
+      endcase
+	//`logI("processCmd __shIpc_p0=%x r_data=%x",__shIpc_p0 , r_data);
+  end
+endtask // processCmd
+
+// ===================================
+// New DPI
+// ===================================
+`ifdef USE_DPI
+always @(posedge (__shIpc_EnableMode && !__playBackEnable)) begin
+  @(posedge `SHIPC_CLK ); // wait 1 clock
+  `logI("=========== Entering shIpc_EnableMode Loop simeTime=%d =================", __simTime);  
+  while (__shIpc_EnableMode) begin
+    // get the command
+    get_v2c_mail(__mSlotId, __mCpuId,inBox);
+    __shIpc_cmdValid       = inBox.mCmdValid;
+     if (inBox.mActive == 0) 
+       __shIpc_Active         = 0; // inBox.mActive;       
+    // 		     
+    // process the command
+    if (__shIpc_InProgress && !__shIpc_Active) begin
+	__shIpc_EnableMode = 0; 
+	__shIpc_InProgress = 0;
+	__shIpc_Active     = 1;
+    end	
+    if (inBox.mCmdValid) begin
+       __shIpc_remoteReq      = inBox.mRemoteReq;
+       __shIpc_cmd            = inBox.mCmd;
+      __shIpc_InProgress = 1;
+      processCmd;
+       // print
+       //`logI("MAILBOX: mCmdValid=%d mCmd=0x%08x mAdr=0x%08x\n",inBox.mCmdValid,inBox.mCmd,inBox.mAdr);
+       inBox.mCmdValid = 0;
+       inBox.mRemoteReq = 0;
+       send_v2c_mail(__mSlotId, __mCpuId,inBox);
+      // complete the command
+    end // if valid
+    // need to wait for 1 clock so other can advance if the C side is not yet up
+    else if (!__shIpc_InProgress) begin // at beginning
+//          @(posedge `SHIPC_CLK); // wait 1 clock
+    end
+    if (__shIpc_Time2Shutdown) begin
+	
+    end
+    if (__shIpc_Active) begin
+      //`logI("__shIpc_Active=0 is detected.. Stop checking for command");
+      //__shIpc_EnableMode = 0;
+    end
+  end // while
+end // end posedge
+// ===================================
+// OLD PLI STUFFS!!!
+// ===================================
+`else
+// Deprecated!!! 11/19/2019
+end
+
+`endif
+
+//
+// Task to kill the sim job
+//
+always @(posedge __shIpc_Time2Shutdown) begin
+   //`DVT_PATH.done = 1;
+  `logI("Running for %d more NS before terminate the simv process");
+   #10 $finish;
+end
+//
+// =================================================================
+// Default Task Lists 
+// =================================================================
+//
+task unsupportTask;
+  input [1024:0] str;	
+begin $display("ERROR: %m Command %s NOT SUPPORTED for this module!!!!\n",str); end
+endtask
+
+task RUNCLK;
+input [31:0] clkCnt;
+begin
+`ifdef USE_DPI
+  repeat(inBox.mPar[0]) @(posedge `SHIPC_CLK);
+  inBox.mPar[0] = __simTime;
+`else
+  repeat(clkCnt) @(posedge `SHIPC_CLK);
+  __shIpc_p0 = __simTime;
+`endif       
+end
+endtask // RUNCLK
+
+//
+//
+//
+// start the initi
+reg myIsActive=0;
+always @(posedge enableMe) begin
+  //  `logI("%m Calling VPP_SHMEMINIT as client ====== %t",$time);
+  $vpp_shMemInit(-1); // use key in file
+  //
+  // check if my master (C-side) is on
+  #10;
+  $vpp_isCActive(`SHIPC_XACTOR_ID, myIsActive);
+  if (myIsActive) begin
+     // wait until C-side is alive
+     $display("%m: calling $vpp_WaitTilStart slot=%d cpu=%d",MY_SLOT_ID,MY_LOCAL_ID);
+     $vpp_WaitTilStart(MY_SLOT_ID,MY_LOCAL_ID);
+     $display("%m: Turning ON __shIpc_EnableMode %t",$time);
+    __shIpc_EnableMode = 1;
+   end
+   else begin
+    $display("%m: Turning OFF __shIpc_EnableMode %t",$time);
+    __shIpc_EnableMode = 0;
+   end	
+end	
+

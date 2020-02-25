@@ -22,6 +22,7 @@ output [127:0] l_code;
 output l_code_valid;
 
 reg startRound_r;
+wire gps_clk_fast;
 
 always @(posedge gps_clk_fast)
     begin

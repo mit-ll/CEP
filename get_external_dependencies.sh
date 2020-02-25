@@ -25,12 +25,11 @@
 # The entries that have been commented out reflect dependencies that have been directly included within the CEP repo.  Uncommenting
 # them and running this script will result in clobbering the current directory (and potentially loosing CEP-specific modifications)
 #
-
 declare -a repo_names=(       "#"
                               "# The following dependecies are related to the Freedom U500 Platform"
                               "#"
-                              #"GITHUB https://github.com/sifive/freedom c28643a ./hdl_cores/freedom"
-                              #"GITHUB https://github.com/sifive/fpga-shells 9eb5662 ./hdl_cores/freedom/fpga-shells"
+                              #"GITHUB https://github.com/sifive/freedom 5241f55 ./hdl_cores/freedom"
+                              "GITHUB https://github.com/sifive/fpga-shells 14297af ./hdl_cores/freedom/fpga-shells"
                               "GITHUB https://github.com/sifive/nvidia-dla-blocks 1ec9ccf ./hdl_cores/freedom/nvidia-dla-blocks"
                               "GITHUB https://github.com/nvdla/hw 7cf6ad5 ./hdl_cores/freedom/nvidia-dla-blocks/hw"                              
                               "GITHUB https://github.com/sifive/sifive-blocks a0da03f ./hdl_cores/freedom/sifive-blocks"                             
@@ -107,13 +106,51 @@ declare -a repo_names=(       "#"
                               "QEMU u-boot d85ca02 ./software/freedom-u-sdk/riscv-qemu/roms/u-boot"
                               "QEMU u-boot-sam460ex 8ee007c ./software/freedom-u-sdk/riscv-qemu/roms/u-boot-sam460ex"
                               "QEMU vgabios 19ea12c ./software/freedom-u-sdk/riscv-qemu/roms/vgabios"
-                              "#"
-                              "# Other External Dependencies not related to the Freedom U500 Platform"
-                              "#"
-                              "GITHUB https://github.com/ZipCPU/wb2axip 7da3df3 ./hdl_cores/wb2axip"
-                              "GITHUB https://github.com/pulp-platform/axi 3f5d5b5 ./hdl_cores/pulp_axi"
-                              "GITHUB https://github.com/pulp-platform/common_cells bec24ba ./hdl_cores/pulp_common_cells"                              
                               )
+
+# Function to "clone" a directory based on the specified repo (in the repo_names format)
+clone_directory() {
+
+  echo "Calling clone directory with $1"
+
+  repo_type=$(echo " "$1 | cut -d' ' -f 2)
+
+  case "$repo_type" in
+    "#") 
+    ;;
+    "GITHUB")
+      current_repo=$(echo " "$1 | cut -d' ' -f 3)
+      current_commit=$(echo " "$1 | cut -d' ' -f 4)
+      current_directory=$(echo " "$1 | cut -d' ' -f 5)
+      echo
+      echo "GITHUB: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
+      echo
+      rm -f tmp.tar   # Ensure that the tempary tar does not already exist
+      rm -rf $current_directory
+      mkdir -p $current_directory
+      curl -L $current_repo/tarball/$current_commit > tmp.tar
+      tar xf tmp.tar --strip-components=1 -C $current_directory
+      rm -f tmp.tar
+    ;;
+    "QEMU")
+      current_repo=$(echo " "$1 | cut -d' ' -f 3)
+      current_commit=$(echo " "$1 | cut -d' ' -f 4)
+      current_directory=$(echo " "$1 | cut -d' ' -f 5)
+      echo
+      echo "QEMU: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
+      echo
+      rm -f tmp.tgz
+      rm -rf $current_directory
+      mkdir -p $current_directory
+      wget -O tmp.tgz "https://git.qemu.org/?p=${current_repo}.git;a=snapshot;h=${current_commit};sf=tgz"
+      tar zxf tmp.tgz --strip-components=1 -C $current_directory
+      rm -f tmp.tgz              
+    ;;
+  esac
+
+}
+
+# "Main" function
 number_of_repos=${#repo_names[@]}
 
 echo ""
@@ -160,54 +197,9 @@ if [ "$1" == "all" ]; then
 
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
-    # The following repository provides AXI4 to Wishbone conversion utlities
-    # Licensing information specific to this repository can be found in the 
-    # README.md file location in ./hdl_cores/wb2axip
-
     for (( i=1; i<${number_of_repos}+1; i++ ));
     do
-
-        repo_type=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 2)
-
-        case "$repo_type" in
-            "#") 
-                continue;
-                ;;
-            "GITHUB")
-                current_repo=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 3)
-                current_commit=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 4)
-                current_directory=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 5)
-
-                echo
-                echo "GITHUB: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
-                echo
-
-                rm -f tmp.tar   # Ensure that the tempary tar does not already exist
-                rm -rf $current_directory
-                mkdir -p $current_directory
-                curl -L $current_repo/tarball/$current_commit > tmp.tar
-                tar xf tmp.tar --strip-components=1 -C $current_directory
-                rm -f tmp.tar
-                continue;
-                ;;
-            "QEMU")
-                current_repo=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 3)
-                current_commit=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 4)
-                current_directory=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 5)
-
-                echo
-                echo "QEMU: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
-                echo
-
-                rm -f tmp.tgz
-                rm -rf $current_directory
-                mkdir -p $current_directory
-                wget -O tmp.tgz "https://git.qemu.org/?p=${current_repo}.git;a=snapshot;h=${current_commit};sf=tgz"
-                tar zxf tmp.tgz --strip-components=1 -C $current_directory
-                rm -f tmp.tgz              
-                continue;
-                ;;
-        esac
+      clone_directory "${repo_names[$i-1]}"
     done
   else
     exit 1
@@ -291,6 +283,62 @@ if [ "$1" == "list" ]; then
 
 fi  # end if list option
 
+# Perform a matching update: All modules that match the string
+if [ "$1" == "matching" ]; then
+
+  # Create an empty array
+  declare -a match_indexes
+
+  # Search through the list of repositories for a recursive substring (do not include
+  # Do not include repos that are commented out
+  for ((match_index=0; match_index<${number_of_repos}; match_index++)); do
+
+    repo_type=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 2)
+
+    if [[ ${repo_names[$match_index]} == *$2* ]] && [[ ! $repo_type == "#" ]]; then
+      match_indexes+=($match_index)
+    fi
+  done
+
+  # If the match_indexes array length is zero, then no matches were found
+  if [ ${#match_indexes[@]}  == 0 ]; then
+    echo "No matching repository entry was found for \"$2\""
+    echo
+    
+    exit 1  
+  fi
+
+  # A match was found, proceed to getting that specific module
+  echo "The following directory(ies) will be overwritten"
+  for i in "${match_indexes[@]}"; do
+    echo " "${repo_names[$i]} | cut -d' ' -f 5
+  done
+
+  echo
+  read -p "Do you wish to continue? " -n 1 -r
+  echo    # (optional) move to a new line
+
+  if [[ $REPLY =~ ^[Yy]$ ]]
+  then
+
+    for i in "${match_indexes[@]}"; do
+      clone_directory "${repo_names[$i]}"
+    done
+  else
+    exit 1
+  fi # end if $REPLY = Y?
+
+  echo 
+  echo "-----------------------------------------------------------------"
+  echo "---       CEP Get External Dependencies Script Complete       ---"
+  echo "-----------------------------------------------------------------"
+  echo 
+
+  exit 1
+
+fi # end if matching option
+
+
 # Update a specific module IF a match exits
 if [ "$1" == "one" ]; then
   
@@ -322,43 +370,7 @@ if [ "$1" == "one" ]; then
 
   if [[ $REPLY =~ ^[Yy]$ ]]
   then
-
-    case "$repo_type" in
-      "#") 
-        ;;
-      "GITHUB")
-        current_repo=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 3)
-        current_commit=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 4)
-        current_directory=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 5)
-
-        echo
-        echo "GITHUB: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
-        echo
-
-        rm -f tmp.tar   # Ensure that the tempary tar does not already exist
-        rm -rf $current_directory
-        mkdir $current_directory
-        curl -L $current_repo/tarball/$current_commit > tmp.tar
-        tar xf tmp.tar --strip-components=1 -C $current_directory
-        rm -f tmp.tar
-        ;;
-      "QEMU")
-        current_repo=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 3)
-        current_commit=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 4)
-        current_directory=$(echo " "${repo_names[$match_index]} | cut -d' ' -f 5)
-
-        echo
-        echo "QEMU: Exporting repository "$current_repo", Commit" $current_commit" to directory" $current_directory
-        echo
-
-        rm -f tmp.tgz
-        rm -rf $current_directory
-        mkdir $current_directory
-        wget -O tmp.tgz "https://git.qemu.org/?p=${current_repo}.git;a=snapshot;h=${current_commit};sf=tgz"
-        tar zxf tmp.tgz --strip-components=1 -C $current_directory
-        rm -f tmp.tgz
-        ;;
-      esac
+    clone_directory "${repo_names[$match_index]}"
   fi  # if $REPLY
 
   echo 
@@ -371,12 +383,12 @@ if [ "$1" == "one" ]; then
 
 fi # end if one option
 
-
 echo "Usage:"
 echo "  all                    - Get all external dependecies"
-echo "  append                 - Append the all list of dependencies to .gitignore"
+echo "  append                 - Append the list of all dependencies to .gitignore"
 echo "  one <module>           - Get just <module> dependency"
 echo "                           (first match will be selected)"
+echo "  matching <module>      - Get all matching <module>"
 echo "  list                   - List all external dependecies"
 echo 
 exit 1

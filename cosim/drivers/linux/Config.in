@@ -1,0 +1,14 @@
+#************************************************************************
+# Copyright (C) 2020 Massachusetts Institute of Technology
+#
+# File Name:      Config.in
+# Program:        Common Evaluation Platform (CEP)
+# Description:    Buildroot Config.in for CEP Regression Suite
+#************************************************************************
+
+config BR2_PACKAGE_CEP_DIAG
+	bool "cep_diag"
+	help
+	  Linux port of the CEP diagnostic suite.
+
+	  http://example.com

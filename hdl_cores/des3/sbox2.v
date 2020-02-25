@@ -40,11 +40,9 @@ reg [1:4] dout;
 input reset;
 input clk;
 /* verilator lint_on LITENDIAN */
-always @(clk)
+
+always @(*)
     begin
-        if (reset)
-            dout = 0;
-        else
         case ({addr[1], addr[6], addr[2:5]}) //synopsys full_case parallel_case
             0:
                 dout = 15;

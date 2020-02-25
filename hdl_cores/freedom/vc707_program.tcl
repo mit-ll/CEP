@@ -10,8 +10,8 @@ set_property PROGRAM.VERIFY  1 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_
 set_property PROGRAM.CHECKSUM  0 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0 ]]
 refresh_hw_device [lindex [get_hw_devices xc7vx485t_0] 0]
 
-set_property PROGRAM.FILES [list "./builds/vc707-u500devkit/obj/VC707Shell.mcs" ] [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]
-set_property PROGRAM.PRM_FILE {./builds/vc707-u500devkit/obj/VC707Shell.prm} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]
+set_property PROGRAM.FILES [list "./builds/vc707-u500devkit/obj/VC707BaseShell.mcs" ] [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]
+set_property PROGRAM.PRM_FILE {./builds/vc707-u500devkit/obj/VC707BaseShell.prm} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0]]
 set_property PROGRAM.BPI_RS_PINS {none} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0 ]]
 set_property PROGRAM.UNUSED_PIN_TERMINATION {pull-none} [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0 ]]
 set_property PROGRAM.BLANK_CHECK  0 [ get_property PROGRAM.HW_CFGMEM [lindex [get_hw_devices] 0 ]]

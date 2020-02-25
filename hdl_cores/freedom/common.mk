@@ -87,19 +87,6 @@ $(bit): $(romgen) $(f)
 		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
 		-board "$(BOARD)"
 
-xpr := $(BUILD_DIR)/obj/$(MODEL).xpr
-$(xpr): $(romgen) $(f)
-	cd $(BUILD_DIR); vivado \
-		-nojournal -mode batch \
-		-source $(fpga_common_script_dir)/vivado_build_proj_only.tcl \
-		-tclargs \
-		-top-module "$(MODEL)" \
-		-F "$(f)" \
-		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
-		-board "$(BOARD)"
-
-.PHONY: xpr
-xpr: $(xpr)
 
 # Build .mcs
 mcs := $(BUILD_DIR)/obj/$(MODEL).mcs
@@ -114,9 +101,6 @@ prjx := $(BUILD_DIR)/libero/$(MODEL).prjx
 $(prjx): $(verilog)
 	cd $(BUILD_DIR); libero SCRIPT:$(fpga_common_script_dir)/libero.tcl SCRIPT_ARGS:"$(BUILD_DIR) $(MODEL) $(PROJECT) $(CONFIG) $(BOARD)"
 
-vc707-program:
-	vivado -mode tcl -source vc707_program.tcl
-
 .PHONY: prjx
 prjx: $(prjx)
 
@@ -128,4 +112,3 @@ ifneq ($(BOOTROM_DIR),"")
 endif
 	$(MAKE) -C $(FPGA_DIR) clean
 	rm -rf $(BUILD_DIR)
-	rm -rf *.jou *.log .Xil

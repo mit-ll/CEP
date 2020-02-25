@@ -1,0 +1,64 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
+
+//
+// Modelsim ONLY
+//
+`ifdef MODELSIM
+reg waveDumpFlag = 0; // off by default
+reg dumpInProgress=0;
+integer waveOnStartCycle = 0;
+integer waveonCycleDump = -1;
+//
+always @(posedge dvtFlags[`DVTF_WAVE_START_CYCLE]) begin
+   waveOnStartCycle = dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO];
+   `logI("==== waveOnStartCycle=%d",waveOnStartCycle);      
+   dvtFlags[`DVTF_WAVE_START_CYCLE]=0;
+end
+//
+always @(posedge dvtFlags[`DVTF_WAVE_CYCLE2DUMP]) begin
+   waveonCycleDump = dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO];
+   `logI("==== waveonCycleDump=%d",waveonCycleDump);   
+   dvtFlags[`DVTF_WAVE_CYCLE2DUMP]=0;
+end
+
+always @(posedge dvtFlags[`DVTF_WAVE_ON]) begin
+   waveDumpFlag = 1;
+   `logI("==== Turnning wave ON waveonCycleDump=%d waveonCycleDump=%d",waveOnStartCycle,waveonCycleDump);
+   dvtFlags[`DVTF_WAVE_ON] = 0;
+end
+
+import mti_fli::*;
+
+always @(posedge waveDumpFlag) begin
+   while (1) begin
+      if (waveDumpFlag && (__simTime > waveOnStartCycle)) begin
+	 // Issue a $STOP to force vsim.do to ove to next step to turn on wavedump
+	 `logI("==== Issuing wave_on to enable wave ON simTime=%d waveonCycleDump=%d waveonCycleDump=%d",
+	       __simTime,waveOnStartCycle,waveonCycleDump);
+	 //$stop;
+	 mti_Command("wave_on");
+	 waveDumpFlag = 0;
+	 dumpInProgress = 1;
+      end
+      else if (dumpInProgress && (waveonCycleDump != -1) && (__simTime > (waveOnStartCycle + waveonCycleDump))) begin
+	 // Issue a $STOP to force vsim.do to over to next step to turn on wavedump
+	 `logI("==== Issuing wave_off to disable wave ON simTime=%d waveonCycleDump=%d waveonCycleDump=%d",
+	       __simTime,waveOnStartCycle,waveonCycleDump);
+	 // $stop;
+	 mti_Command("wave_off");	 
+	 waveDumpFlag = 0;
+	 dumpInProgress = 0;
+      end
+      @(posedge `SHIPC_CLK );
+   end
+end
+
+`endif

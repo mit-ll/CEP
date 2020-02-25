@@ -1,0 +1,180 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
+
+`ifdef __V2C_CMDS__
+`else
+`define __V2C_CMDS__
+
+//
+// Error codes
+//
+`define MAX_ERRORCOUNT           5
+`define VPP_RETURN_NO_ERROR      0
+`define VPP_RETURN_WITH_ERROR    1
+`define VPP_RETURN_VERILOG_BUG   2
+
+//
+// ===============================================
+// Command for shIPC stuffs
+// ===============================================
+//
+
+//
+// Commonad between C's thread & Verilog
+//
+`define SHIPC_WRITE256       32'h00000001
+`define SHIPC_WRITE64        32'h00000002
+`define SHIPC_WRITE32        32'h00000003
+`define SHIPC_WRITE16        32'h00000004
+`define SHIPC_WRITE8         32'h00000005
+`define SHIPC_READ256        32'h00000006
+`define SHIPC_READ64         32'h00000007
+`define SHIPC_READ32         32'h00000008
+`define SHIPC_READ16         32'h00000009
+`define SHIPC_READ8          32'h0000000A
+`define SHIPC_PCICFGWRITE    32'h00000010
+`define SHIPC_PCICFGREAD     32'h00000011
+`define SHIPC_PRINTF         32'h00000020
+`define SHIPC_RUNCLK         32'h00000021
+`define SHIPC_SHUTDOWN       32'h00000022
+`define SHIPC_WRITE_STATUS   32'h00000023
+`define SHIPC_READ_STATUS    32'h00000024
+`define SHIPC_WRITE_DVT_FLAG 32'h00000025
+`define SHIPC_GET_SIM_TIME   32'h00000026
+`define SHIPC_SIMV_SAVE      32'h00000027
+`define SHIPC_READ_DVT_FLAG  32'h00000028
+`define SHIPC_READ_ERROR_CNT 32'h00000029
+
+`define SHIPC_I2C_WRITE      32'h00000030
+`define SHIPC_I2C_READ       32'h00000031
+`define SHIPC_I2CASIC_WRITE  32'h00000034
+`define SHIPC_I2CASIC_READ   32'h00000035
+
+`define SHIPC_SEND_PACKET    32'h00000032
+`define SHIPC_READ_PACKET    32'h00000033
+// status & control for packet related
+`define PACKET_NO_SOP        (1<<0)
+`define PACKET_NO_EOP        (1<<1)
+`define PACKET_WITH_ERR      (1<<2)
+`define PACKET_WRONG_SEGNUM  (1<<3)
+`define PACKET_LOOP_ENABLE   (1<<4)
+`define PACKET_AUTO_POP      (1<<5)
+`define PACKET_LOOPCOUNT_HI  31
+`define PACKET_LOOPCOUNT_LO  16
+`define PACKET_LOOPCOUNT_MASK 16'hFFFF
+
+//
+// 64bits address
+//
+`define SHIPC_WRITE64_32     32'h00000100
+`define SHIPC_WRITE64_64     32'h00000101
+`define SHIPC_WRITE32_64     32'h00000102
+`define SHIPC_READ64_32      32'h00000110
+`define SHIPC_READ64_64      32'h00000111
+`define SHIPC_READ32_64      32'h00000112
+
+// Showtime
+`define SHIPC_FRAMER_RDWR    32'h00000113
+`define SHIPC_SAMPLE_RDWR    32'h00000114
+
+//
+// Mail Box Command (result from SHIPC_WRITE_STATUS)
+//
+// upper [31:16] = slot to pull
+`define MAILBOX_PULLCARD_CMD   16'h0001
+`define MAILBOX_INSERTCARD_CMD 16'h0002
+
+//
+// shIPC Command Status
+//
+`define SHIPC_STATUS_INACTIVE       32'h0
+`define SHIPC_STATUS_ACTIVE         32'h1
+`define SHIPC_STATUS_PENDING        32'h2
+`define SHIPC_STATUS_SUCCESS        32'h3
+`define SHIPC_STATUS_WARNING        32'h4
+`define SHIPC_STATUS_ERROR          32'h5
+`define SHIPC_STATUS_FATAL          32'h6
+`define SHIPC_STATUS_ALIVE          32'h7
+
+//
+// ===============================================
+// shIPC DVT Registers Set/Clear (use by SHIPC_DVT_SETBIT/SHIPC_DVT_CLRBIT)
+// ===============================================
+//
+`define DVTF_PAT_LO                                 0
+`define DVTF_PAT_HI                                31
+`define DVTF_WAVE_START_CYCLE                      32
+`define DVTF_WAVE_CYCLE2DUMP                       33
+//
+`define DVTF_WAVE_ON     			   34
+`define DVTF_WAVE_OFF     			   35
+//
+`define DVTF_ENABLE_FRAMER_DRIVER	           40
+`define DVTF_ENABLE_INTEGRATED_BLOCK_DRIVER        41
+`define DVTF_SET_SAMPLE_GAP                        42
+
+//
+// DDR3
+//
+`define DVTF_READ_CALIBRATION_DONE                  50
+`define DVTF_ENABLE_MAIN_MEM_LOGGING                51
+`define DVTF_ENABLE_MAIN_MEMWR_LOGGING              52
+`define DVTF_ENABLE_MAIN_MEMRD_LOGGING              53
+`define DVTF_DISABLE_MAIN_MEM_LOGGING               54
+`define DVTF_ENABLE_MEM_BACKDOOR                    55
+`define DVTF_PUT_CORE_IN_RESET                      56
+`define DVTF_PROGRAM_LOADED                         57
+`define DVTF_PRINTF_CMD                             58
+`define DVTF_SET_IPC_DELAY                          59
+//
+// ===============================================
+// System Sim Status
+// ===============================================
+//
+`define SIM_BUSY_BIT		31
+`define SIM_ERROR_BIT		30
+
+//
+// ===============================================
+// Instance ID, use for CPU within the system
+// ===============================================
+//
+`define SLOT0_ID              4'd0
+`define SLOT1_ID              4'd1
+`define SLOT2_ID              4'd2
+`define SLOT3_ID              4'd3
+`define SLOT4_ID              4'd4
+`define SLOT5_ID              4'd5
+`define SLOT6_ID              4'd6
+`define SLOT7_ID              4'd7
+`define SLOT8_ID              4'd8
+`define SLOT9_ID              4'd9
+`define SLOT10_ID             4'd10
+`define SLOT11_ID             4'd11
+`define SLOT12_ID             4'd12
+`define SLOT13_ID             4'd13
+`define SLOT14_ID             4'd14
+`define SLOT15_ID             4'd15
+
+`define MY_BIG_ENDIAN            1'b0
+`define MY_LITTLE_ENDIAN         1'b1
+
+// use slot15 for now!!!
+`define SYSTEM_SLOT_ID        4'd15
+`define SYSTEM_CPU_ID         4'd0
+
+//
+// ===============================================
+// System DVT Flags (upto xxxBits)
+// ===============================================
+//
+
+////////// __V2C_CMDS__
+`endif

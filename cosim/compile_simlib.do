@@ -1,0 +1,1 @@
+compile_simlib -simulator questa -simulator_exec_path {/opt/questa-10.6c/questasim/bin} -family all -language all -library all -dir {/home/aduong/CEP/CEP-master/cosim/xil_lib} -force -verbose 

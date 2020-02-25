@@ -1,0 +1,70 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
+
+`ifndef CEP_ADRMAP_INCL
+`define CEP_ADRMAP_INCL
+
+`define MAX_CORES                4
+
+`define ddr3_base_adr           'h80000000
+`define ddr3_base_size          'h40000000
+
+`define cep_fpga_base_adr       'h70000000
+`define cep_fpga_base_size      'h01000000
+
+`define	aes_base_addr           'h70000000
+`define	fir_base_addr           'h70070000
+`define aes_ctrlstatus_addr      'h0000
+`define aes_pt0_addr             'h0008
+`define aes_pt1_addr             'h0010
+`define aes_ct0_addr             'h0018
+`define aes_ct1_addr             'h0020
+`define aes_key0_addr            'h0028
+`define aes_key1_addr            'h0030
+`define aes_key2_addr            'h0038
+
+
+`define fir_ctrlstatus_addr	 'h0000
+`define fir_datain_addr_addr	 'h0008
+`define fir_datain_data_addr	 'h0010
+`define fir_dataout_addr_addr	 'h0018
+`define fir_dataout_data_addr	 'h0020
+
+//`define CEP_MAJOR_VERSION	  'h02
+
+// 64bytes
+`define cep_cache_size          64
+
+
+//
+// Printf mail box per core
+// each printf len is 128 bytes max and upto 32 per string
+//  tha WILL GIVE 32 PRINTF per core
+//
+`define cep_printf_mem              'hB000_0000
+`define cep_printf_str_max     128
+`define cep_printf_max_lines   32
+`define cep_printf_core_size   (cep_printf_str_max*cep_printf_max_lines)
+
+//
+// Place for malloc in bare metal
+`define cep_malloc_heap_core0_start 'hB800_0000
+`define cep_malloc_heap_core_size   'h0100_0000
+
+`define cep_scratch_mem             'hBF00_0000
+`define   CEP_GOOD_STATUS        'h600D_BABE
+`define   CEP_BAD_STATUS         'hBAD0_DADE
+ 
+//
+`define CEP_VERSION_REG	'h700F_0000
+`define CEP_EXPECTED_VERSION 'h02020000_00000000
+`define CEP_VERSION_MASK     'h0FFFFFFF_FFFFFFFF
+`endif
+

@@ -1,4 +1,4 @@
-Common Evaluation Platform v2.0 Licensing Information
+Common Evaluation Platform Licensing Information
 
 Title               : aes
 Source              : https://opencores.org/project,tiny_aes
@@ -28,6 +28,27 @@ License terms       :
                         OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            :  This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
 
+Title               : dsp (code not directly included in the CEP repository)
+Source              : Copyright (c) 2005-2014 Peter A. Milder for the Spiral Project, Carnegie Mellon University
+CEP Directory       : ./hdl_cores/dsp
+License Description : Unknown
+License Terms       : Unknown
+Function            : Provides logic for the FIR, IIR, DFT, and IDFT cores.
+
+Title               : freedom
+Source              : https://github.com/sifive/freedom
+CEP Directory       : ./hdl_cores/freedom
+License Description : Apache 2.0
+License Terms       : https://github.com/sifive/freedom/blob/master/LICENSE
+Function            : Provides the core of the Common Evaluation Platform, the SiFive Freedom U500.  Only those sub-repostorities which have customizations have beend included in the CEP repository.
+
+Title               : freedom_u_sdk
+Source              : https://github.com/mcd500/freedom-u-sdk
+CEP Directory       : ./software/freedom-u-sdk
+License Description : Mix
+License Terms       : The freedom-u-sdk repository and its dependencies have a mix of liceneses, including GPLv3 for most of the linux stuff.  None of this is included directly in the CEP repository.
+Function            : Provides the Linux build for the Common Evaluation Platform.
+
 Title               : gps
 Source              : MIT Lincoln Laboratory
 CEP Directory       : ./hdl_cores/gps
@@ -42,20 +63,6 @@ CEP Directory       : ./hdl_cores/md5
 License Description : LGPL 2.1
 License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
 Function            : This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
-
-Title               : axi
-Source              : https://github.com/pulp-platform/axi.git
-CEP Directory       : ./hdl_cores/pulp_axi
-License Description : SOLDERPAD HARDWARE LICENSE version 0.51
-License Terms       : http://solderpad.org/licenses/SHL-0.51/
-Function            : A variety of AXI4 / AXI4-Lite / AXI4-Stream functional blocks
-
-Title               : common_cells
-Source              : https://github.com/pulp-platform/common_cells.git
-CEP Directory       : ./hdl_cores/pulp_axi
-License Description : SOLDERPAD HARDWARE LICENSE version 0.51
-License Terms       : http://solderpad.org/licenses/SHL-0.51/
-Function            : Common functions from the Pulp Platform
 
 Title               : rsa
 Source              : http://git.level2crm.com/cryptech/core-math-modexp/tree/master
@@ -127,39 +134,3 @@ License terms       :
                         // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            : This core provides a standard SHA hash function, where the resulting hash value is 256 bits.  It will be integrated as a HW accelerator into the SoC.
 
-Title               : testbenches (derived from)
-Source              : http://opencores.org/ocsvn/openrisc/openrisc/trunk/orpsocv2/bench/verilog/
-CEP Directory       : ./simulation/testbenches
-License Description : LGPL 2.1
-License terms       : https://www.gnu.org/licenses/old-licenses/lgpl-2.1.txt
-Function            : This core provides the setup and monitoring code for Register Transfer Level (RTL) simulation and debugging.  It is only used during debugging.
-
--- LICENSES TODO --
-Title               : dsp (code not directly included in the CEP repository)
-Source              : Copyright (c) 2005-2014 Peter A. Milder for the Spiral Project, Carnegie Mellon University
-CEP Directory       : ./hdl_cores/dsp
-License Description : Unknown
-License Terms       : Unknown
-Function            : Provides logic for the FIR, IIR, DFT, and IDFT cores.
-
-Title               : freedom
-Source              : https://github.com/sifive/freedom
-CEP Directory       : ./hdl_cores/freedom
-License Description : Apache 2.0
-License Terms       : https://github.com/sifive/freedom/blob/master/LICENSE
-Function            : Provides the core of the Common Evaluation Platform, the SiFive Freedom U500.  Only those sub-repostorities which have customizations have beend included in the CEP repository.
-
-Title               : freedom_u_sdk
-Source              : https://github.com/mcd500/freedom-u-sdk
-CEP Directory       : ./software/freedom-u-sdk
-License Description : Mix
-License Terms       : The freedom-u-sdk repository and its dependencies have a mix of liceneses, including GPLv3 for most of the linux stuff.  None of this is included directly in the CEP repository.
-Function            : Provides the Linux build for the Common Evaluation Platform.
-
-Title               : wb2axip
-Source              : https://github.com/ZipCPU/wb2axip
-CEP Directory       : ./hdl_cores/wb2axip
-License Description : GPLv3
-License Terms       : https://github.com/ZipCPU/wb2axip/blob/master/doc/gpl-3.0.pdf
-Function            : Provides AXI4-Lite to Wishbone Conversion functions.  It is NOT used in the CEP build, but supports unit level simulation of the individual cores.  Integration into the CEP would
-                      require additional license scrutiny, given the nature of GPL.

@@ -2,9 +2,15 @@
 
 # sbt directories
 /target
-/project/target
+/project
 
-# vivado products
-vivado.log
-vivado.jou
+# Directories.... formerly submodules (can be reconstructed using the get_external_dependencies.sh script)
+/rocket-chip
+/sifive-blocks
+/fpga-shells
+/nvidia-dla-blocks
+
+# Xilinx remnants
 /.Xil
+*.log
+*.jou

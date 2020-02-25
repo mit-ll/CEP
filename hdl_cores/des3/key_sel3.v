@@ -77,11 +77,8 @@ end
 
 assign decrypt_int = (roundSel[5:4]==2'h1) ? !decrypt : decrypt;
 
-always @(clk)
+always @(*)
     begin
-        if (reset)
-            K_sub = 48'b0;
-        else
             case(roundSel[3:0])  // synopsys full_case parallel_case
                 0:
                     K_sub = K1;

@@ -1,10 +1,12 @@
+[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+
 <p align="center">
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.1
+   v2.2
    <br>
-   Copyright 2019 Massachusetts Institute of Technology
+   Copyright 2020 Massachusetts Institute of Technology
 </p>
 
 <br>
@@ -13,9 +15,10 @@ The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip
 
 Additional information on the objectives of the CEP may be found in [./CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
-CEP v2.1 has been based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
+CEP v2.2 is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
 
 Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development Board.  Longer term plans include migrating to other platforms with the eventual goal of taping out an ASIC.
+
 
 ## Additional Sources of Information
 * Freedom U500 VC707 FPGA Dev Kit Getting Started Guide  - https://www.sifive.com/documentation
@@ -29,20 +32,21 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 
 
 ## Pre-requisites (validated test/build configuration):
-The following items describe the configuration of the system that CEP v2.1 has been developed and tested on:
+The following items describe the configuration of the system that CEP v2.2 has been developed and tested on:
 * Ubuntu 16.04 LTS x86_64
-* Modelsim Questa Sim-64 v10.6c (for unit-level simulation)
+* Modelsim Questa Sim-64 v2019.1 (for co-simulation)
 * Xilinx Vivado 2018.3 (Design or System Edition)
   - Plus Digilent Adept Drivers for programming the VC-707, https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads)
 * Terminal emulator (such as `minicom`)
 * bash
+
 
 ## Cloning the CEP Repository and Getting External Dependencies
 Before proceeding, you'll need to install curl if it is not already installed on your system:
 
 `sudo apt install curl`
 
-After cloning the CEP repository from https://github.com/mit-ll/CEP, you will need get the external dependencies (respositories) that have not been included directly within the CEP repository.
+After cloning the CEP repository from https://github.com/mit-ll/CEP, you will need get the external dependencies (respositories) that have not been included directly within the CEP repository (git submodules are not used within the CEP repository)
 
 First, run the following:
 ```sh
@@ -52,14 +56,17 @@ First, run the following:
 As noted by the script, many directories will be created/overwritten by this command.  Any local changes to these directories will be lost.  The script also provides to option of 
 appending these directories to the `.gitignore` file.  Additional usage info can be found by just running the script without any parameters.
 
+
 ## Setting up your environment
 
 To build the CEP, several packages and toolsets must be installed and built.  Follow the steps listed below.
 
-### Installing Vivado and Modelsim
-It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraties pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not `source` this file in the bash shell you use to build the RISC-V tools.
 
-Modelsim is only required if you intend to run the unit-level simulations on the CEP cores located in `<CEP_ROOT>/simulation`.  Other simulators may work, but they have not been explicitly tested.
+### Installing Vivado and Modelsim
+It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraries pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not source this file in the bash shell you use to build the RISC-V tools.
+
+Modelsim is required if you intend to run the co-simulation environment located in `<CEP_ROOT>/cosim`.  Version 2019.1 is recommended.  Other simulators may work, but they have not been explicitly tested.
+
 
 ### Install the RISC-V toolchain
 The RISC-V source code resides in <CEP_ROOT>/hdl_cores/freedom/rocket-chip/riscv-tools.
@@ -91,6 +98,7 @@ Now with the tools installed, you'll want to add them to your path:
 
 `export PATH=$PATH:$RISCV/bin`
 
+
 ### Install Scala
 Next, you need to install Scala which is required by Chisel.
 
@@ -109,13 +117,19 @@ Next, you need to install Scala which is required by Chisel.
     sudo apt-get install sbt
     ```
 
+
 ### Install Feedom-U-SDK dependencies
 Install the required dependencies by running the following command:
 `sudo apt install build-essential git texinfo bison flex libgmp-dev libmpfr-dev libmpc-dev gawk libz-dev libssl-dev python unzip libncurses5-dev libglib2.0-dev libpixman-1-dev device-tree-compiler`
 
+
 ## Repository Directory Structure (highlight)
 ```
-<CEP ROOT> ---|-- get_external_dependencies.sh - Script used to fetch external CEP dependencies.
+<CEP ROOT> ---|-- cosim/ - Defines the CEP co-simulation evironment for performing "chip" level simularions of the CEP in either of the following modes:  bare metal, 
+              |            bus functional model (BFM), or on the VC707.  Dependent on the building of the CEP hardware.  Refer to the README.md file in this
+              |            directory for more information.
+              |
+              |-- get_external_dependencies.sh - Script used to fetch external CEP dependencies.
               |
               |-- hdl_cores/ - Source for all the components within the CEP.  All the blocks that implement algorithms also have corresponding test vectors.
               |     |
@@ -125,27 +139,17 @@ Install the required dependencies by running the following command:
               |
               |-- generated_dsp_code/  - Placeholder for the generated DSP code
               |
-              |-- simulation/ - Modelsim Testbenches and associated files
-              |     |
-              |     |-- run_regression.sh - Shell script to run unit tests for all CEP cores.
-              |     |
-              |     |-- run_sim_<xxx>.do - Modelsim TCL script for running individual core tests or for the entire CEP.
-              |     |
-              |     |-- waves_<xxx>.do - Modelsim TCL script for adding an initial set of waveforms for the particular test.  The <xxx> should correspond to the run_sim_<xxx>.do script.
-              |     |
-              |     | -- testbench/ - Testbench source files
-              |
               |-- software/
-              |
-              |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/mcd500/freedom-u-sdk directory, which is a fork of the main SiFive repo.  Variant specifically chosen
-              |                    because it has been modified to boot without PCIe support (which for the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
-              |
-              |-- test_software/ - Test software for the CEP cores.  Designed to run withing the Linux environment.
+                    |
+                    |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/mcd500/freedom-u-sdk directory, which is a fork of the main SiFive repo.  Variant specifically chosen
+                                         because it has been modified to boot without PCIe support (which for the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
 
 ```
 
-## Note regarding DSP cores
+
+### Note regarding DSP cores
 Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR components are not included with the CEP repository.  Instructions for generating these cores can be found in the [./hdl_cores/dsp/README.md](./hdl_cores/dsp/README.md) file.  Scripts assume that the DSP generated code has been placed in `<CEP_ROOT>/generated_dsp_code`.
+
 
 ## Building the CEP
 Configure your VC-707 with the following DIP switch settings (SW11):
@@ -164,9 +168,10 @@ Configure your VC-707 with the following DIP switch settings (SW11):
 
 These steps assume prerequisites have been installed and all external dependencies have been fetched.
 
-There are two primary build steps for CEP v2.1, the hardware and the software.
+There are two primary build steps for CEP v2.2, the hardware and the software.
 
-## Building the Hardware
+
+### Building the Hardware
 Ensure that you have sourced the setup scripts for Xilinx Vivado 2018.3.
 
 Example : `source /opt/Xilinx/Vivado/2018.3/settings64.sh`
@@ -186,20 +191,23 @@ Following the build process and assuming the Digilent Adept 2 drivers have been 
 ./program_card.sh
 ```
 
-## Build the Software
-Next, one should change to the `<CEP ROOT>/software/test_software/regression` directory.  This contains the regression test suite for the CEP.
 
-The application needs to be added to the freedom-u-sdk directory before building linux.  While in this directory, execute the following command:
+### Bulding CEP Diagnostics Software ###
+
+Leveraging the CEP Diagnostics written for CEP co-simulation, run the following steps to install the diagnostics into the linux build.
 
 ```sh
+cd <CEP ROOT>/cosim
+make build_v2c                  <-- Required: Generate C header files from Verilog needed by CEP_DIAG
+cd <CEP ROOT>/cosim/drivers/linux
 make install append
 ```
 
-This will copy the application to a newly created package directory within the  `<CEP ROOT>/software/freedom-u-sdk/buildroot/package` directory.  In addition, it will modify the appropriate configuration files to ensure the application is included within the build.
+If subsequent changes are made to the source code in <CEP_ROOT>/cosim/drivers/linux, simply copy the changes over to the Linux build by running `make install`.
 
 Next, one needs to build linux.  First, change to the `<CEP ROOT>/software/freedom-u-sdk` directory.  Ensure that the linux variant of the RISC-V toolset is used by executing `unset RISCV`
 
-Begin the build by running `make -jN BOARD=vc707devkit_nopci all` where N is the numbers of cores you can dedicate to the build.
+Begin the build by running `make -jN BOARD=vc707devkit_nopci all` where N is the numbers of cores you can dedicate to the build.  Ensure that you have NOT sourced the Xilinx Vivado environment setup script before running this step.
 
 Following the linux build, which can take 30 - 60 minutes, you will have a binary which you can load onto an SD card.
 
@@ -213,81 +221,106 @@ You'll then want to connect via a terminal program with the following parameters
 
 You should see the following logo/text appear:
 
-```
-   ::::::::::::::/+   `....-----------:/-     ....-:::::::/+  
-...o+++++++++++++o:  :/--:-/++o+++o+++/-`   ..  `..++++++++:  
--o++o++///////++++o:  +o++o`/...........    +:::/. .:::::o++: 
--++++--       :+++o: `oo++o`/.........:/   `o+++o`:    -+++o: 
--++++--       -:::/. +o+++o`/++o+++o+o-:   `o+++/.-....++o:-  
--++++--              +oo++o.://///////-`   `o+o+o+++o++o+o:.  
--++++--      `.....  +oooo-/               `o+ooo//:/::::/-   
--o+++-:.....:/::::/  +oo+o :`````````````  `s+++s`-           
--++++-::::::/++/++:  ++++o//////////////:- `o+++o`-           
-./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
-  .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
-                                                              
-            Common Evaluation Platform v2.1                   
-   Copyright 2019 Massachusetts Institute of Technology       
-                                                              
-     Built upon the SiFive Freedom U500 Platform using        
-                   the UCB Rocket Chip  
+```                                                                
+     ::::::::::::::/+   `....-----------:/-     ....-:::::::/+  
+  ...o+++++++++++++o:  :/--:-/++o+++o+++/-`   ..  `..++++++++:  
+  -o++o++///////++++o:  +o++o`/...........    +:::/. .:::::o++: 
+  -++++--       :+++o: `oo++o`/.........:/   `o+++o`:    -+++o: 
+  -++++--       -:::/. +o+++o`/++o+++o+o-:   `o+++/.-....++o:-  
+  -++++--              +oo++o.://///////-`   `o+o+o+++o++o+o:.  
+  -++++--      `.....  +oooo-/               `o+ooo//:/::::/-   
+  -o+++-:.....:/::::/  +oo+o :`````````````  `s+++s`-           
+  -++++-::::::/++/++:  ++++o//////////////:- `o+++o`-           
+  ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
+    .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
+                                                                
+              Common Evaluation Platform v2.2                   
+     Copyright 2019 Massachusetts Institute of Technology       
+                                                                
+       Built upon the SiFive Freedom U500 Platform using        
+                    the UCB Rocket Chip                         
+                                                                
+INIT
+CMD0
+CMD8
+ACMD41
+CMD58
+CMD16
+CMD18
+LOADING /
 ```
 
-The CEP will then begin load the bootimage from the SD card and booting linux.
+The CEP will then begin booting linux assuming your SD card has been properly built as described above. 
+
 
 ## Using the CEP
 
 Following the linux boot, you should be presented with a login prompt.  Credentials are the same as the freedom-u-sdk defaults, username: `root` and password `sifive`.
 
-At the command prompt, you can run the CEP Regression suite by commanding `cepregression`.  
+At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 
 A partial output should be similar to:
 
-```
-****************************************************************                                                                                                                                 
-*    Common Evaluation Platform (v02.10) Regression Suite      *                                                                                                                                 
-****************************************************************                                                                                                                                 
-                                                                                                                                                                                                 
-Initializing CEP Cores                                                                                                                                                                           
-AES              @ 0x70000000                                                                                                                                                                    
-MD5              @ 0x70010000                                                                                                                                                                    
-SHA256           @ 0x70020000                                                                                                                                                                    
-RSA              @ 0x70030000                                                                                                                                                                    
-DES3             @ 0x70040000                                                                                                                                                                    
-DFT              @ 0x70050000                                                                                                                                                                    
-IDFT             @ 0x70060000                                                                                                                                                                    
-FIR              @ 0x70070000                                                                                                                                                                    
-IIR              @ 0x70080000                                                                                                                                                                    
-GPS              @ 0x70090000                                                                                                                                                                    
-CEP Version      @ 0x700f0000                                                                                                                                                                    
-                                                                                                                                                                                                 
-AES: *********************************************************                                                                                                                                   
-AES: * AES test started ...                                  *                                                                                                                                   
-AES: *********************************************************                                                                                                                                   
-                                                                                                                                                                                                 
-AES: Plaintext:         0x3243F6A8885A308D313198A2E0370734                                                                                                                                       
-AES: Key:               0x2B7E151628AED2A6ABF7158809CF4F3C2B7E151628AED2A6                                                                                                                       
-AES: Ciphertext:        0x4fcb8db85784a2c1bb77db7ede3217ac                                                                                                                                       
-AES: PASSED:            test 1                                                                                                                                                                   
-AES: Plaintext:         0x00112233445566778899AABBCCDDEEFF                                                                                                                                       
-AES: Key:               0x000102030405060708090A0B0C0D0E0F0001020304050607                                                                                                                       
-AES: Ciphertext:        0x65d50128b115a7780981475a6bd64a0e                                                                                                                                       
-AES: PASSED:            test 2                                         
+```sh
+*** CEP Tag=CEPTest CEP HW VERSION = v2.2 was built on Dec 17 2019*
+ CEP FPGA Physical=0x70000000 -> Virtual=0x000000200034d000
+gSkipInit=0/0
+gverbose=0/0
+Setting terminal to VT102 with erase=^H
+EnterCmd> menu      <-- type "menu" to get list of tests
+        ============== TEST MENU ==============
+    0 : runAll               : Run all available tests
+    1 : cepRegTest           : Run CEP register tests on all cores
+    2 : cep_AES              : CEP AES     test
+    3 : cep_DES3             : CEP DES3    test
+    4 : cep_DFT              : CEP DFT     test
+    5 : cep_FIR              : CEP FIR     test
+    6 : cep_GPS              : CEP GPS     test
+    7 : cep_IDFT             : CEP IDFT    test
+    8 : cep_IIR              : CEP IIR     test
+    9 : cep_MD5              : CEP MD5     test
+   10 : cep_RSA              : CEP RSA     test
+   11 : cep_SHA256           : CEP SHA256  test
+   12 : ddr3Test             : main Memory Test on all cores
+   13 : cepAllMacros         : CEP all macros test (single thread)
+   14 : cepMacroMix          : CEP Macro tests (1 core per macro)
+   15 : cepThrTest           : Run multi-thread tests on all cores
+   16 : cacheFlush           : I+D-caches flush all cores (via self-mod-code)
+   17 : dcacheCoherency      : D-cache coherency Test on all cores
+   18 : icacheCoherency      : I-cache coherency Test on all cores
+EnterCmd> run 0     <-- type "run 0" to run all tests
+   TEST PASS: testId=  1 errCnt= 0 seed=0x00000031 : cepRegTest
+   TEST PASS: testId=  2 errCnt= 0 seed=0x00320000 : cep_AES
+   TEST PASS: testId=  3 errCnt= 0 seed=0x00320000 : cep_DES3
+   TEST PASS: testId=  4 errCnt= 0 seed=0x00320000 : cep_DFT
+   TEST PASS: testId=  5 errCnt= 0 seed=0x00320000 : cep_FIR
+   TEST PASS: testId=  6 errCnt= 0 seed=0x00320000 : cep_GPS
+   TEST PASS: testId=  7 errCnt= 0 seed=0x00320000 : cep_IDFT
+   TEST PASS: testId=  8 errCnt= 0 seed=0x00320000 : cep_IIR
+   TEST PASS: testId=  9 errCnt= 0 seed=0x00320000 : cep_MD5
+   TEST PASS: testId= 10 errCnt= 0 seed=0x00320000 : cep_RSA
+   TEST PASS: testId= 11 errCnt= 0 seed=0x00320000 : cep_SHA256
+   TEST PASS: testId= 12 errCnt= 0 seed=0x00320000 : ddr3Test
+   TEST PASS: testId= 13 errCnt= 0 seed=0x00320000 : cepAllMacros
+   TEST PASS: testId= 14 errCnt= 0 seed=0x00320000 : cepMacroMix
+   TEST PASS: testId= 15 errCnt= 0 seed=0x00320000 : cepThrTest
+   TEST PASS: testId= 16 errCnt= 0 seed=0x00340000 : cacheFlush
+   TEST PASS: testId= 17 errCnt= 0 seed=0x00340000 : dcacheCoherency
+   TEST PASS: testId= 18 errCnt= 0 seed=0x00340000 : icacheCoherency
+EnterCmd> help      <-- to get list available commands
+<...>
 
 ```
 
 You should now have a functioning CEP!
 
-## CEP Core simulation using Modelsim (optional)
-Unit-level modelsim scripts and testbenches have been provided for the CEP acclerator cores in the `<CEP_ROOT>/simulation` directory.
+## Co-Simulation ##
+The primary documentation source for the CEP co-simulation environment can be found in [./cosim/README.md](./cosim/README.md).
 
-Edit `run_sim_<XXX>.do`.... change the **DESIGN_ROOT** and **GENERATED_DSP_ROOT** variables to point to checkedout CEP repo and generated DSP files accordingly.
+It is worth highlighting that simulation is dependent on completing the `Building the Hardware` steps above.
 
-Once the desired program has been "loaded" into memory as described above, simulation is accomplished by running modelsim using following command in the `<CEP_ROOT>/simulation` directory:
-    `vsim -do run_sim_<XXX>.do`
+The environment supports writing tests that can run in simulation or on the hardware itself.
 
-Alternatively, a non-gui simulation can be run by simply adding the -c switch:
-    `vsim -c -do run_sim_<XXX>.do`
 
 ## Release Notes:
 
@@ -317,6 +350,9 @@ v2.0 - (16 August 2019)
 v2.1 - (31 October 2019)
 * Integrated DES3, GPS, MD5, RSA, SHA256, DFT, IDFT, and IIR cores.
 
+v2.2 - (31 January 2020)
+* Added co-simulation environment that supports both Bus Functional Model (BFM) and Baremetal simulation modes.  Additional diagnostic capabilities within Linux.
+
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
 
@@ -326,8 +362,8 @@ Additional licensing information can be found in the [LICENSE](./LICENSE) and [l
 
 This material is based upon work supported by the Assistant Secretary of Defense for Research and Engineering under Air Force Contract No. FA8721-05-C-0002 and/or FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Assistant Secretary of Defense for Research and Engineering.
 
-© 2019 Massachusetts Institute of Technology.
+© 2020 Massachusetts Institute of Technology.
 
-The software/firmware is provided to you on an As-Is basis.
+The software/firmware is provided to you on an as-is basis.
 
 Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.

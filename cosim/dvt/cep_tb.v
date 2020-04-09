@@ -823,5 +823,16 @@ module cep_tb;
       end
    endgenerate
    
-    
+   //
+   //
+   //
+   `include "aes_capture.incl"
+   `include "sha256_capture.incl"
+   `include "md5_capture.incl"
+   `include "rsa_capture.incl"
+   `include "des3_capture.incl"
+   `include "gps_capture.incl"
+   `include "dft_capture.incl"
+   `include "idft_capture.incl"               
+   //
 endmodule

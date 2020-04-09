@@ -11,8 +11,7 @@ Title               : des3
 Source              : http://asics.ws/v6/free-ip-cores/#
 CEP Directory       : ./hdl_cores/des3
 License Description : BSD-based
-License terms       :
-                        Copyright (C) 2000-2009, ASICs World Services, LTD. , AUTHORS All rights reserved. Redistribution and use in source, netlist, 
+License terms       :   Copyright (C) 2000-2009, ASICs World Services, LTD. , AUTHORS All rights reserved. Redistribution and use in source, netlist, 
                         binary and silicon forms, with or without modification, are permitted provided that the following conditions are met: 
 
                         Redistributions of source code must retain the above copyright notice, this list of conditions and the following disclaimer.
@@ -28,12 +27,38 @@ License terms       :
                         OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            :  This core provides a standard MD5 hash function.  It will be integrated as a HW accelerator into the SoC.
 
-Title               : dsp (code not directly included in the CEP repository)
+Title               : dsp (FIR and IIR filters)
 Source              : Copyright (c) 2005-2014 Peter A. Milder for the Spiral Project, Carnegie Mellon University
-CEP Directory       : ./hdl_cores/dsp
-License Description : Unknown
-License Terms       : Unknown
-Function            : Provides logic for the FIR, IIR, DFT, and IDFT cores.
+CEP Directory       : ./hdl_cores/dsp/fir
+                      ./hdl_cores/dsp/iir
+License Description : BSD
+License Terms       : http://www.opensource.org/licenses/bsd-license.php
+Function            : Provides logic for the FIR and IIR
+
+Title               : dsp (DFT) and IDFT)
+Source              : Copyright (c) 2005-2014 Peter A. Milder for the Spiral Project, Carnegie Mellon University
+CEP Directory       : ./hdl_cores/dsp/dft
+                      ./hdl_cores/dsp/idft
+License Description : Custom
+License Terms       : The generated code is NOT included within the CEP repository.
+
+					  This design is provided for internal, non-commercial research use only
+                      and is not for redistribution, with or without modifications.
+
+					  You may not use the name "Carnegie Mellon University" or derivations
+ 					  thereof to endorse or promote products derived from this software.
+ 
+ 					  THE SOFTWARE IS PROVIDED "AS-IS" WITHOUT ANY WARRANTY OF ANY KIND, EITHER
+ 					  EXPRESS, IMPLIED OR STATUTORY, INCLUDING BUT NOT LIMITED TO ANY WARRANTY
+ 					  THAT THE SOFTWARE WILL CONFORM TO SPECIFICATIONS OR BE ERROR-FREE AND ANY
+ 				      IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE,
+ 					  TITLE, OR NON-INFRINGEMENT.  IN NO EVENT SHALL CARNEGIE MELLON UNIVERSITY
+ 					  BE LIABLE FOR ANY DAMAGES, INCLUDING BUT NOT LIMITED TO DIRECT, INDIRECT,
+                      SPECIAL OR CONSEQUENTIAL DAMAGES, ARISING OUT OF, RESULTING FROM, OR IN
+ 					  ANY WAY CONNECTED WITH THIS SOFTWARE (WHETHER OR NOT BASED UPON WARRANTY,
+ 					  CONTRACT, TORT OR OTHERWISE).
+
+Function            : Provides logic for the DFT and IDFT cores
 
 Title               : freedom
 Source              : https://github.com/sifive/freedom

@@ -1,0 +1,29 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+//
+// File Name:      DES3_stimulus.csv
+// Program:        Common Evaluation Platform (CEP)
+// Description:    DES3 Core unit testbench stimulus
+// Notes:
+//
+//************************************************************************
+// column#1  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/start
+// column#2  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/decrypt
+// column#3  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/desIn[63:0]
+// column#4  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key1[55:0]
+// column#5  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key2[55:0]
+// column#6  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key3[55:0]
+// column#7  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/out_valid
+// column#8  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/desOut[63:0]
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_0404015555015455
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_4d5947bfba56edee
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_cef78b7e70bdde99
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_99ef53e8e12efd26
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_76cea2d4960daf49
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_fc8940fd685a5bd6
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_fc1691ffd1a0b3b8
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_ac3c22baf7113361
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_18280474bb2223c2
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_740049a937411790
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_fc5193136fd37b74
+0_0_0000000000000000_00000000000000_00000000000000_00000000000000_0_bcf76622cfb2b2fc

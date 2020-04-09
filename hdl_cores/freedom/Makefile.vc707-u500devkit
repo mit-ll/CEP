@@ -23,8 +23,8 @@ VSRCS := \
     $(base_dir)/../aes/aes_192.v \
     $(base_dir)/../aes/round.v \
     $(base_dir)/../aes/table.v \
-    $(base_dir)/../../generated_dsp_code/FIR_filter.v \
-    $(base_dir)/../../generated_dsp_code/IIR_filter.v \
+    $(base_dir)/../dsp/FIR_filter.v \
+    $(base_dir)/../dsp/IIR_filter.v \
     $(base_dir)/../../generated_dsp_code/dft_top.v \
     $(base_dir)/../../generated_dsp_code/idft_top.v \
     $(base_dir)/../des3/des3.v \

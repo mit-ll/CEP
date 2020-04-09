@@ -221,7 +221,7 @@ void print_greeting()
     kputs("  ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           "); 
     kputs("    .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            "); 
     kputs("                                                                ");
-    kputs("              Common Evaluation Platform v2.2                   ");
+    kputs("              Common Evaluation Platform v2.3                   ");
     kputs("     Copyright 2019 Massachusetts Institute of Technology       ");
     kputs("                                                                ");
     kputs("       Built upon the SiFive Freedom U500 Platform using        ");

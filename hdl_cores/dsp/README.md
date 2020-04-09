@@ -8,7 +8,9 @@
 
 # CEP-DSP: Core blocks
 
-The core DSP blocks (DFT/IDFT/IIR/FIR) were generated using the free online hardware generators provided by the [Spiral Project](http://www.spiral.net/). Due to licensing restrictions, we cannot include the generated files for the DSP blocks. To include these cores in the SoC, you must regenerate the cores and add the source files to the CEP file structure as described:
+The core DSP blocks (DFT/IDFT/IIR/FIR) were generated using the free online hardware generators provided by the [Spiral Project](http://www.spiral.net/). 
+
+Due to licensing restrictions, the generated DFT and IDFT cores cannot be directly included within the CEP repository.  Thus, following generation using the following parameters, the results should be placed in <CEP ROOT>/generated_dsp_code
 
 ## Generator Websites
 * DFT/iDFT: [Spiral Project DFT Gen](http://www.spiral.net/hardware/dftgen.html)
@@ -91,8 +93,4 @@ Pick a directory for all the generated source to be saved.
   * Save the generated Verilog file to `IIR_filter.v`
 * FIR
   * Save the generated Verilog file to `FIR_filter.v`
-
-## Warning
-
-Modify the parameters used to generate the cores at your own risk.  Some parameter changes will require you to modify the Wishbone bus interface and software drivers.
 

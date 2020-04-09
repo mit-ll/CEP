@@ -1498,15 +1498,13 @@ int cep_RSA_test(void) {
   printf("RSA: * RSA test started ...                                  *\r\n");
   printf("RSA: *********************************************************\r\n");
   printf("\r\n");
-  
-  rsa_modexp_32bits(0x00000001, 0x00000002, 0x00000005, 0x00000001); //msg^exp < mod -> 1^2 < 5    
+  rsa_modexp_32bits(0x00000001, 0x00000002, 0x00000005, 0x00000001); //msg^exp < mod -> 1^2 < 5
   rsa_modexp_32bits(0x00000001, 0x00000002, 0x00000003, 0x00000001); //msg^exp < mod -> 1^2 < 3
   rsa_modexp_32bits(0x00000002, 0x00000002, 0x00000005, 0x00000004); //msg^exp < mod -> 2^2 < 5
   rsa_modexp_32bits(0x00000002, 0x00000002, 0x00000003, 0x00000001); //msg^exp > mod -> 2^2 > 3
   rsa_modexp_32bits(0x00000004, 0x0000000D, 0x000001F1, 0x000001bd); //msg^exp > mod -> 4^13 > 497
   rsa_modexp_32bits(0x01234567, 0x89ABCDEF, 0x11111111, 0x0D9EF081); //msg^exp > mod -> 19088743^2309737967 > 286331153
   rsa_modexp_32bits(0x30000000, 0xC0000000, 0x00A00001, 0x0000CC3F); //msg^exp > mod -> 
-  
   printf("\r\n");
   printf("RSA: *********************************************************\r\n");
   printf("RSA: * RSA test done ...                                     *\r\n");

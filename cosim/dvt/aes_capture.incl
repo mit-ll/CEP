@@ -1,0 +1,54 @@
+//
+//
+//
+reg CaptureAES_vector=0;
+always @(posedge `DVT_FLAG[`DVTF_AES_CAPTURE_EN_BIT]) CaptureAES_vector=1;
+initial begin
+   repeat(1) @(posedge cep_tb.fpga.topDesign.topMod.aes.blackbox.clk);
+   if (CaptureAES_vector) begin
+      @(negedge cep_tb.fpga.topDesign.topMod.aes.blackbox.rst);
+      // next clock
+      @(posedge cep_tb.fpga.topDesign.topMod.aes.blackbox.clk);
+      captureAESStimulus();
+   end
+end
+   
+   task captureAESStimulus;
+      int out;
+      int sampleNum;      
+      reg [4+192+128+4+128-1:0] temp;
+      begin
+	 sampleNum=0;
+	 $display("Capturing stimulus");	 
+	 out=$fopen("AES_stimulus.csv","w");
+	 $fwrite(out,"//************************************************************************\n");
+	 $fwrite(out,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(out,"//\n");		
+	 $fwrite(out,"// File Name:      AES_stimulus.csv\n");
+	 $fwrite(out,"// Program:        Common Evaluation Platform (CEP)\n");
+	 $fwrite(out,"// Description:    AES Core unit testbench stimulus\n");
+	 $fwrite(out,"// Notes:\n");        
+	 $fwrite(out,"//\n");
+	 $fwrite(out,"//************************************************************************\n");
+	 //
+	 $fwrite(out,"// column#1  : IN  start\n");
+	 $fwrite(out,"// column#2  : IN  key[191:0]\n");	 
+	 $fwrite(out,"// column#3  : IN  state[127:0]\n");
+	 $fwrite(out,"// column#4  : OUT out_valid\n");	 
+	 $fwrite(out,"// column#5  : OUT out[127:0]\n");
+	 //
+	 // wait until valid in to interleaver
+	 while (1) begin
+	    @(negedge cep_tb.fpga.topDesign.topMod.aes.blackbox.clk);
+	    sampleNum++;
+	    // MUST align to HEX number if _ is used!!!
+	    $fwrite(out,"%x_%x_%x_%x_%x\n",
+		    {3'b0,cep_tb.fpga.topDesign.topMod.aes.blackbox.start},	
+		    cep_tb.fpga.topDesign.topMod.aes.blackbox.key[191:0],
+		    cep_tb.fpga.topDesign.topMod.aes.blackbox.state[127:0],
+	    	    {3'b0,cep_tb.fpga.topDesign.topMod.aes.blackbox.out_valid},		     
+		    cep_tb.fpga.topDesign.topMod.aes.blackbox.out[127:0]);
+	 end
+      end
+   endtask //
+   

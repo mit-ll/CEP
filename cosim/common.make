@@ -36,7 +36,7 @@ USE_DPI         = 1
 # Tools
 # can be override with env. variables
 #
-VIVADO_PATH	?= /opt/Xilinx/Vivado/2018.3
+VIVADO_PATH	?= /opt/xilinx-2018.3/Vivado/2018.3
 SIMULATOR_PATH	?= /opt/questa-2019.1/questasim/bin
 
 #
@@ -145,7 +145,6 @@ endif
 
 # Use our gcc instead of builtin form questa
 DUT_VSIM_ARGS	  += -cpppath ${GCC}
-
 
 #
 # -------------------------------------------

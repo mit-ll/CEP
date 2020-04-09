@@ -4,7 +4,7 @@
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.2
+   v2.3
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -15,7 +15,7 @@ The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip
 
 Additional information on the objectives of the CEP may be found in [./CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
-CEP v2.2 is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
+The CEP is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
 
 Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development Board.  Longer term plans include migrating to other platforms with the eventual goal of taping out an ASIC.
 
@@ -32,7 +32,7 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 
 
 ## Pre-requisites (validated test/build configuration):
-The following items describe the configuration of the system that CEP v2.2 has been developed and tested on:
+The following items describe the configuration of the system that CEP has been developed and tested on:
 * Ubuntu 16.04 LTS x86_64
 * Modelsim Questa Sim-64 v2019.1 (for co-simulation)
 * Xilinx Vivado 2018.3 (Design or System Edition)
@@ -168,7 +168,7 @@ Configure your VC-707 with the following DIP switch settings (SW11):
 
 These steps assume prerequisites have been installed and all external dependencies have been fetched.
 
-There are two primary build steps for CEP v2.2, the hardware and the software.
+There are two primary build steps for the CEP, the hardware and the software.
 
 
 ### Building the Hardware
@@ -234,7 +234,7 @@ You should see the following logo/text appear:
   ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
     .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
                                                                 
-              Common Evaluation Platform v2.2                   
+              Common Evaluation Platform v2.3                   
      Copyright 2019 Massachusetts Institute of Technology       
                                                                 
        Built upon the SiFive Freedom U500 Platform using        
@@ -262,7 +262,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.2 was built on Dec 17 2019*
+*** CEP Tag=CEPTest CEP HW VERSION = v2.3 was built on Dec 17 2019*
  CEP FPGA Physical=0x70000000 -> Virtual=0x000000200034d000
 gSkipInit=0/0
 gverbose=0/0
@@ -352,6 +352,9 @@ v2.1 - (31 October 2019)
 
 v2.2 - (31 January 2020)
 * Added co-simulation environment that supports both Bus Functional Model (BFM) and Baremetal simulation modes.  Additional diagnostic capabilities within Linux.
+
+v2.3 - (17 April 2020)
+* Added unit-level testbenches for all CEP cores.  Co-simulation modified to generate unit-level test stimulus.  
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  

@@ -110,45 +110,42 @@ At the Vivado's tcl console (bottom), type/cut/paste and execute the below comma
  
 Replace /opt/questa-2019.1/questasim/bin and ./cosim/xil_lib above with appropriate paths of your setup
 
-```
-
-  
-## How to run test(s): ##
+# How to run test(s): #
 
 NOTE: type "make usage" for help.
 
 * Run a test interactively: (use regTest as example)
 
 ```
-cd <CEP_ROOT>/cosim/bfmTests/regTest 
+cd .../cosim/bfmTests/regTest 
 make
 ```
 
 * Run full regression:
 
-```
-<CEP_ROOT>/cosim
-make        <-- this will run all tests in both BFM and bare metal
-```
-
-or
-
-```
-cd <CEP_ROOT>/cosim/bfmTests  
-make        <-- this will run all tests under BFM mode only
+```	
+cd .../cosim  
+make  		<-- this will run all tests in both BFM and bare metal
 ```
 
 or
 
 ```
-cd <CEP_ROOT>/cosim/bareMetalTests  
-make        <-- this will run all tests under bare metal mode only
+cd .../cosim/bfmTests  
+make		<-- this will run all tests under BFM mode only
 ```
 
-* How to check regression results (assuming tests have been run):
+or
 
 ```
-cd <CEP_ROOT>/cosim  
+cd .../cosim/bareMetalTests  
+make		<-- this will run all tests under bare metal mode only
+```
+
+* How to check regression results:
+
+```
+cd .../cosim  
 make summary
 ```
    it should give you something like this:
@@ -162,33 +159,32 @@ PASS : /home/aduong/CEP/CEP-master/cosim/bareMetalTests/ddr3 (NEW SEED)
 PASS : /home/aduong/CEP/CEP-master/cosim/bareMetalTests/printfTest (NEW SEED)
 PASS : /home/aduong/CEP/CEP-master/cosim/bareMetalTests/regression (NEW SEED)
  ```
-
  
-## How to add new test: ##
+# How to add new test: #
 
    First pick which test category the new test should be under: bfmTests or bareMetalTests or <others_yet_created>
 
-    cd <bfmTests_or_bareMetalTests_or_others>
-    cp -rp ddr3Test <your_new_test>     <-- cut/paste any existing test as reference to your new test
+	cd <bfmTests_or_bareMetalTests_or_others>
+	cp -rp ddr3Test <your_new_test>		<-- cut/paste any existing test as reference to your new test
 
 
-    cd <your_new_test>
-    ls  (should have the list of file shown below)
+	cd <your_new_test>
+	ls  (should have the list of file shown below)
 
-    c_dispatch.h        <-- make sure all the header files and Makefile are there and don't need to touch any of these
-    c_module.h
-    Makefile
-    testHostory.txt     <-- history of PASS/FAIL and random seeds used for this particular test from day of creation.
-    
-    c_dispatch.cc       <-- top dispatch to control how many cores to run 
-    c_module.cc     <-- the test wrapper to run under each core 
-                Note: 
-                    in BFM mode, this is the test wrapper that calls your new test
-                    in Bare Metal mode, don't need to touch. See riscv_wrapper.cc
-                    
-    riscv_wrapper.cc    <-- This is the test wrapper that calls your new test in Bare Metal Mode only.
-                Note: under BFM category, this file is not needed.
-                
+	c_dispatch.h		<-- make sure all the header files and Makefile are there and don't need to touch any of these
+	c_module.h
+	Makefile
+	testHostory.txt		<-- history of PASS/FAIL and random seeds used for this particular test from day of creation.
+	
+	c_dispatch.cc		<-- top dispatch to control how many cores to run 
+	c_module.cc		<-- the test wrapper to run under each core 
+				Note: 
+					in BFM mode, this is the test wrapper that calls your new test
+					in Bare Metal mode, don't need to touch. See riscv_wrapper.cc
+				    
+	riscv_wrapper.cc	<-- This is the test wrapper that calls your new test in Bare Metal Mode only.
+				Note: under BFM category, this file is not needed.
+				
 
    Let dig in further to each of these files:
 

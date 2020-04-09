@@ -134,6 +134,19 @@
 `define DVTF_PRINTF_CMD                             58
 `define DVTF_SET_IPC_DELAY                          59
 //
+// Vector capture   
+//
+`define DVTF_AES_CAPTURE_EN_BIT                     60
+`define DVTF_SHA256_CAPTURE_EN_BIT                  61
+`define DVTF_MD5_CAPTURE_EN_BIT                     62
+`define DVTF_RSA_CAPTURE_EN_BIT                     63
+`define DVTF_DES3_CAPTURE_EN_BIT                    64
+`define DVTF_GPS_CAPTURE_EN_BIT                     65
+`define DVTF_DFT_CAPTURE_EN_BIT                     66
+`define DVTF_IDFT_CAPTURE_EN_BIT                    67
+
+
+//
 // ===============================================
 // System Sim Status
 // ===============================================

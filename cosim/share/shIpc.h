@@ -130,7 +130,7 @@ public:
   void PrintPostVerbose(const char *fmt, ...);
 //  void Print(char *prefix,char *str);
   void WriteDvtFlag(int msb, int lsb, int value);
-  int  ReadDvtFlag(int msb, int lsb);
+  u_int64_t  ReadDvtFlag(int msb, int lsb);
   void RunClk(int numClk);
   u_int32_t GetSimClk();
   void Shutdown();

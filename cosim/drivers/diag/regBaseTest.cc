@@ -28,6 +28,8 @@ void regBaseTest_Construct(regBaseTest_t *me,
 			   );
 int regBaseTest_WriteReg(regBaseTest_t *me,uint32_t adr, uint64_t dat);
 uint64_t regBaseTest_ReadReg(regBaseTest_t *me,uint32_t adr);
+int regBaseTest_SetSeed(regBaseTest_t *me,int seed);
+void regBaseTest_ClearAll(regBaseTest_t *me);
 int regBaseTest_AddAReg(regBaseTest_t *me,uint32_t adr, uint64_t mask);
 int regBaseTest_AddROReg(regBaseTest_t *me,uint32_t adr, uint64_t ROvalue, uint64_t mask);
 int regBaseTest_ReadRegNCompare(regBaseTest_t *me,uint32_t adr, uint64_t Data, uint64_t mask);
@@ -65,6 +67,8 @@ void regBaseTest_Construct(regBaseTest_t *me,
   //
   // Links
   //
+  me->SetSeed_p			= regBaseTest_SetSeed		;
+  me->ClearAll_p		= regBaseTest_ClearAll          ;
   me->AddAReg_p			= regBaseTest_AddAReg		;              
   me->AddROReg_p		= regBaseTest_AddROReg		;             
   me->GetMaxBits_p		= regBaseTest_GetMaxBits	;           
@@ -86,11 +90,20 @@ void regBaseTest_Construct(regBaseTest_t *me,
 //
 // Add a register to test
 //
+void regBaseTest_ClearAll(regBaseTest_t *me) {
+  me->mRegCnt = 0;
+}
+  
 int regBaseTest_AddAReg(regBaseTest_t *me, uint32_t adr, uint64_t mask) {
   me->mRegList[(me->mRegCnt*2)+0] = adr;
   me->mRegList[(me->mRegCnt*2)+1] = mask;
   me->mRegCnt++;
   me->mMaxBits = (*me->GetMaxBits_p)(me,mask);
+  return(0);
+}
+
+int regBaseTest_SetSeed(regBaseTest_t *me, int seed) {
+  me->mSeed = seed;
   return(0);
 }
 

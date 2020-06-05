@@ -57,9 +57,26 @@ void *c_module(void *arg) {
   // MUST
   // wait until Calibration is done..
   //int calibDone = calibrate_ddr3(50);
-  pio.RunClk(500);  
+  pio.RunClk(500);
+
+#if 0
+  int i;
+  for (i=0;i<4;i++) {
+    DUT_WRITE32_64(reg_base_addr + cep_core0_status + (i*8), (uint64_t)0x123456789abcde00 + (i*8));
+  }
+  for (i=0;i<4;i++) {  
+    DUT_WRITE_DVT(DVTF_PAT_HI, DVTF_PAT_LO, i);
+    DUT_WRITE_DVT(DVTF_GET_CORE_STATUS, DVTF_GET_CORE_STATUS, 1);
+    uint64_t d64 = DUT_READ_DVT(DVTF_PAT_HI, DVTF_PAT_LO);
+    LOGI("CoreId=%d = 0x%016lx\n",i,d64);
+  }
+#endif
+  
+  //
+#if 1
   int revCheck = 1;
   if (!errCnt) { errCnt = cepRegTest_runTest(cpuId,64, revCheck,seed, verbose); }
+#endif
   //
   //
   pio.RunClk(100);  

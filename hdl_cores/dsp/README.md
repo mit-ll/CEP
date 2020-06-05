@@ -1,7 +1,5 @@
 <p align="center">
-   v2.0
-   <br>
-   Copyright 2019 Massachusetts Institute of Technology
+   Copyright 2020 Massachusetts Institute of Technology
 </p>
 
 <br>
@@ -80,17 +78,17 @@ Debug Output|**`Off`**|**`Off`**
 
 ## Incorporating the Generated Source Files
 
-Pick a directory for all the generated source to be saved.
+Generated source should be placed in <CEP_ROOT>/generated_dsp_code
 
-* DFT
+* DFT 
   * Save the generated Verilog file to `dft_top.v`
   * Remove the testbench module from the generated Verilog file.
 * iDFT
   * Save the generated Verilog file to `idft_top.v`
   * Edit `idft_top.v`.  Rename the **dft_top** module to **idft_top**
   * Remove the testbench module from the generated Verilog file.
-* IIR
+* IIR (already included in repo)
   * Save the generated Verilog file to `IIR_filter.v`
-* FIR
+* FIR (already included in repo)
   * Save the generated Verilog file to `FIR_filter.v`
 

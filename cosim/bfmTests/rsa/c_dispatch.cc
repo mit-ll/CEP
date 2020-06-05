@@ -15,6 +15,7 @@
 #include "cep_apis.h"
 #include "cep_adrMap.h"
 #include "simPio.h"
+
 /*
  * main 
  */
@@ -65,8 +66,14 @@ int main(int argc, char *argv[])
   //
   thr.AddSysThread(SYSTEM_SLOT_ID,SYSTEM_CPU_ID);
   //
+#ifdef C2C_CAPTURE
+  Set_C2C_Capture(C2C_CAPTURE);
+#endif
+  
+  //
+  DUT_WRITE_DVT(DVTF_TOGGLE_CHIP_RESET_BIT,DVTF_TOGGLE_CHIP_RESET_BIT, 1);  
   // Enable vector capture-ing
-  DUT_WRITE_DVT(DVTF_RSA_CAPTURE_EN_BIT,DVTF_RSA_CAPTURE_EN_BIT,1);
+  //DUT_WRITE_DVT(DVTF_RSA_CAPTURE_EN_BIT,DVTF_RSA_CAPTURE_EN_BIT,1);
   //
   // ============================
   // Turn on the wave here

@@ -5,7 +5,7 @@
  * The code is distributed under a BSD style license
  * (see http://www.opensource.org/licenses/bsd-license.php)
  *------------------------------------------------------------------------------ */
-/* ./iirGen.pl -A 256 0 378 0 179 0 32 0 2 0 0 0 -B 0 4 22 68 136 191 191 136 68 22 4 0 -moduleName IIR_filter -fractionalBits 8 -bitWidth 32 -inData inData -inReg -outReg -outData outData -clk clk -reset reset -reset_edge negedge -filterForm 1 -outFile ../outputs/filter_1576583026.v */
+/* ./iirGen.pl -A 256 0 378 0 179 0 32 0 2 0 0 0 -B 0 4 22 68 136 191 191 136 68 22 4 0 -moduleName IIR_filter -fractionalBits 8 -bitWidth 32 -inData inData -inReg -outReg -outData outData -clk clk -reset reset -reset_edge negedge -filterForm 1 -outFile ../outputs/filter_1542230730.v */
 /* Warning: zero-valued filter taps have been optimized away. */
 
 module IIR_filter_firBlock_left_MultiplyBlock (
@@ -392,3 +392,4 @@ module IIR_filter (
 
   //IIR_filter area estimate = 105716.320536651;
 endmodule //IIR_filter
+

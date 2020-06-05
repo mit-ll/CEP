@@ -1,8 +1,8 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 module pcode(
-           clk, rst, en, sat,
+           clk, reset, prn_changed, en, sat,
            preg
        );
 parameter SAT_WIDTH = 6;
@@ -14,21 +14,28 @@ parameter ini_x1b=12'b010101010100;
 parameter ini_x2a=12'b100100100101;
 parameter ini_x2b=12'b010101010100;
 
-input clk;
-input rst;
-input en;
-input [ SAT_WIDTH-1:0] sat;
+   input clk;
+   input reset;
+   input prn_changed;
+   
+   input en;
+   input [ SAT_WIDTH-1:0] sat;
 `ifdef PREG_WIDTH
-output reg [PREG_WIDTH-1:0] preg;
+   output reg [PREG_WIDTH-1:0] preg;
 `else
-output reg preg;
+   output reg 		       preg;
 `endif
-
+   
+   // Tony D.
+   wire    rst = reset | prn_changed;
+   
 reg[XREG_WIDTH-1:0] x1a;
 reg[XREG_WIDTH-1:0] x1b;
 reg[XREG_WIDTH-1:0] x2a;
 reg[XREG_WIDTH-1:0] x2b;
-reg[SREG_WIDTH-1:0] sreg;
+//reg[SREG_WIDTH-1:0] sreg;
+   // sat is 1 based!!!
+reg [SREG_WIDTH:0] sreg; // tony duong 04/14/20 FIXME!!! sreg[sat] is used and gets X when sat=37
 
 wire x1a_rst, x1b_rst, x2a_rst, x2b_rst;
 wire x1a_cnt_d, x1b_cnt_d, x2a_cnt_d, x2b_cnt_d, x_cnt_d, z_cnt_eow, z_cnt_sow;
@@ -232,7 +239,9 @@ always @(posedge clk)
         if(rst)
             sreg<=32'b0;
         else if(en)
-            sreg<={sreg[SREG_WIDTH-2:0],(x2a[XREG_WIDTH-1]^x2b[XREG_WIDTH-1])};
+//            sreg<={sreg[SREG_WIDTH-2:0],(x2a[XREG_WIDTH-1]^x2b[XREG_WIDTH-1])};
+	  // tony D, sat is 1-based
+          sreg<={sreg[SREG_WIDTH-1:0],(x2a[XREG_WIDTH-1]^x2b[XREG_WIDTH-1])};	  
     end
 
 always @(posedge clk)

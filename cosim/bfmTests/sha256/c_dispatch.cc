@@ -65,8 +65,9 @@ int main(int argc, char *argv[])
   //
   thr.AddSysThread(SYSTEM_SLOT_ID,SYSTEM_CPU_ID);
   //
+  DUT_WRITE_DVT(DVTF_TOGGLE_CHIP_RESET_BIT,DVTF_TOGGLE_CHIP_RESET_BIT, 1);      
   // Enable vector capture-ing
-  DUT_WRITE_DVT(DVTF_SHA256_CAPTURE_EN_BIT,DVTF_SHA256_CAPTURE_EN_BIT,1);
+  //DUT_WRITE_DVT(DVTF_SHA256_CAPTURE_EN_BIT,DVTF_SHA256_CAPTURE_EN_BIT,1);
   
   // ============================
   // Turn on the wave here

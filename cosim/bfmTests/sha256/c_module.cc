@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_sha256.h"
 
 //
 void *c_module(void *arg) {
@@ -52,7 +53,23 @@ void *c_module(void *arg) {
   //
   int mask = 0xFFFFFFFF;
   mask = 1 << SHA256_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
+
+  //
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_sha256 sha256(seed,verbose);
+  //
+  sha256.init();  
+  sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");  
+  //
+  int maxLoop = 16;
+  initConfig();
+  errCnt += sha256.RunSha256Test(maxLoop);
+  //
+  sha256.freeMe();
+  
   //
   pio.RunClk(100);  
   //

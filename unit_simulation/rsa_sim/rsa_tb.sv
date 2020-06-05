@@ -9,21 +9,26 @@
 //************************************************************************
 
 `timescale 1ns/1ns
+
 //
-// Name of the DUT = rsa = modexp_core
+// Name of the DUT & TB if not pass in from Make
 //
-`define DUT_NAME modexp_core
+`ifndef DUT_NAME
+ `define DUT_NAME rsa
+`endif
+
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
 //
-// Stimulus/ExpectedData info
+// Pull in the stimulus and other info
 //
-`define MAX_SAMPLES      (96653-31)
-`define SAMPLE_WIDTH     ((12*4)+(2*8)+(32*3)+4+64+(4*32))
-`define OUTPUT_WIDTH     (1+64+(4*32))
-`define DATA_FILE        "RSA_stimulus.csv"
+`include "rsa_stimulus.txt"
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+//
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -34,8 +39,8 @@
 // o1=output#1, o2=output#2, etc..
 // j* = dont care input/output (used for HEX filler)
 //
-`define APPLY_N_CHECK(x,ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,i14,i15,i16,i17,jo1,o1,o2,o3,o4,o5,o6) \
-{ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,i14,i15,i16,i17,jo1,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6} =x;\
+`define APPLY_N_CHECK(x,ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,o1,o2,o3,o4,o5,o6) \
+{ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6} =x;\
   exp_pat={exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6};\
   act_pat={o1,o2,o3,o4,o5,o6}; \
   if (exp_pat!=act_pat) begin \
@@ -46,21 +51,23 @@
      errCnt++;\
   end
 
+
+
 //
-module `TB_NAME(`DUT_NAME) ; 
-   //
+//
+module `TB_NAME ;
+
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`RSA_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
    reg 			    clk=0;
    reg 			    reset_n=0;
    reg 			    start=0;
-   reg [07 : 0] 	    exponent_length=0;
+   reg [12 : 0] 	    exponent_length=0;
    reg [07 : 0] 	    modulus_length=0;
    reg 			    exponent_mem_api_cs=0;
    reg 			    exponent_mem_api_wr=0;
@@ -104,15 +111,18 @@ module `TB_NAME(`DUT_NAME) ;
    reg [2:0] 		    ji10=0;
    reg [2:0] 		    ji11=0;
    reg [2:0] 		    ji12=0;
+   reg [2:0] 		    ji14=0;   
    reg [2:0] 		    jo1=0;
    //
    int 		errCnt=0;
+   
    //
    // Simple clock driving the DUT
    //
    initial begin
       forever #5 clk = !clk;
    end
+   //    
    //
    // DUT instantiation
    //
@@ -124,9 +134,35 @@ module `TB_NAME(`DUT_NAME) ;
    //
    initial begin
       //
-      // do the unlocking or whatever here
+      // Pulse the DUT's reset & drive input to zeros (known states)
       //
-
+      {start,
+       exponent_length,
+       modulus_length,
+       exponent_mem_api_cs,
+       exponent_mem_api_wr,
+       exponent_mem_api_rst,
+       exponent_mem_api_write_data,
+       modulus_mem_api_cs,
+       modulus_mem_api_wr,
+       modulus_mem_api_rst,
+       modulus_mem_api_write_data,
+       message_mem_api_cs,
+       message_mem_api_wr,
+       message_mem_api_rst,
+       message_mem_api_write_data,
+       result_mem_api_cs,
+       result_mem_api_rst} = 0;
+      //
+      reset_n = 0;
+      repeat (5) @(posedge clk);
+      @(negedge clk);      // in stimulus, reset_n de-asserted after negedge
+      #2 reset_n = 1;
+      @(negedge clk);            
+      //
+      // do the unlocking here if enable
+      //
+      
       //
       // pulse the DUT's reset and playback
       //
@@ -137,45 +173,17 @@ module `TB_NAME(`DUT_NAME) ;
    // Read data from file into buffer and playback for compare
    //
    task playback_data;
-      int fp;
       int i;
       event err;
       begin
 	 //
-	 // Pulse the DUT's reset & drive input to zeros (known states)
-	 //
-	 {start,
-	  exponent_length,
-	  modulus_length,
-	  exponent_mem_api_cs,
-	  exponent_mem_api_wr,
-	  exponent_mem_api_rst,
-	  exponent_mem_api_write_data,
-	  modulus_mem_api_cs,
-	  modulus_mem_api_wr,
-	  modulus_mem_api_rst,
-	  modulus_mem_api_write_data,
-	  message_mem_api_cs,
-	  message_mem_api_wr,
-	  message_mem_api_rst,
-	  message_mem_api_write_data,
-	  result_mem_api_cs,
-	  result_mem_api_rst} = 0;
-	 //
-	 reset_n = 0;
-	 repeat (5) @(posedge clk);
-	 @(negedge clk);      // in stimulus, reset_n de-asserted after negedge
-	 #2 reset_n = 1;
-	 @(negedge clk);            
-	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer RSA_buffer",`RSA_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`RSA_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],
+	    `APPLY_N_CHECK(RSA_buffer[i],
 			   ji1,exponent_mem_api_cs,
 			   ji2,exponent_mem_api_rst,
 			   ji3,exponent_mem_api_wr,
@@ -189,7 +197,7 @@ module `TB_NAME(`DUT_NAME) ;
 			   ji11,result_mem_api_rst,
 			   ji12,start,
 			   modulus_length[7:0],	 
-			   exponent_length[7:0],
+			   ji14,exponent_length[12:0],
 			   exponent_mem_api_write_data[31:0],
 			   message_mem_api_write_data[31:0],
 			   modulus_mem_api_write_data[31:0],
@@ -199,8 +207,9 @@ module `TB_NAME(`DUT_NAME) ;
 			   message_mem_api_read_data[31:0],
 			   modulus_mem_api_read_data[31:0],
 			   result_mem_api_read_data[31:0]);
+
 	    @(negedge clk); // next sample	       
-	 end // for (int i=0;i<`MAX_SAMPLES;i++)
+	 end // for (int i=0;i<`RSA_SAMPLE_COUNT;i++)
 	 //
 	 // print summary
 	 //

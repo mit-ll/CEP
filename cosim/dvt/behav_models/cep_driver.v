@@ -152,34 +152,39 @@ integer s;
 `else
       for (s =lsb;s<=msb;s=s+1) begin dvtFlags[s] = value[0]; value = value >> 1; end
 `endif
-   //`logI("dvtFlags=%b",dvtFlags);
+      //`logI("dvtFlags=%b",dvtFlags);
    @(posedge clk100Mhz);
    
 end
 endtask // WRITE_DVT_FLAG_TASK;
 
-`define SHIPC_READ_DVT_FLAG_TASK READ_DVT_FLAG_TASK(__shIpc_p0,__shIpc_p1,__shIpc_p0)
+`define SHIPC_READ_DVT_FLAG_TASK READ_DVT_FLAG_TASK(__shIpc_p0,__shIpc_p1,{__shIpc_p0[31:0],__shIpc_p1[31:0]})
 task   READ_DVT_FLAG_TASK;
-input [31:0] msb;
-input [31:0] lsb;
-output [31:0] r_data;
-integer s;
-reg [31:0] tmp;
-
-begin
+   input [31:0] msb;
+   input [31:0] lsb;
+   output [63:0] r_data;
+   integer m , l;
+   reg [63:0] 	 tmp;
+   
+   begin
    tmp = 0;
 `ifdef USE_DPI
-   for (s=inBox.mPar[0];s>=inBox.mPar[1];s=s-1) begin
-      tmp = {tmp[30:0],dvtFlags[s]};
-   end
-   inBox.mPar[0] = tmp;
+      m=inBox.mPar[0];
+      l=inBox.mPar[1];
+      for (int s=m;s>=l;s--) begin       
+	 tmp = {tmp[62:0],dvtFlags[s]};
+	 //$display("LOOP s=%d %x\n",s,tmp);      
+      end
+      inBox.mPar[0] = tmp;
+      //$display("IN %d/%d %x\n",m,l,inBox.mPar[0]);
+      
 `else
    for (s =msb;s>=lsb;s=s-1) begin 
-     tmp = {tmp[30:0],dvtFlags[s]};
+     tmp = {tmp[62:0],dvtFlags[s]};
    end
    r_data = tmp;
 `endif   
-   //`logI("dvtFlags=%b r_data=%x",dvtFlags,r_data);
+      //`logI("dvtFlags=%b r_data=%x",dvtFlags,r_data);
    @(posedge clk100Mhz);
    
 end
@@ -454,5 +459,49 @@ endtask // READ32_64_TASK
 	 endcase // case (MY_LOCAL_ID)
       end
    endtask
-  
+
+   //
+   // Cycle-by-cycle capturing
+   //
+   // AES
+   always @(posedge dvtFlags[`DVTF_AES_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_AES_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_AES_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_AES_CAPTURE_EN_BIT] = 0;   
+   // SHA256
+   always @(posedge dvtFlags[`DVTF_SHA256_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_SHA256_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_SHA256_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_SHA256_CAPTURE_EN_BIT] = 0;   
+   // MD5
+   always @(posedge dvtFlags[`DVTF_MD5_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_MD5_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_MD5_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_MD5_CAPTURE_EN_BIT] = 0;   
+   // RSA
+   always @(posedge dvtFlags[`DVTF_RSA_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_RSA_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT] = 0;   
+   // DES3
+   always @(posedge dvtFlags[`DVTF_DES3_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_DES3_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT] = 0;   
+   // GPS
+   always @(posedge dvtFlags[`DVTF_GPS_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_GPS_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_GPS_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_GPS_CAPTURE_EN_BIT] = 0;   
+   // DFT
+   always @(posedge dvtFlags[`DVTF_DFT_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_DFT_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_DFT_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_DFT_CAPTURE_EN_BIT] = 0;   
+   // IDFT
+   always @(posedge dvtFlags[`DVTF_IDFT_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_IDFT_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_IDFT_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_IDFT_CAPTURE_EN_BIT] = 0;   
+   // IIR
+   always @(posedge dvtFlags[`DVTF_IIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_IIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT] = 0;   
+   // FIR
+   always @(posedge dvtFlags[`DVTF_FIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT] = 1;
+   always @(negedge dvtFlags[`DVTF_FIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT] = 0;   
+   //
+
+   always @(posedge dvtFlags[`DVTF_GET_CORE_STATUS]) begin
+      if      (dvtFlags[1:0] == 0) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core0_status;
+      else if (dvtFlags[1:0] == 1) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core1_status;
+      else if (dvtFlags[1:0] == 2) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core2_status;
+      else if (dvtFlags[1:0] == 3) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core3_status;
+      //`logI("Core status=%x",dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO]);
+      dvtFlags[`DVTF_GET_CORE_STATUS]=0;
+   end
+   
 endmodule // qpic_oc12

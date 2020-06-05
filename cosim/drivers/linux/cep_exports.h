@@ -38,6 +38,8 @@ extern "C" {
   int cep_aWrite(void);
   int cep_aRead(void);
   int run_cepRegTest(void);
+  int run_cepLockTest(void);
+  int run_cepMultiLock(void);    
   int run_ddr3Test(void);
   int run_cepAllMacros(void);
   int run_cepMacroMix(void);

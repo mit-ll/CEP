@@ -109,42 +109,48 @@
 // ===============================================
 //
 `define DVTF_PAT_LO                                 0
-`define DVTF_PAT_HI                                31
-`define DVTF_WAVE_START_CYCLE                      32
-`define DVTF_WAVE_CYCLE2DUMP                       33
+`define DVTF_PAT_HI                                63
+`define DVTF_WAVE_START_CYCLE                      64
+`define DVTF_WAVE_CYCLE2DUMP                       65
 //
-`define DVTF_WAVE_ON     			   34
-`define DVTF_WAVE_OFF     			   35
+`define DVTF_WAVE_ON     			   66
+`define DVTF_WAVE_OFF     			   67
 //
-`define DVTF_ENABLE_FRAMER_DRIVER	           40
-`define DVTF_ENABLE_INTEGRATED_BLOCK_DRIVER        41
-`define DVTF_SET_SAMPLE_GAP                        42
+`define DVTF_ENABLE_FRAMER_DRIVER	           70
+`define DVTF_ENABLE_INTEGRATED_BLOCK_DRIVER        71
+`define DVTF_SET_SAMPLE_GAP                        72
+
+//
+`define DVTF_GET_CORE_STATUS                      73
 
 //
 // DDR3
 //
-`define DVTF_READ_CALIBRATION_DONE                  50
-`define DVTF_ENABLE_MAIN_MEM_LOGGING                51
-`define DVTF_ENABLE_MAIN_MEMWR_LOGGING              52
-`define DVTF_ENABLE_MAIN_MEMRD_LOGGING              53
-`define DVTF_DISABLE_MAIN_MEM_LOGGING               54
-`define DVTF_ENABLE_MEM_BACKDOOR                    55
-`define DVTF_PUT_CORE_IN_RESET                      56
-`define DVTF_PROGRAM_LOADED                         57
-`define DVTF_PRINTF_CMD                             58
-`define DVTF_SET_IPC_DELAY                          59
+`define DVTF_READ_CALIBRATION_DONE                  80
+`define DVTF_ENABLE_MAIN_MEM_LOGGING                81
+`define DVTF_ENABLE_MAIN_MEMWR_LOGGING              82
+`define DVTF_ENABLE_MAIN_MEMRD_LOGGING              83
+`define DVTF_DISABLE_MAIN_MEM_LOGGING               84
+`define DVTF_ENABLE_MEM_BACKDOOR                    85
+`define DVTF_PUT_CORE_IN_RESET                      86
+`define DVTF_PROGRAM_LOADED                         87
+`define DVTF_PRINTF_CMD                             88
+`define DVTF_SET_IPC_DELAY                          89
 //
 // Vector capture   
 //
-`define DVTF_AES_CAPTURE_EN_BIT                     60
-`define DVTF_SHA256_CAPTURE_EN_BIT                  61
-`define DVTF_MD5_CAPTURE_EN_BIT                     62
-`define DVTF_RSA_CAPTURE_EN_BIT                     63
-`define DVTF_DES3_CAPTURE_EN_BIT                    64
-`define DVTF_GPS_CAPTURE_EN_BIT                     65
-`define DVTF_DFT_CAPTURE_EN_BIT                     66
-`define DVTF_IDFT_CAPTURE_EN_BIT                    67
-
+`define DVTF_AES_CAPTURE_EN_BIT                     90
+`define DVTF_SHA256_CAPTURE_EN_BIT                  91
+`define DVTF_MD5_CAPTURE_EN_BIT                     92
+`define DVTF_RSA_CAPTURE_EN_BIT                     93
+`define DVTF_DES3_CAPTURE_EN_BIT                    94
+`define DVTF_GPS_CAPTURE_EN_BIT                     95
+`define DVTF_DFT_CAPTURE_EN_BIT                     96
+`define DVTF_IDFT_CAPTURE_EN_BIT                    97
+`define DVTF_IIR_CAPTURE_EN_BIT                     98
+`define DVTF_FIR_CAPTURE_EN_BIT                     99
+//
+`define DVTF_TOGGLE_CHIP_RESET_BIT                  100
 
 //
 // ===============================================

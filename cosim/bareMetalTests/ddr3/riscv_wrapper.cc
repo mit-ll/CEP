@@ -41,6 +41,7 @@ void thread_entry(int cid, int nc)
   case 2: { mem_base = 0x92000000; break; }
   case 3: { mem_base = 0x93000000; break; }
   }
+  set_cur_status(CEP_RUNNING_STATUS);  
   errCnt += cepMemTest_runTest(coreId, mem_base, adrWidth, coreId, 0, 0);
   //
   // Done

@@ -12,6 +12,19 @@
 #define CEP_APIS_H
 
 #include <stdint.h>
+#include "cep_adrMap.h"
+
+#ifndef PLAYBACK_CMD_H
+#define PLAYBACK_CMD_H
+#define WRITE__CMD  1
+#define RDnCMP_CMD  2
+#define RDSPIN_CMD  3
+
+#define WRITE__CMD_SIZE  3
+#define RDnCMP_CMD_SIZE  3
+#define RDSPIN_CMD_SIZE  5
+
+#endif
 
 #ifdef __cplusplus
 extern "C" {
@@ -26,7 +39,27 @@ extern "C" {
   int load_mainMemory(char *imageF, uint32_t ddr3_base, int srcOffset, int destOffset, int backdoor_on, int verify);
   int clear_printf_mem(int coreId);
   int set_status(int errCnt, int testId);
+  void set_cur_status(int status);
+  
+  //
+  void cep_raw_write(uint64_t pAddress, uint64_t pData);
+  uint64_t cep_raw_read(uint64_t pAddress);
+  int cep_playback(uint64_t *cmdSeq,
+		   uint64_t upperAdr, uint64_t lowerAdr,
+		   int totalCmds, int totalSize,
+		   int verbose);
 
+  //
+  // lock
+  //
+  int cep_get_lock(int myId, int lockNum,int timeOut);
+  void cep_release_lock(int myId, int lockNum);  
+  int cep_get_lock_status(int myId, int lockNum, int *lockMaster);
+  //
+  void Set_C2C_Capture(int enable);
+  int Get_C2C_Capture(void);
+  void writeDvt(int msb, int lsb, int bits);
+  
 //
 // syscalls.c has printf
 //

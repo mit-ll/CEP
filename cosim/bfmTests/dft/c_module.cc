@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_dft.h"
 
 //
 void *c_module(void *arg) {
@@ -52,7 +53,24 @@ void *c_module(void *arg) {
   //
   int mask = 0xFFFFFFFF;
   mask = 1 << DFT_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
+
+  //
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_dft dft(seed,verbose);
+  //
+  dft.init();  
+  dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");  
+  //
+  int maxLoop = 10;
+  initConfig();
+  errCnt += dft.RunDftTest(maxLoop);
+  //
+  dft.freeMe();
+
+  
   //
   pio.RunClk(100);  
   //

@@ -9,21 +9,26 @@
 //************************************************************************
 
 `timescale 1ns/1ns
+
 //
-// Name of the DUT: idft 
+// Name of the DUT & TB if not pass in from Make
 //
-`define DUT_NAME idft_top
+`ifndef DUT_NAME
+ `define DUT_NAME idft
+`endif
+
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
 //
-// Stimulus/ExpectedData info
+// Pull in the stimulus and other info
 //
-`define MAX_SAMPLES      (4512-19)
-`define SAMPLE_WIDTH     (4+(4*16)+4+(4*16))
-`define OUTPUT_WIDTH     (1+(4*64))
-`define DATA_FILE        "IDFT_stimulus.csv"
+`include "idft_stimulus.txt"
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+//
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -38,7 +43,7 @@
   {j1,i1,i2,i3,i4,i5,j6,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5}=x; \
   exp_pat={exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5}; \
   act_pat={o1,o2,o3,o4,o5}; \
-  if (exp_pat!=act_pat) begin \
+  if (exp_pat!==act_pat) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s,%s,%s,%s}", `"o1`",`"o2`",`"o3`",`"o4`",`"o5`"); \
      $display("  EXP=0x%x",exp_pat); \
@@ -46,14 +51,18 @@
      errCnt++;\
   end
 
+
+
+
+
 //
-module `TB_NAME(`DUT_NAME) ; 
-   //
+//
+module `TB_NAME ;
+
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`IDFT_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
@@ -81,6 +90,7 @@ module `TB_NAME(`DUT_NAME) ;
    initial begin
       forever #5 clk = !clk;
    end
+   //    
    //
    // DUT instantiation
    //
@@ -91,24 +101,6 @@ module `TB_NAME(`DUT_NAME) ;
    // -------------------   
    //
    initial begin
-      //
-      // do the unlocking or whatever here
-      //
-
-      //
-      // pulse the DUT's reset and playback
-      //
-      playback_data();
-      $finish;
-   end
-   //
-   // Read data from file into buffer and playback for compare
-   //
-   task playback_data;
-      int fp;
-      int i;
-      event err;
-      begin
 	 //
 	 // Pulse the DUT's reset & drive input to zeros (known states)
 	 //
@@ -119,19 +111,37 @@ module `TB_NAME(`DUT_NAME) ;
 	 @(negedge clk);      // in stimulus, rst de-asserted after negedge
 	 #2 reset = 0;
 	 @(negedge clk);            
+      
+      //
+      // do the unlocking here if enable
+      //
+      
+      //
+      // pulse the DUT's reset and playback
+      //
+      playback_data();
+      $finish;
+   end
+   //
+   // Read data from file into buffer and playback for compare
+   //
+   task playback_data;
+      int i;
+      event err;
+      begin
 	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer IDFT_buffer",`IDFT_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`IDFT_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],
+	    `APPLY_N_CHECK(IDFT_buffer[i],
 			   j1,next,X0[15:0],X1[15:0],X2[15:0],X3[15:0],
 			   j6,next_out,Y0[15:0],Y1[15:0],Y2[15:0],Y3[15:0]);
+
 	    @(negedge clk); // next sample	       
-	 end // for (int i=0;i<`MAX_SAMPLES;i++)
+	 end // for (int i=0;i<`IDFT_SAMPLE_COUNT;i++)
 	 //
 	 // print summary
 	 //

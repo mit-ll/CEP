@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : dft.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -143,11 +143,11 @@ abstract class DFT(busWidthBytes: Int, val c: DFTParams)(implicit p: Parameters)
             // Map the blackbox inputs
             blackbox.io.clk             := clock                    // Implicit module clock
             blackbox.io.reset           := reset                   // dft top has an active high reset 
+            blackbox.io.X0          := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U) // Concatenating data into 64 bit blackbox input
+            blackbox.io.X1          := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U) // Concatenating data into 64 bit blackbox input
+            blackbox.io.X2          := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U) // Concatenating data into 64 bit blackbox input	    
+            blackbox.io.X3          := Mux(datain_read_idx < 32.U, datain_read_data(15,0),  0.U) // Concatenating data into 64 bit blackbox input
 
-            blackbox.io.X0          := Mux(datain_read_idx < 32.U, datain_read_data(15,0),  0.U) // Concatenating data into 64 bit blackbox input
-            blackbox.io.X1          := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U) // Concatenating data into 64 bit blackbox input
-            blackbox.io.X2          := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U) // Concatenating data into 64 bit blackbox input
-            blackbox.io.X3          := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U) // Concatenating data into 64 bit blackbox input
             blackbox.io.next        := rising_edge(start) 
                 											        // Map the dft input data only when pointing to
                 											        // a valid memory location

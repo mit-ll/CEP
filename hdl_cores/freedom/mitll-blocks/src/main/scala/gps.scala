@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : gps.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -87,15 +87,14 @@ abstract class GPS(busWidthBytes: Int, val c: GPSParams)(implicit p: Parameters)
 
             // Instantiate wires for the blackbox outputs
             val ca_code                      = Wire(UInt(13.W))
-            val p_code0_l                    = Wire(UInt(32.W))
             val p_code0_u                    = Wire(UInt(32.W))
-            val p_code1_l                    = Wire(UInt(32.W))
+            val p_code0_l                    = Wire(UInt(32.W))
             val p_code1_u                    = Wire(UInt(32.W))
-            val l_code0_l                    = Wire(UInt(32.W))
+            val p_code1_l                    = Wire(UInt(32.W))
             val l_code0_u                    = Wire(UInt(32.W))
-            val l_code1_l                    = Wire(UInt(32.W))
+            val l_code0_l                    = Wire(UInt(32.W))
             val l_code1_u                    = Wire(UInt(32.W))
-
+            val l_code1_l                    = Wire(UInt(32.W))
             val l_code_valid               = Wire(Bool())
 
             // Map the blackbox I/O 
@@ -104,14 +103,15 @@ abstract class GPS(busWidthBytes: Int, val c: GPSParams)(implicit p: Parameters)
             blackbox.io.startRound      := startRound                // Start bit
             blackbox.io.sv_num          := sv_num                    // GPS space vehicle number written by cepregression.cpp
             ca_code                     := blackbox.io.ca_code       // Output GPS CA code
-            p_code0_l                   := blackbox.io.p_code(31,0)  // Output P Code bits
-            p_code0_u                   := blackbox.io.p_code(63,32) // Output P Code bits  
-            p_code1_l                   := blackbox.io.p_code(95,64) // Output P Code bits
-            p_code1_u                   := blackbox.io.p_code(127,96)// Output P Code bits 
-            l_code0_l                   := blackbox.io.l_code(31,0)  // Output L Code bits
-            l_code0_u                   := blackbox.io.l_code(63,32) // Output L Code bits      
-            l_code1_l                   := blackbox.io.l_code(95,64) // Output L Code bits
-            l_code1_u                   := blackbox.io.l_code(127,96)// Output L Code bits                        
+            p_code0_u                   := blackbox.io.p_code(127,96)// Output P Code bits 
+            p_code0_l                   := blackbox.io.p_code(95,64) // Output P Code bits	    
+            p_code1_u                   := blackbox.io.p_code(63,32) // Output P Code bits  	    
+            p_code1_l                   := blackbox.io.p_code(31,0)  // Output P Code bits
+            l_code0_u                   := blackbox.io.l_code(127,96)// Output L Code bits                        
+            l_code0_l                   := blackbox.io.l_code(95,64) // Output L Code bits
+            l_code1_u                   := blackbox.io.l_code(63,32) // Output L Code bits      
+            l_code1_l                   := blackbox.io.l_code(31,0)  // Output L Code bits
+	    //
             l_code_valid                := blackbox.io.l_code_valid  // Out is valid until start is again asserted
 
             // Define the register map
@@ -123,10 +123,10 @@ abstract class GPS(busWidthBytes: Int, val c: GPSParams)(implicit p: Parameters)
                 GPSAddresses.gps_sv_num_addr    -> RegFieldGroup("sv_num",     Some("GPS Set SV sv_num"),       Seq(RegField  (6,  sv_num))),
                 GPSAddresses.gps_ca_code_addr   -> RegFieldGroup("gps_cacode", Some("GPS CA code"),             Seq(RegField.r(64, ca_code))),
                 GPSAddresses.gps_reset_addr     -> RegFieldGroup("gps_reset",  Some("GPS addressable reset"),   Seq(RegField  (1,  gps_reset))),            
-                GPSAddresses.gps_p_code_addr_w0 -> RegFieldGroup("gps_pcode1", Some("GPS pcode lower 64 bits"), Seq(RegField.r(64, Cat(p_code0_l,p_code0_u)))),
-                GPSAddresses.gps_p_code_addr_w1 -> RegFieldGroup("gps_pcode1", Some("GPS pcode upper 64 bits"), Seq(RegField.r(64, Cat(p_code1_l,p_code1_u)))),
-                GPSAddresses.gps_l_code_addr_w0 -> RegFieldGroup("gps_lcode1", Some("GPS lcode lower 64 bits"), Seq(RegField.r(64, Cat(l_code0_l,l_code0_u)))),
-                GPSAddresses.gps_l_code_addr_w1 -> RegFieldGroup("gps_lcode1", Some("GPS lcode upper 64 bits"), Seq(RegField.r(64, Cat(l_code1_l,l_code1_u))))
+                GPSAddresses.gps_p_code_addr_w0 -> RegFieldGroup("gps_pcode1", Some("GPS pcode upper bits"), Seq(RegField.r(64, Cat(p_code0_u,p_code0_l)))),
+                GPSAddresses.gps_p_code_addr_w1 -> RegFieldGroup("gps_pcode1", Some("GPS pcode lower 64 bits"), Seq(RegField.r(64, Cat(p_code1_u,p_code1_l)))),
+                GPSAddresses.gps_l_code_addr_w0 -> RegFieldGroup("gps_lcode1", Some("GPS lcode upper 64 bits"), Seq(RegField.r(64, Cat(l_code0_u,l_code0_l)))),
+                GPSAddresses.gps_l_code_addr_w1 -> RegFieldGroup("gps_lcode1", Some("GPS lcode lower 64 bits"), Seq(RegField.r(64, Cat(l_code1_u,l_code1_l))))
             )  // regmap
 
         }   // lazy val module

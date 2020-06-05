@@ -12,18 +12,21 @@
 //
 // Name of the DUT: des3 
 //
-`define DUT_NAME des3
-//
-// Stimulus/ExpectedData info
-//
-`define MAX_SAMPLES      (2554-17)
-`define SAMPLE_WIDTH     (4+4+64+(3*56)+4+64)
-`define OUTPUT_WIDTH     (1+64)
-`define DATA_FILE        "DES3_stimulus.csv"
+`ifndef DUT_NAME
+ `define DUT_NAME des3
+`endif
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
+//
+// Stimulus/ExpectedData info
+//
+`include   "des3_stimulus.txt"
+
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -38,7 +41,7 @@
   {j1,i1,j2,i2,i3,i4,i5,i6,j7,exp_``o1,exp_``o2}=x; \
   exp_pat={exp_``o1,exp_``o2}; \
   act_pat={o1,o2}; \
-  if (exp_pat!=act_pat) begin \
+  if (exp_pat!==act_pat) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s}", `"o1`",`"o2`"); \
      $display("  EXP=0x%x",exp_pat); \
@@ -47,13 +50,12 @@
   end
 
 //
-module `TB_NAME(`DUT_NAME) ; 
+module `TB_NAME ;
    //
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`DES3_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
@@ -96,6 +98,21 @@ module `TB_NAME(`DUT_NAME) ;
    //
    initial begin
       //
+      // Pulse the DUT's reset & drive input to zeros (known states)
+      //
+      {start,
+       desIn,
+       key1,
+       key2,
+       key3,
+       decrypt}=0;
+      //
+      reset = 1;
+      repeat (21) @(posedge clk); // MUST be 21 for this core because slow clock must align
+      @(negedge clk);      // in stimulus, reset de-asserted after negedge
+      #2 reset = 0;
+      repeat (100) @(negedge clk);  // must wait this long for output to stablize          
+      //
       // do the unlocking or whatever here
       //
 
@@ -109,34 +126,17 @@ module `TB_NAME(`DUT_NAME) ;
    // Read data from file into buffer and playback for compare
    //
    task playback_data;
-      int fp;
       int i;
       event err;
       begin
 	 //
-	 // Pulse the DUT's reset & drive input to zeros (known states)
-	 //
-	 {start,
-	  desIn,
-	  key1,
-	  key2,
-	  key3,
-	  decrypt}=0;
-	 //
-	 reset = 1;
-	 repeat (21) @(posedge clk); // MUST be 21 for this core because slow clock must align
-	 @(negedge clk);      // in stimulus, reset de-asserted after negedge
-	 #2 reset = 0;
-	 @(negedge clk);            
-	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer DES3_buffer",`DES3_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`DES3_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],
+	    `APPLY_N_CHECK(DES3_buffer[i],
 			   j1,start,
 			   j2,decrypt,
 			   desIn[63:0],

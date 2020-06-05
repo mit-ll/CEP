@@ -31,6 +31,11 @@ NOWAVE          = 0
 PROFILE         = 0
 COVERAGE        = 0
 USE_DPI         = 1
+# transaction-level capturing
+TL_CAPTURE      = 0
+# cycle-by-cycle capturing
+C2C_CAPTURE     = 0
+
 #
 #
 # Tools
@@ -125,6 +130,12 @@ ifeq (${USE_DPI},1)
 COMMON_CFLAGS	        += -DUSE_DPI
 RISCV_BARE_CFLAG        += -DUSE_DPI
 endif
+
+#
+#
+#
+COMMON_CFLAGS	        += -DCAPTURE_CMD_SEQUENCE=${TL_CAPTURE}
+COMMON_CFLAGS	        += -DC2C_CAPTURE=${C2C_CAPTURE}
 
 #
 # --------------
@@ -260,7 +271,8 @@ ${INC_DIR}/cep_adrMap.h : ${DVT_DIR}/cep_adrMap.incl ${BIN_DIR}/v2c.pl
 # =======================================
 #
 DRIVER_DIR_LIST := ${SIM_DIR}/drivers/diag	\
-		${SIM_DIR}/drivers/cep_tests 
+		${SIM_DIR}/drivers/cep_tests    \
+		${SIM_DIR}/drivers/vectors 
 
 #
 # -------------------------------------------
@@ -277,7 +289,9 @@ SIMDIAG_DRIVER_OBJECTS      := $(foreach t,${notdir ${DRIVER_OBJECTS_LIST}}, ${D
 COMMON_CFLAGS	+= -I ${PLI_DIR} -I ${INC_DIR} -I ${SHARE_DIR}  \
 		-I ${SIMDIAG_DIR} $(DRIVER_INC_LIST)		\
 		-g  \
-		-Wno-format -Wno-narrowing
+		-Wno-format -Wno-narrowing 
+
+COMMON_CFLAGS	+= -DBIG_ENDIAN 
 
 SIM_HW_CFLAGS	= ${COMMON_CFLAGS} -I ${SIMULATOR_PATH}/../include	\
 		-D_SIM_HW_ENV -DSIM_ENV_ONLY
@@ -378,7 +392,7 @@ LOCAL_CC_FILES  := $(wildcard ./*.cc)
 LOCAL_H_FILES   += $(wildcard ./*.h)
 LOCAL_OBJ_FILES += $(LOCAL_CC_FILES:%.cc=%.o)
 
-THREAD_SWITCH  = -lpthread
+THREAD_SWITCH  = -lpthread -lcrypto -lssl
 LDFLAGS        =
 
 c_dispatch:  $(LOCAL_OBJ_FILES) ${LIB_DIR}/v2c_lib.a  ${VERILOG_DEFINE_LIST}
@@ -425,11 +439,14 @@ cleanAll:
 	-rm -rf ${SIM_DIR}/*/*.o* ${SIM_DIR}/*/*/*.bo* ${SIM_DIR}/*/*/*.o*
 	-rm -rf ${SIM_DIR}/*/*/*.elf ${SIM_DIR}/*/*/status
 	-rm -rf ${SIM_DIR}/*/.build*
-	-rm -rf ${SIM_DIR}/*/coverage
 	-rm -rf ${LIB_DIR}/*/*.o* ${LIB_DIR}/*.a ${LIB_DIR}/*/*.so
 	-rm -rf ${SIM_DIR}/*/.*_dependList* ${SIM_DIR}/*/.is_checked
 	-rm -rf ${SIM_DIR}/*/*/C2V*
 	-rm -rf ${BHV_DIR}/VCShell*.v
+ifeq (${COVERAGE},1)
+	-rm -rf ${SIM_DIR}/*/coverage
+	-rm -f ${SIM_DIR}/*/*/vsim.do
+endif
 #
 #
 #
@@ -444,10 +461,12 @@ define MAKE_USAGE_HELP_BODY
 make [NOWAVE=0|1] [COVERAGE=0|1] [PROFILE=0|1] [USE_GDB=0|1] <all|summary|cleanAll|merge|usage>
 
 Options:
-  NOWAVE=1   : turn off wave capturing. Default is ON for interactive. OFF for regression
-  USE_GDB=1  : run the test under "gdb" debugger. Default is OFF. Should only be used for interactive session.
-  COVERAGE=1 : run the test with coverage capture enable. Default is OFF
-  PROFILE=1  : run the test with profiling turn on. Default is OFF
+  NOWAVE=1      : turn off wave capturing. Default is ON for interactive. OFF for regression
+  USE_GDB=1     : run the test under "gdb" debugger. Default is OFF. Should only be used for interactive session.
+  COVERAGE=1    : run the test with coverage capture enable. Default is OFF
+  PROFILE=1     : run the test with profiling turn on. Default is OFF
+  TL_CAPTURE=1  : turn on Title-Link comand sequence capturing to be used for BARE Metal (and Unit-level testbench)
+  C2C_CAPTURE=1 : turn on cycle-by-cycle at core's IO  for Unit testbench
 
 Targets:
   all        : run the test. Default target (empty string = same as "all")

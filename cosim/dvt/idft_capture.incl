@@ -1,53 +1,82 @@
 //
+// Capture idft's IO cycle-by-cycle 
 //
+`ifndef MKSTR
+`define MKSTR(x) `"x`"
+`endif
 //
 reg CaptureIDFT_vector=0;
-always @(posedge `DVT_FLAG[`DVTF_IDFT_CAPTURE_EN_BIT]) CaptureIDFT_vector=1;
-initial begin
-   repeat(1) @(posedge cep_tb.fpga.topDesign.topMod.idft.blackbox.clk);
+`define IDFT_DATA_WIDTH   (4+(4*16)+4+(4*16))
+`define IDFT_OUTPUT_WIDTH (1+(4*64))
+int IDFT_sampleNum = 0;
+int IDFT_fd;
+//
+always @(posedge c2c_capture_enable[`DVTF_IDFT_CAPTURE_EN_BIT]) begin
+   $display("Enable cycle-by-cycle capturing of IDFT stimulus");	    
+   // wait until it gets out of reset
+   if (cep_tb.fpga.topDesign.topMod.idft.blackbox.reset)
+     @(negedge cep_tb.fpga.topDesign.topMod.idft.blackbox.reset);
+   // next clock
+   @(posedge cep_tb.fpga.topDesign.topMod.idft.blackbox.clk);
+   CaptureIDFT_vector=1;
+   IDFT_fd=$fopen("../../drivers/vectors/idft_stimulus.txt","w");
+   captureIDFT_Stimulus();   
+end	
+always @(negedge c2c_capture_enable[`DVTF_IDFT_CAPTURE_EN_BIT]) begin
    if (CaptureIDFT_vector) begin
-      @(negedge cep_tb.fpga.topDesign.topMod.idft.blackbox.reset);
-      // next clock
-      @(posedge cep_tb.fpga.topDesign.topMod.idft.blackbox.clk);
-      captureIDFTStimulus();
-   end
+      CaptureIDFT_vector=0;
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.idft.blackbox.clk);
+      $display("Stop Capturing IDFT stimulus");
+      $fwrite(IDFT_fd,"};\n");
+      $fwrite(IDFT_fd,"`define IDFT_SAMPLE_COUNT %d\n",IDFT_sampleNum);      
+      $fclose(IDFT_fd);
+      $system("gzip -f ../../drivers/vectors/idft_stimulus.txt");
+   end	    
 end
-   
-   task captureIDFTStimulus;
-      int out;
-      int sampleNum;      
-      reg [4+(4*16)+4+(4*16)-1:0] temp;
+//
+//
+// 
+   task captureIDFT_Stimulus;
+      reg [`IDFT_DATA_WIDTH-1:0] temp;
       begin
-	 sampleNum=0;
+	 IDFT_sampleNum = 0;
 	 $display("Capturing stimulus");	 
-	 out=$fopen("IDFT_stimulus.csv","w");
-	 $fwrite(out,"//************************************************************************\n");
-	 $fwrite(out,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
-	 $fwrite(out,"//\n");		
-	 $fwrite(out,"// File Name:      IDFT_stimulus.csv\n");
-	 $fwrite(out,"// Program:        Common Evaluation Platform (CEP)\n");
-	 $fwrite(out,"// Description:    IDFT Core unit testbench stimulus\n");
-	 $fwrite(out,"// Notes:\n");        
-	 $fwrite(out,"//\n");
-	 $fwrite(out,"//************************************************************************\n");
-	 //
-	 $fwrite(out,"// column#1  : IN  next\n");
-	 $fwrite(out,"// column#2  : IN  X0[15:0]\n");
-	 $fwrite(out,"// column#3  : IN  X1[15:0]\n");
-	 $fwrite(out,"// column#4  : IN  X2[15:0]\n");
-	 $fwrite(out,"// column#5  : IN  X3[15:0]\n");
-	 $fwrite(out,"// column#6  : OUT next_out\n");
-	 $fwrite(out,"// column#7  : OUT lY0[15:0]\n");
-	 $fwrite(out,"// column#8  : OUT lY1[15:0]\n");
-	 $fwrite(out,"// column#9  : OUT lY2[15:0]\n");
-	 $fwrite(out,"// column#10 : OUT lY3[15:0]\n");
+	 $fwrite(IDFT_fd,"//************************************************************************\n");
+	 $fwrite(IDFT_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(IDFT_fd,"//\n");		
+	 $fwrite(IDFT_fd,"// File Name:      IDFT_stimulus.txt\n");
+	 $fwrite(IDFT_fd,"// Program:        Common Evaluation Platform (CEP)\n");
+	 $fwrite(IDFT_fd,"// Description:    IDFT Core unit testbench stimulus\n");
+	 $fwrite(IDFT_fd,"// Notes:\n");        
+	 $fwrite(IDFT_fd,"//\n");
+	 $fwrite(IDFT_fd,"//************************************************************************\n");
+	 $fwrite(IDFT_fd,"// column#1  : IN  next\n");
+	 $fwrite(IDFT_fd,"// column#2  : IN  X0[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#3  : IN  X1[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#4  : IN  X2[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#5  : IN  X3[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#6  : OUT next_out\n");
+	 $fwrite(IDFT_fd,"// column#7  : OUT lY0[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#8  : OUT lY1[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#9  : OUT lY2[15:0]\n");
+	 $fwrite(IDFT_fd,"// column#10 : OUT lY3[15:0]\n");
+
+	 //	 
+	 $fwrite(IDFT_fd,"`define IDFT_DATA_WIDTH %s\n",`MKSTR(`IDFT_DATA_WIDTH));
+	 $fwrite(IDFT_fd,"`define IDFT_OUTPUT_WIDTH %s\n",`MKSTR(`IDFT_OUTPUT_WIDTH));
+	 $fwrite(IDFT_fd,"reg [`IDFT_DATA_WIDTH-1:0] IDFT_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-	 while (1) begin
+	 while (CaptureIDFT_vector) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.idft.blackbox.clk);
-	    sampleNum++;
 	    // MUST align to HEX number if _ is used!!!
-	    $fwrite(out,"%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
+	    if (IDFT_sampleNum>0) begin
+	       $fwrite(IDFT_fd,"   ,");
+            end else begin
+	       $fwrite(IDFT_fd,"    ");		 
+            end
+	    // MUST align to HEX number if _ is used!!!
+	    $fwrite(IDFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 		    {3'b0,cep_tb.fpga.topDesign.topMod.idft.blackbox.next},
 		    cep_tb.fpga.topDesign.topMod.idft.blackbox.X0[15:0],
 		    cep_tb.fpga.topDesign.topMod.idft.blackbox.X1[15:0],
@@ -59,7 +88,9 @@ end
 		    cep_tb.fpga.topDesign.topMod.idft.blackbox.Y2[15:0],
 		    cep_tb.fpga.topDesign.topMod.idft.blackbox.Y3[15:0]);
 
-	 end
+	    IDFT_sampleNum++;
+	 end // while (1)
       end
    endtask //
    
+  

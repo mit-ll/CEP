@@ -1,29 +1,34 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
 //
-// File Name:      md5_tb.sv
+// File Name:      aes_tb.sv
 // Program:        Common Evaluation Platform (CEP)
-// Description:    MD5 Core unit testbench
+// Description:    AES Core unit testbench
 // Notes:        
 //
 //************************************************************************
 
 `timescale 1ns/1ns
+
 //
-// Name of the DUT: pamcham = MD5!!!
+// Name of the DUT & TB if not pass in from Make
 //
-`define DUT_NAME pancham
+`ifndef DUT_NAME
+ `define DUT_NAME md5
+`endif
+
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
 //
-// Stimulus/ExpectedData info
+// Pull in the stimulus and other info
 //
-`define MAX_SAMPLES      (1265-15)
-`define SAMPLE_WIDTH     ((4*2)+512+(4*2)+128)
-`define OUTPUT_WIDTH     (1+1+128)
-`define DATA_FILE        "MD5_stimulus.csv"
+`include "md5_stimulus.txt"
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+//
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -38,7 +43,7 @@
   {ji1,i1,ji2,i2,i3,jo1,exp_``o1,jo2,exp_``o2,exp_``o3}=x; \
   exp_pat={exp_``o1,exp_``o2,exp_``o3}; \
   act_pat={o1,o2,o3}; \
-  if (exp_pat!=act_pat) begin \
+  if (exp_pat!==act_pat) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s,%s}", `"o1`",`"o2`",`"o3`"); \
      $display("  EXP=0x%x",exp_pat); \
@@ -46,20 +51,22 @@
      errCnt++;\
   end
 
+
+
 //
-module `TB_NAME(`DUT_NAME) ; 
-   //
+//
+module `TB_NAME ;
+
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`MD5_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
    reg 			    clk=0;                      // reg clock
    reg 			    rst=1;                      // global rst
-   reg 			    t_rst=0;                    // test also toggle reset
+   reg 			    init=0;                    // test also toggle reset
    reg [511:0] 		    msg_padded=0;               // input message, already padded
    reg 			    msg_in_valid=0;             // input message is valid, active high   
    wire [127:0] 	    msg_output;               // output message, always 128 bit wide
@@ -86,10 +93,11 @@ module `TB_NAME(`DUT_NAME) ;
    initial begin
       forever #5 clk = !clk;
    end
+   //    
    //
    // DUT instantiation
    //
-   `DUT_NAME u1(.rst(rst|t_rst),.*);
+   `DUT_NAME u1(.*);
    //
    // -------------------
    // Test starts here
@@ -97,9 +105,19 @@ module `TB_NAME(`DUT_NAME) ;
    //
    initial begin
       //
-      // do the unlocking or whatever here
+      // Pulse the DUT's reset & drive input to zeros (known states)
       //
-
+      {init,msg_in_valid,msg_padded}=0;
+      //
+      rst = 1;
+      repeat (5) @(posedge clk);
+      @(negedge clk);      // in stimulus, rst de-asserted after negedge
+      #2 rst = 0;
+      repeat (30) @(negedge clk);  // need to wait this long for output to stablize
+      //
+      // do the unlocking here if enable
+      //
+      
       //
       // pulse the DUT's reset and playback
       //
@@ -110,31 +128,19 @@ module `TB_NAME(`DUT_NAME) ;
    // Read data from file into buffer and playback for compare
    //
    task playback_data;
-      int fp;
       int i;
       event err;
       begin
 	 //
-	 // Pulse the DUT's reset & drive input to zeros (known states)
-	 //
-	 {t_rst,msg_in_valid,msg_padded}=0;
-	 //
-	 rst = 1;
-	 repeat (5) @(posedge clk);
-	 @(negedge clk);      // in stimulus, rst de-asserted after negedge
-	 #2 rst = 0;
-	 @(negedge clk);            
-	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer MD5_buffer",`MD5_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`MD5_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],ji1,t_rst,ji2,msg_in_valid,msg_padded[511:0],jo1,ready,jo2,msg_out_valid,msg_output[127:0]);
+	    `APPLY_N_CHECK(MD5_buffer[i],ji1,init,ji2,msg_in_valid,msg_padded[511:0],jo1,ready,jo2,msg_out_valid,msg_output[127:0]);
 	    @(negedge clk); // next sample	       
-	 end // for (int i=0;i<`MAX_SAMPLES;i++)
+	 end // for (int i=0;i<`MD5_SAMPLE_COUNT;i++)
 	 //
 	 // print summary
 	 //

@@ -11,7 +11,7 @@
 
     // CEP Verion String
     const uint8_t CEP_MAJOR_VERSION = 0x02;
-    const uint8_t CEP_MINOR_VERSION = 0x20;
+    const uint8_t CEP_MINOR_VERSION = 0x40;
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;
@@ -227,4 +227,6 @@
     const uint32_t FIR_OUT_ADDR      = FIR_IN_DATA  + BYTES_PER_WORD;
     const uint32_t FIR_OUT_DATA      = FIR_OUT_ADDR + BYTES_PER_WORD;
     const uint32_t FIR_DONE          = 0;
-    
+    const uint32_t FIR_RESET = 40;
+    const uint32_t FIR_SHIFT = 48;
+    const uint32_t FIR_SHIFT2= 56;   

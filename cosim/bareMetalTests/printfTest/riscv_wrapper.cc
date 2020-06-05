@@ -30,6 +30,7 @@ void thread_entry(int cid, int nc)
   int errCnt=0;
   //
   set_printf(1);
+  set_cur_status(CEP_RUNNING_STATUS);  
   //
   rd64 = *(unsigned long long*)adr;
   if ((rd64  ^ CEP_EXPECTED_VERSION) & CEP_VERSION_MASK) {

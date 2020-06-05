@@ -15,6 +15,10 @@
 #include "cep_apis.h"
 #include "portable_io.h"
 
+#ifdef SIM_ENV_ONLY
+#include "simPio.h"
+#endif
+
 
 #ifdef BARE_MODE
 
@@ -66,19 +70,34 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   switch (cpuId) {
   case 0: {
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_pt0_addr,(uint64_t)(-1));
-    (*regp->AddAReg_p)(regp, aes_base_addr + aes_pt1_addr,(uint64_t)(-1));        
+    (*regp->AddAReg_p)(regp, aes_base_addr + aes_pt1_addr,(uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch0_reg,(uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch4_reg,(uint64_t)(-1));
+#ifdef SIM_ENV_ONLY    
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_core0_status,(uint64_t)(-1));            
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_core1_status,(uint64_t)(-1));            
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_core2_status,(uint64_t)(-1));            
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_core3_status,(uint64_t)(-1));            
+#endif
+    
     break;
   }
   case 1: {
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_key0_addr,(uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch1_reg,(uint64_t)(-1));                
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch5_reg,(uint64_t)(-1));            
     break;
   }    
   case 2: {
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_key1_addr,(uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch2_reg,(uint64_t)(-1));                
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch6_reg,(uint64_t)(-1));            
     break;
   }
   case 3: {
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_key2_addr,(uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch3_reg,(uint64_t)(-1));                
+    (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch7_reg,(uint64_t)(-1));            
     break;
   }    
   }
@@ -88,5 +107,16 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   // Destructors
   //
   cepRegTest_DELETE(regp);
+  //
+  //
+  //
+#ifdef SIM_ENV_ONLY
+  for (int i=0;i<4;i++) {
+    DUT_WRITE_DVT(DVTF_PAT_HI, DVTF_PAT_LO, i);
+    DUT_WRITE_DVT(DVTF_GET_CORE_STATUS, DVTF_GET_CORE_STATUS, 1);
+    uint64_t d64 = DUT_READ_DVT(DVTF_PAT_HI, DVTF_PAT_LO);
+    LOGI("CoreId=%d = 0x%016lx\n",i,d64);
+  }
+#endif
   return errCnt;
 }

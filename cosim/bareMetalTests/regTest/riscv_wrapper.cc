@@ -33,9 +33,11 @@ void thread_entry(int cid, int nc)
   int coreId = read_csr(mhartid);
   int revCheck = 1;
   //
-  set_printf(0); 
+  set_printf(0);
+  
   //
   //
+  set_cur_status(CEP_RUNNING_STATUS);
   if (!errCnt) { errCnt = cepRegTest_runTest(coreId,64, revCheck, coreId*(0x100), 0); }
   //
   //

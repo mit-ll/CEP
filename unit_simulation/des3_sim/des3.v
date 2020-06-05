@@ -67,7 +67,8 @@ always @(posedge clk)
     end
 
 wire start_posedge = start & ~start_r;
-reg [7:0] validCounter;
+// tony duong 04/21/2020: not used at all so removed
+//reg [7:0] validCounter;
 wire [63:0] des;
 
 always @ (posedge clk)

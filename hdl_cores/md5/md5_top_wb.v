@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : md5_top.v
 // Project      : Common Evaluation Platform (CEP)

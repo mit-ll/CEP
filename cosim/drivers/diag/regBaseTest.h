@@ -54,9 +54,11 @@ struct regBaseTest_ {
 			       int accessSize,
 			       int seed,
 			       int verbose);
+  int (*SetSeed_p)              (regBaseTest_t *, int);
   //
   // Function Pointers/ Methods
   //
+  void (*ClearAll_p)             (regBaseTest_t *);
   int (*AddAReg_p)              (regBaseTest_t *, uint32_t, uint64_t);
   int (*AddROReg_p)             (regBaseTest_t *,uint32_t, uint64_t, uint64_t );
   int (*GetMaxBits_p)           (regBaseTest_t *, uint64_t);

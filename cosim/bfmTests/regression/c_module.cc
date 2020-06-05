@@ -59,9 +59,30 @@ void *c_module(void *arg) {
   //int calibDone = calibrate_ddr3(50);
   pio.RunClk(1000);
   //
-  int mask = 0xFFFFFFFF;
-  //mask = 1 << RSA_ADDR_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  int mask = 0; 
+  switch (cpuId) {
+  case 0:
+    mask = ((1 << CEP_VERSION_REG_K) |
+	    (1 << AES_BASE_K) |
+	    (1 << MD5_BASE_K) |
+	    (1 << SHA256_BASE_K));
+    break;
+  case 1:
+    mask = ((1 << DES3_BASE_K) |
+            (1 << DFT_BASE_K ) |
+            (1 << IDFT_BASE_K));
+    break;
+  case 2:
+    mask = (1 << RSA_ADDR_BASE_K);
+    break;
+    
+  case 3:
+    mask = ((1 << FIR_BASE_K) |
+	    (1 << IIR_BASE_K) |
+	    (1 << GPS_BASE_K));
+    break;
+  }
+  errCnt += run_ceptest(mask);
   //
   pio.RunClk(100);  
   //

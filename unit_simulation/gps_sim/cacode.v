@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 
 //////////////////////////////////////////////////////////////////////////////////
@@ -10,31 +10,41 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module cacode(
-           input clk,
-           input rst,
-           input [5:0] prn_num,
-           input enb,
-           output reg chip_out
-       );
+module cacode
+  (
+   input       clk,
+   input       rst,
+   input [5:0] prn_num,
+   input       prn_changed,
+   input       enb,
+   output reg  chip_out
+   );
 
 reg [10:1] g1, g2;
 reg chip;
 
+   
 
-always @ (posedge clk)
+always @ (posedge clk) begin
     if (rst)
         begin
             g1 <= 10'b1111111111;
             g2 <= 10'b1111111111;
         end
     
-    else if (enb)
-            begin
-                g1[10:1] <= {g1[9:1], g1[3] ^ g1[10]};
-                g2[10:1] <= {g2[9:1], g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10]};
-            end
-
+    else begin
+       if (prn_changed) begin
+          g1 <= 10'b1111111111;
+          g2 <= 10'b1111111111;	  
+       end
+       else if (enb)
+         begin
+            g1[10:1] <= {g1[9:1], g1[3] ^ g1[10]};
+            g2[10:1] <= {g2[9:1], g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10]};
+         end
+    end // else: !if(rst)
+end // always @ (posedge clk)
+//   
 
 always @(*)
     begin

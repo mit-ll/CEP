@@ -117,6 +117,7 @@
 module pancham (
            clk
            , rst
+           , init     // Tony D. 05/12/20: to remove reset dependency		
            , msg_padded
            , msg_in_valid
 
@@ -130,14 +131,15 @@ module pancham (
 // Input/Output declarations
 //
 //--------------------------------
-input          clk;                      // input clock
-input          rst;                    // global rst
-input  [511:0] msg_padded;               // input message, already padded
-input          msg_in_valid;             // input message is valid, active high
-
-output [127:0] msg_output;               // output message, always 128 bit wide
-output         msg_out_valid;            // if asserted, output message is valid
-output         ready;                    // the core is ready for an input message
+   input          clk;                      // input clock
+   input 	  rst;                    // global rst
+   input 	  init;   // clear internal state for new encryption                    
+   input [511:0]  msg_padded;               // input message, already padded
+   input          msg_in_valid;             // input message is valid, active high
+   
+   output [127:0] msg_output;               // output message, always 128 bit wide
+   output         msg_out_valid;            // if asserted, output message is valid
+   output         ready;                    // the core is ready for an input message
 
 //--------------------------------
 //
@@ -1150,6 +1152,12 @@ always @(posedge clk)
             C <= SALT_C;
             D <= SALT_D;
         end // }
+    else if (init) begin // added 05/12/20
+            A <= SALT_A;
+            B <= SALT_B;
+            C <= SALT_C;
+            D <= SALT_D;       
+    end
     else
         begin // {
             A <= next_A;
@@ -1162,6 +1170,8 @@ always @(posedge clk)
 always @(posedge clk)
     if (rst)
         phase <= 4'b0;
+    else if (init) // added 05/12/20
+        phase <= 4'b0;      
     else if (next_state[ROUND1_BIT] && current_state[IDLE_BIT])
         phase <= 4'b0;
     else
@@ -1171,6 +1181,8 @@ always @(posedge clk)
 always @(posedge clk)
     if (rst)
         current_state <= IDLE[7:0];
+    else if (init)
+        current_state <= IDLE[7:0];      
     else
         current_state <= next_state;
 endmodule

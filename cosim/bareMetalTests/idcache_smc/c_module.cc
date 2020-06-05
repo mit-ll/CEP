@@ -61,7 +61,7 @@ void *c_module(void *arg) {
   int calibDone = is_program_loaded(50);
 
   //
-  errCnt += check_bare_status(cpuId,500);
+  errCnt += check_bare_status(cpuId,1000);
   //
   pio.RunClk(100);  
   //

@@ -1,51 +1,78 @@
 //
+// Capture des3's IO cycle-by-cycle 
 //
+`ifndef MKSTR
+`define MKSTR(x) `"x`"
+`endif
 //
 reg CaptureDES3_vector=0;
-always @(posedge `DVT_FLAG[`DVTF_DES3_CAPTURE_EN_BIT]) CaptureDES3_vector=1;
-initial begin
-   repeat(1) @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+`define DES3_DATA_WIDTH   (4+4+64+(3*56)+4+64)
+`define DES3_OUTPUT_WIDTH (1+64)
+int DES3_sampleNum = 0;
+int DES3_fd;
+//
+always @(posedge c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT]) begin
+   $display("Enable cycle-by-cycle capturing of DES3 stimulus");	    
+   // wait until it gets out of reset
+   if (cep_tb.fpga.topDesign.topMod.des3.blackbox.reset)
+     @(negedge cep_tb.fpga.topDesign.topMod.des3.blackbox.reset);
+   // next clock
+   @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+   CaptureDES3_vector=1;
+   DES3_fd=$fopen("../../drivers/vectors/des3_stimulus.txt","w");
+   captureDES3_Stimulus();   
+end	
+always @(negedge c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT]) begin
    if (CaptureDES3_vector) begin
-      @(negedge cep_tb.fpga.topDesign.topMod.des3.blackbox.reset);
-      // next clock
-      @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
-      captureDES3Stimulus();
-   end
+      CaptureDES3_vector=0;
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+      $display("Stop Capturing DES3 stimulus");
+      $fwrite(DES3_fd,"};\n");
+      $fwrite(DES3_fd,"`define DES3_SAMPLE_COUNT %d\n",DES3_sampleNum);      
+      $fclose(DES3_fd);
+      $system("gzip -f ../../drivers/vectors/des3_stimulus.txt");
+   end	    
 end
-   
-   task captureDES3Stimulus;
-      int out;
-      int sampleNum;      
-      reg [4+4+64+(3*56)+4+64-1:0] temp;
+//
+//
+// 
+   task captureDES3_Stimulus;
+      reg [`DES3_DATA_WIDTH-1:0] temp;
       begin
-	 sampleNum=0;
+	 DES3_sampleNum = 0;
 	 $display("Capturing stimulus");	 
-	 out=$fopen("DES3_stimulus.csv","w");
-	 $fwrite(out,"//************************************************************************\n");
-	 $fwrite(out,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
-	 $fwrite(out,"//\n");		
-	 $fwrite(out,"// File Name:      DES3_stimulus.csv\n");
-	 $fwrite(out,"// Program:        Common Evaluation Platform (CEP)\n");
-	 $fwrite(out,"// Description:    DES3 Core unit testbench stimulus\n");
-	 $fwrite(out,"// Notes:\n");        
-	 $fwrite(out,"//\n");
-	 $fwrite(out,"//************************************************************************\n");
-	 //
-	 $fwrite(out,"// column#1  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/start\n");
-	 $fwrite(out,"// column#2  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/decrypt\n");
-	 $fwrite(out,"// column#3  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/desIn[63:0]\n");
-	 $fwrite(out,"// column#4  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key1[55:0]\n");
-	 $fwrite(out,"// column#5  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key2[55:0]\n");
-	 $fwrite(out,"// column#6  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key3[55:0]\n");
-	 $fwrite(out,"// column#7  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/out_valid\n");	 
-	 $fwrite(out,"// column#8  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/desOut[63:0]\n");
+	 $fwrite(DES3_fd,"//************************************************************************\n");
+	 $fwrite(DES3_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(DES3_fd,"//\n");		
+	 $fwrite(DES3_fd,"// File Name:      DES3_stimulus.txt\n");
+	 $fwrite(DES3_fd,"// Program:        Common Evaluation Platform (CEP)\n");
+	 $fwrite(DES3_fd,"// Description:    DES3 Core unit testbench stimulus\n");
+	 $fwrite(DES3_fd,"// Notes:\n");        
+	 $fwrite(DES3_fd,"//\n");
+	 $fwrite(DES3_fd,"//************************************************************************\n");
+	 $fwrite(DES3_fd,"// column#1  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/start\n");
+	 $fwrite(DES3_fd,"// column#2  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/decrypt\n");
+	 $fwrite(DES3_fd,"// column#3  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/desIn[63:0]\n");
+	 $fwrite(DES3_fd,"// column#4  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key1[55:0]\n");
+	 $fwrite(DES3_fd,"// column#5  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key2[55:0]\n");
+	 $fwrite(DES3_fd,"// column#6  : IN  /cep_tb/fpga/topDesign/topMod/des3/blackbox/key3[55:0]\n");
+	 $fwrite(DES3_fd,"// column#7  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/out_valid\n");	 
+	 $fwrite(DES3_fd,"// column#8  : OUT /cep_tb/fpga/topDesign/topMod/des3/blackbox/desOut[63:0]\n");
+	 //	 
+	 $fwrite(DES3_fd,"`define DES3_DATA_WIDTH %s\n",`MKSTR(`DES3_DATA_WIDTH));
+	 $fwrite(DES3_fd,"`define DES3_OUTPUT_WIDTH %s\n",`MKSTR(`DES3_OUTPUT_WIDTH));
+	 $fwrite(DES3_fd,"reg [`DES3_DATA_WIDTH-1:0] DES3_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-	 while (1) begin
+	 while (CaptureDES3_vector) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
-	    sampleNum++;
 	    // MUST align to HEX number if _ is used!!!
-	    $fwrite(out,"%x_%x_%x_%x_%x_%x_%x_%x\n",
+	    if (DES3_sampleNum>0) begin
+	       $fwrite(DES3_fd,"   ,");
+            end else begin
+	       $fwrite(DES3_fd,"    ");		 
+            end
+	    $fwrite(DES3_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x\n",
 		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.start},	
 		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.decrypt},
 		    cep_tb.fpga.topDesign.topMod.des3.blackbox.desIn[63:0],
@@ -54,8 +81,9 @@ end
 		    cep_tb.fpga.topDesign.topMod.des3.blackbox.key3[55:0],
 		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.out_valid},	 
 		    cep_tb.fpga.topDesign.topMod.des3.blackbox.desOut[63:0]);
+	    DES3_sampleNum++;
 	 end // while (1)
-	 
       end
    endtask //
    
+  

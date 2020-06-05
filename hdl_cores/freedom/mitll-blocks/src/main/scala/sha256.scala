@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : sha256.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -99,27 +99,28 @@ abstract class SHA256(busWidthBytes: Int, val c: SHA256Params)(implicit p: Param
 
             // Class and companion Object to support instantiation and initialization of
             // key due to the need to have subword assignment for vectors > 64-bits
+	    // change to BE format to conform to stadardized from CPE's SW perspective
             class block_Class extends Bundle {
-                val word7               = UInt(64.W)
-                val word6               = UInt(64.W)
-                val word5               = UInt(64.W)
-                val word4               = UInt(64.W)
-                val word3               = UInt(64.W)
-                val word2               = UInt(64.W)
-                val word1               = UInt(64.W)
                 val word0               = UInt(64.W)
+                val word1               = UInt(64.W)
+                val word2               = UInt(64.W)
+                val word3               = UInt(64.W)
+                val word4               = UInt(64.W)
+                val word5               = UInt(64.W)
+                val word6               = UInt(64.W)
+                val word7               = UInt(64.W)
             }
             object block_Class {
                 def init: block_Class = {
                     val wire = Wire(new block_Class)
-                    wire.word7          := 0.U
-                    wire.word6          := 0.U
-                    wire.word5          := 0.U
-                    wire.word4          := 0.U
-                    wire.word3          := 0.U
-                    wire.word2          := 0.U
-                    wire.word1          := 0.U
                     wire.word0          := 0.U
+                    wire.word1          := 0.U
+                    wire.word2          := 0.U
+                    wire.word3          := 0.U
+                    wire.word4          := 0.U
+                    wire.word5          := 0.U
+                    wire.word6          := 0.U
+                    wire.word7          := 0.U
                     wire
                 }
             }
@@ -142,10 +143,10 @@ abstract class SHA256(busWidthBytes: Int, val c: SHA256Params)(implicit p: Param
             blackbox.io.init            := rising_edge(init)        // Init rising edge generated from addressable registers
 
             // Map the outputs from the blockbox
-            digest0                 := blackbox.io.digest(63,0)     // Output data bits
-            digest1                 := blackbox.io.digest(127,64)   // Output data bits
-            digest2                 := blackbox.io.digest(191,128)  // Output data bits  
-            digest3                 := blackbox.io.digest(255,192)  // Output data bits  
+            digest0                 := blackbox.io.digest(255,192)  // Output data bits
+            digest1                 := blackbox.io.digest(191,128)  // Output data bits
+            digest2                 := blackbox.io.digest(127,64)   // Output data bits
+            digest3                 := blackbox.io.digest(63,0)     // Output data bits
             digest_valid            := blackbox.io.digest_valid     // Output data valid bit
             ready                   := blackbox.io.ready            // Ready bit
 

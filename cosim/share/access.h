@@ -110,7 +110,7 @@ public:
   int  SetInActiveStatus(void);
   
   void WriteDvtFlag(int msb, int lsb, int value) ;
-  int  ReadDvtFlag(int msb, int lsb) ;
+  u_int64_t  ReadDvtFlag(int msb, int lsb) ;
   int  ReadStatus(); // Flow control
   int  ReadErrorCount(); // Flow control
 #ifdef SIM_ENV_ONLY

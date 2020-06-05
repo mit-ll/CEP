@@ -122,6 +122,9 @@ uint64_t cep_read(int device, uint32_t pAddress) {
 #endif
     
 }
+uint64_t get_physical_adr(int device, uint32_t pAddress) {
+  return (ipCores[device].address + pAddress);
+}
 
 // cep_write - Write to a CEP address
 void cep_write(int device, uint32_t pAddress, uint64_t pData) {
@@ -148,10 +151,17 @@ void aes_setPlaintext(const uint64_t* pPT) {
   char tmp[32];
   //
   sprintf(str,"AES: Plaintext:\t\t0x");
+#ifdef BIG_ENDIAN
+  for(unsigned int i = 0; i < AES_BLOCK_WORDS; ++i) {
+    cep_write(AES_BASE_K, AES_PT_BASE + ( i * BYTES_PER_WORD), pPT[i]);
+    sprintf(tmp,"%016lx", pPT[i]); strcat(str,tmp);
+  }  
+#else
   for(unsigned int i = 0; i < AES_BLOCK_WORDS; ++i) {
     cep_write(AES_BASE_K, AES_PT_BASE + (((AES_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), pPT[i]);
     sprintf(tmp,"%016lx", pPT[i]); strcat(str,tmp);
   }
+#endif
   printf("%s\n",str);
 }
 
@@ -160,10 +170,17 @@ void aes_setKey(const uint64_t* pKey) {
   char tmp[32];
   
   sprintf(str,"AES: Key:\t\t0x");
+#ifdef BIG_ENDIAN
+  for(unsigned int i = 0; i < AES_KEY_WORDS; ++i) {
+    cep_write(AES_BASE_K, AES_KEY_BASE + (i * BYTES_PER_WORD), pKey[i]);
+    sprintf(tmp,"%016lx", pKey[i]); strcat(str,tmp);
+  }  
+#else
   for(unsigned int i = 0; i < AES_KEY_WORDS; ++i) {
     cep_write(AES_BASE_K, AES_KEY_BASE + (((AES_KEY_WORDS - 1) - i) * BYTES_PER_WORD), pKey[i]);
     sprintf(tmp,"%016lx", pKey[i]); strcat(str,tmp);
   }
+#endif
   printf("%s\n",str);
 }
 
@@ -197,9 +214,15 @@ void aes_reportCiphertext(void) {
   uint64_t ct[AES_BLOCK_WORDS];
   
   aes_saveCiphertext(ct);
+#ifdef BIG_ENDIAN  
   for(unsigned int i = 0; i < AES_BLOCK_WORDS; ++i) {
     sprintf(tmp,"%016lx", ct[(AES_BLOCK_WORDS - 1) - i]); strcat(str,tmp);
   }
+#else
+  for(unsigned int i = 0; i < AES_BLOCK_WORDS; ++i) {
+    sprintf(tmp,"%016lx", ct[i]); strcat(str,tmp);
+  }  
+#endif
   printf("%s\n",str);
 }
 
@@ -208,11 +231,17 @@ bool aes_compareCiphertext(uint64_t* pCT, const char *pExpectedHexString) {
     
     // Convert the calculated ciphertext into a text string
     char *temp = longTemp;
+#ifdef BIG_ENDIAN
+    for(unsigned int i = 0; i< AES_BLOCK_WORDS; i++) {
+        sprintf(temp, "%016lx", ((uint64_t *)pCT)[i]);
+        temp += 16;
+    }    
+#else
     for(int i = (AES_BLOCK_WORDS - 1); i >= 0; --i) {
         sprintf(temp, "%016lx", ((uint64_t *)pCT)[i]);
         temp += 16;
     }
-    
+#endif
     // Now we can compare them as hex strings
     // 2 string characters per byte
     if(strncmp(longTemp, pExpectedHexString, (AES_BLOCK_BYTES * 2)) == 0) {
@@ -332,7 +361,11 @@ void dft_start(void) {
 }
 
 void dft_setX(uint16_t i, uint16_t pX0, uint16_t pX1, uint16_t pX2, uint16_t pX3){
+#ifdef BIG_ENDIAN
+  cep_write(DFT_BASE_K, DFT_IN_DATA, (uint64_t)pX3 << 0 | (uint64_t) pX2 << 16 | (uint64_t)pX1 << 32 | (uint64_t)pX0 << 48);             //Write data  
+#else
     cep_write(DFT_BASE_K, DFT_IN_DATA, (uint64_t)pX3 << 48 | (uint64_t) pX2 << 32 | (uint64_t)pX1 << 16 | (uint64_t)pX0);             //Write data
+#endif
     cep_write(DFT_BASE_K, DFT_IN_ADDR, i);                       //Write addr
     cep_write(DFT_BASE_K, DFT_IN_WRITE, 0x2);                    //Load data
     cep_write(DFT_BASE_K, DFT_IN_WRITE, 0x0);                    //Stop
@@ -392,7 +425,11 @@ void idft_start(void) {
 }
 
 void idft_setX(uint16_t i, uint16_t pX0, uint16_t pX1, uint16_t pX2, uint16_t pX3){
+#ifdef BIG_ENDIAN
+  cep_write(IDFT_BASE_K, IDFT_IN_DATA, (uint64_t)pX3 << 0 | (uint64_t)pX2 << 16 | (uint64_t)pX1<<32 | (uint64_t)pX0<<48);             //Write data
+#else
     cep_write(IDFT_BASE_K, IDFT_IN_DATA, (uint64_t)pX3 << 48 | (uint64_t)pX2 << 32 | (uint64_t)pX1<<16 | (uint64_t)pX0);             //Write data
+#endif
     cep_write(IDFT_BASE_K, IDFT_IN_ADDR, i);                       //Write addr
     cep_write(IDFT_BASE_K, IDFT_IN_WRITE, 0x2);                    //Load data
     cep_write(IDFT_BASE_K, IDFT_IN_WRITE, 0x0);                    //Stop
@@ -660,11 +697,17 @@ void md5_waitForValid() {
 
 void md5_updateHash(unsigned char *pHash) {
     uint64_t* hPtr = (uint64_t *)pHash;
+#ifdef BIG_ENDIAN
+    for(unsigned int i=0; i < MD5_HASH_WORDS; i++) {
+        *hPtr++ = cep_read(MD5_BASE_K, MD5_HASH_BASE + (i * BYTES_PER_WORD));
+    }    
+#else
     //    uint64_t temp_num;
     //for(int i = 0; i < MD5_HASH_WORDS; ++i) {
     for(int i = MD5_HASH_WORDS - 1; i >= 0; --i) {
         *hPtr++ = cep_read(MD5_BASE_K, MD5_HASH_BASE + (i * BYTES_PER_WORD));
     }
+#endif
 }
 
 void md5_resetAndReady() {
@@ -679,6 +722,15 @@ void md5_strobeMsgValid() {
 }
 
 void md5_loadPaddedMessage(const char* msg_ptr) {
+#ifdef BIG_ENDIAN
+  for(unsigned int i = 0; i < MD5_MESSAGE_WORDS; i++) {
+    uint64_t temp = 0;
+    for(int j = 0; j < (int)BYTES_PER_WORD; j++) {
+      temp = (temp << 8) |  (uint64_t)(msg_ptr[i*8 + j] & 0xff);
+    }
+    cep_write(MD5_BASE_K, MD5_MSG_BASE + (i * BYTES_PER_WORD), temp);
+  }  
+#else
   for(unsigned int i = 0; i < MD5_MESSAGE_WORDS; ++i) {
     uint64_t temp = 0;
     for(int j = 0; j < (int)BYTES_PER_WORD; ++j) {
@@ -687,7 +739,7 @@ void md5_loadPaddedMessage(const char* msg_ptr) {
 
     cep_write(MD5_BASE_K, MD5_MSG_BASE + (i * BYTES_PER_WORD), temp);
   }
-
+#endif
 }
 
 int md5_addPadding(uint64_t pMessageBits, char* buffer) {
@@ -697,14 +749,15 @@ int md5_addPadding(uint64_t pMessageBits, char* buffer) {
   // Add size to end of string
   const int startByte = extraBits / BITS_PER_BYTE;
   const int sizeStartByte =  startByte + ((paddingBits / 8) - 8);
-  for(int i = startByte; i < (sizeStartByte + 8); ++i) {
+  for(int i = startByte; i < (sizeStartByte + 8); i++) {
     if(i == startByte) {
       buffer[i] = (unsigned char)0x80; // 1 followed by many 0's
-    } else if(i >= sizeStartByte) {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-      buffer[i] = ((char *)(&pMessageBits))[i - sizeStartByte];
+    }
+    else if(i >= sizeStartByte) {
+#ifdef BIG_ENDIAN
+      buffer[i] = ((char *)(&pMessageBits))[i - sizeStartByte];      
 #else
-      buffer[i] = ((char *)(&pMessageBits))[7 - (i - sizeStartByte)];
+      buffer[i] = ((char *)(&pMessageBits))[7 - (i - sizeStartByte)];      
 #endif
     } else {
       buffer[i] = 0x0;
@@ -774,7 +827,7 @@ void md5_hashString(const char *pString, unsigned char *pHash) {
         
     // Send the message
     msg_ptr = message;
-    //printf("\nMD5 message = %s\n",*message);
+    //printf("\nMD5 message = 0x%02x/%02x\n",message[0],message[1]);
     do {
       md5_waitForReady();
       md5_loadPaddedMessage(msg_ptr);
@@ -820,6 +873,17 @@ bool rsa_assertSuccess(bool success){
     }
 }
 
+static int CountExpBits(uint32_t expIn) {
+  int bitCnt = 32;
+  for (int i=31;i>0;i--) { // at least 1 bit
+    if ((1 << i) & expIn) { // return if found first 1-bits
+	return bitCnt;
+    }
+    bitCnt--;
+  }
+  return bitCnt;
+}
+
 /*32-bit modulo exponentiation*/
 void rsa_modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wres){
     uint64_t Rres;
@@ -848,7 +912,8 @@ void rsa_modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wre
     cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000003);
     cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000000);
 
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_LENGTH , 0x0000000000000001);
+    //    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_LENGTH , 0x0000000000000001*32);
+    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_LENGTH , CountExpBits(Wexp));
     cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_LENGTH  , 0x0000000000000001);
 
     // Start processing and wait for ready.
@@ -887,11 +952,24 @@ void sha256_waitForValidOutput(void) {
 }
 
 void sha256_updateHash(char *pHash) {
-    uint64_t * temp = (uint64_t *)pHash;
-    
-    for(unsigned int i = 0; i < SHA256_HASH_WORDS; ++i) {
-        *temp++ = cep_read(SHA256_BASE_K, SHA256_HASH_BASE + (i * BYTES_PER_WORD));
+#ifdef BIG_ENDIAN
+  uint64_t word;
+  for(int i = 0; i < 4; i++) { //  256-bits=32
+    word = cep_read(SHA256_BASE_K, SHA256_HASH_BASE + (i*8));
+    for (int j=0;j<8;j++) {
+      //pHash[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
+      // NOTE: the expected are in LE !!!
+      pHash[i*8 +j]= (word >> (8*j) ) & 0xff;      
     }
+  }
+  //printf("%s: 0x%02x/%02x\n",__FUNCTION__,pHash[0],pHash[1]);    
+#else
+  uint64_t * temp = (uint64_t *)pHash;    
+  for(unsigned int i = 0; i < SHA256_HASH_WORDS; ++i) {
+    *temp++ = cep_read(SHA256_BASE_K, SHA256_HASH_BASE + (i * BYTES_PER_WORD));
+  }
+#endif
+
 }
 
 void sha256_strobeInit(void) {
@@ -905,6 +983,16 @@ void sha256_strobeNext(void) {
 }
 
 void sha256_loadPaddedMessage(const char* msg_ptr) {
+#ifdef BIG_ENDIAN
+  for( int i = 0; i<8;i++) {
+    uint64_t temp = 0;
+    for( int j = 0; j < 8; j++) {
+      temp = (temp << 8) |  (uint64_t)(msg_ptr[i*8 + j] & 0xff);
+    }
+    // printf( "        0x%016lX written to: 0x%016lX\r\n", temp, SHA256_MSG_BASE + (i * BYTES_PER_WORD));
+    cep_write(SHA256_BASE_K, SHA256_MSG_BASE + (i * BYTES_PER_WORD), temp);
+  }
+#else
   // for(unsigned int i = 0; i < SHA256_MESSAGE_WORDS; ++i) {
     for( int i = 7; i >= 0; --i) {
     uint64_t temp = 0;
@@ -917,7 +1005,8 @@ void sha256_loadPaddedMessage(const char* msg_ptr) {
     // printf( "        0x%016lX written to: 0x%016lX\r\n", temp, SHA256_MSG_BASE + (i * BYTES_PER_WORD));
     cep_write(SHA256_BASE_K, SHA256_MSG_BASE + (i * BYTES_PER_WORD), temp);
   }
-
+#endif
+    
 }
 
 void sha256_reportHash() {
@@ -938,35 +1027,43 @@ int sha256_addPadding(uint64_t pMessageBits64Bit, char* buffer) {
     const int startByte = extraBits / BITS_PER_BYTE;
     const int sizeStartByte =  startByte + ((paddingBits / BITS_PER_BYTE) - 8);
     for(int i = startByte; i < (sizeStartByte + 8); ++i) {
-        if(i == startByte) {
-            buffer[i] = (unsigned char) 0x80; // 1 followed by many 0's
-        } else if( i >= sizeStartByte) {
+      if(i == startByte) {
+	buffer[i] = (unsigned char) 0x80; // 1 followed by many 0's
+      } else if( i >= sizeStartByte) {
         buffer[i] = ((char *)(&pMessageBits64Bit))[7 - (i - sizeStartByte)];
-    } else {
-      buffer[i] = 0x0;
-    }
+      } else {
+	buffer[i] = 0x0;
+      }
   }
     
   return (paddingBits / 8);
 }
 
 bool sha256_compareHash(const char * pProposedHash, const char* pExpectedHash, const char * pTestString) {
-    char longTemp[(SHA256_HASH_BITS / 4) + 1];
-    
+
+    char longTemp[(SHA256_HASH_BITS / 4) + 1];  
     char *temp = longTemp;
+#ifdef BIG_ENDIAN
+    for(unsigned int i = 0; i<SHA256_HASH_WORDS; i++) {
+      sprintf(temp, "%16.16lx", ((uint64_t *)pProposedHash)[i]);
+      temp += 16;
+    }    
+#else
     for(int i = (SHA256_HASH_WORDS - 1); i >= 0; --i) {
-        sprintf(temp, "%16.16lx", ((uint64_t *)pProposedHash)[i]);
-        temp += 16;
+      sprintf(temp, "%16.16lx", ((uint64_t *)pProposedHash)[i]);
+      temp += 16;
     }
-    
+#endif
+    //printf("%s: 0x%02x/%02x - %02x/%02x\n",__FUNCTION__,longTemp[0],longTemp[1],pExpectedHash[0],pExpectedHash[1]);
+      
     if(strncmp(longTemp, pExpectedHash, SHA256_HASH_BITS / 4) == 0) {
         printf("SHA256: PASSED: %s hash test\n", pTestString);
         return true;
     }
-    
+
     printf("SHA256: FAILED: %s hash test with hash: %s\n", pTestString, temp);
     printf("SHA256: EXPECTED: %s\n", pExpectedHash);
-    
+
     return false;
 }
 
@@ -1027,12 +1124,16 @@ void sha256_hashString(const char *pString, char *pHash) {
 // ===========
 // AES Test
 // ===========
-int cep_AES_test(void) {
-  int errCnt = 0;
-#ifdef BARE_MODE
+void init_aes(void) {
+#if 1 // def BARE_MODE
   ipCores[AES_BASE_K].address = cep_core_info[AES_BASE_K].base_address;
   ipCores[AES_BASE_K].enabled = true;  
-#endif
+#endif  
+}
+
+int cep_AES_test(void) {
+  int errCnt = 0;
+  init_aes();
   //************************************************************************
   // Run the AES Tests
   //************************************************************************
@@ -1099,13 +1200,17 @@ int cep_AES_test(void) {
 // ===========
 // DES3 Test
 // ===========
-int cep_DES3_test(void) {
-  bool    success = true;  
-  // to support multi-thread in bare metal
-#ifdef BARE_MODE
+void init_des3(void) {
+#if 1 // def BARE_MODE
   ipCores[DES3_BASE_K].address = cep_core_info[DES3_BASE_K].base_address;
   ipCores[DES3_BASE_K].enabled = true;
 #endif
+  
+}
+int cep_DES3_test(void) {
+  bool    success = true;
+  init_des3();
+  // to support multi-thread in bare metal
       //************************************************************************
       // Run the Triple-DES tests
       //************************************************************************
@@ -1167,14 +1272,18 @@ int cep_DES3_test(void) {
 // ===========
 // DFT Test
 // ===========
+void init_dft(void) {
+#if 1 // def BARE_MODE
+  ipCores[DFT_BASE_K].address = cep_core_info[DFT_BASE_K].base_address;
+  ipCores[DFT_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_DFT_test(void) {
   bool    success = true;  
   int i,j;
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[DFT_BASE_K].address = cep_core_info[DFT_BASE_K].base_address;
-  ipCores[DFT_BASE_K].enabled = true;
-#endif
+  init_dft();
 
   //************************************************************************
   // Run the DFT tests
@@ -1240,14 +1349,18 @@ int cep_DFT_test(void) {
 // ===========
 // IDFT Test
 // ===========
+void init_idft(void) {
+#if 1 // def BARE_MODE
+  ipCores[IDFT_BASE_K].address = cep_core_info[IDFT_BASE_K].base_address;
+  ipCores[IDFT_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_IDFT_test(void) {
   bool    success = true;  
   int i,j;
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[IDFT_BASE_K].address = cep_core_info[IDFT_BASE_K].base_address;
-  ipCores[IDFT_BASE_K].enabled = true;
-#endif
+  init_idft();
 
   //************************************************************************
   // Run the IDFT tests
@@ -1303,15 +1416,19 @@ int cep_IDFT_test(void) {
 // ===========
 // FIR Test
 // ===========
+void init_fir(void)
+{
+#if 1 // def BARE_MODE
+  ipCores[FIR_BASE_K].address = cep_core_info[FIR_BASE_K].base_address;
+  ipCores[FIR_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_FIR_test(void) {
   bool    success = true;  
   int i;
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[FIR_BASE_K].address = cep_core_info[FIR_BASE_K].base_address;
-  ipCores[FIR_BASE_K].enabled = true;
-#endif
-
+  init_fir();
   //************************************************************************
   // Run the FIR tests
   //************************************************************************
@@ -1349,14 +1466,18 @@ int cep_FIR_test(void) {
 // ===========
 // IIR Test
 // ===========
+void init_iir(void) {
+#if 1 // def BARE_MODE
+  ipCores[IIR_BASE_K].address = cep_core_info[IIR_BASE_K].base_address;
+  ipCores[IIR_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_IIR_test(void) {
   bool    success = true;  
   int i;
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[IIR_BASE_K].address = cep_core_info[IIR_BASE_K].base_address;
-  ipCores[IIR_BASE_K].enabled = true;
-#endif
+  init_iir();
   // 12/17/19 tony: if dataIn to IIR_filter module is randomized (from memory), test will fail if not issue a bus reset
   iir_bus_reset(); // must issue a bus reset to clear the left/rigthOut else will not work
   //
@@ -1400,13 +1521,17 @@ int cep_IIR_test(void) {
 // ===========
 // GPS Test
 // ===========
+void init_gps(void)  {
+#if 1 // def BARE_MODE
+  ipCores[GPS_BASE_K].address = cep_core_info[GPS_BASE_K].base_address;
+  ipCores[GPS_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_GPS_test(void) {
   bool    success = true;  
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[GPS_BASE_K].address = cep_core_info[GPS_BASE_K].base_address;
-  ipCores[GPS_BASE_K].enabled = true;
-#endif
+  init_gps();
   
   //************************************************************************
   // Run the GPS tests
@@ -1421,8 +1546,13 @@ int cep_GPS_test(void) {
   gps_generateNextCode();
   gps_waitForValidOutput();
   gps_verifyCode("0000000000001F43", "C/A code", GPS_CA_BYTES, GPS_CA_BASE);
+#ifdef BIG_ENDIAN
+  gps_verifyCode("38E7EF545394BF28E127D8D99DDFDD9C", "P code", GPS_P_BYTES, GPS_P_BASE);
+  gps_verifyCode("C643BC27E284B05A4155A750FD86C6D3", "L code", GPS_L_BYTES, GPS_L_BASE);  
+#else
   gps_verifyCode("9DDFDD9CE127D8D95394BF2838E7EF54", "P code", GPS_P_BYTES, GPS_P_BASE);
   gps_verifyCode("FD86C6D34155A750E284B05AC643BC27", "L code", GPS_L_BYTES, GPS_L_BASE);
+#endif
   gps_bus_reset();
   gps_reset_sv_num();
   printf("\r\n");
@@ -1437,14 +1567,17 @@ int cep_GPS_test(void) {
 // ===========
 // MD5 Test
 // ===========
-int cep_MD5_test(void) {
-  bool    success = true;  
-  // to support multi-thread in bare metal
-#ifdef BARE_MODE
+void init_md5(void) {
+#if 1 // def BARE_MODE
   ipCores[MD5_BASE_K].address = cep_core_info[MD5_BASE_K].base_address;
   ipCores[MD5_BASE_K].enabled = true;
 #endif
+}
 
+int cep_MD5_test(void) {
+  bool    success = true;  
+  // to support multi-thread in bare metal
+  init_md5();
   //************************************************************************
   // Run the MD5 tests
   //************************************************************************
@@ -1481,13 +1614,17 @@ int cep_MD5_test(void) {
 // ===========
 // RSA Test
 // ===========
+void init_rsa(void) {
+#if 1 // def BARE_MODE
+  ipCores[RSA_ADDR_BASE_K].address = cep_core_info[RSA_ADDR_BASE_K].base_address;
+  ipCores[RSA_ADDR_BASE_K].enabled = true;
+#endif  
+}
+
 int cep_RSA_test(void) {
   bool    success = true;  
   // to support multi-thread in bare metal
-#ifdef BARE_MODE
-  ipCores[RSA_ADDR_BASE_K].address = cep_core_info[RSA_ADDR_BASE_K].base_address;
-  ipCores[RSA_ADDR_BASE_K].enabled = true;
-#endif
+  init_rsa();
 
   //************************************************************************
   // Run the RSA tests
@@ -1504,7 +1641,8 @@ int cep_RSA_test(void) {
   rsa_modexp_32bits(0x00000002, 0x00000002, 0x00000003, 0x00000001); //msg^exp > mod -> 2^2 > 3
   rsa_modexp_32bits(0x00000004, 0x0000000D, 0x000001F1, 0x000001bd); //msg^exp > mod -> 4^13 > 497
   rsa_modexp_32bits(0x01234567, 0x89ABCDEF, 0x11111111, 0x0D9EF081); //msg^exp > mod -> 19088743^2309737967 > 286331153
-  rsa_modexp_32bits(0x30000000, 0xC0000000, 0x00A00001, 0x0000CC3F); //msg^exp > mod -> 
+  // This test case is invalid since MSG > MODULUS
+  //rsa_modexp_32bits(0x30000000, 0xC0000000, 0x00A00001, 0x0000CC3F); //msg^exp > mod -> 
   printf("\r\n");
   printf("RSA: *********************************************************\r\n");
   printf("RSA: * RSA test done ...                                     *\r\n");
@@ -1517,14 +1655,18 @@ int cep_RSA_test(void) {
 // ===========
 // SHA256 Test
 // ===========
-int cep_SHA256_test(void) {
-  bool    success = true;  
-  // to support multi-thread in bare metal
-#ifdef BARE_MODE
+void init_sha256(void) {
+#if 1 // def BARE_MODE
   ipCores[SHA256_BASE_K].address = cep_core_info[SHA256_BASE_K].base_address;
   ipCores[SHA256_BASE_K].enabled = true;
 #endif
+}
 
+int cep_SHA256_test(void) {
+  bool    success = true;  
+  // to support multi-thread in bare metal
+  init_sha256();
+  //
   //************************************************************************
   // Run the SHA256 tests
   //************************************************************************
@@ -1575,79 +1717,72 @@ int cep_SHA256_test(void) {
 //************************************************************************
 // BEGIN: Test function
 //************************************************************************
-int test(int mask) {
+int run_ceptest(int mask) {
 
   int errCnt = 0;
   // use the mask to shutoff the test
   for (int i=0;i<11;i++) {
-    if (((1 << i) & mask) == 0) { ipCores[i].enabled = false; }
+    if ((1 << i) & mask) {
+      switch (i) {
+	//
+	// General use variables
+	//
+      case AES_BASE_K:
+	errCnt += cep_AES_test();
+	if (errCnt) { return 1; }
+	break;
+	
+      case  DES3_BASE_K:
+	errCnt += cep_DES3_test();
+	if (errCnt) { return 1; }
+	break;
+	
+      case DFT_BASE_K:
+	errCnt += cep_DFT_test();      
+	if (errCnt) { return 1; }
+	break;
+	
+      case IDFT_BASE_K:
+	errCnt += cep_IDFT_test();      
+	if (errCnt) { return 1; }
+	break;
+	
+      case FIR_BASE_K:
+	errCnt += cep_FIR_test();
+	if (errCnt) { return 1; }
+	break;
+	
+      case IIR_BASE_K:
+	errCnt += cep_IIR_test();
+	if (errCnt) { return 1; }
+	break;
+	
+      case GPS_BASE_K:
+	errCnt += cep_GPS_test();      
+	if (errCnt) { return 1; }
+	break;
+	
+      case MD5_BASE_K: 
+	errCnt += cep_MD5_test();      
+	if (errCnt) { return 1; }
+	break;
+	
+      case RSA_ADDR_BASE_K:
+	errCnt += cep_RSA_test();      
+	if (errCnt) { return 1; }
+	break;
+	
+      case SHA256_BASE_K:
+	errCnt += cep_SHA256_test();
+	if (errCnt) { return 1; }
+	break;      
+      }
+    }
   }
-  //
-  // General use variables
-  //
-  if (ipCores[AES_BASE_K].enabled == true) 
-    {
-      errCnt += cep_AES_test();
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[DES3_BASE_K].enabled == true)
-    {
-      errCnt += cep_DES3_test();
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[DFT_BASE_K].enabled == true)
-    {
-      errCnt += cep_DFT_test();      
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[IDFT_BASE_K].enabled == true)
-    {
-      errCnt += cep_IDFT_test();      
-    }
-    if (errCnt) { return 1; }
-    
-
-    if (ipCores[FIR_BASE_K].enabled == true)
-    {
-      errCnt += cep_FIR_test();
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[IIR_BASE_K].enabled == true)
-    {
-      errCnt += cep_IIR_test();
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[GPS_BASE_K].enabled == true)
-    {
-      errCnt += cep_GPS_test();      
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[MD5_BASE_K].enabled == true)
-    {
-      errCnt += cep_MD5_test();      
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[RSA_ADDR_BASE_K].enabled == true)
-    {
-      errCnt += cep_RSA_test();      
-    }
-    if (errCnt) { return 1; }
-    
-    if (ipCores[SHA256_BASE_K].enabled == true)
-    {
-      errCnt += cep_SHA256_test();      
-    }
-    //Check Outputs
-    return errCnt;
-
+  //Check Outputs
+  return errCnt;
 }   // end of test
+
 //************************************************************************
 // END: test function
 //************************************************************************
@@ -1779,9 +1914,8 @@ int initializeInputs()
     int main(int argc, char *argv[])
     {
       int mask = 0xFFFFFFFF;
-#endif
 
-    int result = 0;
+
 
     printf("\r\n");
     printf("****************************************************************\r\n");
@@ -1791,7 +1925,9 @@ int initializeInputs()
 
     // Initialize the core configuration data structure
     initConfig();
-
+#endif
+    int result = 0;
+    
     // Initialize core I/O
     result = initializeInputs();
     if ( result != 0 ) { 
@@ -1802,7 +1938,7 @@ int initializeInputs()
     // Verify the Software Version equals the Hardware Versionlk
 
     // Execute tests on enabled cores
-    result += test(mask);
+    result += run_ceptest(mask);
 
     // Be nice, Clean up resources
     cleanUp();

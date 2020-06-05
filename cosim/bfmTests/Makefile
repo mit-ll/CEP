@@ -47,10 +47,25 @@ include ../common.make
 
 BFM_TEST_LIST = \
 	regTest		\
+	macroMix	\
+	playback	\
+	lockTest	\
+	multiLock	\
 	ddr3Test	\
 	memPreload	\
 	regression	\
-	macroMix	\
+
+SINGLE_OLD_TESTS = \
+	aes		\
+	des3		\
+	sha256		\
+	md5		\
+	gps		\
+	iir		\
+	fir		\
+	dft		\
+
+
 
 
 TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.txt))
@@ -71,7 +86,7 @@ endif
 	@for i in ${BFM_TEST_LIST}; do							\
 		echo "    PEND : ${BLD_DIR}/$${i}"  > ${BLD_DIR}/$${i}/status;		\
 		(cd ${BLD_DIR}/$${i}; rm -f *.o*; 					\
-		make NOWAVE=1 TEST_NAME=$${i});						\
+		make NOWAVE=1 TL_CAPTURE=${TL_CAPTURE} C2C_CAPTURE=${C2C_CAPTURE} TEST_NAME=$${i});			\
 	done
 
 summary:
@@ -80,10 +95,20 @@ summary:
 		cat ${BLD_DIR}/$${i}/status | tee -a regressionSummary;	\
 	done
 
+FPGA_INST_NAME     ?= /cep_tb/fpga
+
 merge:
 	@if test -d ${DUT_COVERAGE_PATH}; then	\
-		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;)	\
+		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb; \
+		${VCOVER_CMD} report -html -output covhtmlreport -annotate -details -assert -directive -cvg -code bcefst -threshL 50 -threshH 90 \
+		${TEST_SUITE}.ucdb)	\
 	fi
+
+# fixme !!! These need to be in a do file
+cov_report:
+	coverage open ../coverage/des3.ucdb
+	coverage report -html -output covhtmlreport -details -assert -directive -cvg -code bcefst -threshL 50 -threshH 90
+
 
 
 

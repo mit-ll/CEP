@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_md5.h"
 
 //
 void *c_module(void *arg) {
@@ -52,7 +53,23 @@ void *c_module(void *arg) {
   //
   int mask = 0xFFFFFFFF;
   mask = 1 << MD5_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
+
+  //
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_md5 md5(seed,verbose);
+  //
+  md5.init();  
+  md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");  
+  //
+  int maxLoop = 16;
+  initConfig();
+  errCnt += md5.RunMd5Test(maxLoop);
+  //
+  md5.freeMe();
+  
   //
   pio.RunClk(100);  
   //

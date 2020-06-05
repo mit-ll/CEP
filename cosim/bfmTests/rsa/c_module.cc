@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_rsa.h"
 
 //
 void *c_module(void *arg) {
@@ -52,7 +53,22 @@ void *c_module(void *arg) {
   //
   int mask = 0xFFFFFFFF;
   mask = 1 << RSA_ADDR_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_rsa rsa(seed,verbose);
+  //
+  rsa.init();  
+  //rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");  
+  //
+  int maxLoop  = 2;
+  int maxBytes = 512/8; // 1024 bits
+  initConfig();
+  errCnt += rsa.RunRsaTest2(maxLoop,maxBytes);
+  //
+  rsa.freeMe();
   //
   pio.RunClk(1000);  
   //

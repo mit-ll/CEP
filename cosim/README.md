@@ -314,7 +314,20 @@ void cep_write(int device, uint32_t pAddress, uint64_t pData)  <...>
  
  * printf can be overloaded and printed to screen but it is going to be very slow in simulation. This can be turn on/off per test
 
+**NOTES** :
 
+Since all C/C++ codes are visible/built for all modes (BFM, BARE Metal and Linux), there are several **defines**, test writer should be aware of:
+
+#define **BARE_MODE** :
+   In BARE Metal simulation, there are no libraries/system call supports, therefore, any codes that uses such need to be ifdef out via this define.
+
+#define **LINUX_MODE** :
+   This define is not exist in simulation and it is defined during Linux build
+   
+#define **SIM_ENV_ONLY** :
+    This define is used to map out any codes that is used for simulation only. For example:
+       ReadDvtFlag(...) and WriteDvtFlag(...) APIs are only applicable in simulation to probe certain signals or synchronize to some events..
+       
 ## Cheat Sheet ##
 
 * Since it is all makefile driven, there are some switches that can be added to the make command line to alter the default settings. Some of those switches are:
@@ -340,7 +353,7 @@ make COVERAGE=1     <-- run simulation with coverage turned on. Coverage data ar
 
 # Food for thought #
 
- * At the time of this writing, running regression is done one test at a time on the same machine, serially. It takes about 1 hour+ to run all tests. As more tests are added or moving the platform to support ASIC, there will be hundreds of tests added to verify full coverage of the design before any fabrication attempted. Running serially is not do-able as turn around time is key during physical design and verification process for ASIC. This requires moving to support multiple machines (as on a cloud or grid/networks) where tests can be batched to run concurrently...The Makefile structure already takes that in mind and supports it. The requirements are the grid setup where all the machines on the networks need to be configured identically w.r.t where the tools are, all disks are mounted and visible... Not sure MIT LL support such a thing due to security??
+ * At the time of this writing, running regression is done one test at a time on the same machine, serially. It takes about 10 hour+ to run all tests. As more tests are added or moving the platform to support ASIC, there will be hundreds of tests added to verify full coverage of the design before any fabrication attempted. Running serially is not do-able as turn around time is key during physical design and verification process for ASIC. This requires moving to support multiple machines (as on a cloud or grid/networks) where tests can be batched to run concurrently...The Makefile structure already takes that in mind and supports it. The requirements are the grid setup where all the machines on the networks need to be configured identically w.r.t where the tools are, all disks are mounted and visible... Not sure MIT LL support such a thing due to security??
  
  * The environment is also capable of supporting distributed simulation where multiple large blocks (multi corer per board, big large ASIC, etc...) can be spawn off to run on different machines (or physical cores) to speed up simulation. However, this requires more simulation license usage and some manual system splitting during test bench construction.
  

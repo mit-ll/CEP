@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_des3.h"
 
 //
 void *c_module(void *arg) {
@@ -52,7 +53,22 @@ void *c_module(void *arg) {
   //
   int mask = 0xFFFFFFFF;
   mask = 1 << DES3_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
+
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_des3 des3(seed,verbose);
+  //
+  des3.init();  
+  des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");  
+  //
+  int maxLoop = 64;
+  initConfig();
+  errCnt += des3.RunDes3Test(maxLoop);
+  //
+  des3.freeMe();
+  
   //
   pio.RunClk(100);  
   //

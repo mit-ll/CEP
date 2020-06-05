@@ -11,7 +11,7 @@ FREEDOM_U_SDK_DIR = ../../../software/freedom-u-sdk
 BUILDROOT_DIR = $(FREEDOM_U_SDK_DIR)/buildroot
 PACKAGE_DIR = $(BUILDROOT_DIR)/package/$(TARGET)
 
-LIBS =
+LIBS = -lssl -lcrypto
 #
 # top level Makefile override this CC to use gcc BUT we need g++!!!
 #
@@ -23,7 +23,7 @@ SOE = 0
 # So force it to use g++ instead
 #
 MY_CC = $(patsubst %gcc, %g++, $(CC))
-CFLAGS += -g -Wall -I . -DLINUX_MODE -DCEP_SOE=$(SOE) -DRISCV_CPU
+CFLAGS += -g -Wall -I . -DLINUX_MODE -DCEP_SOE=$(SOE) -DRISCV_CPU -DBIG_ENDIAN
 CFLAGS += -std=c++11 
 # -static will crash for mutithread
 LFLAGS = -lpthread
@@ -125,6 +125,7 @@ ifeq ($(CONFIG_GREP),)
 	@echo
 	@echo "--- Enabling application in $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config ---"
 	@echo
+	echo "BR2_PACKAGE_OPENSSL=y" >> $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config
 	echo "BR2_PACKAGE_CEP_DIAG=y" >> $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config
 	@echo
 	@echo "--- Append Complete ---"

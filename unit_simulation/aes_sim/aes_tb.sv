@@ -9,21 +9,26 @@
 //************************************************************************
 
 `timescale 1ns/1ns
+
 //
-// Name of the DUT
+// Name of the DUT & TB if not pass in from Make
 //
-`define DUT_NAME aes_192
+`ifndef DUT_NAME
+ `define DUT_NAME aes_192
+`endif
+
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
 //
-// Stimulus/ExpectedData info
+// Pull in the stimulus and other info
 //
-`define MAX_SAMPLES      (980-14)
-`define SAMPLE_WIDTH     (4+192+128+4+128)
-`define OUTPUT_WIDTH     (1+128)
-`define DATA_FILE        "AES_stimulus.csv"
+`include "aes_stimulus.txt"
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+//
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -38,7 +43,7 @@
   {ji1,i1,i2,i3,jo1,exp_``o1,exp_``o2}=x; \
   exp_pat={exp_``o1,exp_``o2}; \
   act_pat={o1,o2}; \
-  if (exp_pat!=act_pat) begin \
+  if (exp_pat!==act_pat) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s}", `"o1`",`"o2`"); \
      $display("  EXP=0x%x",exp_pat); \
@@ -46,14 +51,15 @@
      errCnt++;\
   end
 
+
 //
-module `TB_NAME(`DUT_NAME) ; 
-   //
+//
+module `TB_NAME ;
+
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`AES_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
@@ -79,6 +85,7 @@ module `TB_NAME(`DUT_NAME) ;
    initial begin
       forever #5 clk = !clk;
    end
+   //    
    //
    // DUT instantiation
    //
@@ -90,9 +97,19 @@ module `TB_NAME(`DUT_NAME) ;
    //
    initial begin
       //
-      // do the unlocking or whatever here
+      // Pulse the DUT's reset & drive input to zeros (known states)
       //
-
+      {start,key[191:0],state[127:0]} = 0;
+      //
+      rst = 1;
+      repeat (5) @(posedge clk);
+      @(negedge clk);      // in stimulus, rst de-asserted after negedge
+      #2 rst = 0;
+      repeat (30) @(negedge clk);  // need to wait this long for output to stablize
+      //
+      // do the unlocking here if enable
+      //
+      
       //
       // pulse the DUT's reset and playback
       //
@@ -103,31 +120,19 @@ module `TB_NAME(`DUT_NAME) ;
    // Read data from file into buffer and playback for compare
    //
    task playback_data;
-      int fp;
       int i;
       event err;
       begin
 	 //
-	 // Pulse the DUT's reset & drive input to zeros (known states)
-	 //
-	 {start,key[191:0],state[127:0]} = 0;
-	 //
-	 rst = 1;
-	 repeat (5) @(posedge clk);
-	 @(negedge clk);      // in stimulus, rst de-asserted after negedge
-	 #2 rst = 0;
-	 @(negedge clk);            
-	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer AES_buffer",`AES_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`AES_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],ji1,start,key[191:0],state[127:0],jo1,out_valid,out[127:0]);
+	    `APPLY_N_CHECK(AES_buffer[i],ji1,start,key[191:0],state[127:0],jo1,out_valid,out[127:0]);
 	    @(negedge clk); // next sample	       
-	 end // for (int i=0;i<`MAX_SAMPLES;i++)
+	 end // for (int i=0;i<`AES_SAMPLE_COUNT;i++)
 	 //
 	 // print summary
 	 //

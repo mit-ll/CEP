@@ -240,8 +240,8 @@ void access::WriteDvtFlag(int msb, int lsb, int value) {
 #endif
 }
 
-int access::ReadDvtFlag(int msb, int lsb) {
-  int value = -1;
+u_int64_t access::ReadDvtFlag(int msb, int lsb) {
+  u_int64_t value = -1;
 #ifdef SIM_ENV_ONLY
 #ifdef DLL_SIM
   // no support
@@ -252,7 +252,7 @@ int access::ReadDvtFlag(int msb, int lsb) {
     //shIpc *ptr = GlobalShMemory.getIpcPtr(GetSlotId(),GetLocalId());
     value = ptr->ReadDvtFlag(msb,lsb);
     //if (GetVerbose()) {
-    //  ptr->PrintVerbose("access::ReadDvtFlag mSlotId=%d mLocalId=%d %d:%d=%08x\n",mSlotId,mLocalId,msb,lsb,value);
+    //ptr->PrintVerbose("access::ReadDvtFlag mSlotId=%d mLocalId=%d %d:%d=%08x\n",mSlotId,mLocalId,msb,lsb,value);
     //}
   }
 #endif

@@ -21,7 +21,7 @@ This will compile and run the simulation where stimulus will be applied to the D
 
 **NOTES**:
 
-1. Vector file (DES3_stimulus.csv) is in HEX format to be used by $readmemh, and every signal (input/output) is captured and placed in individual column separated by underscore (_), respectively. Since not every captured signal's width is divisible by 4 (HEX character=4 bits), bit filler are used to pad these signals to number of bits that divisible by 4. For example, reset is 1 bit and it occupies one column in the stimulus file, therefore, 3'b000 are padded to make 4 bits when captured. The testbench is already setup to extract those filler bits and throw away, so the user doesn't need to worry about them as long as the testbench is used as is.
+1. Vector file (des3_stimulus.txt) is in HEX format to be used by $readmemh, and every signal (input/output) is captured and placed in individual column separated by underscore (_), respectively. Since not every captured signal's width is divisible by 4 (HEX character=4 bits), bit filler are used to pad these signals to number of bits that divisible by 4. For example, reset is 1 bit and it occupies one column in the stimulus file, therefore, 3'b000 are padded to make 4 bits when captured. The testbench is already setup to extract those filler bits and throw away, so the user doesn't need to worry about them as long as the testbench is used as is.
 
 
 

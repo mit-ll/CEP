@@ -47,6 +47,7 @@ void thread_entry(int cid, int nc)
   uint32_t pn_base = 0x90000000 + (partnerId*8);  
   uint32_t stat=0  ;
   set_printf(0);
+  set_cur_status(CEP_RUNNING_STATUS);  
   //
   //
   // Write and read back (8-bytes aligned)

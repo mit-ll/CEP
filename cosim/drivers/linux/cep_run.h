@@ -87,6 +87,8 @@ typedef enum {
   RUN_runAll       , 
   RUN_cepThrTest   , 
   RUN_cepRegTest   ,
+  RUN_cepLockTest  ,
+  RUN_cepMultiLock ,    
   RUN_cepAllMacros , // cepregression: single thread
   RUN_cepMacroMix  , // multi-threaded
   RUN_cep_AES ,

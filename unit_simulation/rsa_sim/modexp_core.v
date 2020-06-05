@@ -57,37 +57,39 @@
 
 module modexp_core #(parameter OPW = 32, parameter ADW = 8)
        (
-           input wire           clk,
-           input wire           reset_n,
+           input wire 		clk,
+           input wire 		reset_n,
 
-           input wire           start,
-           output wire          ready,
+           input wire 		start,
+           output wire 		ready,
 
-           input wire [07 : 0]  exponent_length,
-           input wire [07 : 0]  modulus_length,
+//           input wire [07 : 0]  exponent_length,
+// tony duong 05/27/20: change from unit of 32-bits to actual bits to speed up
+           input wire [12 : 0] 	exponent_length, 
+           input wire [07 : 0] 	modulus_length,
 
            output wire [63 : 0] cycles,
 
-           input wire           exponent_mem_api_cs,
-           input wire           exponent_mem_api_wr,
-           input wire           exponent_mem_api_rst,
-           input wire [31 : 0]  exponent_mem_api_write_data,
+           input wire 		exponent_mem_api_cs,
+           input wire 		exponent_mem_api_wr,
+           input wire 		exponent_mem_api_rst,
+           input wire [31 : 0] 	exponent_mem_api_write_data,
            output wire [31 : 0] exponent_mem_api_read_data,
 
-           input wire           modulus_mem_api_cs,
-           input wire           modulus_mem_api_wr,
-           input wire           modulus_mem_api_rst,
-           input wire [31 : 0]  modulus_mem_api_write_data,
+           input wire 		modulus_mem_api_cs,
+           input wire 		modulus_mem_api_wr,
+           input wire 		modulus_mem_api_rst,
+           input wire [31 : 0] 	modulus_mem_api_write_data,
            output wire [31 : 0] modulus_mem_api_read_data,
 
-           input wire           message_mem_api_cs,
-           input wire           message_mem_api_wr,
-           input wire           message_mem_api_rst,
-           input wire [31 : 0]  message_mem_api_write_data,
+           input wire 		message_mem_api_cs,
+           input wire 		message_mem_api_wr,
+           input wire 		message_mem_api_rst,
+           input wire [31 : 0] 	message_mem_api_write_data,
            output wire [31 : 0] message_mem_api_read_data,
 
-           input wire           result_mem_api_cs,
-           input wire           result_mem_api_rst,
+           input wire 		result_mem_api_cs,
+           input wire 		result_mem_api_rst,
            output wire [31 : 0] result_mem_api_read_data
        );
 
@@ -238,7 +240,9 @@ reg           residue_valid_new;
 reg           residue_valid_int_validated;
 
 wire [7 : 0]  modulus_length_m1;
-wire [7 : 0]  exponent_length_m1;
+   // tony duong
+//wire [7 : 0]  exponent_length_m1;
+wire [12 : 0]  exponent_length_m1;   
 
 
 //----------------------------------------------------------------
@@ -647,7 +651,9 @@ always @*
         loop_counter_new = 13'b0;
         loop_counter_we  = 1'b0;
 
-        if (loop_counter_reg == {exponent_length_m1, 5'b11111})
+       // tony duong
+//        if (loop_counter_reg == {exponent_length_m1, 5'b11111})
+       if (loop_counter_reg == exponent_length_m1)
             last_iteration = 1'b1;
         else
             last_iteration = 1'b0;
@@ -681,7 +687,9 @@ always @*
     begin : exponent_process
         // Accessing new instead of reg - pick up update at
         // CTRL_ITERATE_NEW to remove a pipeline stall.
-        E_word_index  = exponent_length_m1 - loop_counter_new[ 12 : 5 ];
+// tony duong       
+//        E_word_index  = exponent_length_m1 - loop_counter_new[ 12 : 5 ];
+        E_word_index  = exponent_length_m1[12:5] - loop_counter_new[ 12 : 5 ];	   
 
         E_bit_index   = loop_counter_reg[ 04 : 0 ];
 

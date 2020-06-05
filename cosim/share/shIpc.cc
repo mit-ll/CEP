@@ -260,12 +260,13 @@ void shIpc::WriteDvtFlag(int msb, int lsb, int value) {
   // set cmd
   SendCmdNwait(SHIPC_WRITE_DVT_FLAG);
 }
-int shIpc::ReadDvtFlag(int msb, int lsb) {
+u_int64_t shIpc::ReadDvtFlag(int msb, int lsb) {
   // Set data stuff
   mPar[0] = msb;
   mPar[1] = lsb;
   // set cmd
   SendCmdNwait(SHIPC_READ_DVT_FLAG);
+  //printf("%s: mPar[0]=0x%016lx\n",__FUNCTION__,mPar[0]);
   return  mPar[0];
 }
 

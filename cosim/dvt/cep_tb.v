@@ -316,8 +316,22 @@ module cep_tb;
     sys_rst_n = 1'b0;
     #RESET_PERIOD
       sys_rst_n = 1'b1;
+  end
+   //
+   reg chipReset = 0;
+   
+    always @(posedge `DVT_FLAG[`DVTF_TOGGLE_CHIP_RESET_BIT]) begin
+      wait (fpga.topDesign.topMod.pbus_reset==0);
+      @(negedge fpga.topDesign.topMod.pbus_clock);
+      #2000;
+      `logI("Asserting pbus_Reset");
+      force fpga.topDesign.topMod.pbus_reset = 1;
+      repeat (10) @(negedge fpga.topDesign.topMod.pbus_clock);
+      #2000;
+      release fpga.topDesign.topMod.pbus_reset;      
+      `DVT_FLAG[`DVTF_TOGGLE_CHIP_RESET_BIT] = 0;
    end
-
+   
    assign sys_rst = RST_ACT_LOW ? sys_rst_n : ~sys_rst_n;
 
   //**************************************************************************//
@@ -560,7 +574,7 @@ module cep_tb;
        .ddr_ddr3_odt             (ddr3_odt_fpga),
        //
        .led 			(led),
-       .reset 			(sys_rst)
+       .reset 			(sys_rst || chipReset)
        );
 
    /*
@@ -826,6 +840,17 @@ module cep_tb;
    //
    //
    //
+   initial begin
+      // no secure mode
+      @(posedge fpga.topDesign.topMod.rsa.blackbox.reset_n);
+      @(posedge fpga.topDesign.topMod.rsa.blackbox.clk);
+      fpga.topDesign.topMod.rsa.blackbox.exponation_mode_reg = 1;
+   end
+   //
+   //
+   //
+   reg [`DVTF_FIR_CAPTURE_EN_BIT:`DVTF_AES_CAPTURE_EN_BIT] c2c_capture_enable=0;
+   //
    `include "aes_capture.incl"
    `include "sha256_capture.incl"
    `include "md5_capture.incl"
@@ -833,6 +858,8 @@ module cep_tb;
    `include "des3_capture.incl"
    `include "gps_capture.incl"
    `include "dft_capture.incl"
-   `include "idft_capture.incl"               
+   `include "idft_capture.incl"
+   `include "iir_capture.incl"
+   `include "fir_capture.incl"                     
    //
 endmodule

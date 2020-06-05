@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : cep_addresses.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -9,7 +9,7 @@ package mitllBlocks.cep_addresses
 
 object CEPVersion {
 	val CEP_MAJOR_VERSION		= 0x02
-	val CEP_MINOR_VERSION		= 0x03
+	val CEP_MINOR_VERSION		= 0x04
 }
 
 object CEPBaseAddresses {
@@ -147,10 +147,23 @@ object FIRAddresses {
 	val fir_datain_data_addr	= 0x0010
 	val fir_dataout_addr_addr	= 0x0018
 	val fir_dataout_data_addr	= 0x0020
+	val fir_reset_addr              = 0x0028  	
 }
 
 object CEPRegisterAddresses {
 
-	val version_register		= 0x0000
-
+    val version_register = 0x0000
+    val testNset         = 0x0010    
+    val scratch_w0       = 0x0100
+    val scratch_w1       = 0x0108
+    val scratch_w2       = 0x0110
+    val scratch_w3       = 0x0118
+    val scratch_w4       = 0x0120
+    val scratch_w5       = 0x0128
+    val scratch_w6       = 0x0130
+    val scratch_w7       = 0x0138
+    val core0_status     = 0x0200
+    val core1_status     = 0x0208
+    val core2_status     = 0x0210
+    val core3_status     = 0x0218
 }

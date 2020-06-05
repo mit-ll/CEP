@@ -1,53 +1,82 @@
 //
+// Capture dft's IO cycle-by-cycle 
 //
+`ifndef MKSTR
+`define MKSTR(x) `"x`"
+`endif
 //
 reg CaptureDFT_vector=0;
-always @(posedge `DVT_FLAG[`DVTF_DFT_CAPTURE_EN_BIT]) CaptureDFT_vector=1;
-initial begin
-   repeat(1) @(posedge cep_tb.fpga.topDesign.topMod.dft.blackbox.clk);
+`define DFT_DATA_WIDTH   (4+(4*16)+4+(4*16))
+`define DFT_OUTPUT_WIDTH (1+(4*64))
+int DFT_sampleNum = 0;
+int DFT_fd;
+//
+always @(posedge c2c_capture_enable[`DVTF_DFT_CAPTURE_EN_BIT]) begin
+   $display("Enable cycle-by-cycle capturing of DFT stimulus");	    
+   // wait until it gets out of reset
+   if (cep_tb.fpga.topDesign.topMod.dft.blackbox.reset)
+     @(negedge cep_tb.fpga.topDesign.topMod.dft.blackbox.reset);
+   // next clock
+   @(posedge cep_tb.fpga.topDesign.topMod.dft.blackbox.clk);
+   CaptureDFT_vector=1;
+   DFT_fd=$fopen("../../drivers/vectors/dft_stimulus.txt","w");
+   captureDFT_Stimulus();   
+end	
+always @(negedge c2c_capture_enable[`DVTF_DFT_CAPTURE_EN_BIT]) begin
    if (CaptureDFT_vector) begin
-      @(negedge cep_tb.fpga.topDesign.topMod.dft.blackbox.reset);
-      // next clock
-      @(posedge cep_tb.fpga.topDesign.topMod.dft.blackbox.clk);
-      captureDFTStimulus();
-   end
+      CaptureDFT_vector=0;
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.dft.blackbox.clk);
+      $display("Stop Capturing DFT stimulus");
+      $fwrite(DFT_fd,"};\n");
+      $fwrite(DFT_fd,"`define DFT_SAMPLE_COUNT %d\n",DFT_sampleNum);      
+      $fclose(DFT_fd);
+      $system("gzip -f ../../drivers/vectors/dft_stimulus.txt");
+   end	    
 end
-   
-   task captureDFTStimulus;
-      int out;
-      int sampleNum;      
-      reg [4+(4*16)+4+(4*16)-1:0] temp;
+//
+//
+// 
+   task captureDFT_Stimulus;
+      reg [`DFT_DATA_WIDTH-1:0] temp;
       begin
-	 sampleNum=0;
+	 DFT_sampleNum = 0;
 	 $display("Capturing stimulus");	 
-	 out=$fopen("DFT_stimulus.csv","w");
-	 $fwrite(out,"//************************************************************************\n");
-	 $fwrite(out,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
-	 $fwrite(out,"//\n");		
-	 $fwrite(out,"// File Name:      DFT_stimulus.csv\n");
-	 $fwrite(out,"// Program:        Common Evaluation Platform (CEP)\n");
-	 $fwrite(out,"// Description:    DFT Core unit testbench stimulus\n");
-	 $fwrite(out,"// Notes:\n");        
-	 $fwrite(out,"//\n");
-	 $fwrite(out,"//************************************************************************\n");
-	 //
-	 $fwrite(out,"// column#1  : IN  next\n");
-	 $fwrite(out,"// column#2  : IN  X0[15:0]\n");
-	 $fwrite(out,"// column#3  : IN  X1[15:0]\n");
-	 $fwrite(out,"// column#4  : IN  X2[15:0]\n");
-	 $fwrite(out,"// column#5  : IN  X3[15:0]\n");
-	 $fwrite(out,"// column#6  : OUT next_out\n");
-	 $fwrite(out,"// column#7  : OUT lY0[15:0]\n");
-	 $fwrite(out,"// column#8  : OUT lY1[15:0]\n");
-	 $fwrite(out,"// column#9  : OUT lY2[15:0]\n");
-	 $fwrite(out,"// column#10 : OUT lY3[15:0]\n");
+	 $fwrite(DFT_fd,"//************************************************************************\n");
+	 $fwrite(DFT_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(DFT_fd,"//\n");		
+	 $fwrite(DFT_fd,"// File Name:      DFT_stimulus.txt\n");
+	 $fwrite(DFT_fd,"// Program:        Common Evaluation Platform (CEP)\n");
+	 $fwrite(DFT_fd,"// Description:    DFT Core unit testbench stimulus\n");
+	 $fwrite(DFT_fd,"// Notes:\n");        
+	 $fwrite(DFT_fd,"//\n");
+	 $fwrite(DFT_fd,"//************************************************************************\n");
+	 $fwrite(DFT_fd,"// column#1  : IN  next\n");
+	 $fwrite(DFT_fd,"// column#2  : IN  X0[15:0]\n");
+	 $fwrite(DFT_fd,"// column#3  : IN  X1[15:0]\n");
+	 $fwrite(DFT_fd,"// column#4  : IN  X2[15:0]\n");
+	 $fwrite(DFT_fd,"// column#5  : IN  X3[15:0]\n");
+	 $fwrite(DFT_fd,"// column#6  : OUT next_out\n");
+	 $fwrite(DFT_fd,"// column#7  : OUT lY0[15:0]\n");
+	 $fwrite(DFT_fd,"// column#8  : OUT lY1[15:0]\n");
+	 $fwrite(DFT_fd,"// column#9  : OUT lY2[15:0]\n");
+	 $fwrite(DFT_fd,"// column#10 : OUT lY3[15:0]\n");
+
+	 //	 
+	 $fwrite(DFT_fd,"`define DFT_DATA_WIDTH %s\n",`MKSTR(`DFT_DATA_WIDTH));
+	 $fwrite(DFT_fd,"`define DFT_OUTPUT_WIDTH %s\n",`MKSTR(`DFT_OUTPUT_WIDTH));
+	 $fwrite(DFT_fd,"reg [`DFT_DATA_WIDTH-1:0] DFT_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-	 while (1) begin
+	 while (CaptureDFT_vector) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.dft.blackbox.clk);
-	    sampleNum++;
 	    // MUST align to HEX number if _ is used!!!
-	    $fwrite(out,"%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
+	    if (DFT_sampleNum>0) begin
+	       $fwrite(DFT_fd,"   ,");
+            end else begin
+	       $fwrite(DFT_fd,"    ");		 
+            end
+	    // MUST align to HEX number if _ is used!!!
+	    $fwrite(DFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 		    {3'b0,cep_tb.fpga.topDesign.topMod.dft.blackbox.next},
 		    cep_tb.fpga.topDesign.topMod.dft.blackbox.X0[15:0],
 		    cep_tb.fpga.topDesign.topMod.dft.blackbox.X1[15:0],
@@ -58,8 +87,9 @@ end
 		    cep_tb.fpga.topDesign.topMod.dft.blackbox.Y1[15:0],
 		    cep_tb.fpga.topDesign.topMod.dft.blackbox.Y2[15:0],
 		    cep_tb.fpga.topDesign.topMod.dft.blackbox.Y3[15:0]);
-
-	 end
+	    DFT_sampleNum++;
+	 end // while (1)
       end
    endtask //
    
+  

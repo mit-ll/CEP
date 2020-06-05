@@ -95,11 +95,14 @@
 #define DDR3_WRITE(a,d) *(volatile uint64_t *)((intptr_t)a)=d
 #define DDR3_READ(a,d)  d=*(volatile uint64_t *)((intptr_t)a)
 
+#define DUT_RUNCLK(x)              
 //
 // =============================
 // See from other enviroment (lab/Linux/bareMetal/etc..)
 // =============================
 #else
+
+#define DUT_RUNCLK(x)
 
 #define LOGI   printf
 #define LOGW   printf

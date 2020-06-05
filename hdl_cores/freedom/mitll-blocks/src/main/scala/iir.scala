@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : iir.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -137,7 +137,10 @@ abstract class IIR(busWidthBytes: Int, val c: IIRParams)(implicit p: Parameters)
             }
 
             // Assert next out when the count reaches the appropriate value
-            next_out                    := (count === 9.U)
+//            next_out                    := (count === 9.U)
+// Tony Duong 04/21/2020: HW core output iirst sample after 3 cycles from iirst input sample!!
+//
+            next_out                    := (count === 3.U)
 
             // Generate the write index for the output data memory (and write)
             when (rising_edge(next_out)) {
@@ -158,7 +161,7 @@ abstract class IIR(busWidthBytes: Int, val c: IIRParams)(implicit p: Parameters)
             // Map the blackbox I/O 
             blackbox.io.clk             := clock                    // Implicit module clock
             blackbox.io.reset           := ~(reset | iir_reset_re)  // IIR filter has an active low reset (signal name is misleading)
-            blackbox.io.inData			:= Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
+            blackbox.io.inData		:= Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
                 											        // Map the IIR input data only when pointing to
                 											        // a valid memory location
             dataout_write_data          := blackbox.io.outData      // IIR output data
@@ -200,6 +203,7 @@ class IIR_filter() extends BlackBox {
     val clk         = Clock(INPUT)
     val reset       = Bool(INPUT)
 
+    
     // Inputs
     val inData      = Bits(INPUT,32)
 
@@ -212,3 +216,4 @@ class IIR_filter() extends BlackBox {
 //--------------------------------------------------------------------------------------
 // END: Black box wrapper for Verilog Module
 //--------------------------------------------------------------------------------------
+

@@ -38,6 +38,7 @@ VSRCS := \
    	$(base_dir)/../des3/sbox6.v \
    	$(base_dir)/../des3/sbox7.v \
 	$(base_dir)/../des3/sbox8.v \
+    $(base_dir)/../md5/md5.v \
     $(base_dir)/../md5/pancham.v \
     $(base_dir)/../md5/pancham_round.v \
     $(base_dir)/../md5/pancham_round.v \

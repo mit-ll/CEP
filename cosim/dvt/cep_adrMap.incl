@@ -42,6 +42,14 @@
 // 64bytes
 `define cep_cache_size          64
 
+//
+// Enable command sequence capture
+// (this can be modified from Makefile)
+//
+`ifndef CAPTURE_CMD_SEQUENCE
+`define CAPTURE_CMD_SEQUENCE 0
+`endif
+
 
 //
 // Printf mail box per core
@@ -59,12 +67,51 @@
 `define cep_malloc_heap_core_size   'h0100_0000
 
 `define cep_scratch_mem             'hBF00_0000
-`define   CEP_GOOD_STATUS        'h600D_BABE
-`define   CEP_BAD_STATUS         'hBAD0_DADE
+`define   CEP_GOOD_STATUS           'h600D_BABE
+`define   CEP_BAD_STATUS            'hBAD0_DADE
+`define   CEP_RUNNING_STATUS        'h1234_5678
  
 //
-`define CEP_VERSION_REG	'h700F_0000
-`define CEP_EXPECTED_VERSION 'h03020000_00000000
-`define CEP_VERSION_MASK     'h0FFFFFFF_FFFFFFFF
+`define	reg_base_addr           'h700F_0000
+`define   CEP_VERSION_REG		'h700F_0000
+`define CEP_EXPECTED_VERSION 	'h04020000_00000000
+`define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
+//
+// Test and Set
+//
+`define   testNset_reg          'h0010
+`define     isLock0_bit           0
+`define     lock0Id_bit_lo        7
+`define     lock0Id_mask        'h7F
+`define     isLock1_bit           8
+`define     lock1Id_bit_lo        9
+`define     lock1Id_mask        'h7F
+`define     isLock2_bit          16
+`define     lock2Id_bit_lo       17
+`define     lock2Id_mask        'h7F
+`define     isLock3_bit          23
+`define     lock3Id_bit_lo       25
+`define     lock3Id_mask        'h7F
+//
+`define     reqLock_bit           32
+`define     releaseLock_bit       33
+`define     reqLockNum_bit        34
+`define     reqLockNum_mask        3
+`define     reqId_bit_lo          40
+`define     reqId_mask            'h7F
+//
+`define   cep_scratch0_reg      'h0100
+`define   cep_scratch1_reg      'h0108
+`define   cep_scratch2_reg      'h0110
+`define   cep_scratch3_reg      'h0118
+`define   cep_scratch4_reg      'h0120
+`define   cep_scratch5_reg      'h0128
+`define   cep_scratch6_reg      'h0130
+`define   cep_scratch7_reg      'h0138
+`define   cep_core0_status      'h0200
+`define   cep_core1_status      'h0208
+`define   cep_core2_status      'h0210
+`define   cep_core3_status      'h0218
+
 `endif
 

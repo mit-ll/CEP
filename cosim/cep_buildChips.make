@@ -51,10 +51,11 @@ XLNX_IP_DIR     = ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/obj/i
 BARE_SRC_DIR    = ${SIM_DIR}/drivers/bare
 BARE_OBJ_DIR    = ${SIM_DIR}/drivers/bare
 
-RISCV_DIR    = /opt/riscv
-export RISCV := ${RISCV_DIR}
-RISCV_GCC         = ${RISCV_DIR}/bin/riscv64-unknown-elf-gcc
-RISCV_OBJDUMP     = ${RISCV_DIR}/bin/riscv64-unknown-elf-objdump
+#RISCV_DIR    = /opt/riscv
+#export RISCV := ${RISCV_DIR}
+RISCV            ?= /opt/riscv
+RISCV_GCC         = ${RISCV}/bin/riscv64-unknown-elf-gcc
+RISCV_OBJDUMP     = ${RISCV}/bin/riscv64-unknown-elf-objdump
 RISCV_HEXDUMP     = /usr/bin/hexdump
 #
 # flags to compile codes for bare metal
@@ -153,8 +154,8 @@ DUT_XILINX_TOP_MODULE	= cep_tb
 DUT_XILINX_TOP_TB 	= ${DVT_DIR}/${DUT_XILINX_TOP_MODULE}.v
 XILINX_MODELSIM_INI     = ${SIM_DIR}/xil_lib/modelsim.ini
 XILINX_LIBRARY_LIST     = -L unisims_ver -L unimacro_ver -L unifast_ver -L secureip -L xpm
-DUT_XILINX_VOPT_ARGS	= +acc=mprntv -64 +nolibcell +nospecify +notimingchecks -modelsimini ${XILINX_MODELSIM_INI} ${WORK_DIR}.glbl ${XILINX_LIBRARY_LIST}
-DUT_XILINX_VLOG_ARGS	= +acc=mprntv -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT
+DUT_XILINX_VOPT_ARGS	= +acc -64 +nolibcell +nospecify +notimingchecks -modelsimini ${XILINX_MODELSIM_INI} ${WORK_DIR}.glbl ${XILINX_LIBRARY_LIST}
+DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT
 DUT_XILINX_VCOM_ARGS	= -64 -93 -modelsimini ${XILINX_MODELSIM_INI}
 DUT_XILINX_VSIM_ARGS	= -64 -modelsimini ${XILINX_MODELSIM_INI} ${XILINX_LIBRARY_LIST} -warning 3363 -warning 3053 -warning 8630
 
@@ -181,6 +182,8 @@ endif
 # add config file
 DUT_TB_FILES_LIST  = ${DUT_XILINX_TOP_TB} 
 
+
+FPGA_INST_NAME     = /cep_tb/fpga
 
 
 #
@@ -215,7 +218,7 @@ SEARCH_DIR_LIST := ${DVT_DIR}		\
 		${DUT_TOP_DIR}/hdl_cores/md5					\
 		${DUT_TOP_DIR}/hdl_cores/rsa/rtl				\
 		${DUT_TOP_DIR}/hdl_cores/sha256					\
-		${DUT_TOP_DIR}/hdl_cores/dsp					\
+		${DUT_TOP_DIR}/hdl_cores/dsp				\
 		${BHV_DIR} 		
 
 

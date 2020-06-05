@@ -36,8 +36,8 @@
 #include "cep_exports.h"
 
 // Macro to properly format the version register
-#define MAJOR_VERSION(n) ((n >> 48) & 0xFF)
-#define MINOR_VERSION(n) ((n >> 56) & 0xFF)
+#define MAJOR_VERSION(n) (int)((n >> 48) & 0xFF)
+#define MINOR_VERSION(n) (int)((n >> 56) & 0xFF)
 //
 // =======================================
 // Physical to virtual mapping stuffs to access CEP

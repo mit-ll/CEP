@@ -33,6 +33,7 @@ void thread_entry(int cid, int nc)
   int coreId = read_csr(mhartid);
   uint64_t mem_base = 0x90000000;
   //
+  set_cur_status(CEP_RUNNING_STATUS);  
   if (coreId == 0) {  set_printf(0);  }  
   switch (coreId) {
   case 0: { mem_base = 0x90000000; break; }

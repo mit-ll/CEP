@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : md5.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -78,11 +78,15 @@ abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
         lazy val module = new LazyModuleImp(this) {
 
             // Instantitate the md5 blackbox
-            val blackbox = Module(new pancham)
+//            val blackbox = Module(new pancham)
+// use md5.v to conform to standardized BE format
+	      val blackbox = Module(new md5)
 
             // Instantiate registers for the blackbox inputs
             val md5_msg_in_valid               = RegInit(0.U(1.W))
             val rst                            = RegInit(0.U(1.W))
+	    // 
+            val init                           = RegInit(0.U(1.W))
             // Class and companion Object to support instantiation and initialization of
             // state due to the need to have subword assignment for vectors > 64-bits
             // 
@@ -93,26 +97,26 @@ abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
             // Class and companion Object to support instantiation and initialization of
             // key due to the need to have subword assignment for vectors > 64-bits
             class Msgin_Class extends Bundle {
-                val word7               = UInt(64.W)
-                val word6               = UInt(64.W)
-                val word5               = UInt(64.W)
-                val word4               = UInt(64.W)
-                val word3               = UInt(64.W)
-                val word2               = UInt(64.W)
-                val word1               = UInt(64.W)
                 val word0               = UInt(64.W)
+                val word1               = UInt(64.W)
+                val word2               = UInt(64.W)
+                val word3               = UInt(64.W)
+                val word4               = UInt(64.W)
+                val word5               = UInt(64.W)
+                val word6               = UInt(64.W)
+                val word7               = UInt(64.W)
             }
             object Msgin_Class {
                 def init: Msgin_Class = {
                     val wire = Wire(new Msgin_Class)
-                    wire.word7          := 0.U
-                    wire.word6          := 0.U
-                    wire.word5          := 0.U
-                    wire.word4          := 0.U
-                    wire.word3          := 0.U
-                    wire.word2          := 0.U
-                    wire.word1          := 0.U
                     wire.word0          := 0.U
+                    wire.word1          := 0.U
+                    wire.word2          := 0.U
+                    wire.word3          := 0.U
+                    wire.word4          := 0.U
+                    wire.word5          := 0.U
+                    wire.word6          := 0.U
+                    wire.word7          := 0.U
                     wire
                 }
             }
@@ -127,12 +131,13 @@ abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
 
             // Map the inputs to the blackbox
             blackbox.io.clk             := clock                    // Implicit module clock
-            blackbox.io.rst             := reset | rst              // Implicit module reset or'ed with addressable reset        
+            blackbox.io.rst             := reset | rst              // Implicit module reset or'ed with addressable reset
+            blackbox.io.init            := init                     // Implicit module reset or'ed with addressable reset        	    
             blackbox.io.msg_in_valid    := md5_msg_in_valid         // Message input valid bit
             blackbox.io.msg_padded      := msg_padded.asUInt        // Message input
             // Map the outputs from the blockbox
-            msg_output0                 := blackbox.io.msg_output(63,0)     // Message output bits  
-            msg_output1                 := blackbox.io.msg_output(127,64)   // Message output bits
+            msg_output0                 := blackbox.io.msg_output(127,64)   // Message output bits
+            msg_output1                 := blackbox.io.msg_output(63,0)     // Message output bits  	    
             md5_msg_out_valid           := blackbox.io.msg_out_valid        // Message output valid bit driven by pancham.v
             ready                       := blackbox.io.ready                // Ready bit driven by pancham.v
 
@@ -152,7 +157,8 @@ abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
                 MD5Addresses.md5_msg_output_w1 -> RegFieldGroup("md5 msg output1", Some("md5 msg output1"), Seq(RegField.r(64, msg_output1))),
                 MD5Addresses.md5_in_valid      -> RegFieldGroup("md5 msg in valid", Some("md5 in valid"),   Seq(RegField  (1,  md5_msg_in_valid))),
                 MD5Addresses.md5_out_valid     -> RegFieldGroup("md5 msg out valid", Some("md5 out valid"), Seq(RegField.r(1,  md5_msg_out_valid))),
-                MD5Addresses.md5_rst           -> RegFieldGroup("message_rst", Some("message_rst"),         Seq(RegField  (1, rst)))
+                MD5Addresses.md5_rst           -> RegFieldGroup("message_rst", Some("message_rst"),         Seq(RegField  (1, rst),
+					       	  			       				        RegField  (1, init)))
             )  // regmap
 
         }   // lazy val module
@@ -169,12 +175,17 @@ abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
 //   declared within much match the name, width, and direction of
 //   the Verilog module.
 //--------------------------------------------------------------------------------------
-class pancham() extends BlackBox {
+//class pancham() extends BlackBox {
+// use md5.v to conform to standardized BE format
+class md5() extends BlackBox {
 
   val io = IO(new Bundle {
     // Clock and Reset
     val clk         = Clock(INPUT)
     val rst         = Bool(INPUT)
+
+    // Added 05/12/2020: To clear internal states to start new transaction
+    val init        = Bool(INPUT)
 
     // Inputs
     val msg_in_valid    = Bool(INPUT)

@@ -1,0 +1,8 @@
+*
+!.gitignore
+!aeees.py
+!aeees_emu.py
+!aeees_gen.py
+!aeees_wb_gen.py
+!templates
+!README.md

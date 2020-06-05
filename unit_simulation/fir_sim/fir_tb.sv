@@ -9,21 +9,26 @@
 //************************************************************************
 
 `timescale 1ns/1ns
+
 //
-// Name of the DUT: FIR_filter
+// Name of the DUT & TB if not pass in from Make
 //
-`define DUT_NAME FIR_filter
+`ifndef DUT_NAME
+ `define DUT_NAME fir
+`endif
+
+`ifndef TB_NAME
+ `define TB_NAME(d) d``_tb
+`endif
+
 //
-// Stimulus/ExpectedData info
+// Pull in the stimulus and other info
 //
-`define MAX_SAMPLES      (2100-12)
-`define SAMPLE_WIDTH     (4+(2*32))
-`define OUTPUT_WIDTH     (32)
-`define DATA_FILE        "FIR_stimulus.csv"
+`include "fir_stimulus.txt"
 //
 // Some derived macros
 //
-`define TB_NAME(d) d``_tb
+//
 `define MKSTR(x) `"x`"
 //
 // Check and print if error
@@ -34,8 +39,8 @@
 // o1=output#1, o2=output#2, etc..
 // j* = dont care input/output (used for HEX filler)
 //
-`define APPLY_N_CHECK(x,j1,i1,i2,o1) \
-  {j1,i1,i2,exp_``o1}=x; \
+`define APPLY_N_CHECK(x,i2,o1) \
+  {i2,exp_``o1}=x; \
   exp_pat={exp_``o1}; \
   act_pat={o1}; \
   if (exp_pat!=act_pat) begin \
@@ -46,24 +51,24 @@
      errCnt++;\
   end
 
+
 //
-module `TB_NAME(`DUT_NAME) ; 
-   //
+//
+module `TB_NAME ;
+
    //
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
-   reg [`SAMPLE_WIDTH-1:0] buffer[`MAX_SAMPLES-1:0];
-   reg [`OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+   reg [`FIR_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
    // IOs
    //
    reg 			    clk=0;                      // reg clock
    reg 			    reset=0;                    // active low
-   reg 			    t_rst=1;                    // test also toggle reset
    reg [31:0] 		    inData;
    wire [31:0] 		    outData;
    
-   
+
    //
    // filler & expected output
    //
@@ -73,16 +78,18 @@ module `TB_NAME(`DUT_NAME) ;
    
    //
    int 		errCnt=0;
+
    //
    // Simple clock driving the DUT
    //
    initial begin
       forever #5 clk = !clk;
    end
+   //    
    //
    // DUT instantiation
    //
-   `DUT_NAME u1(.reset(reset & t_rst),.*);
+   `DUT_NAME u1(.*);
    //
    // -------------------
    // Test starts here
@@ -90,9 +97,19 @@ module `TB_NAME(`DUT_NAME) ;
    //
    initial begin
       //
-      // do the unlocking or whatever here
+      // Pulse the DUT's reset & drive input to zeros (known states)
       //
-
+      inData = 0;
+      //
+      reset = 0;
+      repeat (5) @(posedge clk);
+      @(negedge clk);      // in stimulus, rst de-asserted after negedge
+      #2 reset = 1;
+      @(negedge clk);            
+      //
+      // do the unlocking here if enable
+      //
+      
       //
       // pulse the DUT's reset and playback
       //
@@ -103,33 +120,19 @@ module `TB_NAME(`DUT_NAME) ;
    // Read data from file into buffer and playback for compare
    //
    task playback_data;
-      int fp;
       int i;
       event err;
       begin
 	 //
-	 // Pulse the DUT's reset & drive input to zeros (known states)
-	 //
-	 {t_rst}=1;
-	 inData = 0;
-	 //
-	 reset = 0;
-	 repeat (5) @(posedge clk);
-	 @(negedge clk);      // in stimulus, rst de-asserted after negedge
-	 #2 reset = 1;
-	 @(negedge clk);            
-	 //
 	 // open file for checking
 	 //
-	 $display("Reading %d samples from file %s",`MAX_SAMPLES,`DATA_FILE);
-	 $readmemh(`DATA_FILE, buffer);
+	 $display("Reading %d samples from buffer FIR_buffer",`FIR_SAMPLE_COUNT);
 	 // now playback and check
-	 for (i=0;i<`MAX_SAMPLES;i++) begin
+	 for (i=0;i<`FIR_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(buffer[i],j1,t_rst,inData[31:0],outData[31:0]);
-
+	    `APPLY_N_CHECK(FIR_buffer[i],inData[31:0],outData[31:0]);
 	    @(negedge clk); // next sample	       
-	 end // for (int i=0;i<`MAX_SAMPLES;i++)
+	 end // for (int i=0;i<`FIR_SAMPLE_COUNT;i++)
 	 //
 	 // print summary
 	 //

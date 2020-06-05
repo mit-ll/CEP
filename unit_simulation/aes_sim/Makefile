@@ -5,16 +5,26 @@
 #// Program:        Common Evaluation Platform (CEP)
 #// Description:    Testbench makefile
 #// Notes:          
+#//	to run , type "make" 
 #//
 #//************************************************************************
 
-TB_NAME = aes_192_tb
-
-all:
-	vlog -64 +acc *.v
-	vlog -64 -sv +acc *.sv
+DUT_NAME = aes_192
+#
+#
+TB_NAME  = ${DUT_NAME}_tb
+#
+#
+#
+all: aes_stimulus.txt
+	vlog -64 -sv +acc *.sv *.v +define+DUT_NAME=${DUT_NAME} +define+TB_NAME=${TB_NAME}
 	vopt -64 +nolibcell +nospecify +notimingchecks ${TB_NAME} -o ${TB_NAME}_opt
-	vsim -64 ${TB_NAME}_opt -batch -do vsim.do
+	vsim -64 ${TB_NAME}_opt -batch -do vsim.do -logfile ${TB_NAME}.log -wlf ${TB_NAME}.wlf
+
+aes_stimulus.txt : aes_stimulus.txt.gz
+	gunzip -c $< > $@
 
 clean:
-	rm -rf work *.wlf
+	rm -rf work *.wlf *.log *.txt
+
+

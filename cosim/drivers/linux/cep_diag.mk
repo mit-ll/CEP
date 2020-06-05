@@ -1,7 +1,7 @@
 #************************************************************************
-# Copyright (C) 2019 Massachusetts Institute of Technology
+# Copyright (C) 2020 Massachusetts Institute of Technology
 #
-# File Name:      cep_diag.mk
+# File Name:      zcep_diag.mk
 # Program:        Common Evaluation Platform (CEP)
 # Description:    Buildroot mk file for CEP Regression Suite
 #************************************************************************
@@ -9,6 +9,9 @@
 CEP_DIAG_VERSION = 2.0.0
 CEP_DIAG_SITE = ./package/cep_diag/src
 CEP_DIAG_SITE_METHOD = local
+
+CEP_DIAG_CONF_OPTS += --enable-ssl
+CEP_DIAG_DEPENDENCIES += openssl
 
 define CEP_DIAG_BUILD_CMDS
   $(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)

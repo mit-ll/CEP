@@ -10,6 +10,7 @@
 #include "simdiag_global.h"
 #include "CEP.h"
 #include "cepregression.h"
+#include "cep_gps.h"
 
 //
 void *c_module(void *arg) {
@@ -50,11 +51,25 @@ void *c_module(void *arg) {
   //int calibDone = calibrate_ddr3(50);
   pio.RunClk(1000);
   //
-  int mask = 0xFFFFFFFF;
-  mask = 1 << GPS_BASE_K;
-  if (!errCnt) { errCnt = cepregression_test(mask);  }
+  //int mask = 0xFFFFFFFF;
+  //mask = 1 << GPS_ADDR_BASE_K;
+  //if (!errCnt) { errCnt = cepregression_test(mask);  }
   //
-  pio.RunClk(100);  
+  //
+  int captureOn = CAPTURE_CMD_SEQUENCE;
+  //
+  cep_gps gps(seed,verbose);
+  //
+  gps.init();  
+  gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
+  //
+  int maxLoop  = 38;
+  initConfig();
+  errCnt += gps.RunGpsTest(maxLoop);
+  //
+  gps.freeMe();
+  //
+  pio.RunClk(1000);  
   //
   // ======================================
   // Exit

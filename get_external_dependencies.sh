@@ -1,6 +1,6 @@
 #!/bin/bash
 #//************************************************************************
-#// Copyright (C) 2019 Massachusetts Institute of Technology
+#// Copyright (C) 2020 Massachusetts Institute of Technology
 #//
 #// File Name:      get_external_dependencies.sh
 #// Program:        Common Evaluation Platform (CEP)
@@ -15,12 +15,15 @@
 # The following decleration defines all the external CEP Dependencies that have not been directly included in
 # the CEP repo.
 #
-# CAUTION: Listing directories within this construct will result in them being overwritten by the script
+# CAUTION: Listing directories within this construct MAY result in them being overwritten by the script
 # 
 # The pixman submodule within riscv-qemu has explicitly not been included at this time due to it being sourced
 # on a seperate server.
 #
-# The format is: repo_type - (GITHUB | QEMU), repo location, specific commit, target (relative) directory"
+# The format is:
+#   GITHUB  - repo location, specific commit, target (relative) directory
+#   QEMU    - repo location, specific commit, target (relative) directory
+#   HTTP    - file location, target (relative) directory
 #
 # The entries that have been commented out reflect dependencies that have been directly included within the CEP repo.  Uncommenting
 # them and running this script will result in clobbering the current directory (and potentially loosing CEP-specific modifications)
@@ -106,12 +109,15 @@ declare -a repo_names=(       "#"
                               "QEMU u-boot d85ca02 ./software/freedom-u-sdk/riscv-qemu/roms/u-boot"
                               "QEMU u-boot-sam460ex 8ee007c ./software/freedom-u-sdk/riscv-qemu/roms/u-boot-sam460ex"
                               "QEMU vgabios 19ea12c ./software/freedom-u-sdk/riscv-qemu/roms/vgabios"
+                              "#"
+                              "# The following files are related to the automatic generation of cores"
+                              "#"
+                              "HTTP_FILE http://www.spiral.net/hardware firgen.tgz ./hdl_cores/auto-fir"
+                              "HTTP_FILE http://spiral.ece.cmu.edu/mcm/dl synth-jan-14-2009.tar.gz ./hdl_cores/auto-fir"
                               )
 
 # Function to "clone" a directory based on the specified repo (in the repo_names format)
 clone_directory() {
-
-  echo "Calling clone directory with $1"
 
   repo_type=$(echo " "$1 | cut -d' ' -f 2)
 
@@ -146,8 +152,16 @@ clone_directory() {
       tar zxf tmp.tgz --strip-components=1 -C $current_directory
       rm -f tmp.tgz              
     ;;
-  esac
-
+    "HTTP_FILE")
+      current_url=$(echo " "$1 | cut -d' ' -f 3)
+      current_file=$(echo " "$1 | cut -d' ' -f 4)
+      current_directory=$(echo " "$1 | cut -d' ' -f 5)
+      echo
+      echo "HTTP: Downloading "$current_file" from "$current_url" to directory" $current_directory
+      echo
+      wget -O "${current_directory}/${current_file}" "${current_url}/${current_file}" 
+    ;;
+   esac
 }
 
 # "Main" function
@@ -177,7 +191,7 @@ fi
 # Update / Create ALL of the dependencies
 if [ "$1" == "all" ]; then
   echo
-  echo " Target Directories (CAUTION: They will be overwritten):"
+  echo " Target Directories (CAUTION: They may be overwritten):"
   echo
   for (( i=1; i<${number_of_repos}+1; i++ ));
   do
@@ -191,11 +205,14 @@ if [ "$1" == "all" ]; then
     fi
   done
 
-  echo
-  read -p "Do you wish to continue? " -n 1 -r
-  echo    # (optional) move to a new line
+  if [[ ${2^^} != "YES" ]]
+  then
+    echo
+    read -p "Do you wish to continue? " -n 1 -r
+    echo    # (optional) move to a new line
+  fi
 
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  if [[ $REPLY =~ ^[Yy]$ ]] || [[ ${2^^} == "YES" ]]
   then
     for (( i=1; i<${number_of_repos}+1; i++ ));
     do
@@ -203,24 +220,6 @@ if [ "$1" == "all" ]; then
     done
   else
     exit 1
-  fi
-
-  echo
-  read -p "Copy directory listing to .gitignore? " -n 1 -r
-  echo    # (optional) move to a new line
-
-  if [[ $REPLY =~ ^[Yy]$ ]]
-  then
-    echo "# The following directories have been added to match those" >> .gitignore
-    echo "# created by the ./get_external_dependencies.sh script" >> .gitignore
-
-    for (( i=1; i<${number_of_repos}+1; i++ ));
-    do
-      repo_type=$(echo " "${repo_names[$i-1]} | cut -d' ' -f 2)
-      if [ "$repo_type" != "#" ]; then
-        echo " "${repo_names[$i-1]} | cut -d' ' -f 5 | tail -c +3 >> .gitignore
-      fi
-    done
   fi
 
   echo
@@ -309,16 +308,19 @@ if [ "$1" == "matching" ]; then
   fi
 
   # A match was found, proceed to getting that specific module
-  echo "The following directory(ies) will be overwritten"
+  echo "The following directory(ies) may be overwritten"
   for i in "${match_indexes[@]}"; do
     echo " "${repo_names[$i]} | cut -d' ' -f 5
   done
 
-  echo
-  read -p "Do you wish to continue? " -n 1 -r
-  echo    # (optional) move to a new line
+  if [[ ${3^^} != "YES" ]]
+  then
+    echo
+    read -p "Do you wish to continue? " -n 1 -r
+    echo    # (optional) move to a new line
+  fi
 
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  if [[ $REPLY =~ ^[Yy]$ ]] || [[ ${3^^} == "YES" ]]
   then
 
     for i in "${match_indexes[@]}"; do
@@ -361,14 +363,17 @@ if [ "$1" == "one" ]; then
   fi
 
   # A match was found, proceed to getting that specific module
-  echo "The following directory will be overwritten"
+  echo "The following directory may be overwritten"
     echo " "${repo_names[$match_index]} | cut -d' ' -f 5
 
-  echo
-  read -p "Do you wish to continue? " -n 1 -r
-  echo    # (optional) move to a new line
+  if [[ ${3^^} -ne "YES" ]]
+  then
+    echo
+    read -p "Do you wish to continue? " -n 1 -r
+    echo    # (optional) move to a new line
+  fi
 
-  if [[ $REPLY =~ ^[Yy]$ ]]
+  if [[ $REPLY =~ ^[Yy]$ ]] || [[ ${3^^} == "YES" ]]
   then
     clone_directory "${repo_names[$match_index]}"
   fi  # if $REPLY
@@ -390,5 +395,8 @@ echo "  one <module>           - Get just <module> dependency"
 echo "                           (first match will be selected)"
 echo "  matching <module>      - Get all matching <module>"
 echo "  list                   - List all external dependecies"
-echo 
+echo ""
+echo "  For the options that ask for confirmation, specify a YES as the last"
+echo "  argument will automatically confirm the request"
+echo ""
 exit 1

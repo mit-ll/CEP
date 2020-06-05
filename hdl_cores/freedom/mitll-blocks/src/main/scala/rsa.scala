@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : rsa.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -183,17 +183,20 @@ abstract class RSA(busWidthBytes: Int, val c: RSAParams)(implicit p: Parameters)
             regmap (
                 RSAAddresses.rsa_ctrlstatus_addr  -> RegFieldGroup("rsa_ready", Some("rsa_ready Register"),Seq(RegField.r(1,  ready),
                                                                                                                RegField  (1,  st))),
-                RSAAddresses.rsa_exp_data_addr    ->    Seq(RegField  (32, exp_mem_api_write_data)),
-                RSAAddresses.rsa_exp_ctrl_addr    ->    Seq(RegField  (3 , exp_mem_api_ctrl)),
+                RSAAddresses.rsa_exp_data_addr    ->    Seq(RegField   (32, exp_mem_api_write_data),
+						  	    RegField.r (32, exp_mem_api_read_data)), // [63;32]
+                RSAAddresses.rsa_exp_ctrl_addr    ->    Seq(RegField   (3 , exp_mem_api_ctrl)),
 
-                RSAAddresses.rsa_mod_data         ->    Seq(RegField  (32, mod_mem_api_write_data)),
-                RSAAddresses.rsa_mod_ctrl_addr    ->    Seq(RegField  (3,  mod_mem_api_ctrl)),
+                RSAAddresses.rsa_mod_data         ->    Seq(RegField   (32, mod_mem_api_write_data),
+						  	    RegField.r (32, mod_mem_api_read_data)), // [63:32]
+                RSAAddresses.rsa_mod_ctrl_addr    ->    Seq(RegField   (3,  mod_mem_api_ctrl)),
 
-                RSAAddresses.rsa_message_data     ->    Seq(RegField  (32, mess_mem_api_write_data)),
+                RSAAddresses.rsa_message_data     ->    Seq(RegField   (32, mess_mem_api_write_data),
+						  	    RegField.r (32, mess_mem_api_read_data)), // [63:32]		
                 RSAAddresses.rsa_message_ctrl_addr->    Seq(RegField  (3,  mess_mem_api_ctrl)),    
 
                 RSAAddresses.rsa_mod_length       ->    Seq(RegField  (8 , mod_len)),
-                RSAAddresses.rsa_exp_length       ->    Seq(RegField  (8 , exp_len)),
+                RSAAddresses.rsa_exp_length       ->    Seq(RegField  (13 , exp_len)),
 
                 RSAAddresses.rsa_result_data_addr ->    Seq(RegField.r(32, res_mem_api_read_data)),
                 RSAAddresses.rsa_result_ctrl_addr ->    Seq(RegField  (2,  res_mem_api_ctrl)),  
@@ -225,7 +228,7 @@ class modexp_core() extends BlackBox {
     // Control/Status
         //Inputs
     val start    = Bool(INPUT)
-    val exponent_length = Bits(INPUT,8)
+    val exponent_length = Bits(INPUT,13)
     val modulus_length = Bits(INPUT,8)
         //Outputs
     val ready    = Bool(OUTPUT)

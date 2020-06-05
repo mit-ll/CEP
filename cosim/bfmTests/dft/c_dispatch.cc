@@ -65,13 +65,14 @@ int main(int argc, char *argv[])
   //
   thr.AddSysThread(SYSTEM_SLOT_ID,SYSTEM_CPU_ID);
   //
+  DUT_WRITE_DVT(DVTF_TOGGLE_CHIP_RESET_BIT,DVTF_TOGGLE_CHIP_RESET_BIT, 1);
+  //
+  // Enable vector capture-ing
+  //  DUT_WRITE_DVT(DVTF_DFT_CAPTURE_EN_BIT,DVTF_DFT_CAPTURE_EN_BIT,1);
   // ============================
   // Turn on the wave here
   // ============================  
   //
-  // Enable vector capture-ing
-  DUT_WRITE_DVT(DVTF_DFT_CAPTURE_EN_BIT,DVTF_DFT_CAPTURE_EN_BIT,1);
-  
   int cycle2start=0;
   int cycle2capture=-1; // til end
   int wave_enable=1;
@@ -88,6 +89,8 @@ int main(int argc, char *argv[])
     Done = thr.AllThreadDone();
     sleep(2);
   }
+  //
+  //
   /* ===================================== */
   /*   END-OF-TEST CHECKING                */
   /* ===================================== */

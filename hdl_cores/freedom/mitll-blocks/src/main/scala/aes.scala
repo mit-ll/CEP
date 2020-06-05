@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : aes.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -90,18 +90,18 @@ abstract class AES(busWidthBytes: Int, val c: AESParams)(implicit p: Parameters)
             // to UInt it is equivalent to Cat(Word1, Word0) or if subword assignment
             // was supported:
             //
-            //      state(127,64) := word1
-            //      state(63,0)   := word0
+            //      state(127,64) := word0
+            //      state(63,0)   := word1
             //
             class State_Class extends Bundle {
+                val word0               = UInt(64.W)	    
                 val word1               = UInt(64.W)
-                val word0               = UInt(64.W)
             }
             object State_Class {
                 def init: State_Class = {
                     val wire = Wire(new State_Class)
+                    wire.word0          := 0.U		    
                     wire.word1          := 0.U
-                    wire.word0          := 0.U
                     wire
                 }
             }
@@ -110,16 +110,16 @@ abstract class AES(busWidthBytes: Int, val c: AESParams)(implicit p: Parameters)
             // Class and companion Object to support instantiation and initialization of
             // key due to the need to have subword assignment for vectors > 64-bits
             class Key_Class extends Bundle {
-                val word2               = UInt(64.W)
-                val word1               = UInt(64.W)
                 val word0               = UInt(64.W)
+                val word1               = UInt(64.W)
+                val word2               = UInt(64.W)
             }
             object Key_Class {
                 def init: Key_Class = {
                     val wire = Wire(new Key_Class)
-                    wire.word2          := 0.U
-                    wire.word1          := 0.U
                     wire.word0          := 0.U
+                    wire.word1          := 0.U
+                    wire.word2          := 0.U
                     wire
                 }
             }
@@ -136,8 +136,8 @@ abstract class AES(busWidthBytes: Int, val c: AESParams)(implicit p: Parameters)
             blackbox.io.start           := start                    // Positive edge already exists in AES core (aes_192.v)
             blackbox.io.state           := state.asUInt             // Convert State_Class bundle to UInt(bit vector)
             blackbox.io.key             := key.asUInt               // Convert Key_Class bundle to UInt(bit vector)
-            out0                        := blackbox.io.out(63,0)    // Reading subwords in Chisel is OK
-            out1                        := blackbox.io.out(127,64)  // Reading subwords in Chisel is OK
+            out0                        := blackbox.io.out(127,64)  // Reading subwords in Chisel is OK	    
+            out1                        := blackbox.io.out(63,0)    // Reading subwords in Chisel is OK
             out_valid                   := blackbox.io.out_valid    // Out is valid until start is again asserted
 
             // Define the register map

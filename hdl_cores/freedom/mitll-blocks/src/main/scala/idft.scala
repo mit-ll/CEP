@@ -1,5 +1,5 @@
 //
-// Copyright (C) 2019 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 //
 // File         : idft.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -145,10 +145,11 @@ abstract class IDFT(busWidthBytes: Int, val c: IDFTParams)(implicit p: Parameter
             blackbox.io.clk             := clock                    // Implicit module clock
             blackbox.io.reset           := reset                    // idft has an active low reset (signal name is misleading)
 
-            blackbox.io.X0          := Mux(datain_read_idx < 32.U, datain_read_data(15,0), 0.U)
-            blackbox.io.X1          := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U)
-            blackbox.io.X2          := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U)
-            blackbox.io.X3          := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U)
+            blackbox.io.X0          := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U)
+            blackbox.io.X1          := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U)
+            blackbox.io.X2          := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U)	    
+            blackbox.io.X3          := Mux(datain_read_idx < 32.U, datain_read_data(15,0), 0.U)
+
             blackbox.io.next        := rising_edge(start) 
                 											        // Map the idft input data only when pointing to
                 											        // a valid memory location

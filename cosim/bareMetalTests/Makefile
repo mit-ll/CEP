@@ -47,11 +47,13 @@ include ../common.make
 #
 BARE_TEST_LIST = 		\
 	regTest			\
+	macroMix		\
+	macro2Mix		\
+	lockTest		\
+	multiLock		\
 	printfTest		\
 	ddr3			\
-	regression		\
 	cacheCoherence		\
-	macroMix		\
 	idcache_smc		\
 
 
@@ -85,6 +87,9 @@ summary:
 
 merge:
 	@if test -d ${DUT_COVERAGE_PATH}; then	\
-		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;)	\
+		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb; \
+		${VCOVER_CMD} report -html -output covhtmlreport -annotate -details -assert -directive -cvg -code bcefst -threshL 50 -threshH 90 \
+		${TEST_SUITE}.ucdb)	\
 	fi
+
 

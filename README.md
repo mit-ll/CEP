@@ -4,7 +4,7 @@
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.3
+   v2.4
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -12,6 +12,10 @@
 <br>
 
 The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) allowing users to test a variety of tools and techniques.  Test vectors are provided to ensure the underlying functionality is maintained even after modification.
+
+<p align="center">
+    <img src="./cep_architecture.jpg">
+</p>
 
 Additional information on the objectives of the CEP may be found in [./CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
@@ -34,11 +38,13 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 ## Pre-requisites (validated test/build configuration):
 The following items describe the configuration of the system that CEP has been developed and tested on:
 * Ubuntu 16.04 LTS x86_64
-* Modelsim Questa Sim-64 v2019.1 (for co-simulation)
+* Modelsim Questa Sim-64 v2019.1 (for co-simulation and unit simulation)
 * Xilinx Vivado 2018.3 (Design or System Edition)
   - Plus Digilent Adept Drivers for programming the VC-707, https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads)
 * Terminal emulator (such as `minicom`)
 * bash
+
+Other versions/combinations may work, but they have not been explicitly verified.
 
 
 ## Cloning the CEP Repository and Getting External Dependencies
@@ -46,15 +52,14 @@ Before proceeding, you'll need to install curl if it is not already installed on
 
 `sudo apt install curl`
 
-After cloning the CEP repository from https://github.com/mit-ll/CEP, you will need get the external dependencies (respositories) that have not been included directly within the CEP repository (git submodules are not used within the CEP repository)
+After cloning the CEP repository from https://github.com/mit-ll/CEP, you will need get the external dependencies (respositories) that have not been included directly within the CEP repository (git submodules are not used).
 
 First, run the following:
 ```sh
 ./get_external_dependencies.sh all
 ```
 
-As noted by the script, many directories will be created/overwritten by this command.  Any local changes to these directories will be lost.  The script also provides to option of 
-appending these directories to the `.gitignore` file.  Additional usage info can be found by just running the script without any parameters.
+As noted by the script, many directories will be created/overwritten by this command.  Any local changes to these directories will be lost.  Additional usage info can be found by just running the script without any parameters.
 
 
 ## Setting up your environment
@@ -65,7 +70,7 @@ To build the CEP, several packages and toolsets must be installed and built.  Fo
 ### Installing Vivado and Modelsim
 It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraries pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not source this file in the bash shell you use to build the RISC-V tools.
 
-Modelsim is required if you intend to run the co-simulation environment located in `<CEP_ROOT>/cosim`.  Version 2019.1 is recommended.  Other simulators may work, but they have not been explicitly tested.
+Modelsim is required if you intend to run the co-simulation or unit-simulation environments located in `<CEP_ROOT>/cosim` and `<CEP_ROOT>/unit_simulation` respectively.  Version 2019.1 is recommended.  Other simulators or versions may work, but they have not been explicitly tested.
 
 
 ### Install the RISC-V toolchain
@@ -109,7 +114,7 @@ Next, you need to install Scala which is required by Chisel.
     ```
 
 2. [Install sbt](http://www.scala-sbt.org/release/docs/Installing-sbt-on-Linux.html),
-    which isn't available by default in the system package manager:
+    which isn't available by default in the Ubuntu system package manager:
     ```
     echo "deb https://dl.bintray.com/sbt/debian /" | sudo tee -a /etc/apt/sources.list.d/sbt.list
     sudo apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv 642AC823
@@ -125,30 +130,73 @@ Install the required dependencies by running the following command:
 
 ## Repository Directory Structure (highlight)
 ```
-<CEP ROOT> ---|-- cosim/ - Defines the CEP co-simulation evironment for performing "chip" level simularions of the CEP in either of the following modes:  bare metal, 
-              |            bus functional model (BFM), or on the VC707.  Dependent on the building of the CEP hardware.  Refer to the README.md file in this
-              |            directory for more information.
+<CEP ROOT> ---|-- cosim/ - Defines the CEP co-simulation evironment for performing "chip" level 
+              |            simulations of the CEP in either bare metal or bus functional model 
+              |            (BFM) mode.  Dependent on the building of the CEP hardware (described
+              |            below).  Refer to the README.md file in this directory for more information.
+              |
+              |-- unit_simulation/ - Unit-level testbenches for the CEP cores
               |
               |-- get_external_dependencies.sh - Script used to fetch external CEP dependencies.
               |
-              |-- hdl_cores/ - Source for all the components within the CEP.  All the blocks that implement algorithms also have corresponding test vectors.
+              |-- hdl_cores/ - Source for all the components within the CEP.  All the blocks that 
+              |     |          implement algorithms also have corresponding test vectors.
               |     |
               |     |-- freedom - CEP-modified variant of the Freedom U500 platform
               |           |
               |           |-- mitllBlocks - Chisel code for the CEP cores
               |
-              |-- generated_dsp_code/  - Placeholder for the generated DSP code
-              |
+              |-- generated_dsp_code/  - Placeholder for the generated DSP code that cannot be
+              |                          directly included in the CEP repository due to licensing
+              |                          restrictions.
               |-- software/
                     |
-                    |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/mcd500/freedom-u-sdk directory, which is a fork of the main SiFive repo.  Variant specifically chosen
-                                         because it has been modified to boot without PCIe support (which for the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
+                    |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/
+                                         mcd500/freedom-u-sdk directory, which is a fork of the 
+                                         main SiFive repo.  Variant specifically chosen because it 
+                                         has been modified to boot without PCIe support (which for 
+                                         the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
 
 ```
 
+### Note regarding endianess
+
+As one might be aware: the endianess usage is not consistent thru out the design, expesially where Chisel wrappers are used to connect to various HW cores. For some cores, little endian is used for loading keys/plain text but big-endian is used to produce cipher text as output. This creates confusion and inconsistent as one might try to understand/follow SW driver for these cores. Also, please note, RISCV is little endian.
+
+As of this release CEP v2.4 and later, unless otherwise specify, big endian is used thru out the design to match key/plain/ciphertext network order.
+This makes it consistent and easier to debug when key/plain text are printed to match against registers.
+
+```
+For example: As key/plain/ciphertext have the following network order format (big-endian, read left-to-right) :
+
+    byte0 , byte1, byte2, byte3, .... byteN
+
+They will be mapped to the design's registers as follows:
+    
+For 64-bit registers:
+--------------------
+
+                        63                                                             0
+                       +-------+-------+-------+-------+-------+-------+-------+--------+			
+   register Offset 0x0 | byte0 | byte1 | byte2 | byte3 | byte4 | byte5 | byte6 | byte7  |
+                       +-------+-------+-------+-------+-------+-------+-------+--------+
+   register offset 0x8 | byte8 |   ....                                        | byte15 |
+                       +-------+-------+-------+-------+-------+-------+-------+--------+
+                   ... | ....                                                           |
+
+For 32-bit registers: (right-justify if maps to 64-bit offset)
+--------------------	
+	                                                 31                            0
+                                                        +-------+-------+-------+-------+
+                                    register Offset 0x0 | byte0 | byte1 | byte2 | byte3 | 
+                                                        +-------+-------+-------+-------+
+                                    register offset 0x4 | byte4 |   ....        | byte7 |
+                                                        +-------+-------+-------+-------+
+                                                    ... | ....                          |
+```
 
 ### Note regarding DSP cores
-Due to licensing, the generated source code for the DFT, IDFT, IIR, and IIR components are not included with the CEP repository.  Instructions for generating these cores can be found in the [./hdl_cores/dsp/README.md](./hdl_cores/dsp/README.md) file.  Scripts assume that the DSP generated code has been placed in `<CEP_ROOT>/generated_dsp_code`.
+Due to licensing, the verilog source for the DFT and IDFT components are not included with the CEP repository.  Instructions for generating these cores can be found in the [./hdl_cores/dsp/README.md](./hdl_cores/dsp/README.md) file.  Scripts assume that the generated verilog has been placed in `<CEP_ROOT>/generated_dsp_code`.
 
 
 ## Building the CEP
@@ -166,7 +214,7 @@ Configure your VC-707 with the following DIP switch settings (SW11):
 -----------------------
 ```
 
-These steps assume prerequisites have been installed and all external dependencies have been fetched.
+The following steps assume the aforementioned prerequisites have been installed and all external dependencies have been fetched.
 
 There are two primary build steps for the CEP, the hardware and the software.
 
@@ -183,9 +231,9 @@ $ make -f Makefile.vc707-u500devkit verilog
 $ make -f Makefile.vc707-u500devkit mcs
 ```
 
-Build time will vary based on the machine, but could be the range of 1 to 2 hours.  The first step will create the Chisel-generated verilog with the second creating the bitfile for the VC-707.
+Build time will vary based on the machine, but could be in the range of 1 to 2 hours.  The first step will create the Chisel-generated verilog with the second creating the bitfile for the VC-707.
 
-Following the build process and assuming the Digilent Adept 2 drivers have been installed, you can program a VC-707 attached via USB using the following script:
+Following the b0uild process and assuming the [Digilent Adept 2 drivers](https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads) have been installed, you can program a VC-707 attached via USB using the following script:
 
 ```sh
 ./program_card.sh
@@ -194,11 +242,11 @@ Following the build process and assuming the Digilent Adept 2 drivers have been 
 
 ### Bulding CEP Diagnostics Software ###
 
-Leveraging the CEP Diagnostics written for CEP co-simulation, run the following steps to install the diagnostics into the linux build.
+Leveraging the CEP Diagnostics written for CEP co-simulatlion, run the following steps to install the diagnostics into the freedom-u-sdk linux build.
 
 ```sh
 cd <CEP ROOT>/cosim
-make build_v2c                  <-- Required: Generate C header files from Verilog needed by CEP_DIAG
+make build_v2c                    <-- Required: Generate C header files from Verilog needed by cep_diag
 cd <CEP ROOT>/cosim/drivers/linux
 make install append
 ```
@@ -234,8 +282,8 @@ You should see the following logo/text appear:
   ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
     .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
                                                                 
-              Common Evaluation Platform v2.3                   
-     Copyright 2019 Massachusetts Institute of Technology       
+              Common Evaluation Platform v2.4                   
+  Copyright (C) 2020 Massachusetts Institute of Technology     
                                                                 
        Built upon the SiFive Freedom U500 Platform using        
                     the UCB Rocket Chip                         
@@ -262,7 +310,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.3 was built on Dec 17 2019*
+*** CEP Tag=CEPTest CEP HW VERSION = v2.4 was built on May 15 2020*
  CEP FPGA Physical=0x70000000 -> Virtual=0x000000200034d000
 gSkipInit=0/0
 gverbose=0/0
@@ -314,7 +362,28 @@ EnterCmd> help      <-- to get list available commands
 
 You should now have a functioning CEP!
 
-## Co-Simulation ##
+
+## CEP Cores
+The Freedom U500 platform has been extended to include several accelerator cores as depicted in the above block diagram.  Included with these cores are independately generate test vectors with a focus on increased coverage (see co-simulation and unit-simulation sections below)
+
+The following cores have been integrated into the "standard" CEP build:
+- AES-192
+- Triple-DES
+- MD5
+- SHA-256
+- RSA
+- Discrete Fourier Transform
+- Inverse Discrete Fourier Transform
+- Finite Impulse Response
+- Infinite Impulse Response
+- GPS code generator
+
+Beginning with the v2.4 release, the following "generated" cores have been added to the repository, but are currently not integrated into the CEP build.
+- A(EE)ES-WB : Advanced Egregiously Extended Encryption Standard - Whitebox Edition [./hdl_cores/aeees/README.md](./hdl_cores/aeees/README.md).
+- (RI)IIR : Randomly Indeterminate Infinite Impulse Response [./hdl_cores/auto-fir/README.md](./hdl_cores/auto-fir/README.md).
+
+ 
+## Co-Simulation
 The primary documentation source for the CEP co-simulation environment can be found in [./cosim/README.md](./cosim/README.md).
 
 It is worth highlighting that simulation is dependent on completing the `Building the Hardware` steps above.
@@ -322,7 +391,18 @@ It is worth highlighting that simulation is dependent on completing the `Buildin
 The environment supports writing tests that can run in simulation or on the hardware itself.
 
 
-## Release Notes:
+## Unit Simulation
+The unit simulation testbenches allow for simulation of indivdual CEP cores without incurring the overhead of simulating
+the entire CEP (RISC-V, DDR, etc.)
+
+More information about the unit simulations can be found [./unit_simulation/README.md](./unit_simulation/README.md).
+
+
+## Feedback
+Feedback on the CEP is welcomed by the authors.  They are best contacted by opening a Github issue.
+
+
+## Release Notes
 
 v1.0 - Initial release
 
@@ -356,10 +436,18 @@ v2.2 - (31 January 2020)
 v2.3 - (17 April 2020)
 * Added unit-level testbenches for all CEP cores.  Co-simulation modified to generate unit-level test stimulus.  
 
+v2.4 - (5 June 2020)
+* CEP core test coverage expanded
+* Unit testbenches transactional-level support added
+* AES-derived and FIR-derived generated cores added
+* Misc. bug fixes
+
+
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
 
 Additional licensing information can be found in the [LICENSE](./LICENSE) and [licenseLog.txt](./licenseLog.txt) files.
+
 
 ## DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
 

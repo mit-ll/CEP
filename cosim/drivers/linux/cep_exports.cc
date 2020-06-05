@@ -101,6 +101,38 @@ int run_cepRegTest(void) {
   return errCnt;
 }
 
+// lock
+#include "cepLockTest.h"
+static void cepLockTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (!errCnt) {
+    errCnt += cepLockTest_runTest(id, 64,2, GET_VAR_VALUE(seed) & 0x3, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+int run_cepLockTest(void) {
+  int errCnt = 0;
+  cep_set_thr_function(cepLockTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  return errCnt;
+}
+// 4-lock
+static void cepMultiLock_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (!errCnt) {
+    errCnt += cepLockTest_runTest2(id, 64,2, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+int run_cepMultiLock(void) {
+  int errCnt = 0;
+  cep_set_thr_function(cepMultiLock_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  return errCnt;
+}
+
 //
 // ********************
 // DDR3 related
@@ -398,6 +430,7 @@ void ddr3Test_thr(int id) {
 			       GET_VAR_VALUE(seed),
 			       GET_VAR_VALUE(verbose),
 			       GET_VAR_VALUE(longRun));
+  cep_set_thr_errCnt(errCnt);     
 }
  
 int run_ddr3Test(void) {
@@ -420,7 +453,7 @@ int run_ddr3Test(void) {
 
 //
 // ********************
-// cepMacroMix Test
+// cepMacroMix Test (4 per test)
 // ********************
 //
 #include "cepregression.h"
@@ -428,6 +461,7 @@ int run_ddr3Test(void) {
 void cepMacroMix_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
   errCnt += cepMacroMix_runTest(id,GET_VAR_VALUE(testMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
 }
  
 int run_cepMacroMix(void) {
@@ -445,23 +479,40 @@ int run_cepAllMacros(void) {
   return errCnt;
 }
 
-
+#include "cep_aes.h"
 int run_cep_AES      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_AES_test();
+  //errCnt += cep_AES_test();
+  cep_aes aes(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  //
+  int maxLoop = 300;
+  errCnt += aes.RunAes192Test(maxLoop);
+  //
   return errCnt;
 }
+
+#include "cep_des3.h"
 int run_cep_DES3      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_DES3_test();
+  
+  //errCnt += cep_DES3_test();
+  cep_des3 des3(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 300;
+  errCnt += des3.RunDes3Test(maxLoop);
   return errCnt;
 }
+
+#include "cep_dft.h"
 int run_cep_DFT      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_DFT_test();
+  //errCnt += cep_DFT_test();
+  cep_dft dft(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 10;
+  errCnt += dft.RunDftTest(maxLoop);
+  //
   return errCnt;
 }
 int run_cep_IDFT      (void) {
@@ -470,28 +521,46 @@ int run_cep_IDFT      (void) {
   errCnt += cep_IDFT_test();
   return errCnt;
 }
+#include "cep_fir.h"
 int run_cep_FIR      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_FIR_test();
+  //errCnt += cep_FIR_test();
+  cep_fir fir(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 20;
+  errCnt += fir.RunFirTest(maxLoop);
+  
   return errCnt;
 }
+#include "cep_iir.h"
 int run_cep_IIR      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_IIR_test();
+  //errCnt += cep_IIR_test();
+  cep_iir iir(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 20;
+  errCnt += iir.RunIirTest(maxLoop);
+  //
   return errCnt;
 }
+#include "cep_gps.h"
 int run_cep_GPS      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_GPS_test();
+  //errCnt += cep_GPS_test();
+  cep_gps gps(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 37;
+  errCnt += gps.RunGpsTest(maxLoop);
   return errCnt;
 }
+#include "cep_md5.h"
 int run_cep_MD5      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_MD5_test();
+  //errCnt += cep_MD5_test();
+  cep_md5 md5(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 32;
+  errCnt += md5.RunMd5Test(maxLoop);
   return errCnt;
 }
 int run_cep_RSA      (void) {
@@ -500,10 +569,17 @@ int run_cep_RSA      (void) {
   errCnt += cep_RSA_test();
   return errCnt;
 }
+
+#include "cep_sha256.h"
 int run_cep_SHA256      (void) {
   int errCnt = 0;
   initConfig();
-  errCnt += cep_SHA256_test();
+  //errCnt += cep_SHA256_test();
+  cep_sha256 sha256(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
+  int maxLoop = 32;
+  errCnt += sha256.RunSha256Test(maxLoop);
+  //
+  
   return errCnt;
 }
 //

@@ -146,9 +146,9 @@ sub kill_all_threads {
   local($hardKill) = @_;
   sleep(3);
   if ($updateInfo) {
-      printf("Going to sleep for 2 seconds for the simv to finish cleaning up like coverage dumping\n");
+      printf("Going to sleep for 20 seconds for the simv to finish cleaning up like coverage dumping\n");
       if ($coverage) {
-	  sleep(10);
+	  sleep(20);
       }
   }
   foreach $pid (keys(%childpidList)) {

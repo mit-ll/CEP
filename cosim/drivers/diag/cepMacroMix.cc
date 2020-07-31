@@ -53,7 +53,6 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
   cep_dft dft(seed,verbose);
   cep_rsa rsa(seed,verbose);    
   
-  int maxBytes = 8;
   //
   int captureOn = 0;
 #ifdef CAPTURE_CMD_SEQUENCE
@@ -182,7 +181,7 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
     //
     maxLoop = 4;
-    maxBytes=8;
+    int maxBytes=8;
     //
     init_rsa();
     if (!errCnt)  {

@@ -399,4 +399,4 @@ echo ""
 echo "  For the options that ask for confirmation, specify a YES as the last"
 echo "  argument will automatically confirm the request"
 echo ""
-exit 1
+exit 0

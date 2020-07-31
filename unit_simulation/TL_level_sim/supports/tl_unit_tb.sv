@@ -68,10 +68,24 @@ module `TB_NAME(`DUT_NAME) ;
    initial begin
       forever #5 clock = !clock;
    end
+`ifdef USE_MOCK_LLKI
+ `include "../llki_supports/llki_rom.sv"
+   //
+   // LLKI supports
+   //
+   tlul_if tlulIf();
+   //
+   SRoT_mock #(.MASTER_ID('h88), .MY_STRUCT(`CORE_STRUCT_NAME)) srot(.tlul(tlulIf.master), .clk(clock), .rst(reset));
+   //
+   `DUT_NAME #(.MY_STRUCT(`CORE_STRUCT_NAME)) dut(.tlul(tlulIf.slave),.*);
+
+`else
    //
    // DUT instantiation
    //
-   `DUT_NAME u1(.*);
+   `DUT_NAME dut(.*);
+`endif
+      
    //
    // TL master driver
    //
@@ -98,6 +112,35 @@ module `TB_NAME(`DUT_NAME) ;
       // Do pre-playback stuffs here. For example: logic unlocking, etc..
       //
       //
+`ifdef USE_MOCK_LLKI
+      srot.unlockReq(errCnt);
+      srot.clearKey(errCnt);
+      // do the playback and verify that it breaks since we clear the key
+      cep_playback(`GET_CMD_NAME(`CORE_NAME), 
+		   `GET_ADR_BASE(`CORE_NAME) + `GET_ADR_SIZE(`CORE_NAME) , `GET_ADR_BASE(`CORE_NAME),
+		   `GET_CMD_CNT(`CORE_NAME), `GET_CMD_SIZE(`CORE_NAME), `VERBOSE, errCnt);
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",`MKSTR(`DUT_NAME),errCnt);
+	 errCnt  = 0;
+	 //
+	 // need to pulse the reset since the core might stuck in some bad state
+	 //
+	 reset = 1;
+	 repeat (10) @(posedge clock);
+	 reset = 0;
+	 repeat (100) @(posedge clock);
+	 //
+	 // unlock again
+	 //
+	 srot.unlockReq(errCnt);      
+      end
+      else begin
+	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",`MKSTR(`DUT_NAME),errCnt);
+	 errCnt++; // fail
+      end
+      // now unlock again
+`endif      
       
       //
       // Playback command sequences and verify

@@ -11,7 +11,7 @@
 
     // CEP Verion String
     const uint8_t CEP_MAJOR_VERSION = 0x02;
-    const uint8_t CEP_MINOR_VERSION = 0x40;
+    const uint8_t CEP_MINOR_VERSION = 0x50;
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;

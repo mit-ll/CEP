@@ -98,11 +98,29 @@ module `TB_NAME ;
    initial begin
       forever #5 sys_clk_50 = !sys_clk_50;
    end
+   //
+   // include LLKI
+   //
+`ifdef LLKI_EN
+ `include "../llki_supports/llki_rom.sv"
+   //
+   // LLKI supports
+   //
+   llki_discrete_if #(.core_id(`GPS_ID)) discrete();
+   // LLKI master
+   llki_discrete_master discreteMaster(.llki(discrete.master), .clk(sys_clk_50),.rst(sync_rst_in),.*);
    //    
    //
    // DUT instantiation
    //
-   `DUT_NAME u1(.*);
+   `DUT_NAME #(.MY_STRUCT(GPS_LLKI_STRUCT)) dut(.llki(discrete.slave),.*);   
+`else
+   //    
+   //
+   // DUT instantiation
+   //
+   `DUT_NAME dut(.*);
+`endif
    //
    // -------------------
    // Test starts here
@@ -124,17 +142,55 @@ module `TB_NAME ;
       //
       // do the unlocking here if enable
       //
+`ifdef LLKI_EN
+      discreteMaster.unlockReq(errCnt);
+      discreteMaster.clearKey(errCnt);
+      // do the playback and verify that it breaks since we clear the key
+      playback_data(1);
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",dut_name_list[0],errCnt);
+	 errCnt  = 0;
+	 //
+	 // need to pulse the reset since the core might stuck in some bad state
+	 //
+	 {startRound,sv_num} = 0;	 
+	 sync_rst_in = 1;
+	 repeat (5) @(posedge sys_clk_50);
+	 @(negedge sys_clk_50);      // in stimulus, rst de-asserted after negedge
+	 #2 sync_rst_in = 0;
+	 repeat (30) @(negedge sys_clk_50);  // need to wait this long for output to stablize	 
+	 //
+	 // unlock again
+	 //
+	 discreteMaster.unlockReq(errCnt);      
+      end
+      else begin
+	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",dut_name_list[0],errCnt);
+	 errCnt++; // fail
+      end
+
+`endif      
       
       //
-      // pulse the DUT's reset and playback
       //
-      playback_data();
+      if (!errCnt) playback_data(0);
+      //
+      // print summary
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
+      end
+      else begin
+	 $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
+      end
+      //
       $finish;
    end
    //
    // Read data from file into buffer and playback for compare
    //
-   task playback_data;
+   task playback_data(input int StopOnError);
       int i;
       event err;
       begin
@@ -153,17 +209,10 @@ module `TB_NAME ;
 			   l_code[127:0],
 			   p_code[127:0]);
 
-	    @(negedge sys_clk_50); // next sample	       
+	    @(negedge sys_clk_50); // next sample
+	    // get out as soon found one error
+	    if (errCnt && StopOnError) break;    
 	 end // for (int i=0;i<`GPS_SAMPLE_COUNT;i++)
-	 //
-	 // print summary
-	 //
-	 if (errCnt) begin
-	    $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
-	 end
-	 else begin
-	    $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
-	 end
       end
    endtask //   
    

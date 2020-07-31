@@ -74,7 +74,7 @@
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG		'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h04020000_00000000
+`define CEP_EXPECTED_VERSION 	'h05020000_00000000
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set

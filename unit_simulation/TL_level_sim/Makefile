@@ -17,7 +17,9 @@
 #//************************************************************************
 #
 # Name one of the supported cores to run: <aes|md5|des3|sha256|gps|dft|idft|fir|iir>
-# 
+#
+LLKI_EN     = 1
+
 CORE        = aes
 #
 # Turn on read/write messages during simulation. Default is ON
@@ -47,16 +49,49 @@ endif
 # derived some macros/defines to be used in simulation
 #
 UPPER_NAME  = $(shell echo ${CORE} | tr '[:lower:]' '[:upper:]')
-DUT_NAME    = TL${UPPER_NAME}
-TB_NAME     = ${DUT_NAME}_tb
+#
+# top level chip netlist contains all the tilelink wrappers for all cores.
+#
+CEP_PLUSARG_READER    = ../../hdl_cores/freedom/rocket-chip/src/main/resources/vsrc/plusarg_reader.v
+CEP_TOP_LEVEL_NETLIST = ../../hdl_cores/freedom/builds/vc707-u500devkit/sifive.freedom.unleashed.DevKitU500FPGADesign_WithDevKit50MHz.v
+
+#
+# Verilog file list for the selected core
+#
+#CORE_VFILES = ../${CORE}_sim/*.v
+# pull them from hdl_core
+CORE_VFILES = 	-y ../../hdl_cores/aes \
+		-y ../../hdl_cores/des3 \
+		-y ../../hdl_cores/dsp \
+		-y ../../hdl_cores/gps \
+		-y ../../hdl_cores/md5 \
+		-y ../../hdl_cores/rsa/rtl \
+		-y ../../hdl_cores/sha256 \
+		-y ../../generated_dsp_code	\
+		-v ../../hdl_cores/aes/table.v	\
+		-v ../../hdl_cores/aes/round.v
+
 #
 # Where to look for files
 #
 VLOG_DIR    =   ./supports
+
+ifeq (${LLKI_EN},1)
+OTHERS_FILES = -v ./supports/VCShell_llki.v ../llki_supports/llki_tl.sv ../llki_supports/llki_discrete.sv
+DUT_NAME     = TL${UPPER_NAME}_mock
+CORE_VFILES  += ../${CORE}_sim/*mock_tss.sv
+VLOG_DIR     += ../llki_supports
+DEFINE_LIST  += +define+USE_MOCK_LLKI +define+CORE_STRUCT_NAME=${UPPER_NAME}_LLKI_STRUCT
+else
+DUT_NAME     = TL${UPPER_NAME}
+OTHERS_FILES = -v ./supports/VCShell.v
+endif
+OTHERS_FILES += ${CEP_PLUSARG_READER}
+
 #
-# Verilog file list for the selected core
-#
-CORE_VFILES = ../${CORE}_sim/*.v
+TB_NAME     = ${DUT_NAME}_tb
+
+
 #
 # and its search directories
 #
@@ -73,23 +108,35 @@ DEFINE_LIST += +define+VERBOSE=${VERBOSE}
 #
 DEFINE_LIST += +define+RANDOMIZE_MEM_INIT 
 #
-# top level chip netlist contains all the tilelink wrappers for all cores.
-#
-OTHERS_FILES = -v ./supports/VCShell.v 
-#
 # ------------------------------------------
 # compile/optimize and simulate the selected core
 # ------------------------------------------
 #
-all: ./supports/VCShell.v
+all: ./supports/VCShell_llki.v ./supports/VCShell_llki.v
 	rm -rf work
 	vlog -64 -sv +acc ${DEFINE_LIST} ./supports/tl_unit_tb.sv ${CORE_VFILES} ${OTHERS_FILES} ${SEARCH_DIR} ${INC_DIR} +libext+.v +libext+.sv 
 	vopt -64 +nolibcell +nospecify +notimingchecks ${TB_NAME} -o ${TB_NAME}_opt
 	vsim -64 ${TB_NAME}_opt -batch -do vsim.do -logfile ${CORE}.log -wlf ${CORE}.wlf
 
 
-./supports/VCShell.v: ./supports/VCShell.v.gz
-	gunzip -c $< > $@
+#
+# No LLKI
+#
+
+#./supports/VCShell.v: ./supports/VCShell.v.gz
+#	gunzip -c $< > $@
+
+./supports/VCShell.v: ${CEP_TOP_LEVEL_NETLIST}
+	echo "\`include \"config.v\"" > $@
+	sed -e 's/IBUF_DELAY_VALUE(0)/IBUF_DELAY_VALUE("0")/' $< >> $@
+	touch $@
+
+#
+# While we dont have the real VCShell with LLKI included
+# Modify the netlist to insert LLKI-TL and LLKI-discrete to the TL wrappers
+#
+./supports/VCShell_llki.v: ./supports/VCShell.v
+	./supports/insertLLKI.pl $< $@
 
 #
 # ------------------------------------------
@@ -137,4 +184,5 @@ vectors:
 # Clean up
 #
 clean:
-	rm -rf work *.wlf *.log transcript
+	rm -rf work *.wlf *.log transcript ./supports/VCShell*.v
+

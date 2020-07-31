@@ -88,9 +88,29 @@ module `TB_NAME ;
       forever #5 clk = !clk;
    end
    //
+   // include LLKI
+   //
+`ifdef LLKI_EN
+ `include "../llki_supports/llki_rom.sv"
+   //
+   // LLKI supports
+   //
+   llki_discrete_if #(.core_id(`DES3_ID)) discrete();
+   // LLKI master
+   llki_discrete_master discreteMaster(.llki(discrete.master), .rst(reset), .*);
+   //    
+   //
    // DUT instantiation
    //
-   `DUT_NAME u1(.*);
+   `DUT_NAME #(.MY_STRUCT(DES3_LLKI_STRUCT)) dut(.llki(discrete.slave),.*);   
+`else
+   //    
+   //
+   // DUT instantiation
+   //
+   `DUT_NAME dut(.*);
+`endif
+
    //
    // -------------------
    // Test starts here
@@ -115,17 +135,60 @@ module `TB_NAME ;
       //
       // do the unlocking or whatever here
       //
+`ifdef LLKI_EN
+      discreteMaster.unlockReq(errCnt);
+      discreteMaster.clearKey(errCnt);
+      // do the playback and verify that it breaks since we clear the key
+      playback_data(1);
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",dut_name_list[0],errCnt);
+	 errCnt  = 0;
+	 //
+	 // need to pulse the reset since the core might stuck in some bad state
+	 //
+	 {start,
+	  desIn,
+	  key1,
+	  key2,
+	  key3,
+	  decrypt}=0;
+	 //
+	 reset = 1;
+	 repeat (21) @(posedge clk);
+	 @(negedge clk);      // in stimulus, reset de-asserted after negedge
+	 #2 reset = 0;
+	 repeat (100) @(negedge clk);  // need to wait this long for output to stablize	 
+	 //
+	 // unlock again
+	 //
+	 discreteMaster.unlockReq(errCnt);      
+      end
+      else begin
+	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",dut_name_list[0],errCnt);
+	 errCnt++; // fail
+      end
 
+`endif      
       //
-      // pulse the DUT's reset and playback
       //
-      playback_data();
+      if (!errCnt) playback_data(0);
+      //
+      // print summary
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
+      end
+      else begin
+	 $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
+      end
+
       $finish;
    end
    //
    // Read data from file into buffer and playback for compare
    //
-   task playback_data;
+   task playback_data(input int StopOnError);
       int i;
       event err;
       begin
@@ -145,17 +208,10 @@ module `TB_NAME ;
 			   key3[55:0],
 			   j7,out_valid,
 			   desOut[63:0]);
-	    @(negedge clk); // next sample	       
+	    @(negedge clk); // next sample
+	    // get out as soon found one error
+	    if (errCnt && StopOnError) break;
 	 end // for (int i=0;i<`MAX_SAMPLES;i++)
-	 //
-	 // print summary
-	 //
-	 if (errCnt) begin
-	    $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
-	 end
-	 else begin
-	    $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
-	 end
       end
    endtask //   
    

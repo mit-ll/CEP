@@ -262,7 +262,7 @@ u_int64_t access::ReadDvtFlag(int msb, int lsb) {
   //}
 #endif
   if (0) { // GetVerbose()) {
-    LOGI("access::ReadDvtFlag %d:%d=%08x\n",msb,lsb,value);
+    //LOGI("access::ReadDvtFlag %d:%d=%08x\n",msb,lsb,value);
   }
   return value;
 

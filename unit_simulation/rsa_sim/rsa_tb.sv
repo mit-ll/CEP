@@ -122,11 +122,30 @@ module `TB_NAME ;
    initial begin
       forever #5 clk = !clk;
    end
+   //
+   // include LLKI
+   //
+`ifdef LLKI_EN
+ `include "../llki_supports/llki_rom.sv"
+   //
+   // LLKI supports
+   //
+   llki_discrete_if #(.core_id(`RSA_ID)) discrete();
+   // LLKI master
+   llki_discrete_master discreteMaster(.llki(discrete.master), .rst(!reset_n), .*);
    //    
    //
    // DUT instantiation
    //
-   `DUT_NAME u1(.*);
+   `DUT_NAME #(.MY_STRUCT(RSA_LLKI_STRUCT)) dut(.llki(discrete.slave),.*);   
+`else
+   //    
+   //
+   // DUT instantiation
+   //
+   `DUT_NAME dut(.*);
+`endif
+
    //
    // -------------------
    // Test starts here
@@ -162,17 +181,73 @@ module `TB_NAME ;
       //
       // do the unlocking here if enable
       //
+`ifdef LLKI_EN
+      discreteMaster.unlockReq(errCnt);
+      discreteMaster.clearKey(errCnt);
+      // do the playback and verify that it breaks since we clear the key
+      playback_data(1);
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",dut_name_list[0],errCnt);
+	 errCnt  = 0;
+	 //
+	 // need to pulse the reset since the core might stuck in some bad state
+	 //
+      {start,
+       exponent_length,
+       modulus_length,
+       exponent_mem_api_cs,
+       exponent_mem_api_wr,
+       exponent_mem_api_rst,
+       exponent_mem_api_write_data,
+       modulus_mem_api_cs,
+       modulus_mem_api_wr,
+       modulus_mem_api_rst,
+       modulus_mem_api_write_data,
+       message_mem_api_cs,
+       message_mem_api_wr,
+       message_mem_api_rst,
+       message_mem_api_write_data,
+       result_mem_api_cs,
+       result_mem_api_rst} = 0;
+
+	 //
+	 reset_n = 0;
+	 repeat (21) @(posedge clk);
+	 @(negedge clk);      // in stimulus, reset de-asserted after negedge
+	 #2 reset_n = 1;
+	 repeat (100) @(negedge clk);  // need to wait this long for output to stablize	 
+	 //
+	 // unlock again
+	 //
+	 discreteMaster.unlockReq(errCnt);      
+      end
+      else begin
+	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",dut_name_list[0],errCnt);
+	 errCnt++; // fail
+      end
+
+`endif      
       
       //
-      // pulse the DUT's reset and playback
       //
-      playback_data();
+      if (!errCnt) playback_data(0);
+      //
+      // print summary
+      //
+      if (errCnt) begin
+	 $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
+      end
+      else begin
+	 $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
+      end
+      
       $finish;
    end
    //
    // Read data from file into buffer and playback for compare
    //
-   task playback_data;
+   task playback_data(input int StopOnError);
       int i;
       event err;
       begin
@@ -208,17 +283,10 @@ module `TB_NAME ;
 			   modulus_mem_api_read_data[31:0],
 			   result_mem_api_read_data[31:0]);
 
-	    @(negedge clk); // next sample	       
+	    @(negedge clk); // next sample
+	    // 	// 	       // get out as soon found one error
+	    if (errCnt && StopOnError) break;       
 	 end // for (int i=0;i<`RSA_SAMPLE_COUNT;i++)
-	 //
-	 // print summary
-	 //
-	 if (errCnt) begin
-	    $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
-	 end
-	 else begin
-	    $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
-	 end
       end
    endtask //   
    

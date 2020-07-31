@@ -51,10 +51,11 @@ endfunction
 task automatic cep_playback(ref longint seqPtr[], input longint upperAdr, input longint lowerAdr,
 			    input int totalCmds, input int totalSize, input int verbose, output int errCnt);
    //
+   int 			      i=0, TO;
+   longint 		      rdDat;      
+   
    //
    begin
-      static int 	     i=0, TO;
-      static  longint 	     rdDat;      
       //
       if (verbose) begin
 	 $display("%m: playback command sequence totalCmds=%0d totalSize=%0d range=0x%0x:%0x\n",

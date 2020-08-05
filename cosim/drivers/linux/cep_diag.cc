@@ -85,7 +85,7 @@ void lnx_mem_write(u_int32_t offs,u_int64_t pData) {
 // =======================================
 //
 static void Print_CepBuildDate(void) {
-  printf("\n*** CEP Tag=%s CEP HW VERSION = v%d.%d was built on %s %s ***\n",
+  printf("\n*** CEP Tag=%s CEP HW VERSION = v%x.%x was built on %s %s ***\n",
    CEP_TAG, MAJOR_VERSION(lnx_cep_read(CEP_VERSION_REG)), MINOR_VERSION(lnx_cep_read(CEP_VERSION_REG)),__DATE__,__TIME__);
   // do the read and print
   printf(" CEP FPGA Physical=0x%08x -> Virtual=0x%016lx\n",(u_int32_t)_cepMap.phy_address,(u_int64_t)_cepMap.mem);

@@ -4,7 +4,7 @@
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.51
+   v2.52
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -448,6 +448,9 @@ v2.5 - (31 July 2020)
 
 v2.51 - (7 August 2020)
 * Legacy unused core wrapper files (axi4lite and wb) removed
+
+v2.52 - (31 August 2020)
+* Added Co-Simulation Test Descriptions in ./doc
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  

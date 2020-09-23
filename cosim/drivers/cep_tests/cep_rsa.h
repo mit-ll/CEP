@@ -1,11 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      cep_rsa.cc/h
 // Program:        Common Evaluation Platform (CEP)
 // Description:    rsa test for CEP
 // Notes:          
 //************************************************************************
+
 #ifndef cep_rsa_H
 #define cep_rsa_H
 // ---------------------------
@@ -60,6 +62,7 @@ public: //
   void ReadResult(uint8_t *result, int resultBytes) ;
   void Start(void);
   int  waitTilDone(int maxTO);
+  int expIsOne(void);
   int generate_key(void);
   uint64_t Byte2Word(uint8_t *buf);
   void Word2Byte(uint64_t word, uint8_t *buf);

@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -109,11 +110,11 @@ module tl_master_beh
   #(parameter
     CHIP_ID=0, // for sim ONLY
     SRC_SIZE=2,
-    SINK_SIZE=3,
+    SINK_SIZE=2,
     BUS_SIZE=8, 
     ADR_WIDTH=32,
     //
-    localparam TL_SIZE=$clog2(BUS_SIZE),
+    localparam TL_SIZE=4, // $clog2(BUS_SIZE),
     localparam DATA_WIDTH=(BUS_SIZE*8)
     )
    ( // Master mode
@@ -145,7 +146,7 @@ module tl_master_beh
      output reg 		 tl_master_c_valid=0, 
      output reg [2:0] 		 tl_master_c_bits_opcode=0, 
      output reg [2:0] 		 tl_master_c_bits_param=0, 
-     output reg [TL_SIZE-1:0] 	 tl_master_c_bits_size=0, 
+     output reg [3:0] 		 tl_master_c_bits_size=0, //
      output reg [SRC_SIZE-1:0] 	 tl_master_c_bits_source=0, 
      output reg [ADR_WIDTH-1:0]  tl_master_c_bits_address=0, 
      output reg [DATA_WIDTH-1:0] tl_master_c_bits_data=0, 
@@ -155,7 +156,7 @@ module tl_master_beh
      input 			 tl_master_d_valid, 
      input [2:0] 		 tl_master_d_bits_opcode, 
      input [1:0] 		 tl_master_d_bits_param, 
-     input [TL_SIZE-1:0] 	 tl_master_d_bits_size, 
+     input [3:0] 		 tl_master_d_bits_size,  //
      input [SRC_SIZE-1:0] 	 tl_master_d_bits_source, 
      input [SINK_SIZE-1:0] 	 tl_master_d_bits_sink, 
      input 			 tl_master_d_bits_denied, 
@@ -170,6 +171,7 @@ module tl_master_beh
 );
 
    localparam MAX_TIMEOUT = 1000;
+   
  // 2560;
    //
    integer 			    i;
@@ -209,7 +211,7 @@ module tl_master_beh
       input [ADR_WIDTH-1:0] a;
       output [DATA_WIDTH-1:0] d;
       begin
-	 tl_a_ul_read(src_id,a,d);	   
+	 tl_a_ul_read(src_id,a,d);
       end
    endtask // checkReset
 
@@ -219,7 +221,7 @@ module tl_master_beh
       input [DATA_WIDTH-1:0] d;
       //
       begin
-	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1);	   
+	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1);
       end
    endtask // tl_a_ul_write_generic
    
@@ -282,7 +284,7 @@ module tl_master_beh
 	      (tl_master_d_bits_source != src_id) ||
 	      (tl_master_d_bits_denied) ||
 	      (tl_master_d_bits_corrupt))) begin
-	    `logE("**ERROR** reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",
+	    `logE("**ERROR** src_id=%d reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",src_id,
 		     tl_master_d_bits_opcode,tl_master_d_bits_param,tl_master_d_bits_size,tl_master_d_bits_source,tl_master_d_bits_denied,tl_master_d_bits_corrupt);
 	    tl_err = 1;
 	 end
@@ -306,7 +308,7 @@ module tl_master_beh
       //
       begin
 	 //
-	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1); 
+	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1);
       end
    endtask // tl_a_ul_write_generic
    
@@ -373,7 +375,7 @@ module tl_master_beh
 		 (tl_master_d_bits_source != src_id) ||
 		 (tl_master_d_bits_denied) ||
 		 (tl_master_d_bits_corrupt))) begin
-	       `logE("**ERROR** reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",
+	       `logE("**ERROR** src_id=%d reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",src_id,
 			tl_master_d_bits_opcode,tl_master_d_bits_param,tl_master_d_bits_size,tl_master_d_bits_source,tl_master_d_bits_denied,tl_master_d_bits_corrupt);
 	    end
 	 end // if (tl_master_a_ready)

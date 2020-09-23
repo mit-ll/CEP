@@ -74,6 +74,13 @@ License Description : Mix
 License Terms       : The freedom-u-sdk repository and its dependencies have a mix of liceneses, including GPLv3 for most of the linux stuff.  None of this is included directly in the CEP repository.
 Function            : Provides the Linux build for the Common Evaluation Platform.
 
+Title               : rocket-tools
+Source              : https://github.com/chipsalliance/rocket-tools
+CEP Directory       : ./software/rocket-tools
+License Description : Mix
+License Terms       : The rocket-tools repository and its dependencies have a mix of liceneses, including GPLv2 for the riscv-gnu-toolchain.  None of this is included directly in the CEP repository.
+Function            : Replaces the riscv-tools formerly referenced by the rocket-chip repository
+
 Title               : gps
 Source              : MIT Lincoln Laboratory
 CEP Directory       : ./hdl_cores/gps

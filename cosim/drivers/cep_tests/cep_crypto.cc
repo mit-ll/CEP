@@ -1,11 +1,14 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
-// File Name:      cep_crypto.cc/h
+// File Name:      
 // Program:        Common Evaluation Platform (CEP)
-// Description:    crypto test for CEP
+// Description:    
 // Notes:          
+//
 //************************************************************************
+
 #ifndef  BARE_MODE    
 #include <string.h>
 #endif

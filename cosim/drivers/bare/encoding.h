@@ -1,13 +1,3 @@
-//************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
-//
-// File Name:      
-// Program:        Common Evaluation Platform (CEP)
-// Description:    
-// Notes:          
-//
-//************************************************************************
-
 // See LICENSE for license details.
 
 #ifndef RISCV_CSR_ENCODING_H

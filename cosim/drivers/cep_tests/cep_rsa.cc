@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      cep_rsa.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -275,6 +276,17 @@ int cep_rsa::compute_results(void) {
   return mErrCnt;
 }
 
+int cep_rsa::expIsOne(void) {
+  int isOne = (EXPSTR[GetExpSize()-1] == 1) ? 1 : 0;
+  for (int i=0;i<GetExpSize()-1;i++) {
+    if (EXPSTR[i] != 0) {
+      isOne = 0;
+      break;
+    }
+  }
+  return isOne;
+}
+
 int cep_rsa::generate_key(void) {
 #if defined(BARE_MODE)
 #else  
@@ -332,7 +344,7 @@ int cep_rsa::generate_key(void) {
   //
   (void)BN_bn2bin(rsa->n, MODSTR);  
   //
-  if (RSA_check_key(rsa) != 1) {
+  if ((RSA_check_key(rsa) != 1) && !expIsOne()) {
     mErrCnt++;
     LOGE("%s ERROR Key is not valid\n",__FUNCTION__);
   }

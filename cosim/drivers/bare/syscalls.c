@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -7,7 +8,6 @@
 // Notes:          
 //
 //************************************************************************
-
 // See LICENSE for license details.
 
 #include <stdint.h>

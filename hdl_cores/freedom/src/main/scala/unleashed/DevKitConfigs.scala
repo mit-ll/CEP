@@ -16,19 +16,16 @@ import sifive.blocks.devices.uart._
 import mitllBlocks.cep_addresses._
 import mitllBlocks.cep_registers._
 
-
 import mitllBlocks.aes._
-import mitllBlocks.dft._
-import mitllBlocks.idft._
+import mitllBlocks.rsa._
+import mitllBlocks.sha256._
 import mitllBlocks.fir._
 import mitllBlocks.iir._
+import mitllBlocks.idft._
 import mitllBlocks.des3._
-import mitllBlocks.gps._
 import mitllBlocks.md5._
-import mitllBlocks.sha256._
-import mitllBlocks.rsa._
-
-//import mitllBlocks.testreg._
+import mitllBlocks.gps._
+import mitllBlocks.dft._
 
 // Default FreedomU500Config
 class FreedomU500Config extends Config(
@@ -40,7 +37,15 @@ class FreedomU500Config extends Config(
 
 // Freedom U500 Dev Kit Peripherals
 class U500DevKitPeripherals extends Config((site, here, up) => {
-  case PeripheryDES3Key => List(
+  case PeripheryUARTKey => List(
+    UARTParams(address = BigInt(0x64000000L)))
+  case PeripherySPIKey => List(
+    SPIParams(rAddress = BigInt(0x64001000L)))
+  case PeripheryGPIOKey => List(
+    GPIOParams(address = BigInt(0x64002000L), width = 4))
+  case PeripheryMaskROMKey => List(
+    MaskROMParams(address = 0x10000, name = "BootROM", depth = 4096))
+case PeripheryDES3Key => List(
     DES3Params(address = BigInt(CEPBaseAddresses.des3_base_addr)))
   case PeripheryAESKey => List(
     AESParams(address = BigInt(CEPBaseAddresses.aes_base_addr)))
@@ -62,14 +67,6 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
      RSAParams(address = BigInt(CEPBaseAddresses.rsa_base_addr)))  
   case PeripheryCEPRegistersKey => List(
     CEPREGSParams(address = BigInt(CEPBaseAddresses.cepregisters_base_addr)))
-  case PeripheryUARTKey => List(
-    UARTParams(address = BigInt(0x64000000L)))
-  case PeripherySPIKey => List(
-    SPIParams(rAddress = BigInt(0x64001000L)))
-  case PeripheryGPIOKey => List(
-    GPIOParams(address = BigInt(0x64002000L), width = 4))
-  case PeripheryMaskROMKey => List(
-    MaskROMParams(address = 0x10000, name = "BootROM", depth = 4096))
 })
 
 // Freedom U500 Dev Kit
@@ -77,15 +74,9 @@ class U500DevKitConfig extends Config(
   new WithNExtTopInterrupts(0)   ++
   new U500DevKitPeripherals ++
   new FreedomU500Config().alter((site,here,up) => {
-    case SystemBusKey => up(SystemBusKey).copy(
-      errorDevice = Some(DevNullParams(
-        Seq(AddressSet(0x3000, 0xfff)),
-        maxAtomic=site(XLen)/8,
-        maxTransfer=128,
-        region = RegionType.TRACKED)))
-    case PeripheryBusKey => up(PeripheryBusKey, site).copy(
-      frequency   = BigDecimal(site(DevKitFPGAFrequencyKey)*1000000).setScale(0, BigDecimal.RoundingMode.HALF_UP).toBigInt,
-      errorDevice = None)
+    case SystemBusKey => up(SystemBusKey).copy()
+    case PeripheryBusKey => up(PeripheryBusKey, site).copy(dtsFrequency =
+    Some(BigDecimal(site(DevKitFPGAFrequencyKey)*1000000).setScale(0, BigDecimal.RoundingMode.HALF_UP).toBigInt))  
     case DTSTimebase => BigInt(1000000)
     case JtagDTMKey => new JtagDTMConfig (
       idcodeVersion = 2,      // 1 was legacy (FE310-G000, Acai).

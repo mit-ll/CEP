@@ -1,13 +1,13 @@
-//
+//************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
-/*
- *
- * Clock generation for GPS modules
- * 10.23 MHz for P-code and 1.023 MHz for C/A code
- * 
- */
-
+// File Name:      	gps_clkgen.v
+// Program:        	Common Evaluation Platform (CEP)
+// Description:    	GPS clock generator module
+// Note: 			10.23 MHz for P-code and 1.023 MHz for C/A code
+//
+//************************************************************************
 module gps_clkgen (
            sys_clk_50,
            sync_rst_in,

@@ -1,5 +1,6 @@
 #************************************************************************
-# Copyright (C) 2018 Massachusetts Institute of Technology
+# Copyright (C) 2020 Massachusetts Institute of Technology
+# SPDX short identifier: MIT
 #
 # File Name:      Makefile 
 # Program:        Common Evaluation Platform (CEP)

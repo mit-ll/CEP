@@ -1,15 +1,15 @@
-//
+//************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
-
-//////////////////////////////////////////////////////////////////////////////////
-// Description:    Generate 1023 chip sequence for SV PRN number prn_num.
-//                 First chip on chip_out after reset.
-//                 Asserting enb will advance to next chip.
+// File Name:      	cacode.v
+// Program:        	Common Evaluation Platform (CEP)
+// Description:    	CA code generator
+// Note: 			Generate 1023 chip sequence for SV PRN number prn_num.
+//                  First chip on chip_out after reset.
+//                  Asserting enb will advance to next chip.
 //
-//////////////////////////////////////////////////////////////////////////////////
-
-
+//************************************************************************
 module cacode
   (
    input       clk,

@@ -1,15 +1,17 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : cep_addresses.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : Defines the addresses used within CEP Cores
 //
+//--------------------------------------------------------------------------------------
 package mitllBlocks.cep_addresses
 
 object CEPVersion {
 	val CEP_MAJOR_VERSION		= 0x02
-	val CEP_MINOR_VERSION		= 0x51
+	val CEP_MINOR_VERSION		= 0x60
 }
 
 object CEPBaseAddresses {

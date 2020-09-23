@@ -1,5 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
+#// SPDX short identifier: MIT
 #//
 #// File Name:      common.make
 #// Program:        Common Evaluation Platform (CEP)
@@ -41,7 +42,7 @@ C2C_CAPTURE     = 0
 # Tools
 # can be override with env. variables
 #
-VIVADO_PATH	?= /opt/Xilinx/Vivado/2018.3
+VIVADO_PATH	?= /opt/Xilinx/Vivado/2019.1
 SIMULATOR_PATH	?= /opt/questa-2019.1/questasim/bin
 
 #

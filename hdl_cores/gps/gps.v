@@ -1,7 +1,13 @@
-//
+//************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
-// From the GPS transmitter's perspective
+// File Name:      	gps.v
+// Program:        	Common Evaluation Platform (CEP)
+// Description:    	GPS top-level module
+// Note: 			From the GPS transmitter's perspective
+//
+//************************************************************************
 module gps(
            sys_clk_50,
            sync_rst_in,

@@ -1,11 +1,14 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
-// File Name:      cep_iir.cc/h
+// File Name:      
 // Program:        Common Evaluation Platform (CEP)
-// Description:    iir test for CEP
+// Description:    
 // Notes:          
+//
 //************************************************************************
+
 #if defined(BARE_MODE)
 
 extern void *memcpy(void* dest, const void* src, int len);

@@ -1,10 +1,11 @@
 [//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (SPDX short identifier: MIT)
 
 <p align="center">
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.52
+   v2.6
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -70,39 +71,34 @@ To build the CEP, several packages and toolsets must be installed and built.  Fo
 ### Installing Vivado and Modelsim
 It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraries pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not source this file in the bash shell you use to build the RISC-V tools.
 
-Modelsim is required if you intend to run the co-simulation or unit-simulation environments located in `<CEP_ROOT>/cosim` and `<CEP_ROOT>/unit_simulation` respectively.  Version 2019.1 is recommended.  Other simulators or versions may work, but they have not been explicitly tested.
+Modelsim is required if you intend to run the co-simulation or unit-simulation environments located in `<CEP_ROOT>/cosim` and `<CEP_ROOT>/unit_simulation` respectively.  Version 2018.3 is recommended.  Other simulators or versions may work, but they have not been explicitly tested.
 
 
-### Install the RISC-V toolchain
-The RISC-V source code resides in <CEP_ROOT>/hdl_cores/freedom/rocket-chip/riscv-tools.
+### Install the RISC-V GNU Toolchain
+The RISC-V source code resides in <CEP_ROOT>/software/riscv-gnu-toolchain
 
-Begin by installing the RISC-V tools package dependencies by executing the following:
-`sudo apt install autoconf automake autotools-dev curl device-tree-compiler libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat1-dev pkg-config`
+Begin by installing the dependencies by executing the following:
+`sudo apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev`
 
-Once that is complete, the RISC-V toolset needs to be built.  The RISCV environment variable should be set to the
-desired installation directory.  For example (assuming bash):
+If you are running on Ubuntu 16.04, the default gcc compiler (v5.5) is too old to properly build the new toolchain.  Suggest installing a newer version of gcc:
 
-    $ export RISCV=/opt/riscv
+`sudo apt install gcc-7`
 
-Now, build the RISCV tools.  Ensure you have write permissions to the directory pointed to by $RISCV and that the 
-current shell has NOT sourced the Xilinx Vivado environment script:
+Once that is complete, the toolchain needs to be built.  The RISCV environment variable should be set to the desired installation directory.  For example (assuming bash):
 
-    $ cd <CEP_ROOT>/hdl_cores/freedom/rocket-chip/riscv-tools
-    $ export MAKEFLAGS="$MAKEFLAGS -jN" # Assuming you have N cores on your host system
-    $ ./build.sh
+Now, build the toolchain.  If on Ubuntu 16.04, force gcc-7 with `gcc-7` switch below.  On Ubuntu 18.04, `gcc-7` is the default.
 
-You'll also need to build the linux cross-compiler.  This allows test compiles of the CEP Regression Suite (or other applications) before building the Linux image.
+Ensure you have write permissions to the directory pointed to by $RISCV and that the current shell has NOT sourced the Xilinx Vivado environment script:
 
-```
-    cd ./riscv-gnu-toolchain
-    ./configure --prefix=$RISCV
-    make linux
-```
+    $ cd <CEP_ROOT>/software/riscv-gnu-toolchain
+    $ ./configure CC=gcc-7 --prefix=/opt/riscv
+    $ make gcc-7 -jN                                   (Where N is the number of cores that can be devoted to the build)
 
 Now with the tools installed, you'll want to add them to your path:
-
-`export PATH=$PATH:$RISCV/bin`
-
+```
+    $ export RISCV=/opt/riscv
+    $ export PATH=$PATH:$RISCV/bin
+```
 
 ### Install Scala
 Next, you need to install Scala which is required by Chisel.
@@ -121,7 +117,6 @@ Next, you need to install Scala which is required by Chisel.
     sudo apt-get update
     sudo apt-get install sbt
     ```
-
 
 ### Install Feedom-U-SDK dependencies
 Install the required dependencies by running the following command:
@@ -152,10 +147,12 @@ Install the required dependencies by running the following command:
               |-- software/
                     |
                     |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/
-                                         mcd500/freedom-u-sdk directory, which is a fork of the 
-                                         main SiFive repo.  Variant specifically chosen because it 
-                                         has been modified to boot without PCIe support (which for 
-                                         the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
+                    |                    mcd500/freedom-u-sdk directory, which is a fork of the 
+                    |                    main SiFive repo.  Variant specifically chosen because it 
+                    |                    has been modified to boot without PCIe support (which for 
+                    |                    the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
+                    |
+                    |-- riscv-gnu-toolchain/  - RISC-V GNU toolchain
 
 ```
 
@@ -164,6 +161,7 @@ Install the required dependencies by running the following command:
 As one might be aware: the endianess usage is not consistent thru out the design, expesially where Chisel wrappers are used to connect to various HW cores. For some cores, little endian is used for loading keys/plain text but big-endian is used to produce cipher text as output. This creates confusion and inconsistent as one might try to understand/follow SW driver for these cores. Also, please note, RISCV is little endian.
 
 As of release CEP v2.4 and later, unless otherwise specify, big endian is used thru out the design to match key/plain/ciphertext network order.
+
 This makes it consistent and easier to debug when key/plain text are printed to match against registers.
 
 ```
@@ -177,7 +175,7 @@ For 64-bit registers:
 --------------------
 
                         63                                                             0
-                       +-------+-------+-------+-------+-------+-------+-------+--------+			
+                       +-------+-------+-------+-------+-------+-------+-------+--------+           
    register Offset 0x0 | byte0 | byte1 | byte2 | byte3 | byte4 | byte5 | byte6 | byte7  |
                        +-------+-------+-------+-------+-------+-------+-------+--------+
    register offset 0x8 | byte8 |   ....                                        | byte15 |
@@ -185,8 +183,8 @@ For 64-bit registers:
                    ... | ....                                                           |
 
 For 32-bit registers: (right-justify if maps to 64-bit offset)
---------------------	
-	                                                 31                            0
+--------------------    
+                                                     31                            0
                                                         +-------+-------+-------+-------+
                                     register Offset 0x0 | byte0 | byte1 | byte2 | byte3 | 
                                                         +-------+-------+-------+-------+
@@ -270,31 +268,26 @@ You'll then want to connect via a terminal program with the following parameters
 You should see the following logo/text appear:
 
 ```                                                                
-     ::::::::::::::/+   `....-----------:/-     ....-:::::::/+  
-  ...o+++++++++++++o:  :/--:-/++o+++o+++/-`   ..  `..++++++++:  
-  -o++o++///////++++o:  +o++o`/...........    +:::/. .:::::o++: 
-  -++++--       :+++o: `oo++o`/.........:/   `o+++o`:    -+++o: 
-  -++++--       -:::/. +o+++o`/++o+++o+o-:   `o+++/.-....++o:-  
-  -++++--              +oo++o.://///////-`   `o+o+o+++o++o+o:.  
-  -++++--      `.....  +oooo-/               `o+ooo//:/::::/-   
-  -o+++-:.....:/::::/  +oo+o :`````````````  `s+++s`-           
-  -++++-::::::/++/++:  ++++o//////////////:- `o+++o`-           
-  ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-           
-    .--:---:-:-::-::`  -::::::::::::::::::.   :::::.            
-                                                                
-              Common Evaluation Platform v2.51
-  Copyright (C) 2020 Massachusetts Institute of Technology     
-                                                                
-       Built upon the SiFive Freedom U500 Platform using        
-                    the UCB Rocket Chip                         
-                                                                
-INIT
-CMD0
-CMD8
-ACMD41
-CMD58
-CMD16
-CMD18
+          ::::::::::::::/+   `....-----------:/-     ....-:::::::/+
+       ...o+++++++++++++o:  :/--:-/++o+++o+++/-`   ..  `..++++++++:
+       -o++o++///////++++o:  +o++o`/...........    +:::/. .:::::o++:
+       -++++--       :+++o: `oo++o`/.........:/   `o+++o`:    -+++o:
+       -++++--       -:::/. +o+++o`/++o+++o+o-:   `o+++/.-....++o:-
+       -++++--              +oo++o.://///////-`   `o+o+o+++o++o+o:.
+       -++++--      `.....  +oooo-/               `o+ooo//:/::::/-
+       -o+++-:.....:/::::/  +oo+o :`````````````  `s+++s`-
+       -++++-::::::/++/++:  ++++o//////////////:- `o+++o`-
+       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
+       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
+
+                      Common Evaluation Platform v2.6
+         Copyright (C) 2020 Massachusetts Institute of Technology
+
+            Built upon the SiFive Freedom U500 Platform using
+             the UCB Rocket Chip targeting the Xilinx VC-707
+
+...
+
 LOADING /
 ```
 
@@ -310,54 +303,35 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.51 was built on May 15 2020*
- CEP FPGA Physical=0x70000000 -> Virtual=0x000000200034d000
+*** CEP Tag=CEPTest CEP HW VERSION = v2.60 was built on Sep 17 2020 12:01:26 ***
+ CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
 Setting terminal to VT102 with erase=^H
-EnterCmd> menu      <-- type "menu" to get list of tests
+EnterCmd> menu
         ============== TEST MENU ==============
     0 : runAll               : Run all available tests
-    1 : cepRegTest           : Run CEP register tests on all cores
-    2 : cep_AES              : CEP AES     test
-    3 : cep_DES3             : CEP DES3    test
-    4 : cep_DFT              : CEP DFT     test
-    5 : cep_FIR              : CEP FIR     test
-    6 : cep_GPS              : CEP GPS     test
-    7 : cep_IDFT             : CEP IDFT    test
-    8 : cep_IIR              : CEP IIR     test
-    9 : cep_MD5              : CEP MD5     test
-   10 : cep_RSA              : CEP RSA     test
-   11 : cep_SHA256           : CEP SHA256  test
-   12 : ddr3Test             : main Memory Test on all cores
-   13 : cepAllMacros         : CEP all macros test (single thread)
-   14 : cepMacroMix          : CEP Macro tests (1 core per macro)
-   15 : cepThrTest           : Run multi-thread tests on all cores
-   16 : cacheFlush           : I+D-caches flush all cores (via self-mod-code)
-   17 : dcacheCoherency      : D-cache coherency Test on all cores
-   18 : icacheCoherency      : I-cache coherency Test on all cores
-EnterCmd> run 0     <-- type "run 0" to run all tests
-   TEST PASS: testId=  1 errCnt= 0 seed=0x00000031 : cepRegTest
-   TEST PASS: testId=  2 errCnt= 0 seed=0x00320000 : cep_AES
-   TEST PASS: testId=  3 errCnt= 0 seed=0x00320000 : cep_DES3
-   TEST PASS: testId=  4 errCnt= 0 seed=0x00320000 : cep_DFT
-   TEST PASS: testId=  5 errCnt= 0 seed=0x00320000 : cep_FIR
-   TEST PASS: testId=  6 errCnt= 0 seed=0x00320000 : cep_GPS
-   TEST PASS: testId=  7 errCnt= 0 seed=0x00320000 : cep_IDFT
-   TEST PASS: testId=  8 errCnt= 0 seed=0x00320000 : cep_IIR
-   TEST PASS: testId=  9 errCnt= 0 seed=0x00320000 : cep_MD5
-   TEST PASS: testId= 10 errCnt= 0 seed=0x00320000 : cep_RSA
-   TEST PASS: testId= 11 errCnt= 0 seed=0x00320000 : cep_SHA256
-   TEST PASS: testId= 12 errCnt= 0 seed=0x00320000 : ddr3Test
-   TEST PASS: testId= 13 errCnt= 0 seed=0x00320000 : cepAllMacros
-   TEST PASS: testId= 14 errCnt= 0 seed=0x00320000 : cepMacroMix
-   TEST PASS: testId= 15 errCnt= 0 seed=0x00320000 : cepThrTest
-   TEST PASS: testId= 16 errCnt= 0 seed=0x00340000 : cacheFlush
-   TEST PASS: testId= 17 errCnt= 0 seed=0x00340000 : dcacheCoherency
-   TEST PASS: testId= 18 errCnt= 0 seed=0x00340000 : icacheCoherency
-EnterCmd> help      <-- to get list available commands
+    1 : cepLockTest          : Run CEP single lock test on all cores
+    2 : cepMultiLock         : Run CEP multi-lock test on all cores
+    3 : cepRegTest           : Run CEP register tests on all cores
+    4 : cep_AES              : CEP AES test
+    5 : cep_DES3             : CEP DES3 test
+    6 : cep_DFT              : CEP DFT test
+    7 : cep_FIR              : CEP FIR test
+    8 : cep_GPS              : CEP GPS test
+    9 : cep_IDFT             : CEP IDFT test
+   10 : cep_IIR              : CEP IIR test
+   11 : cep_MD5              : CEP MD5 test
+   12 : cep_RSA              : CEP RSA test
+   13 : cep_SHA256           : CEP SHA256 test
+   14 : ddr3Test             : main Memory Test on all cores
+   15 : cepAllMacros         : CEP all macros test (single thread)
+   16 : cepMacroMix          : CEP Macro tests (aes/des3/md5/sha)
+   17 : cepThrTest           : Run multi-thread tests on all cores
+   18 : cacheFlush           : I+D-caches flush all cores (via self-mod-code)
+   19 : dcacheCoherency      : D-cache coherency Test on all cores
+   20 : icacheCoherency      : I-cache coherency Test on all cores
 <...>
-
 ```
 
 You should now have a functioning CEP!
@@ -449,8 +423,23 @@ v2.5 - (31 July 2020)
 v2.51 - (7 August 2020)
 * Legacy unused core wrapper files (axi4lite and wb) removed
 
-v2.52 - (31 August 2020)
-* Added Co-Simulation Test Descriptions in ./doc
+v2.52 - (2 September 2020)
+* Added ./doc/CEP_TestDescriptions.pdf
+
+v2.6 - (18 September 2020)
+* Rocket-Chip and Freedom repositories updated.  Source responsitory list:
+    https://github.com/sifive/freedom/tree/8622a684e7e54d0a20df90659285b9c587772629              - Aug 19, 2020
+    https://github.com/chipsalliance/rocket-chip/tree/d2210f9545903fad40c9860389cdcf9c28515dba   - Apr  2, 2020
+    https://github.com/sifive/fpga-shells/tree/19d0818deda5d295154992bd4e2c490b7c905df9          - Jan 28, 2020
+    https://github.com/sifive/sifive-blocks/tree/12bdbe50636b6c57c8dc997e483787fdb5ee540b        - Dec 17, 2019
+    https://github.com/mcd500/freedom-u-sdk/tree/29fe529f8dd8e1974fe1743184b3e13ebb2a21dc        - Apr 12, 2019
+* riscv-tools (formerly under rocket-chip) now located in ./software/riscv-gnu-toolchain
+* KNOWN ISSUES:
+	- The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
+	  the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
+	  the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
+
+	  Functionally, this should only cause an issue when dealing with self-modifying code, which is an atypical coding practice.
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  

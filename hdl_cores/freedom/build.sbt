@@ -29,14 +29,10 @@ lazy val sifiveBlocks = (project in file("sifive-blocks")).
   dependsOn(rocketChip).
   settings(commonSettings: _*)
 
-lazy val nvdlaBlocks = (project in file("nvidia-dla-blocks")).
-  dependsOn(rocketChip).
-  settings(commonSettings: _*)
-
 lazy val fpgaShells = (project in file("fpga-shells")).
   dependsOn(rocketChip, sifiveBlocks).
   settings(commonSettings: _*)
 
 lazy val freedomPlatforms = (project in file(".")).
-  dependsOn(rocketChip, sifiveBlocks, nvdlaBlocks, fpgaShells, mitllBlocks).
+  dependsOn(rocketChip, sifiveBlocks, fpgaShells, mitllBlocks).
   settings(commonSettings: _*)

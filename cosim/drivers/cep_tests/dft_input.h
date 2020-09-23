@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      dft_input.h
 // Program:        Common Evaluation Platform (CEP)

@@ -1,10 +1,12 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : md5.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : TileLink interface to the verilog AES core
 //
+//--------------------------------------------------------------------------------------
 package mitllBlocks.md5
 
 import Chisel._

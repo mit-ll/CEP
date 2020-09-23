@@ -1,4 +1,4 @@
-// See LICENSE for license details.
+/// See LICENSE for license details.
 
 package sifive.freedom.unleashed
 
@@ -39,9 +39,6 @@ import mitllBlocks.md5._
 import mitllBlocks.gps._
 import mitllBlocks.dft._
 
-
-//import mitllBlocks.testreg._
-
 object PinGen {
   def apply(): BasePin = {
     new BasePin()
@@ -50,41 +47,41 @@ object PinGen {
 
 class DevKitWrapper()(implicit p: Parameters) extends LazyModule
 {
-  val sysClock  = p(ClockInputOverlayKey).head(ClockInputOverlayParams())
+  val sysClock  = p(ClockInputOverlayKey).headOption.map(_.place(ClockInputDesignInput()).overlayOutput.node)
   val corePLL   = p(PLLFactoryKey)()
   val coreGroup = ClockGroup()
   val wrangler  = LazyModule(new ResetWrangler)
   val coreClock = ClockSinkNode(freqMHz = p(DevKitFPGAFrequencyKey))
-  coreClock := wrangler.node := coreGroup := corePLL := sysClock
+  coreClock := wrangler.node := coreGroup := corePLL := sysClock.get
 
   // removing the debug trait is invasive, so we hook it up externally for now
-  val jt = p(JTAGDebugOverlayKey).headOption.map(_(JTAGDebugOverlayParams())).get
+  val jt = p(JTAGDebugOverlayKey).headOption.map(_.place(JTAGDebugDesignInput()).overlayOutput)
 
-  val topMod = LazyModule(new DevKitFPGADesign(wrangler.node)(p))
+  val topMod = LazyModule(new DevKitFPGADesign(wrangler.node, corePLL)(p))
 
   override lazy val module = new LazyRawModuleImp(this) {
     val (core, _) = coreClock.in(0)
     childClock := core.clock
 
-    val djtag = topMod.module.debug.systemjtag.get
-    djtag.jtag.TCK := jt.jtag_TCK
-    djtag.jtag.TMS := jt.jtag_TMS
-    djtag.jtag.TDI := jt.jtag_TDI
-    jt.jtag_TDO    := djtag.jtag.TDO.data
+    val djtag = topMod.module.debug.get.systemjtag.get
+    djtag.jtag.TCK := jt.get.jtag.TCK
+    djtag.jtag.TMS := jt.get.jtag.TMS
+    djtag.jtag.TDI := jt.get.jtag.TDI
+    jt.get.jtag.TDO.data    := djtag.jtag.TDO.data
 
     djtag.mfr_id := p(JtagDTMKey).idcodeManufId.U(11.W)
     djtag.reset  := core.reset
 
-    childReset := core.reset | topMod.module.debug.ndreset
+    childReset := core.reset | topMod.module.debug.get.ndreset
   }
 }
 
 case object DevKitFPGAFrequencyKey extends Field[Double](100.0)
 
-class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) extends RocketSubsystem
-  with HasPeripheryCEPRegisters
-  with HasPeripheryMaskROMSlave
+class DevKitFPGADesign(wranglerNode: ClockAdapterNode, corePLL: PLLNode)(implicit p: Parameters) extends RocketSubsystem
   with HasPeripheryDebug
+  with HasHierarchicalBusTopology
+  with HasPeripheryCEPRegisters
   with HasPeripheryAES
   with HasPeripheryRSA
   with HasPeripherySHA256
@@ -99,21 +96,21 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) e
   val tlclock = new FixedClockResource("tlclk", p(DevKitFPGAFrequencyKey))
 
   // hook up UARTs, based on configuration and available overlays
-  val divinit = (p(PeripheryBusKey).frequency / 115200).toInt
+  val divinit = (p(PeripheryBusKey).dtsFrequency.get / 115200).toInt
   val uartParams = p(PeripheryUARTKey)
   val uartOverlays = p(UARTOverlayKey)
   val uartParamsWithOverlays = uartParams zip uartOverlays
   uartParamsWithOverlays.foreach { case (uparam, uoverlay) => {
-    val u = uoverlay(UARTOverlayParams(uparam, divinit, pbus, ibus.fromAsync))
-    tlclock.bind(u.device)
+    val u = uoverlay.place(UARTDesignInput(uparam, divinit, pbus, ibus.fromAsync)).overlayOutput
+    tlclock.bind(u.uart.device)
   } }
 
   (p(PeripherySPIKey) zip p(SDIOOverlayKey)).foreach { case (sparam, soverlay) => {
-    val s = soverlay(SDIOOverlayParams(sparam, pbus, ibus.fromAsync))
-    tlclock.bind(s.device)
+    val s = soverlay.place(SDIODesignInput(sparam, pbus, ibus.fromAsync)).overlayOutput
+    tlclock.bind(s.spi.device)
 
     // Assuming MMC slot attached to SPIs. See TODO above.
-    val mmc = new MMCDevice(s.device)
+    val mmc = new MMCDevice(s.spi.device)
     ResourceBinding {
       Resource(mmc, "reg").bind(ResourceAddress(0))
     }
@@ -121,8 +118,11 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) e
 
 
   // TODO: currently, only hook up one memory channel
-  val ddr = p(DDROverlayKey).headOption.map(_(DDROverlayParams(p(ExtMem).get.master.base, wranglerNode)))
-  ddr.get := mbus.toDRAMController(Some("xilinxvc707mig"))()
+  val fourgbdimm = p(ExtMem).get.master.size == 0x100000000L
+  val ddr = p(DDROverlayKey).headOption.map(_.place(DDRDesignInput(p(ExtMem).get.master.base, wranglerNode, corePLL, fourgbdimm)))
+  ddr.foreach {_.overlayOutput.ddr := mbus.toDRAMController(Some("xilinxmig"))()}
+  val mparams = p(ExtMem).get.master
+
 
   // Work-around for a kernel bug (command-line ignored if /chosen missing)
   val chosen = new DeviceSnippet {
@@ -130,12 +130,13 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) e
   }
 
   // hook the first PCIe the board has
-  val pcies = p(PCIeOverlayKey).headOption.map(_(PCIeOverlayParams(wranglerNode)))
-  pcies.zipWithIndex.map { case((pcieNode, pcieInt), i) =>
+  val pcies = p(PCIeOverlayKey).headOption.map(_.place(PCIeDesignInput(wranglerNode, corePLL = corePLL)).overlayOutput)
+  pcies.zipWithIndex.map { case(overlayOut, i) =>  
     val pciename = Some(s"pcie_$i")
-    sbus.fromMaster(pciename) { pcieNode }
-    sbus.toFixedWidthSlave(pciename) { pcieNode }
-    ibus.fromSync := pcieInt
+    sbus.fromMaster(pciename) { overlayOut.pcieNode }
+    sbus.toFixedWidthSlave(pciename) { overlayOut.pcieNode }
+    ibus.fromSync := overlayOut.intNode
+
   }
 
   // LEDs / GPIOs
@@ -145,7 +146,8 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode)(implicit p: Parameters) e
     g.ioNode.makeSink
   }
 
-  val leds = p(LEDOverlayKey).headOption.map(_(LEDOverlayParams()))
+  
+  val ledsOut = p(LEDOverlayKey).map(_.place(LEDDesignInput()).overlayOutput.led) 
 
   override lazy val module = new U500VC707DevKitSystemModule(this)
 }
@@ -167,7 +169,12 @@ class U500VC707DevKitSystemModule[+L <: DevKitFPGADesign](_outer: L)
 
   gpio_pins.pins.foreach { _.i.ival := Bool(false) }
   val gpio_cat = Cat(Seq.tabulate(gpio_pins.pins.length) { i => gpio_pins.pins(i).o.oval })
-  _outer.leds.get := gpio_cat
+  
+
+   _outer.ledsOut.foreach {
+     _ := gpio_cat
+   }
+     
 }
 
 // Allow frequency of the design to be controlled by the Makefile

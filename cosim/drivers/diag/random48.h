@@ -1,13 +1,3 @@
-//************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
-//
-// File Name:      
-// Program:        Common Evaluation Platform (CEP)
-// Description:    
-// Notes:          
-//
-//************************************************************************
-
 #ifndef Random48_H
 #define Random48_H
 

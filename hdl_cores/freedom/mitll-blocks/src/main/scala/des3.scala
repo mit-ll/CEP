@@ -1,10 +1,12 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : des3.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : TileLink interface to the verilog des3 core
 //
+//--------------------------------------------------------------------------------------
 package mitllBlocks.des3
 
 import Chisel._

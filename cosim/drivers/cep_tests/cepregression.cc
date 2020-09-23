@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      cepregression.cc
 // Program:        Common Evaluation Platform (CEP)
@@ -7,6 +8,7 @@
 // Notes:          Buildroot does not seem to like having special
 //                 characters in the name.
 //************************************************************************
+
 //
 // These are for real HW
 //

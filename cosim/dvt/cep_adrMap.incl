@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -74,7 +75,7 @@
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG		'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h51020000_00000000
+`define CEP_EXPECTED_VERSION 	'h60020000_00000000
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set

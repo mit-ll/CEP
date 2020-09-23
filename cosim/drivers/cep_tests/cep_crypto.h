@@ -1,3 +1,13 @@
+//************************************************************************
+// Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
+//
+// File Name:      
+// Program:        Common Evaluation Platform (CEP)
+// Description:    
+// Notes:          
+//
+//************************************************************************
 #ifndef cep_crypto_H
 #define cep_crypto_H
 // ---------------------------

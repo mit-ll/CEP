@@ -1,11 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      cep_gps.cc/h
 // Program:        Common Evaluation Platform (CEP)
 // Description:    gps test for CEP
 // Notes:          
 //************************************************************************
+
 #if defined(BARE_MODE)
 #else
 #include <openssl/evp.h>

@@ -48,7 +48,7 @@ For CEP, the path to tools required are as listed below (see **common.make**)
 
     VIVADO_PATH     ?= /opt/xilinx-2018.3/Vivado/2018.3
     SIMULATOR_PATH  ?= /opt/questa-2019.1/questasim/bin
-    RISCV_DIR       ?= /opt/riscv
+    RISCV           ?= /opt/riscv
 
 **NOTE**: If they are not matched your setup, dont need to edit the common.make file, use enviroment variables to ovlerride as such (assuming bash shell is used). 
 ```
@@ -95,6 +95,7 @@ You should see something like this under *cosim* directory:
 ## Compiling the Xilinx Simulation Libraries ##
 
 **NOTE**: xil_lib is the generated library packages created via vivado 's compile_simlib command.  Not all Vivado / Modelsim version combinations yield the desired result.  See the following notes:
+- When Vivado 2019.1 and Questa 2019.1 is select,the compilation will stop and not generate the appropriate modelsim.ini file, which is required by the co-simulation environemt.
 - When Vivado 2018.3 and Questa 2019.1 (or Quest 10.7c) is selected, the compilation will return with an error in the qdma_v3_0_0 library.  This library is not required for CEP simulation and thus the error can be safely ignored.
 - When Vivado 2018.3 and Question 10.6c is selected, the compilation will complete without error.  However, it is recommended that Questa 2019.1 be used in order to take advantage of optimizations and bug fixes.  
 

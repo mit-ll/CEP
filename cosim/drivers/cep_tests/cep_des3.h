@@ -1,11 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      cep_des3.cc/h
 // Program:        Common Evaluation Platform (CEP)
 // Description:    des3 test for CEP
 // Notes:          
 //************************************************************************
+
 #ifndef cep_des3_H
 #define cep_des3_H
 // ---------------------------

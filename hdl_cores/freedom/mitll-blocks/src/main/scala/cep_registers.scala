@@ -1,10 +1,12 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : cep_registers.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : General Registers for the CEP
 //
+//--------------------------------------------------------------------------------------
 package mitllBlocks.cep_registers
 
 import Chisel._

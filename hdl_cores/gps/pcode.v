@@ -1,6 +1,12 @@
-//
+//************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
+// File Name:      pcode.v
+// Program:        Common Evaluation Platform (CEP)
+// Description:    P-code generator
+//
+//************************************************************************
 module pcode(
            clk, reset, prn_changed, en, sat,
            preg

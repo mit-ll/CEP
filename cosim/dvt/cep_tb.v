@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -459,10 +460,11 @@ module cep_tb;
     end
   endgenerate
 
-   reg 	jtag_jtag_TCK =0; 
-   reg 	jtag_jtag_TMS =0; 
-   reg 	jtag_jtag_TDI =0;
+   wire	jtag_jtag_TCK; 
+   wire	jtag_jtag_TMS; 
+   wire	jtag_jtag_TDI;
    wire jtag_jtag_TDO; 
+   wire [7:0] led;
    
    wire uart_rxd;   pullup (weak1) (uart_rxd);
    wire uart_ctsn;  pullup (weak1) (uart_ctsn);
@@ -572,8 +574,16 @@ module cep_tb;
        .ddr_ddr3_cs_n            (ddr3_cs_n_fpga),
        .ddr_ddr3_dm              (ddr3_dm_fpga),
        .ddr_ddr3_odt             (ddr3_odt_fpga),
-       //
-       .led 			(led),
+       
+       .led_0 			(led[0]),
+       .led_1       (led[1]),
+       .led_2       (led[2]),
+       .led_3       (led[3]),
+       .led_4       (led[4]),
+       .led_5       (led[5]),
+       .led_6       (led[6]),
+       .led_7       (led[7]),
+
        .reset 			(sys_rst || chipReset)
        );
 

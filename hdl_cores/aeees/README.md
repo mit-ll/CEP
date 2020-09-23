@@ -1,4 +1,5 @@
 [//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (SPDX short identifier: MIT)
 
 <p align="center">
    Copyright 2020 Massachusetts Institute of Technology

@@ -1,5 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
+#// SPDX short identifier: MIT
 #//
 #// File Name:      cep_buildChips.make
 #// Program:        Common Evaluation Platform (CEP)
@@ -47,6 +48,7 @@ DUT_VLOG_ARGS           += +define+x1Gb+sg125+x8+den1024Mb
 # -----------------------------------------------------------------------
 #
 ROCKET_DIR	= ${DUT_TOP_DIR}/hdl_cores/freedom/rocket-chip/src/main
+FREEDOM_DIR = ${DUT_TOP_DIR}/hdl_cores/freedom/src/main
 XLNX_IP_DIR     = ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/obj/ip
 BARE_SRC_DIR    = ${SIM_DIR}/drivers/bare
 BARE_OBJ_DIR    = ${SIM_DIR}/drivers/bare
@@ -133,8 +135,12 @@ DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 #
 # created from chisel
 #
-RISCV_FILES	= ${ROCKET_DIR}/resources/vsrc/AsyncResetReg.v 	\
-		  ${ROCKET_DIR}/resources/vsrc/plusarg_reader.v 	
+RISCV_FILES	= ${ROCKET_DIR}/resources/vsrc/AsyncResetReg.v  \
+		  ${ROCKET_DIR}/resources/vsrc/plusarg_reader.v	\
+		  ${ROCKET_DIR}/resources/vsrc/EICG_wrapper.v
+
+FREEDOM_FILES = ${FREEDOM_DIR}/resources/vsrc/AnalogToUInt.v \
+		${FREEDOM_DIR}/resources/vsrc/UIntToAnalog.v
 
 #
 # ==================================
@@ -168,7 +174,7 @@ DUT_XILINX_VSIM_ARGS	= -64 -modelsimini ${XILINX_MODELSIM_INI} ${XILINX_LIBRARY_
 #
 ifeq "$(findstring XILINX,${DUT_VENDOR})" "XILINX"
 DUT_TOP_TB  	  := ${DUT_XILINX_TOP_TB}
-DUT_VERILOG_FLIST := ${DUT_COMMON_FILES} ${RISCV_FILES} ${DUT_XILINX_FILES} ${DUT_XILINX_TOP_FILE}
+DUT_VERILOG_FLIST := ${DUT_COMMON_FILES} ${FREEDOM_FILES} ${RISCV_FILES} ${DUT_XILINX_FILES} ${DUT_XILINX_TOP_FILE}
 DUT_MODULE	  := ${DUT_XILINX_TOP_MODULE}
 DUT_OPT_MODULE	  := ${DUT_XILINX_TOP_MODULE}_opt	
 DUT_VOPT_ARGS	  += ${DUT_XILINX_VOPT_ARGS} 

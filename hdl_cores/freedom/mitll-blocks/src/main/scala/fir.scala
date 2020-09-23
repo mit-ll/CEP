@@ -1,5 +1,6 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : fir.scala
 // Project      : Common Evaluation Platform (CEP)
@@ -8,6 +9,7 @@
 //                is intended to mimic the verilog in the fir_top_wb.v
 //                module.
 //
+//--------------------------------------------------------------------------------------
 
 package mitllBlocks.fir
 

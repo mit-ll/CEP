@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -363,7 +364,7 @@ void icacheCoherency_thr(int id) {
       usleep(50000);
 #ifndef LOCAL_MACHINE      
       asm volatile ("fence r,r"); // flush??
-      //asm volatile ("fence.i"); // flush??      
+//      asm volatile ("fence.i"); // flush??      
 #endif
       newByte = get_selfModCodeValue() ;
     }

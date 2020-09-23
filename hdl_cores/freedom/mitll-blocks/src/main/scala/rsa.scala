@@ -1,10 +1,12 @@
-//
+//--------------------------------------------------------------------------------------
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
 // File         : rsa.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : TileLink interface to the verilog AES core
 //
+//--------------------------------------------------------------------------------------
 package mitllBlocks.rsa
 
 import Chisel._

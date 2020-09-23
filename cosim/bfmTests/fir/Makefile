@@ -1,5 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
+#// SPDX short itentifier: MIT
 #//
 #// File Name:      
 #// Program:        Common Evaluation Platform (CEP)
@@ -27,4 +28,3 @@ all: .vrun_flag
 # override anything here before calling the common file
 #
 include ${BLD_DIR}/common.make
-

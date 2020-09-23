@@ -1,16 +1,16 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
 //
-// File Name:      cep_md5.v
+// File Name:      md5.v
 // Program:        Common Evaluation Platform (CEP)
-// Description:    md5 wrapper
-// Notes:          
+// Description:    MD5 wrapper
+// Notes:          The actual core expects input in LE format and output 
+//                 is already in BE format. 
+//                 This module is to make the inout/output conform to 
+//                 BigEndian format (standardized from CEP perspective)
+//
 //************************************************************************
-
-//
-// The actual core expects input in LE format and output is already in BE format. (not sure why it does that :-( )
-// This module is to make the inout/output conform to BigEndian format (standardized from CEP perspective)
-//
 module md5
   (
    input 	  clk, // input clock

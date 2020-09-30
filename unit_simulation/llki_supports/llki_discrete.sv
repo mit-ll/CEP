@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      llki_discrete.sv
 // Program:        Common Evaluation Platform (CEP)
@@ -136,9 +137,14 @@ module llki_discrete_slave #(parameter llki_s MY_STRUCT)
 	      if (counter == 10) begin // FIXME!!!! delay some cycles based on attributes before assert ready
 		 if (keyNum == MY_STRUCT.key_size) begin
 		    llki.key_complete   <= 1;
-		    //synthesis translate_off		    
+		    //synthesis translate_off
+		    `ifdef CADENCE
+		    $displayh("%m: Received struct=%h",llki.rx_key_s.key[0]);
+		    $displayh("%m: Expected struct=%h",MY_STRUCT.key[0]);
+		    `else
 		    $displayh("%m: Received struct=%p",llki.rx_key_s);
 		    $displayh("%m: Expected struct=%p",MY_STRUCT);		    
+		    `endif
 		    //synthesis translate_on		    
 		 end
 		 llki.key_ready      <= 1;
@@ -181,7 +187,11 @@ module llki_discrete_master
    //
    task unlockReq(output errCnt);
       begin
+`ifndef CADENCE	 
 	 $displayh("=== Running Unlocking Sequence for core_id=%0d : %p ===", llki.core_id,llki_rom[llki.core_id]);
+`else
+	 $displayh("=== Running Unlocking Sequence for core_id=%0d : %h ===", llki.core_id,llki_rom[llki.core_id].key[0]);	 
+`endif	 
 	 // access the ROM to get # of keys
 	 for (int i=0;i<llki_rom[llki.core_id].key_size;i++) begin
 	    $display("%m: Loading key%0d = 0x%x to core_id=%0d",i,llki_rom[llki.core_id].key[i],llki.core_id);	    

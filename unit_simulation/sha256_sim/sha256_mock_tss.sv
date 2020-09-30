@@ -1,12 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      sha256_mock_tss.sv
 // Program:        Common Evaluation Platform (CEP)
 // Description:    sha256 wrapper with LLKI supports
 // Notes:          
 //************************************************************************
-
+`timescale 1ns/1ns
 
 //
 // SHA256 with LLKI wrapper

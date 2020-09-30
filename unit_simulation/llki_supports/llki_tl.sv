@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      llki_tl.sv
 // Program:        Common Evaluation Platform (CEP)
@@ -10,6 +11,8 @@
 
 `include "llki_struct.h"
 
+import tlul_pkg::* ;
+   
 //
 //
 //
@@ -30,8 +33,6 @@ interface tlul_if();
    //
 endinterface // tlul_if
 
-import tlul_pkg::* ;
-   
 //
 //  Acts as Surrogate Root of Trust (SRoT)!!
 //

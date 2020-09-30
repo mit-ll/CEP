@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      llki_struct.h
 // Program:        Common Evaluation Platform (CEP)
@@ -25,10 +26,11 @@ typedef enum { NoOp, LoadKeyReq, ClearKeyReq, KeyStatusReq, LoadKeyAck, ClearKey
 typedef bit [63:0] keyUnit;
 typedef struct packed {
   int 	  core_id;
-  int 	  attributes;        // place holder
-  int 	  key_size;          // in unit of 64-bits
-  longint base;              // used by TL to access the core's TL logic to unlock
-  keyUnit [`MAX_KEY] key ;   // contains the keys. Word[0] = MSB, word[size-1]=LSB (big endian)
+  int 	  attributes;        	// place holder
+  int 	  key_size;          	// in unit of 64-bits
+  longint base;              	// used by TL to access the core's TL logic to unlock
+  // Cadence tools can't handle [`MAX_KEY]
+  keyUnit [0:`MAX_KEY-1] key ;  // contains the keys. Word[0] = MSB, word[size-1]=LSB (big endian)
 } llki_s;
 
 //

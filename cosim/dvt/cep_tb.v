@@ -644,10 +644,11 @@ module cep_tb;
 	 defparam ddr3.DEBUG=0;
 	 defparam ddr3.check_strict_mrbits=0;
 	 defparam ddr3.check_strict_timing=0;
-	 defparam ddr3.MEM_BITS=14;
+	 defparam ddr3.MEM_BITS= 16; // some how the new RISC (v2.6) has a lot more writes (14->16)	 	 
 	 defparam ddr3.TWLS = 2; // to remove the WARNING violation which can't be turned off from outside
 	 defparam ddr3.TWLH = 2; // to remove the WARNING violation   
-
+	 // for RHEL7: access beyond 1G ????
+	 defparam ddr3.STOP_ON_ERROR = 0;
 	 //
 	 // Write Monitor
 	 //

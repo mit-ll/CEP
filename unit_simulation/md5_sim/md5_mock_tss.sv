@@ -1,12 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      md5_mock_tss.sv
 // Program:        Common Evaluation Platform (CEP)
 // Description:    md5 wrapper with LLKI supports
 // Notes:          
 //************************************************************************
-
+`timescale 1ns/1ns
 
 //
 // MD5 with LLKI wrapper

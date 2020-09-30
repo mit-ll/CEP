@@ -1,11 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      FIR_filter_mock_tss.sv
 // Program:        Common Evaluation Platform (CEP)
 // Description:    FIR_filter wrapper with LLKI supports
 // Notes:          
 //************************************************************************
+`timescale 1ns/1ns
 
 
 //

@@ -196,6 +196,7 @@ int load_mainMemory(char *imageF, uint32_t ddr3_base, int srcOffset, int destOff
   for (i=0;i<4;i++) {
     errCnt += clear_printf_mem(i);
   }
+
   // turn back on
   DUT_WRITE_DVT(DVTF_PAT_HI, DVTF_PAT_LO, 1);
   DUT_WRITE_DVT(DVTF_SET_IPC_DELAY, DVTF_SET_IPC_DELAY, 1);

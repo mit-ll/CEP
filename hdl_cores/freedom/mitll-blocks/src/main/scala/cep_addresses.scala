@@ -11,7 +11,7 @@ package mitllBlocks.cep_addresses
 
 object CEPVersion {
 	val CEP_MAJOR_VERSION		= 0x02
-	val CEP_MINOR_VERSION		= 0x60
+	val CEP_MINOR_VERSION		= 0x61
 }
 
 object CEPBaseAddresses {

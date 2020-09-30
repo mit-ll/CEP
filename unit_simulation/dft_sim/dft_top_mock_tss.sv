@@ -1,12 +1,13 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX License Identifier: MIT
 //
 // File Name:      dft_top_mock_tss.sv
 // Program:        Common Evaluation Platform (CEP)
 // Description:    dft_top wrapper with LLKI supports
 // Notes:          
 //************************************************************************
-
+`timescale 1ns/1ns
 
 //
 // DFT with LLKI wrapper

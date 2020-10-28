@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -26,10 +26,10 @@
 //
 // Path to cores
 //
-`define CORE0_PATH    fpga.topDesign.topMod.tile
-`define CORE1_PATH    fpga.topDesign.topMod.tile_1
-`define CORE2_PATH    fpga.topDesign.topMod.tile_2
-`define CORE3_PATH    fpga.topDesign.topMod.tile_3
+`define CORE0_PATH    cep_tb.fpga.topDesign.topMod.tile
+`define CORE1_PATH    cep_tb.fpga.topDesign.topMod.tile_1
+`define CORE2_PATH    cep_tb.fpga.topDesign.topMod.tile_2
+`define CORE3_PATH    cep_tb.fpga.topDesign.topMod.tile_3
 
 `define CORE0_TL_PATH    fpga.topDesign.topMod.tile.tl_master
 `define CORE1_TL_PATH    fpga.topDesign.topMod.tile_1.tl_master
@@ -37,7 +37,18 @@
 `define CORE3_TL_PATH    fpga.topDesign.topMod.tile_3.tl_master
 `define FPGA_RESET_PATH  fpga.topDesign.wrangler
 `define RESET_PATH       fpga.topDesign.wrangler
-`define FIR_PATH         fpga.topDesign.topMod.fir   
+`define FIR_PATH         fpga.topDesign.topMod.fir
+
+`define CORE0_PC      `CORE0_PATH.core.coreMonitorBundle_pc
+`define CORE1_PC      `CORE1_PATH.core.coreMonitorBundle_pc
+`define CORE2_PC      `CORE2_PATH.core.coreMonitorBundle_pc
+`define CORE3_PC      `CORE3_PATH.core.coreMonitorBundle_pc
+
+`define CORE0_DRIVER  cep_tb.genblk4[0].driver
+`define CORE1_DRIVER  cep_tb.genblk4[1].driver
+`define CORE2_DRIVER  cep_tb.genblk4[2].driver
+`define CORE3_DRIVER  cep_tb.genblk4[3].driver
+
 //
 // in bare metal
 //

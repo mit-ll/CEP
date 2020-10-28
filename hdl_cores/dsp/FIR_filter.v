@@ -240,8 +240,6 @@ module FIR_filter_firBlock_right (
     .Y(multProducts)
   );
 
-;
-
   assign Y_in = multProducts;
 
   //FIR_filter_firBlock_right area estimate = 3885.23530779558;

@@ -45,7 +45,8 @@ while (<FP>) {
 	$newMod  = $1 . "_mock_tss";
 	print(OF "llki_discrete_if discreteIf();\n");
 	# use buffer_clock and reset since core might have active-low reset!!!
-	print(OF "llki_pp_mock #(.MY_ID(MY_STRUCT.core_id)) llki_pp(.clk(buffer_clock), .rst(buffer_reset),.discrete(discreteIf.master),.tlul(tlul));\n");
+	# use top level instead of buffer_clock because without TL MOnitor, TLBuffer has no clock/reset inputs
+	print(OF "llki_pp_mock #(.MY_ID(MY_STRUCT.core_id)) llki_pp(.clk(clock), .rst(reset),.discrete(discreteIf.master),.tlul(tlul));\n");
 	$newline =~ s/blackbox \(/blackbox \( \.llki\(discreteIf.slave\), /g;
 	$newline =~ s/$modName/$newMod #(.MY_STRUCT(MY_STRUCT))/;	
     }

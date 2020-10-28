@@ -40,8 +40,10 @@ extern "C" {
   int load_mainMemory(char *imageF, uint32_t ddr3_base, int srcOffset, int destOffset, int backdoor_on, int verify);
   int clear_printf_mem(int coreId);
   int set_status(int errCnt, int testId);
+  void set_pass(void);
+  void set_fail(void);
   void set_cur_status(int status);
-  
+  int check_PassFail_status(int coreMask,int maxTimeOut);
   //
   void cep_raw_write(uint64_t pAddress, uint64_t pData);
   uint64_t cep_raw_read(uint64_t pAddress);

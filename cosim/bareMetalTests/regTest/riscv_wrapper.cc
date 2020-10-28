@@ -45,6 +45,13 @@ void thread_entry(int cid, int nc)
   // Done
   //
   set_status(errCnt,testId[coreId]);
+  /*
+  if (errCnt) {
+    set_pass();
+  } else {
+    set_fail();
+  }
+  */
   //
   // Stuck here forever...
   //

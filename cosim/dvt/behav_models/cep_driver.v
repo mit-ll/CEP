@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -495,7 +495,6 @@ endtask // READ32_64_TASK
    always @(posedge dvtFlags[`DVTF_FIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT] = 1;
    always @(negedge dvtFlags[`DVTF_FIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT] = 0;   
    //
-
    always @(posedge dvtFlags[`DVTF_GET_CORE_STATUS]) begin
       if      (dvtFlags[1:0] == 0) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core0_status;
       else if (dvtFlags[1:0] == 1) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core1_status;
@@ -504,5 +503,111 @@ endtask // READ32_64_TASK
       //`logI("Core status=%x",dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO]);
       dvtFlags[`DVTF_GET_CORE_STATUS]=0;
    end
+
+   //
+   // For RISC-TESTS
+   //
+`ifdef RISCV_TESTS
+   wire pcPass, pcFail;
+   reg 	PassStatus=0;
+   reg 	FailStatus=0;
+   reg 	checkToHost=0;
+   
+   //
+   reg [63:0] passFail [3:0] = '{default:0};
+   //
+   // 0 = pass, 1=fail, 2=finish
+   //
+   // ONLY need core0 to do this
+   initial begin
+      $readmemh("PassFail.hex",passFail);
+      `logI("PassFail=%x %x %x",passFail[0],passFail[1],passFail[2]);
+   end
+   //
+   always @(posedge dvtFlags[`DVTF_GET_CORE_RESET_STATUS]) begin
+      case (MY_LOCAL_ID)      
+	0: dvtFlags[`DVTF_PAT_LO] = `CORE0_PATH.core.reset;
+	1: dvtFlags[`DVTF_PAT_LO] = `CORE1_PATH.core.reset;
+	2: dvtFlags[`DVTF_PAT_LO] = `CORE2_PATH.core.reset;
+	3: dvtFlags[`DVTF_PAT_LO] = `CORE3_PATH.core.reset;
+      endcase
+      dvtFlags[`DVTF_GET_CORE_RESET_STATUS] = 0; // self-clear
+   end
+   always @(posedge dvtFlags[`DVTF_GET_PASS_FAIL_STATUS]) begin
+      dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = {FailStatus,PassStatus};
+      dvtFlags[`DVTF_GET_PASS_FAIL_STATUS] = 0; // self-clear
+   end
+   // timeout ! get out
+   always @(posedge dvtFlags[`DVTF_SET_PASS_FAIL_STATUS]) begin
+      PassStatus = 0;
+      FailStatus = 1;
+      dvtFlags[`DVTF_SET_PASS_FAIL_STATUS] = 0; // self-clear
+   end
+   //
+   generate
+      if (MY_LOCAL_ID == 0) begin
+	 always @(posedge pcPass or posedge  pcFail) begin
+	    if (`CORE0_PATH.core.reset == 0) begin
+	       `logI("C0 Pass/fail Detected!!!.. Put it to sleep");
+	       PassStatus = pcPass;
+	       FailStatus = pcFail;
+	       repeat (20) @(posedge clk);
+	       //
+	       force `CORE0_PATH.core.reset =1;
+	    end
+	 end
+	 assign pcPass = (`CORE0_PC[30:0] === passFail[0][30:0]) ||
+			 ((`CORE0_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||		 
+			 ((`CORE0_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);
+	 
+	 assign pcFail = (`CORE0_PC[30:0] === passFail[1][30:0]);
+      end
+      else if (MY_LOCAL_ID == 1) begin
+	 always @(posedge pcPass or posedge  pcFail) begin
+	    if (`CORE1_PATH.core.reset == 0) begin	    
+	       `logI("C1 Pass/fail Detected!!!.. Put it to sleep");
+	       PassStatus = pcPass;
+	       FailStatus = pcFail;
+	       repeat (20) @(posedge clk);	       
+	       force `CORE1_PATH.core.reset =1;
+	    end
+	 end
+	 assign pcPass = (`CORE1_PC[30:0] === passFail[0][30:0]) ||
+			 ((`CORE1_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
+			 ((`CORE1_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);
+	 assign pcFail = (`CORE1_PC[30:0] === passFail[1][30:0]);
+      end
+      else if (MY_LOCAL_ID == 2) begin
+	 always @(posedge pcPass or posedge  pcFail) begin
+	    if (`CORE2_PATH.core.reset == 0) begin	    
+	       `logI("C2 Pass/fail Detected!!!.. Put it to sleep");
+	       PassStatus = pcPass;
+	       FailStatus = pcFail;
+	       repeat (20) @(posedge clk);     
+	       force `CORE2_PATH.core.reset =1;
+	    end
+	 end
+	 assign pcPass = (`CORE2_PC[30:0] === passFail[0][30:0]) || 
+			 ((`CORE2_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
+			 ((`CORE2_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);	 
+	 assign pcFail = (`CORE2_PC[30:0] === passFail[1][30:0]);
+      end
+      else if (MY_LOCAL_ID == 3) begin
+	 always @(posedge pcPass or posedge  pcFail) begin
+	    if (`CORE3_PATH.core.reset == 0) begin	    
+	       `logI("C3 Pass/fail Detected!!!.. Put it to sleep");
+	       PassStatus = pcPass;
+	       FailStatus = pcFail;
+	       repeat (20) @(posedge clk);     
+	       force `CORE3_PATH.core.reset =1;
+	    end
+	 end
+	 assign pcPass = (`CORE3_PC[30:0] === passFail[0][30:0]) || 
+			 ((`CORE3_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0)) |
+			 ((`CORE3_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0) && checkToHost);	 
+	 assign pcFail = (`CORE3_PC[30:0] === passFail[1][30:0]);
+      end
+   endgenerate
+`endif //  `ifdef RISCV_TESTS
    
 endmodule // qpic_oc12

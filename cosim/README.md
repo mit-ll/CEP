@@ -1,15 +1,18 @@
 [//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (SPDX short identifier: BSD-2-Clause)
 
 # README for CEP co-simulation environment
 
 This SW/HW co-simulation evironment has been developed to support "chip-level" simulation of the CEP.  
 
-Three environments are supported:
+Several environments are supported:
 
-* Bus Functional Model (BFM)
-* Bare Metal
-* CEP diagnostics running on Linux.  Build and installation instructions can be found in: [../README.md](../README.md)
-
+* Bus Functional Model Mode (BFM)
+* Bare Metal Mode
+* ISA Tests under Bare Metal (ported and re-used from riscv-tests).
+* Linux Mode (tests run on xilinx VC707 development card).  Build and installation instructions can be found in: [../README.md](../README.md)
+* Benchmarking on Linux (TBA)
+* Cycle-accurate and translation-level accurate unit level simulations.
 
 ## Benefits: ##
 
@@ -33,7 +36,6 @@ Three environments are supported:
 
 * Open source codebase
 
-
 ## Pre-requisites ##
 
 - Vivado and Modelsim have been installed (tested versions are listed in [../README.md](../README.md))
@@ -41,6 +43,13 @@ Three environments are supported:
 
 Assuming you already have the CEP-master (version 2.0 or later) sandbox pulled from git and went thru the vivado build successfully. In other words, all the design files (Verilog/VHDL files) are all created.
 
+## Issues ##
+   1. Release 2.7: There are currently 3 tests that fail on RHEL7 machines using new RISC-V toolchain (with gcc-7.x or gcc-5.x) and pass under Ubuntu (with gcc 5.4.0)
+```
+    bareMetalTests/cacheCoherence
+    isaTests/rv64mi-p-access 
+	  isaTests/rv64ud-p-ldst
+```
 
 ## Verify environment settings and tools: ##
 
@@ -78,7 +87,10 @@ You should see something like this under *cosim* directory:
         ddr3                <-- same memory test to run on 4 cores
         printfTest          <-- verify printf implementation in bare metal via main memory
         cacheCoherence      <-- cache coherency test. Cache blocks bouncing around all cores.
-        
+
+    isaTests		            <-- Incorporate ISA test suite from rocket-chips. See "Building ISA tests for 
+                                simulation section" for details
+    
     bin                     <-- the rest of the directories below are there to
     drivers                     support cosim environment
     dvt
@@ -95,7 +107,7 @@ You should see something like this under *cosim* directory:
 ## Compiling the Xilinx Simulation Libraries ##
 
 **NOTE**: xil_lib is the generated library packages created via vivado 's compile_simlib command.  Not all Vivado / Modelsim version combinations yield the desired result.  See the following notes:
-- When Vivado 2019.1 and Questa 2019.1 is select,the compilation will stop and not generate the appropriate modelsim.ini file, which is required by the co-simulation environemt.
+- When Vivado 2019.1 and Questa 2019.1 is selected ,the compilation will stop and not generate the appropriate modelsim.ini file, which is required by the co-simulation environemt.
 - When Vivado 2018.3 and Questa 2019.1 (or Quest 10.7c) is selected, the compilation will return with an error in the qdma_v3_0_0 library.  This library is not required for CEP simulation and thus the error can be safely ignored.
 - When Vivado 2018.3 and Question 10.6c is selected, the compilation will complete without error.  However, it is recommended that Questa 2019.1 be used in order to take advantage of optimizations and bug fixes.  
 
@@ -281,6 +293,94 @@ During simulation, you will notice each of the core will print out its PC (Progr
 Also, there are riscv_wrapper.dump (created from objdump to help track the PC), riscv_wrapper.elf (to preload to main memory) and riscv_wrapper.hex files are created by Make under each test directory.
 
 
+## Building ISA tests for simulation ##
+
+As of version 2.7 or later, ISA (Instruction-Set-Architecture) tests are added to simulation to improve overall chip coverages.
+
+**All ISA tests are re-used from https://github.com/riscv/riscv-tests.git repository**. 
+
+**First**: Refer to **software/riscv-tests/README.md** for detailed explanations about how those ISA tests are set up and terminologies used through out this section. Or check out the link here: https://riscv.org/wp-content/uploads/2015/01/riscv-testing-frameworks-bootcamp-jan2015.pdf
+
+**Issue with TVM='p' & 'pm'**: These 2 modes are setup to run in physical address only condition. Eventhough the riscv-tests/README.md mentions TVM='pm' mode is supported but the make infrastructure NOT really set up the build for it. In order to improve coverage, we need to be able to run tests on 4 cores. Therefore, we need to do a minor edit to change TVM='p' (virtual memory is disabled, only core 0 boots up) to 'pm' (virtual memory is disabled, all cores boot up)
+
+Edit the file **<CEP_ROOT>/software/riscv-tests/env/p/riscv_test.h** and look for the lines below:
+
+```
+#define RISCV_MULTICORE_DISABLE                                         \
+  csrr a0, mhartid;                                                     \
+  1: bnez a0, 1b
+  
+```
+
+This define is used to basically do a check and only allow core0 run the test. Other cores will fail if they run. We need to disable this check by removing the **bnez** line  as such:
+
+```
+#define RISCV_MULTICORE_DISABLE                                         \
+  csrr a0, mhartid;                                                     \
+
+
+// Remove/comment out this line
+//  1: bnez a0, 1b
+
+```
+Save the file.
+
+
+**Issue with TVM='v'**: Similar problem here, the tests are setup for core0 only, others cores's jobs just do interference to cause cache misses. For simulation, we need to allow any cores to run the same tests. Also, we dont need to run all the rv64*-v-* tests, since, they are the same as when TVM='p' but one run in virtual address mode and the other in strickly physical address mode. The goals for TVM='v' tests are to improve the coverages for page tables (page faults), cache hits/misses.
+
+Edit the file **<CEP_ROOT>/software/riscv-tests/env/v/vm.c** and look for the lines below:
+
+```
+  if (read_csr(mhartid) > 0)
+    coherence_torture();
+```
+
+Remove/comment out that 2 lines and save the file.
+
+**Issue with TVM='pt'**: Not supported for now.
+
+Next edit is **OPTIONAL** (only do it if you know what you are doing :-): this edit is to add switches to the build process to including source information in the object dump file for PC's tracing. It is helpful in debugging failed test(s). Be aware, the ELF/dump files will be much bigger!! Only do this if you intend to include the source codes in the object dump file. In addition, RISCV-core will behave differently due to GDB is not supported in simulation when it taking a page fault (dud!). So only do this **edit**  to obtain the object dump file for tracing.
+
+Edit file **<CEP_ROOT>/software/riscv-tests/isa/Makefile**, look for the lines as such:
+
+```
+RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump  --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data
+```
+
+And change them to match the below:
+
+```
+RISCV_GCC_OPTS ?= -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g
+RISCV_OBJDUMP ?= $(RISCV_PREFIX)objdump  -S -C -d -l -x --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data
+```
+
+Save the Makefile.
+
+And now you are ready to do the build as follows
+
+```sh
+  cd <CEP_ROOT>/software/riscv-tests
+  autoconf
+  ./configure	
+  make isa      <-- only need to make ISA, without argument benchmark tests will be included (benchmarks have NOT be ported)
+```
+
+The make command above will compile **mostly** assembly tests in the directory **isa** under it. These are the ones will be re-used to run in our simulation. **NOTE**: only RV64*-p/v-* tests are used since the cores are 64-bit cores. 
+
+**Note2**: As mentioned earlier, the purpose of this is to allow all cores to be able to run simulation to improve coverages. However, some tests are explicitely written to run on core0 only, some tests MUST be run as single thread (only 1 core active at a time), some tests will allow all cores to run in parallel. With that in mind, Makefile under **cosim/isaTests** is setup to take that into account by seperating them into 3 categories and simulate them accordingly.
+
+Next step is to port and prepare those ISA tests above for simulation.
+
+```
+  cd <CEP_ROOT>/cosim/isaTests
+  make isaTests	 <-- clean old (if any) and prepare all new ISA tests for simulation (take a while.. Be patient)
+```
+
+**Finally**: There are a lots of magic happen under-the-hood for this type of tests since they are originally written such that their output are used to compare against golden output (from Spike/Verilator). We dont do that here. Therefore, in simulation, hooks are put in place to check the **core's PC** (Program Counter) to see if they enter **pass** or **fail** section. In order to do this, during test preparation (**make isaTests**), a perl script is called to look into the deassembled code (<test>.dump file) for given test to find where the **pass/fail** locations are, respectively. These locations are needed by the testbench during runtime to determine if the given test is passing or failing.
+
+And we are now done for this ISA porting.
+
 ## How to add your new test for regression ##
 
     Open ../Makefile (one level up where your test directory is located). 
@@ -346,6 +446,7 @@ make PROFILE=1      <-- run simulation with profile capturing. This helps identi
 
 make COVERAGE=1     <-- run simulation with coverage turned on. Coverage data are saved in ../coverage directory where they can 
                 be merged together for analysis (via make merge)
+make CADENCE=1      <-- run simulation targetting Cadence XCellium on RHEL7
 ```
 
 * By default, under each test directory, one file will be created **if and only if** it is not yet there: **vsim.do**. It is used when **vsim** command is called to control the wave capturing.. If there is a need to override, users are free to modify and change it to anyway to fit the needs. Makefile will not overwrite it as long as it is there. 
@@ -354,9 +455,9 @@ make COVERAGE=1     <-- run simulation with coverage turned on. Coverage data ar
 
 # Food for thought #
 
- * At the time of this writing, running regression is done one test at a time on the same machine, serially. It takes about 10 hour+ to run all tests. As more tests are added or moving the platform to support ASIC, there will be hundreds of tests added to verify full coverage of the design before any fabrication attempted. Running serially is not do-able as turn around time is key during physical design and verification process for ASIC. This requires moving to support multiple machines (as on a cloud or grid/networks) where tests can be batched to run concurrently...The Makefile structure already takes that in mind and supports it. The requirements are the grid setup where all the machines on the networks need to be configured identically w.r.t where the tools are, all disks are mounted and visible... Not sure MIT LL support such a thing due to security??
+ * At the time of this writing, running regression is done one test at a time on the same machine, serially. It takes about day+ to run all tests. As more tests are added or moving the platform to support ASIC, there will be hundreds of tests added to verify full coverage of the design before any fabrication attempted. Running serially is not do-able as turn around time is key during physical design and verification process for ASIC. This requires moving to support multiple machines (as on a cloud or grid/networks) where tests can be batched to run concurrently...The Makefile structure already takes that in mind and supports it. The requirements are the grid setup where all the machines on the networks need to be configured identically w.r.t where the tools are, all disks are mounted and visible... Not sure MIT LL support such a thing due to security??
  
- * The environment is also capable of supporting distributed simulation where multiple large blocks (multi corer per board, big large ASIC, etc...) can be spawn off to run on different machines (or physical cores) to speed up simulation. However, this requires more simulation license usage and some manual system splitting during test bench construction.
+ * The environment is also capable of supporting distributed simulation where multiple large blocks (multi corer per board, big large ASIC, etc...) can be spawn off to run on different machines (or physical cores) to speed up simulation. However, this requires more simulation license usages and some manual system splitting during test bench construction.
  
  * The environment also can be expanded to support socket communication instead of shared memory such that the DUT can be run off an emulated system (Amazon FPGA cloud??) to get more performance. This should be able to support booting Linux OS for higher level verification.
  

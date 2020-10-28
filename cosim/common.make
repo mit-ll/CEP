@@ -1,6 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
-#// SPDX short identifier: MIT
+#// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      common.make
 #// Program:        Common Evaluation Platform (CEP)
@@ -42,7 +42,7 @@ C2C_CAPTURE     = 0
 # Tools
 # can be override with env. variables
 #
-VIVADO_PATH	?= /opt/Xilinx/Vivado/2019.1
+VIVADO_PATH	?= /opt/Xilinx/Vivado/2018.3
 SIMULATOR_PATH	?= /opt/questa-2019.1/questasim/bin
 
 #
@@ -151,7 +151,7 @@ DUT_COVERAGE_PATH = ${BLD_DIR}/coverage
 ifeq (${COVERAGE},1)
 #DUT_VSIM_ARGS     += -notoggleints -testname ${TEST_SUITE}_${TEST_NAME} -coverstore ${DUT_COVERAGE_PATH} -coverage
 DUT_VSIM_ARGS     += -coverage 
-DUT_VLOG_ARGS     += +cover=sbceft +define+COVERAGE
+DUT_VLOG_ARGS     += +cover=sbceft +define+COVERAGE 
 DUT_VOPT_ARGS     += +cover=sbceft
 endif
 
@@ -166,6 +166,8 @@ DUT_VSIM_ARGS	  += -cpppath ${GCC}
 include ${SIM_DIR}/cep_buildChips.make
 
 #
+COMMON_CFLAGS	        += -DRISCV_WRAPPER=\"${RISCV_WRAPPER}\"
+#
 # run the simulation
 #
 vsimOnly: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE}
@@ -179,7 +181,7 @@ USE_GDB       = 0
 
 VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -sv_lib ${DLL_DIR}/libvpp -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log"
 
-.vrun_flag: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER}
+.vrun_flag: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
 ifeq (${COVERAGE},1)
 	@if test ! -d ${DUT_COVERAGE_PATH}; then	\
 		mkdir  ${DUT_COVERAGE_PATH};		\
@@ -427,6 +429,52 @@ endif
 ${BLD_DIR}/${CUR_CONFIG}:
 	-rm -f  ${BLD_DIR}/.CONFIG_*
 	touch $@
+
+
+#
+# -------------------------------------------
+# ISA Auto test generation
+# -------------------------------------------
+#
+#
+# Individual test
+#
+makeTest: ${BLD_DIR}/${TEST_NAME}${SFX}/${TEST_NAME}${SFX}.dump
+	@echo "Done"
+
+# override at command line ONLY!!!
+SINGLE_THREAD=0
+VIRTUAL_MODE=0
+PASS_IS_TO_HOST=0;
+
+${BLD_DIR}/${TEST_NAME}${SFX}/${TEST_NAME}${SFX}.dump : ${RISCV_TEST_DIR}/isa/${TEST_NAME}
+	@if test ! -d ${BLD_DIR}/${TEST_NAME}${SFX}; then	\
+		mkdir  ${BLD_DIR}/${TEST_NAME}${SFX}; \
+	fi
+	@cp -f ${BLD_DIR}/testTemplate/Makefile        ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@cp -f ${BLD_DIR}/testTemplate/*.h             ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@cp -f ${BLD_DIR}/testTemplate/c_module.cc     ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@rm -f ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+ifeq (${SINGLE_THREAD},1)
+	@echo "#define SINGLE_THREAD_ONLY" >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+endif
+ifneq (${SINGLE_CORE_ONLY},)
+	@echo "#define SINGLE_CORE_ONLY ${SINGLE_CORE_ONLY}" >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+endif
+ifeq (${VIRTUAL_MODE},1)
+	@echo "#define MAX_TIMEOUT 200"    >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+	@echo "#define VIRTUAL_MODE"       >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+else
+	@echo "#define MAX_TIMEOUT 200"    >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+endif
+ifeq (${PASS_IS_TO_HOST},1)
+	@echo "#define PASS_IS_TO_HOST"    >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+endif
+	@cat ${BLD_DIR}/testTemplate/c_dispatch.cc >>        ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+	@cp -f ${RISCV_TEST_DIR}/isa/${TEST_NAME}      ${BLD_DIR}/${TEST_NAME}${SFX}/riscv_wrapper.elf
+	@cp -f ${RISCV_TEST_DIR}/isa/${TEST_NAME}.dump ${BLD_DIR}/${TEST_NAME}${SFX}/${TEST_NAME}${SFX}.dump
+	@${BIN_DIR}/createPassFail.pl ${RISCV_TEST_DIR}/isa/${TEST_NAME}.dump ${BLD_DIR}/${TEST_NAME}${SFX}/PassFail.hex
+
 #
 # -------------------------------------------
 # clean
@@ -438,7 +486,8 @@ clean: cleanAll
 cleanAll:
 	-rm -rf ${SIM_DIR}/*/*_work ${SIM_DIR}/*/.*work_dependList.make
 	-rm -rf ${SIM_DIR}/*/*.o* ${SIM_DIR}/*/*/*.bo* ${SIM_DIR}/*/*/*.o*
-	-rm -rf ${SIM_DIR}/*/*/*.elf ${SIM_DIR}/*/*/status
+	-rm -rf ${SIM_DIR}/*/*/status
+	-rm -rf ${SIM_DIR}/bareMetalTests/*/*.elf ${SIM_DIR}/bareMetalTests/*/*.dump
 	-rm -rf ${SIM_DIR}/*/.build*
 	-rm -rf ${LIB_DIR}/*/*.o* ${LIB_DIR}/*.a ${LIB_DIR}/*/*.so
 	-rm -rf ${SIM_DIR}/*/.*_dependList* ${SIM_DIR}/*/.is_checked

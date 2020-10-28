@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -16,6 +16,7 @@
 `include "v2c_cmds.incl"
 `include "cep_adrMap.incl"
 `include "cep_hierMap.incl"
+`include "config.v"
 module v2c_top
   (
    input      clk,
@@ -170,5 +171,103 @@ endtask // READ32_64_TASK
       dvtFlags[`DVTF_SET_IPC_DELAY] = 0;
    end
 
+   //
+   // This is to handle singel threading core: one core active at a time
+   //
+`ifdef RISCV_TESTS
+   initial begin
+      `logI("==== ISA RISCV_TESTS is active ===");      
+   end
+   int virtualMode = 0;
+   always @(posedge dvtFlags[`DVTF_SET_VIRTUAL_MODE]) begin
+//      virtualMode = 1;
+//      `logI("==== Enable Virtual Mode");
+      dvtFlags[`DVTF_SET_VIRTUAL_MODE]=0;
+   end
+   //
+   int curCore = 0;
+   reg singelThread = 0;
+   reg [3:0] coreActiveMask = 0;
+   always @(posedge dvtFlags[`DVTF_FORCE_SINGLE_THREAD]) begin
+      coreActiveMask = dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] ;
+      singelThread = 1;
+      `logI("==== Force-ing Single Thread coreMask=0x%x===",coreActiveMask);
+      dvtFlags[`DVTF_FORCE_SINGLE_THREAD] =0;
+   end
+   always @(posedge dvtFlags[`DVTF_PASS_IS_TO_HOST]) begin
+      `CORE0_DRIVER.checkToHost = 1;
+      `CORE1_DRIVER.checkToHost = 1;
+      `CORE2_DRIVER.checkToHost = 1;
+      `CORE3_DRIVER.checkToHost = 1;
+      dvtFlags[`DVTF_PASS_IS_TO_HOST] = 0; // self-clear
+   end   
+   
+   task ResetAllCores;
+      begin
+	 force `CORE0_PATH.reset = 1;
+	 force `CORE1_PATH.reset = 1;
+	 force `CORE2_PATH.reset = 1;
+	 force `CORE3_PATH.reset = 1;
+	 repeat (2) @(posedge clk);
+	 release `CORE0_PATH.reset;	 
+	 release `CORE1_PATH.reset;	 
+	 release `CORE2_PATH.reset;	 
+	 release `CORE3_PATH.reset;	 
+      end
+   endtask // for
+   
+   always @(posedge singelThread) begin
+      // put all core in reset.
+      force `CORE0_PATH.core.reset =1;
+      force `CORE1_PATH.core.reset =1;
+      force `CORE2_PATH.core.reset =1;
+      force `CORE3_PATH.core.reset =1;
+      // wait for calibration complete
+      @(posedge cep_tb.program_loaded);
+      //
+      for (int c=0;c<4;c=c+1) begin
+	 if (coreActiveMask[c]) begin
+	    case (c)
+	      0: begin
+		 `logI("Releasing CORE0 Reset....");
+		 //cep_tb.putback_memory_used();
+		 if (virtualMode) begin
+		    ResetAllCores();
+		 end
+		 release `CORE0_PATH.core.reset;		 
+		 @(posedge (`CORE0_DRIVER.PassStatus || `CORE0_DRIVER.FailStatus));
+	      end
+	      1: begin
+		 `logI("Releasing CORE1 Reset....");	
+		 //cep_tb.putback_memory_used();
+		 if (virtualMode) begin
+		    ResetAllCores();
+		 end		 
+		 release `CORE1_PATH.core.reset;
+		 @(posedge (`CORE1_DRIVER.PassStatus || `CORE1_DRIVER.FailStatus));
+	      end 
+	      2: begin
+		 `logI("Releasing CORE2 Reset....");	
+		 //cep_tb.putback_memory_used();
+		 if (virtualMode) begin
+		    ResetAllCores();
+		 end		 
+		 release `CORE2_PATH.core.reset;
+		 @(posedge (`CORE2_DRIVER.PassStatus || `CORE2_DRIVER.FailStatus));
+	      end
+	      3: begin
+		 `logI("Releasing CORE3 Reset....");	
+		 //cep_tb.putback_memory_used();
+		 if (virtualMode) begin
+		    ResetAllCores();
+		 end		 
+		 release `CORE3_PATH.core.reset;
+		 @(posedge (`CORE3_DRIVER.PassStatus || `CORE3_DRIVER.FailStatus));
+	      end		   
+	    endcase
+	 end
+      end // for (int c=0;c<4;c=c+1)
+   end // always @ (posedge singelThread)
+`endif
    
 endmodule

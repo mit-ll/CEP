@@ -1,7 +1,7 @@
 #!/bin/bash
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
-#// SPDX short identifier: MIT
+#// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      get_external_dependencies.sh
 #// Program:        Common Evaluation Platform (CEP)
@@ -54,6 +54,11 @@ declare -a repo_names=(       "#"
                               "GITHUB https://github.com/riscv/riscv-binutils-gdb c3eb407 ./software/riscv-gnu-toolchain/riscv-gdb"
                               "GITHUB https://github.com/riscv/riscv-glibc 06983fe ./software/riscv-gnu-toolchain/riscv-glibc"
                               "GITHUB https://github.com/riscv/riscv-newlib f289cef ./software/riscv-gnu-toolchain/riscv-newlib"                             
+                              "#"
+                              "# The following dependencies are related to the RISC-V Tests"
+                              "#"
+                              "GITHUB https://github.com/riscv/riscv-tests a5d8386 ./software/riscv-tests"              
+                              "GITHUB https://github.com/riscv/riscv-test-env 4d4a435 ./software/riscv-tests/env"              
                               "#"
                               "# The following dependencies are related to the Freedom-U-SDK"
                               "#"

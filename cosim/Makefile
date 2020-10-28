@@ -1,6 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
-#// SPDX short identifier: MIT
+#// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      Makefile
 #// Program:        Common Evaluation Platform (CEP)
@@ -15,7 +15,7 @@ all: runAll
 override REGRESS = 1
 override NOWAVE  = 1
 override BOARD_SIM = 1
-override COVERAGE  = 1
+#override COVERAGE  = 0
 UPDATE_INFO = 1
 #
 #
@@ -32,7 +32,8 @@ SIM_DIR     = ${DUT_TOP_DIR}/${COSIM_NAME}
 #
 
 TEST_GROUP  =  	bfmTests	\
-		bareMetalTests
+		bareMetalTests	\
+		isaTests
 
 runAll: 
 	make cleanAll

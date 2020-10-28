@@ -1,7 +1,7 @@
 #!/usr/bin/python3
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
-#// SPDX short identifier: MIT
+#// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      amensia.py
 #// Program:        Common Evaluation Platform (CEP)

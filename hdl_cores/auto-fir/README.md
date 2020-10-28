@@ -1,5 +1,5 @@
 [//]: # (Copyright 2020 Massachusetts Institute of Technology)
-[//]: # (SPDX short identifier: MIT)
+[//]: # (SPDX short identifier: BSD-2-Clause)
 
 <p align="center">
    Copyright 2020 Massachusetts Institute of Technology

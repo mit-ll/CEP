@@ -1,6 +1,6 @@
 #//************************************************************************
 #// Copyright (C) 2020 Massachusetts Institute of Technology
-#// SPDX short identifier: MIT
+#// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      cep_buildChips.make
 #// Program:        Common Evaluation Platform (CEP)
@@ -16,6 +16,15 @@ DUT_BFM_XILINX_TOP_FILE  := ${BHV_DIR}/VCShell_bfm.v
 DUT_BARE_XILINX_TOP_FILE := ${BHV_DIR}/VCShell_bare.v
 DUT_RAW_XILINX_TOP_FILE  := ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/sifive.freedom.unleashed.DevKitU500FPGADesign_WithDevKit50MHz.v
 
+# need to make local file with edit to support virtual mode
+DUT_DDR3_FILE            += ddr3.v
+DUT_DDR3_PARAM_FILE      += 1024Mb_ddr3_parameters.vh
+
+# replace this line {BL_MAX*DQ_BITS{1'bx}} to {BL_MAX*DQ_BITS{1'b0}} for virtual mode support
+${BHV_DIR}/ddr3.v: ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v
+	cp -f ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/1024Mb_ddr3_parameters.vh ${BHV_DIR}/.
+	sed -e 's/BL_MAX\*DQ_BITS{1'\''bx/BL_MAX\*DQ_BITS{1'\''b0/g' ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v > ${BHV_DIR}/ddr3.v
+
 #
 # BFM
 #
@@ -29,7 +38,7 @@ COMMON_CFLAGS	        += -DBFM_MODE
 else ifeq "$(findstring BARE,${DUT_SIM_MODE})" "BARE"
 DUT_XILINX_TOP_FILE     := ${DUT_BARE_XILINX_TOP_FILE}
 DUT_VLOG_ARGS           += +define+BARE_MODE
-RISCV_WRAPPER           = riscv_wrapper.elf
+RISCV_WRAPPER           = ./riscv_wrapper.elf
 #
 #
 #
@@ -53,12 +62,16 @@ XLNX_IP_DIR     = ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/obj/i
 BARE_SRC_DIR    = ${SIM_DIR}/drivers/bare
 BARE_OBJ_DIR    = ${SIM_DIR}/drivers/bare
 
-#RISCV_DIR    = /opt/riscv
-#export RISCV := ${RISCV_DIR}
 RISCV            ?= /opt/riscv
 RISCV_GCC         = ${RISCV}/bin/riscv64-unknown-elf-gcc
 RISCV_OBJDUMP     = ${RISCV}/bin/riscv64-unknown-elf-objdump
 RISCV_HEXDUMP     = /usr/bin/hexdump
+#
+# RISCV-TESTS : isa and benchmark
+#
+#RISCV_TEST_DIR     = ${RISCV}/riscv64-unknown-elf/share/riscv-tests
+RISCV_TEST_DIR     = ${DUT_TOP_DIR}/software/riscv-tests
+
 #
 # flags to compile codes for bare metal
 #
@@ -104,6 +117,13 @@ ${BARE_OBJ_DIR}/bare_malloc.bobj: ${BARE_OBJ_DIR}/bare_malloc.c
 riscv_wrapper.bobj: riscv_wrapper.cc
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
 
+ifeq "$(findstring BUILTIN,${DUT_ELF_MODE})" "BUILTIN"
+# blank it
+undefine RISCV_WRAPPER_ELF
+else
+
+RISCV_WRAPPER_ELF = ${RISCV_WRAPPER}
+
 riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${BARE_OBJ_DIR}/syscalls.bobj ${BARE_OBJ_DIR}/bare_malloc.bobj ${CEP_BARE_OBJECTS} ${CEP_BARE_DIAG_OBJECTS}
 	$(RISCV_GCC) -T ${RISCV_BARE_LDFILE} ${RISCV_BARE_LDFLAG} $^ -o $@
 	${RISCV_OBJDUMP} -S -C -d -l -x riscv_wrapper.elf > riscv_wrapper.dump
@@ -112,6 +132,7 @@ riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${BARE_OBJ_DIR}/s
 %.bobj: %.cc ${VERILOG_DEFINE_LIST} 
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
 
+endif
 #
 # ***************************************************************
 # below are strickly for vlog/vcom to build CEP ASIC/FPGA for sim
@@ -130,7 +151,7 @@ DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/aes/round.v			\
 	${DUT_TOP_DIR}/hdl_cores/aes/aes_192.v 			\
 	$(wildcard ${DUT_TOP_DIR}/generated_dsp_code/*.v)	\
-
+	${BHV_DIR}/ddr3.v					\
 
 #
 # created from chisel
@@ -208,7 +229,6 @@ DUT_TB_FILES_LIST  = ${DUT_XILINX_TOP_TB}
 
 SEARCH_DIR_LIST := ${DVT_DIR}		\
 		${BLD_DIR} 		\
-		${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl \
 		${XLNX_IP_DIR}/corePLL	\
 		${XLNX_IP_DIR}/vc707mig1gb/vc707mig1gb/user_design/rtl/phy	\
 		${XLNX_IP_DIR}/vc707mig1gb/vc707mig1gb/user_design/rtl/ui	\
@@ -248,6 +268,7 @@ ${DUT_BARE_XILINX_TOP_FILE}: ${DUT_RAW_XILINX_TOP_FILE}
 	sed -e 's/IBUF_DELAY_VALUE(0)/IBUF_DELAY_VALUE("0")/' ${DUT_RAW_XILINX_TOP_FILE} >> ${DUT_BARE_XILINX_TOP_FILE}
 	touch $@
 
+
 #
 #
 # Use Auto generate makefile from vmake output else force a rebuild
@@ -284,7 +305,7 @@ ${BLD_DIR}/.buildVcom : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}
 	touch $@
 
 
-${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}/cep_buildChips.make ${DUT_XILINX_TOP_FILE} ${BLD_DIR}/${SIM_DEPEND_TARGET}_OTHER_LIST
+${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}/cep_buildChips.make ${DUT_XILINX_TOP_FILE} ${BLD_DIR}/${SIM_DEPEND_TARGET}_OTHER_LIST ${BHV_DIR}/ddr3.v
 	$(RM) ${BLD_DIR}/searchPaths_build
 	@for i in ${SEARCH_DIR_LIST}; do                        			\
 		echo "-y" $${i} >> ${BLD_DIR}/searchPaths_build;			\

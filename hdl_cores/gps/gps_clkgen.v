@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      	gps_clkgen.v
 // Program:        	Common Evaluation Platform (CEP)
@@ -72,6 +72,9 @@ MMCME2_ADV
 assign gps_rst = sync_rst_in | ~locked_int;
 
 
+   reg [2:0] count = 3'h0;
+   reg 	     enable_slow_clk;
+
 // Generate slow clock using CE
 BUFGCE gps_clk_slow_buf(
            .O   (gps_clk_slow),
@@ -79,8 +82,6 @@ BUFGCE gps_clk_slow_buf(
            .I   (clk_out0_prebufg)
        );
 
-reg [2:0] count = 3'h0;
-reg enable_slow_clk;
 always @(posedge gps_clk_fast)
     begin
         enable_slow_clk <= 1'b0;

@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -20,7 +20,9 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  
+
+#define flush_page(addr) asm volatile ("sfence.vma %0" : : "r" (addr) : "memory")
+
 //int main(void)
 void thread_entry(int cid, int nc)
 {
@@ -59,8 +61,10 @@ void thread_entry(int cid, int nc)
     //
     for (b=0;b<max_blocks;b++) {
       DUT_WRITE32_64(my_base | (1 << (6+b)) , pattern[coreId] + b);
+      // Add this line to get test to pass on RHEL7/gcc-7 but may be we are hiding a bug???
+      //flush_page(my_base | (1 << (6+b)));
     }
-    // now read and wait we see the pattern do the same
+    // now read and wait we see the partners do the same
     for (b=0;b<max_blocks;b++) {
       if (errCnt) { break; }      
       to = 1000;

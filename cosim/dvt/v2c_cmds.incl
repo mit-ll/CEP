@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -152,7 +152,12 @@
 `define DVTF_FIR_CAPTURE_EN_BIT                     99
 //
 `define DVTF_TOGGLE_CHIP_RESET_BIT                  100
-
+`define DVTF_GET_CORE_RESET_STATUS                  101
+`define DVTF_GET_PASS_FAIL_STATUS                   102
+`define DVTF_SET_PASS_FAIL_STATUS                   103
+`define DVTF_FORCE_SINGLE_THREAD                    104
+`define DVTF_SET_VIRTUAL_MODE                       105
+`define DVTF_PASS_IS_TO_HOST                        106
 //
 // ===============================================
 // System Sim Status

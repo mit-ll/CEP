@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -626,8 +626,23 @@ module cep_tb;
    end   
 
    reg program_loaded = 0;
+   int save_memory_used = 0;
+   task putback_memory_used;
+      begin
+	 `logI("Putback Memory Used=%d from %d",save_memory_used,mem_rnk[0].gen_mem[0].ddr3.memory_used);
+	 mem_rnk[0].gen_mem[0].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[1].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[2].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[3].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[4].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[5].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[6].ddr3.memory_used = save_memory_used;
+	 mem_rnk[0].gen_mem[7].ddr3.memory_used = save_memory_used;	 
+      end
+   endtask
    always @(posedge `DVT_FLAG[`DVTF_PROGRAM_LOADED]) begin
       program_loaded = 1;
+      save_memory_used = mem_rnk[0].gen_mem[0].ddr3.memory_used;
       //`DVT_FLAG[`DVTF_PROGRAM_LOADED] = 0;
    end
 

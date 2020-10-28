@@ -38,8 +38,6 @@
 `define fir_dataout_addr_addr	 'h0018
 `define fir_dataout_data_addr	 'h0020
 
-//`define CEP_MAJOR_VERSION	  'h02
-
 // 64bytes
 `define cep_cache_size          64
 
@@ -75,7 +73,7 @@
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG		'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h61020000_00000000
+`define CEP_EXPECTED_VERSION 	'h70020000_00000000
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set

@@ -210,6 +210,59 @@ int load_mainMemory(char *imageF, uint32_t ddr3_base, int srcOffset, int destOff
 
 int __prIdx[MAX_CORES] = {0,0,0,0};
 
+// Check PassFail
+int check_PassFail_status(int coreId,int maxTimeOut) {
+  int errCnt = 0;
+#ifdef SIM_ENV_ONLY  
+  int passMask = 0;
+  int failMask = 0;
+  int inReset;
+  uint64_t d64;
+  int wait4reset = 1000;
+  //
+  while (wait4reset > 0) {
+    DUT_WRITE_DVT(DVTF_GET_CORE_RESET_STATUS, DVTF_GET_CORE_RESET_STATUS, 1);
+    inReset = DUT_READ_DVT(DVTF_PAT_LO, DVTF_PAT_LO);
+    if (inReset == 0) break;
+    // may be the test already pass
+    DUT_WRITE_DVT(DVTF_GET_PASS_FAIL_STATUS, DVTF_GET_PASS_FAIL_STATUS, 1);
+    d64 = DUT_READ_DVT(DVTF_PAT_HI, DVTF_PAT_LO);
+    passMask = (d64 & 0x1); 
+    failMask = ((d64>>1) & 0x1); 
+    LOGI("Current Pass=0x%x Fail=0x%x maxTimeOut=%d\n",passMask,failMask,maxTimeOut);
+    if (passMask | failMask) break;    
+    //
+    wait4reset--;
+    if (wait4reset <= 0) {
+      LOGE("Timeout while waiting to be active\n");
+      errCnt++;
+      break;
+    }
+    DUT_RUNCLK(1000);    
+  }
+  while ((errCnt == 0) && (maxTimeOut > 0)) {
+    // only if I am out of reset
+    DUT_WRITE_DVT(DVTF_GET_PASS_FAIL_STATUS, DVTF_GET_PASS_FAIL_STATUS, 1);
+    d64 = DUT_READ_DVT(DVTF_PAT_HI, DVTF_PAT_LO);
+    passMask = (d64 & 0x1); 
+    failMask = ((d64>>1) & 0x1); 
+    LOGI("Current Pass=0x%x Fail=0x%x maxTimeOut=%d\n",passMask,failMask,maxTimeOut);
+    if (passMask | failMask) break;
+    maxTimeOut--;    
+    if (maxTimeOut <= 0) {
+      LOGE("Time out while waiting for Pass/Fail\n");
+      errCnt++;
+    }
+    DUT_RUNCLK(1000);        
+  }
+  errCnt += failMask != 0;
+  if (errCnt) {
+    DUT_WRITE_DVT(DVTF_SET_PASS_FAIL_STATUS, DVTF_SET_PASS_FAIL_STATUS, 1);
+  }
+#endif
+  return errCnt;
+}
+
 // spin on the scratch mem until it is good or bad
 int check_bare_status(int coreId,int maxTimeOut) {
   int errCnt=0;  
@@ -294,6 +347,26 @@ void set_cur_status(int status) {
   d64 = ((u_int64_t)coreId << 32) | (u_int64_t)status;
   // Use core status 05/18/20
   offS = reg_base_addr + cep_core0_status + (coreId * 8);
+  *(volatile uint64_t *)(offS) = d64;
+#endif
+}
+
+
+// for single core 0 ONLY
+void set_pass(void) {
+#ifdef BARE_MODE    
+  uint64_t d64, offS;
+  d64 = CEP_GOOD_STATUS;
+  offS = reg_base_addr + cep_core0_status;
+  *(volatile uint64_t *)(offS) = d64;
+#endif
+}
+
+void set_fail(void) {
+#ifdef BARE_MODE    
+  uint64_t d64, offS, myOffs;
+  d64 = CEP_BAD_STATUS;
+  offS = reg_base_addr + cep_core0_status;
   *(volatile uint64_t *)(offS) = d64;
 #endif
 }

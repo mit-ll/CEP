@@ -1,11 +1,13 @@
 [//]: # (Copyright 2020 Massachusetts Institute of Technology)
-[//]: # (SPDX short identifier: MIT)
+[//]: # (SPDX short identifier: BSD-2-Clause)
+
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 <p align="center">
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.61
+   v2.7
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -280,7 +282,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                     Common Evaluation Platform v2.61
+                      Common Evaluation Platform v2.7
          Copyright (C) 2020 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -303,7 +305,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.61 was built on Sep 17 2020 12:01:26 ***
+*** CEP Tag=CEPTest CEP HW VERSION = v2.70 was built on Sep 17 2020 12:01:26 ***
  CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
@@ -444,6 +446,22 @@ v2.6 - (18 September 2020)
 v2.61 - (2 October 2020)
   - Added initial simulation support for Cadence XCellium
   - Cosim: Expanded DDR3 memory size to support "larger" bare-metal executables created by the new RISCV toolchain released with v2.6
+
+v2.7 - (28 October 2020)
+* Added support for RISC-V ISA tests (under ./cosim/isaTests)
+* Updated license statements to BSD-2-Clause
+* KNOWN ISSUES:
+  - The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
+    the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
+    the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
+
+    Functionally, this should only cause an issue when dealing with self-modifying code, which is an atypical coding practice.
+
+  - The following cosim tests fail when run under RHEL using the "new" RISC-V toolchain:
+    - bareMetalTests/cacheCoherence
+    - isaTests/rv64mi-p-access 
+    - isaTests/rv64ud-p-ldst
+
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  

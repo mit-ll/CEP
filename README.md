@@ -7,7 +7,7 @@
     <img src="./cep_logo.jpg">
 </p>
 <p align="center">
-   v2.7
+   v2.71
    <br>
    Copyright 2020 Massachusetts Institute of Technology
 </p>
@@ -82,19 +82,11 @@ The RISC-V source code resides in <CEP_ROOT>/software/riscv-gnu-toolchain
 Begin by installing the dependencies by executing the following:
 `sudo apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev`
 
-If you are running on Ubuntu 16.04, the default gcc compiler (v5.5) is too old to properly build the new toolchain.  Suggest installing a newer version of gcc:
-
-`sudo apt install gcc-7`
-
-Once that is complete, the toolchain needs to be built.  The RISCV environment variable should be set to the desired installation directory.  For example (assuming bash):
-
-Now, build the toolchain.  If on Ubuntu 16.04, force gcc-7 with `gcc-7` switch below.  On Ubuntu 18.04, `gcc-7` is the default.
-
 Ensure you have write permissions to the directory pointed to by $RISCV and that the current shell has NOT sourced the Xilinx Vivado environment script:
 
     $ cd <CEP_ROOT>/software/riscv-gnu-toolchain
-    $ ./configure CC=gcc-7 --prefix=/opt/riscv
-    $ make gcc-7 -jN                                   (Where N is the number of cores that can be devoted to the build)
+    $ ./configure --prefix=/opt/riscv
+    $ make -jN                                   (Where N is the number of cores that can be devoted to the build)
 
 Now with the tools installed, you'll want to add them to your path:
 ```
@@ -227,8 +219,8 @@ Example : `source /opt/Xilinx/Vivado/2018.3/settings64.sh`
 Change to the `<CEP_ROOT>/hdl_cores/freedom` directory and execute the following commands:
 
 ```sh
-$ make -f Makefile.vc707-u500devkit verilog
-$ make -f Makefile.vc707-u500devkit mcs
+$ make -f Makefile.vc707 verilog
+$ make -f Makefile.vc707 mcs
 ```
 
 Build time will vary based on the machine, but could be in the range of 1 to 2 hours.  The first step will create the Chisel-generated verilog with the second creating the bitfile for the VC-707.
@@ -282,7 +274,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v2.7
+                      Common Evaluation Platform v2.71
          Copyright (C) 2020 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -305,7 +297,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.70 was built on Sep 17 2020 12:01:26 ***
+*** CEP Tag=CEPTest CEP HW VERSION = v2.71 was built on Sep 17 2020 12:01:26 ***
  CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
@@ -436,7 +428,7 @@ v2.6 - (18 September 2020)
     https://github.com/sifive/sifive-blocks/tree/12bdbe50636b6c57c8dc997e483787fdb5ee540b        - Dec 17, 2019
     https://github.com/mcd500/freedom-u-sdk/tree/29fe529f8dd8e1974fe1743184b3e13ebb2a21dc        - Apr 12, 2019
 * riscv-tools (formerly under rocket-chip) now located in ./software/riscv-gnu-toolchain
-* KNOWN ISSUES:
+7* KNOWN ISSUES:
 	- The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
 	  the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
 	  the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
@@ -461,6 +453,9 @@ v2.7 - (28 October 2020)
     - bareMetalTests/cacheCoherence
     - isaTests/rv64mi-p-access 
     - isaTests/rv64ud-p-ldst
+
+v2.71 - (2 November 2020)
+* Corrected README.md issues
 
 
 ## Licensing

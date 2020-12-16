@@ -44,6 +44,11 @@
 `define CORE2_PC      `CORE2_PATH.core.coreMonitorBundle_pc
 `define CORE3_PC      `CORE3_PATH.core.coreMonitorBundle_pc
 
+`define CORE0_VALID   `CORE0_PATH.core.coreMonitorBundle_valid
+`define CORE1_VALID   `CORE1_PATH.core.coreMonitorBundle_valid
+`define CORE2_VALID   `CORE2_PATH.core.coreMonitorBundle_valid
+`define CORE3_VALID   `CORE3_PATH.core.coreMonitorBundle_valid
+
 `define CORE0_DRIVER  cep_tb.genblk4[0].driver
 `define CORE1_DRIVER  cep_tb.genblk4[1].driver
 `define CORE2_DRIVER  cep_tb.genblk4[2].driver

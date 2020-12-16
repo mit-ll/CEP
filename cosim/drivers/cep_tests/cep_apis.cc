@@ -557,3 +557,4 @@ void writeDvt(int msb, int lsb, int bits) {
   DUT_WRITE_DVT(msb,lsb,bits);
 #endif
 }
+

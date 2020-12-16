@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX short identifier: BSD-2-Clause
+// SPDX short identifier: MIT
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -460,24 +460,56 @@ module cep_tb;
     end
   endgenerate
 
-   wire	jtag_jtag_TCK; 
-   wire	jtag_jtag_TMS; 
-   wire	jtag_jtag_TDI;
+   wire jtag_jtag_TCK;
+   wire jtag_jtag_TMS;
+   wire jtag_jtag_TDI;
+   
    wire jtag_jtag_TDO; 
    wire [7:0] led;
+   reg 	      JTCK=0;
+   reg 	      JTMS=1;
+   reg 	      JTDI=0;
    
+   assign jtag_jtag_TCK = JTCK;
+   assign jtag_jtag_TMS = JTMS;
+   assign jtag_jtag_TDI = JTDI;
+   initial begin
+      forever #20 JTCK = !JTCK;
+   end
+   initial begin
+      @(negedge cep_tb.fpga.topDesign.topMod.debug_1.io_dmi_dmiReset);
+      repeat (10) @(posedge JTCK);
+      //
+      //`logI("== Resetting JTAG ==\n");
+      JTMS = 1;
+      repeat (10) @(posedge JTCK);
+      JTMS = 0;
+   end
+   //
    wire uart_rxd;   pullup (weak1) (uart_rxd);
    wire uart_ctsn;  pullup (weak1) (uart_ctsn);
    wire uart_txd; 
-   wire uart_rtsn; 
-
+   wire uart_rtsn; pullup (weak1) (uart_rtsn);
+   assign uart_rxd = uart_txd;
+   // no flow control support
+   //
    wire sdio_sdio_clk; 
    wire sdio_sdio_cmd;    
    wire sdio_sdio_dat_0; pullup (weak1) (sdio_sdio_dat_0);
    wire sdio_sdio_dat_1; pullup (weak1) (sdio_sdio_dat_1);
    wire sdio_sdio_dat_2; pullup (weak1) (sdio_sdio_dat_2);   
-   wire sdio_sdio_dat_3; pullup (weak1) (sdio_sdio_dat_3);   
-   
+   wire sdio_sdio_dat_3; pullup (weak1) (sdio_sdio_dat_3);
+   // 512Mbit
+   s25fl512s spiFlash
+     (
+      .SCK    (sdio_sdio_clk  ), // topDesign_auto_topMod_spi_source_out_sck
+      .CSNeg  (sdio_sdio_dat_3), // topDesign_auto_topMod_spi_source_out_cs_0
+      .SI     (sdio_sdio_cmd  ), // topDesign_auto_topMod_spi_source_out_dq_0_o
+      .SO     (sdio_sdio_dat_0), // topDesign_auto_topMod_spi_source_out_dq_1_i
+      .WPNeg  (sdio_sdio_dat_1), // not used!!!
+      .HOLDNeg(sdio_sdio_dat_2), // not used
+      .RSTNeg (sys_rst_n      )
+      );
    
    //
    // ############################################

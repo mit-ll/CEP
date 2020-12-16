@@ -4,23 +4,29 @@
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 <p align="center">
-    <img src="./cep_logo.jpg">
+    <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-   v2.71
-   <br>
+    <img src="./doc/version.jpg" width="98" height="60">
+</p>
+<p align="center">
    Copyright 2020 Massachusetts Institute of Technology
 </p>
-
-<br>
-
-The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) allowing users to test a variety of tools and techniques.  Test vectors are provided to ensure the underlying functionality is maintained even after modification.
-
 <p align="center">
-    <img src="./cep_architecture.jpg">
+    <img src="./doc/related_logos.jpg" width="450" height="71">
 </p>
 
-Additional information on the objectives of the CEP may be found in [./CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
+The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) that provides users an open-source evaluation platform for the evaluation of custom tools and techniques.  An extensive verification environment provided to ensure the underlying functionality is maintained even after modification.
+
+The Logic Locking Key Interface (LLKI) has been provided as a representative means of distributing key / configuration material to LLKI-enabled cores.  
+
+For CEP v3.0, the Surrogate Root of Trust (SRoT) and LLKI-enabled AES-192 core has been added.  Example test vectors have been with additional LLKI information being available in the comments of files located in ./hdl_cores/llki.
+
+<p align="center">
+    <img src="./doc/cep_v3.0_architecture.jpg">
+</p>
+
+Additional information on the objectives of the CEP may be found in [./doc/CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
 The CEP is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
 
@@ -82,6 +88,8 @@ The RISC-V source code resides in <CEP_ROOT>/software/riscv-gnu-toolchain
 Begin by installing the dependencies by executing the following:
 `sudo apt install autoconf automake autotools-dev curl python3 libmpc-dev libmpfr-dev libgmp-dev gawk build-essential bison flex texinfo gperf libtool patchutils bc zlib1g-dev libexpat-dev`
 
+Now, build the toolchain.  
+
 Ensure you have write permissions to the directory pointed to by $RISCV and that the current shell has NOT sourced the Xilinx Vivado environment script:
 
     $ cd <CEP_ROOT>/software/riscv-gnu-toolchain
@@ -138,7 +146,10 @@ Install the required dependencies by running the following command:
               |-- generated_dsp_code/  - Placeholder for the generated DSP code that cannot be
               |                          directly included in the CEP repository due to licensing
               |                          restrictions.
-              |-- software/
+              |
+              |-- opentitan/	       - Copy of the OpenTitan repository, some components are used by the LLKI.
+              |
+              |-- software/        
                     |
                     |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/
                     |                    mcd500/freedom-u-sdk directory, which is a fork of the 
@@ -274,7 +285,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v2.71
+                      Common Evaluation Platform v3.0
          Copyright (C) 2020 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -297,7 +308,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v2.71 was built on Sep 17 2020 12:01:26 ***
+*** CEP Tag=CEPTest CEP HW VERSION = v3.00 was built on Sep 17 2020 12:01:26 ***
  CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
@@ -428,7 +439,7 @@ v2.6 - (18 September 2020)
     https://github.com/sifive/sifive-blocks/tree/12bdbe50636b6c57c8dc997e483787fdb5ee540b        - Dec 17, 2019
     https://github.com/mcd500/freedom-u-sdk/tree/29fe529f8dd8e1974fe1743184b3e13ebb2a21dc        - Apr 12, 2019
 * riscv-tools (formerly under rocket-chip) now located in ./software/riscv-gnu-toolchain
-7* KNOWN ISSUES:
+* KNOWN ISSUES:
 	- The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
 	  the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
 	  the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
@@ -455,8 +466,11 @@ v2.7 - (28 October 2020)
     - isaTests/rv64ud-p-ldst
 
 v2.71 - (2 November 2020)
-* Corrected README.md issues
+* Corrected README.md issue
 
+v3.0 - (18 December 2020)
+* Initial LLKI release with Surrogate Root of Trust
+* AES core replaced with LLKI-enabled AES core, all other cores remain unchanged
 
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
@@ -466,10 +480,11 @@ Additional licensing information can be found in the [LICENSE](./LICENSE) and [l
 
 ## DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
 
-This material is based upon work supported by the Assistant Secretary of Defense for Research and Engineering under Air Force Contract No. FA8721-05-C-0002 and/or FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Assistant Secretary of Defense for Research and Engineering.
+© 2020 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
 
-© 2020 Massachusetts Institute of Technology.
+Subject to FAR 52.227-11 – Patent Rights – Ownership by the Contractor (May 2014)
+SPDX-License-Identifier: BSD-2-Clause
 
-The software/firmware is provided to you on an as-is basis.
+This material is based upon work supported by the Name of Sponsor under Air Force Contract No. FA8721-05-C-0002 and/or FA8702-15-D-0001. Any opinions, findings, conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the Name of Sponsor.
 
-Delivered to the U.S. Government with Unlimited Rights, as defined in DFARS Part 252.227-7013 or 7014 (Feb 2014). Notwithstanding any copyright notice, U.S. Government rights in this work are defined by DFARS 252.227-7013 or DFARS 252.227-7014 as detailed above. Use of this work other than as specifically authorized by the U.S. Government may violate any copyrights that exist in this work.
+The software/firmware is provided to you on an As-Is basis

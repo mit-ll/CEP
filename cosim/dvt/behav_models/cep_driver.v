@@ -295,6 +295,29 @@ begin
 end
 endtask // WRITE32_64_TASK
 
+`define SHIPC_WRITE32_32_TASK WRITE32_32_DPI()
+task   WRITE32_32_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask;
+begin
+   //`logI("%m a=%x d=%x",a,d);
+   //
+   if (inBox.mAdr[2]) mask = 'hF0;
+   else mask = 'h0F;
+   //
+   d[63:32] = inBox.mPar[0];
+   d[31:0] = inBox.mPar[0];   
+`ifdef BFM_MODE
+   case (MY_LOCAL_ID)
+     0: `CORE0_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
+     1: `CORE1_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
+     2: `CORE2_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
+     3: `CORE3_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);     
+   endcase // case (MY_LOCAL_ID)
+`endif
+end
+endtask // WRITE32_64_TASK
+   
 `else   
 
 // ================= OLD PLI  
@@ -317,8 +340,6 @@ begin
 	3: `CORE3_TL_PATH.tl_x_ul_write(MY_LOCAL_ID & 'h1, a, d);     
       endcase // case (MY_LOCAL_ID)
    end // else: !if(backdoor_enable)
-`else
-   cep_tb.write_ddr3_backdoor(a,d);               
 `endif
 end
 endtask // WRITE32_64_TASK
@@ -355,6 +376,27 @@ reg [63:0] d;
       //`logI("%m a=%x d=%x",a,d);
    end
 endtask // READ32_64_TASK
+
+`define SHIPC_READ32_32_TASK READ32_32_DPI()
+task READ32_32_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask;
+   begin
+      if (inBox.mAdr[2]) mask = 'hF0;
+      else mask = 'h0F;      
+`ifdef BFM_MODE
+      case (MY_LOCAL_ID)
+	0: `CORE0_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
+	1: `CORE1_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
+	2: `CORE2_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
+	3: `CORE3_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);     
+      endcase // case (MY_LOCAL_ID)
+      inBox.mPar[0] = inBox.mAdr[2] ? d[63:32] : d[31:0];
+`endif      
+      //`logI("%m a=%x d=%x",a,d);
+end
+endtask // READ32_64_TASK
+   
 `else
    // -------------- OLD PLI     
 `define SHIPC_READ32_64_TASK READ32_64_TASK(__shIpc_address[31:0],{__shIpc_p0[31:0],__shIpc_p1[31:0]})
@@ -556,11 +598,12 @@ endtask // READ32_64_TASK
 	       force `CORE0_PATH.core.reset =1;
 	    end
 	 end
-	 assign pcPass = (`CORE0_PC[30:0] === passFail[0][30:0]) ||
-			 ((`CORE0_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||		 
-			 ((`CORE0_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);
+	 assign pcPass = `CORE0_VALID &&
+			 ((`CORE0_PC[30:0] === passFail[0][30:0]) ||
+			  ((`CORE0_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||		 
+			  ((`CORE0_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));
 	 
-	 assign pcFail = (`CORE0_PC[30:0] === passFail[1][30:0]);
+	 assign pcFail = `CORE0_VALID && (`CORE0_PC[30:0] === passFail[1][30:0]);
       end
       else if (MY_LOCAL_ID == 1) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -572,10 +615,11 @@ endtask // READ32_64_TASK
 	       force `CORE1_PATH.core.reset =1;
 	    end
 	 end
-	 assign pcPass = (`CORE1_PC[30:0] === passFail[0][30:0]) ||
-			 ((`CORE1_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
-			 ((`CORE1_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);
-	 assign pcFail = (`CORE1_PC[30:0] === passFail[1][30:0]);
+	 assign pcPass = `CORE1_VALID &&
+			 ((`CORE1_PC[30:0] === passFail[0][30:0]) ||
+			  ((`CORE1_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
+			  ((`CORE1_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));
+	 assign pcFail = `CORE1_VALID && (`CORE1_PC[30:0] === passFail[1][30:0]);
       end
       else if (MY_LOCAL_ID == 2) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -587,10 +631,11 @@ endtask // READ32_64_TASK
 	       force `CORE2_PATH.core.reset =1;
 	    end
 	 end
-	 assign pcPass = (`CORE2_PC[30:0] === passFail[0][30:0]) || 
-			 ((`CORE2_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
-			 ((`CORE2_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost);	 
-	 assign pcFail = (`CORE2_PC[30:0] === passFail[1][30:0]);
+	 assign pcPass = `CORE2_VALID && 
+			 ((`CORE2_PC[30:0] === passFail[0][30:0]) || 
+			  ((`CORE2_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
+			  ((`CORE2_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));	 
+	 assign pcFail = `CORE2_VALID && (`CORE2_PC[30:0] === passFail[1][30:0]);
       end
       else if (MY_LOCAL_ID == 3) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -602,10 +647,11 @@ endtask // READ32_64_TASK
 	       force `CORE3_PATH.core.reset =1;
 	    end
 	 end
-	 assign pcPass = (`CORE3_PC[30:0] === passFail[0][30:0]) || 
-			 ((`CORE3_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0)) |
-			 ((`CORE3_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0) && checkToHost);	 
-	 assign pcFail = (`CORE3_PC[30:0] === passFail[1][30:0]);
+	 assign pcPass = `CORE3_VALID && 
+			 ((`CORE3_PC[30:0] === passFail[0][30:0]) || 
+			  ((`CORE3_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0)) |
+			  ((`CORE3_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0) && checkToHost));	 
+	 assign pcFail = `CORE3_VALID && (`CORE3_PC[30:0] === passFail[1][30:0]);
       end
    endgenerate
 `endif //  `ifdef RISCV_TESTS

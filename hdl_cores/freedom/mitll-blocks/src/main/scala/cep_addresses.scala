@@ -5,17 +5,42 @@
 // File         : cep_addresses.scala
 // Project      : Common Evaluation Platform (CEP)
 // Description  : Defines the addresses used within CEP Cores
+//                Constants related to "Functional" register decode, which occurrs in 
+//                the Chisel world, can be found in this package.
+//                For each CEP core, there are the following two pairs of constants:
+//                  - <core>_base_addr          - Functional registers base address
+//                  - <core>_base_depth         - Functional registers address depth/size
+//                  - <core>_llki_base_addr     - LLKI interface base address
+//                  - <core>_llki_base_depth    - LLKI interface address depth/size
+//
+//                Additional address constants related to the functional registers can
+//                be found in this file, within the relevant object (e.g., AESAddresses)
+//
+//                LLKI related address constants can be found in llki_pkg.sv as all LLKI
+//                functionality exists in the SystemVerilog world.
 //
 //--------------------------------------------------------------------------------------
 package mitllBlocks.cep_addresses
 
+import freechips.rocketchip.diplomacy._
+
 object CEPVersion {
-	val CEP_MAJOR_VERSION		= 0x02
-	val CEP_MINOR_VERSION		= 0x71
+  val CEP_MAJOR_VERSION   = 0x03
+  val CEP_MINOR_VERSION   = 0x00
 }
 
 object CEPBaseAddresses {
-	val aes_base_addr           = 0x70000000L
+  val cep_cores_base_addr           = 0x70000000L
+
+    // New (v3.0+) Address constants related to the AES Core
+    val aes_base_addr               = 0x70000000L
+    val aes_depth                   = 0x00007fffL                                             
+    val aes_llki_base_addr          = 0x70008000L
+      val aes_llki_ctrlsts_addr     = 0x70008000L
+      val aes_llki_sendrecv_addr    = 0x70008008L
+    val aes_llki_depth              = 0x000000ffL
+
+    // Legacy (pre-v3.0 address constants)
     val md5_base_addr           = 0x70010000L
     val sha256_base_addr        = 0x70020000L
     val rsa_base_addr           = 0x70030000L
@@ -23,13 +48,16 @@ object CEPBaseAddresses {
     val dft_base_addr           = 0x70050000L
     val idft_base_addr          = 0x70060000L
     val fir_base_addr           = 0x70070000L  
-	val iir_base_addr           = 0x70080000L 
+    val iir_base_addr           = 0x70080000L 
     val gps_base_addr           = 0x70090000L  
     val cepregisters_base_addr  = 0x700F0000L
+  val cep_cores_depth           = 0x000FFFFFL
+  val srot_base_addr            = 0x70100000L
+  val srot_base_depth           = 0x00007fffL
 }
 
 object AESAddresses {
-	val aes_ctrlstatus_addr     = 0x0000
+  val aes_ctrlstatus_addr       = 0x0000
     val aes_pt0_addr            = 0x0008
     val aes_pt1_addr            = 0x0010
     val aes_ct0_addr            = 0x0018
@@ -69,20 +97,20 @@ object MD5Addresses {
 }
 
 object SHA256Addresses{
-    val sha256_ctrlstatus_addr               = 0x0000
-    val sha256_block_w0                      = 0x0008
-    val sha256_block_w1                      = 0x0010
-    val sha256_block_w2                      = 0x0018
-    val sha256_block_w3                      = 0x0020
-    val sha256_block_w4                      = 0x0028
-    val sha256_block_w5                      = 0x0030
-    val sha256_block_w6                      = 0x0038
-    val sha256_block_w7                      = 0x0040
-    val sha256_done                          = 0x0048
-    val sha256_digest_w0                     = 0x0050
-    val sha256_digest_w1                     = 0x0058
-    val sha256_digest_w2                     = 0x0060
-    val sha256_digest_w3                     = 0x0068
+    val sha256_ctrlstatus_addr  = 0x0000
+    val sha256_block_w0         = 0x0008
+    val sha256_block_w1         = 0x0010
+    val sha256_block_w2         = 0x0018
+    val sha256_block_w3         = 0x0020
+    val sha256_block_w4         = 0x0028
+    val sha256_block_w5         = 0x0030
+    val sha256_block_w6         = 0x0038
+    val sha256_block_w7         = 0x0040
+    val sha256_done             = 0x0048
+    val sha256_digest_w0        = 0x0050
+    val sha256_digest_w1        = 0x0058
+    val sha256_digest_w2        = 0x0060
+    val sha256_digest_w3        = 0x0068
 }
 
 object RSAAddresses{
@@ -144,12 +172,12 @@ object IIRAddresses{
 }
 
 object FIRAddresses {
-	val fir_ctrlstatus_addr		= 0x0000
-	val fir_datain_addr_addr	= 0x0008
-	val fir_datain_data_addr	= 0x0010
-	val fir_dataout_addr_addr	= 0x0018
-	val fir_dataout_data_addr	= 0x0020
-	val fir_reset_addr              = 0x0028  	
+  val fir_ctrlstatus_addr       = 0x0000
+  val fir_datain_addr_addr      = 0x0008
+  val fir_datain_data_addr      = 0x0010
+  val fir_dataout_addr_addr     = 0x0018
+  val fir_dataout_data_addr     = 0x0020
+  val fir_reset_addr            = 0x0028    
 }
 
 object CEPRegisterAddresses {
@@ -168,4 +196,18 @@ object CEPRegisterAddresses {
     val core1_status     = 0x0208
     val core2_status     = 0x0210
     val core3_status     = 0x0218
+    val scratch32_w0     = 0x0220
+}
+
+// These are intended to be the universal TL parameters
+// for all the LLKI-enabled cores (including the SRoT).
+// They need to match those values called out in top_pkg.sv
+// Exceptions (when needed) are explictly coded into
+// the specific TLModuleImp
+object LLKITilelinkParameters {
+    val BeatBytes       = 8     // Should be = TL_DW / 8
+    val AddressBits     = 32    // Should be = TL_DW
+    val SourceBits      = 4     // Should be = TL_AIW
+    val SinkBits        = 2     // Should be = TL_DIW
+    val SizeBits        = 3     // Should be = TL_SZW
 }

@@ -38,6 +38,7 @@ import mitllBlocks.des3._
 import mitllBlocks.md5._
 import mitllBlocks.gps._
 import mitllBlocks.dft._
+import mitllBlocks.srot._
 
 object PinGen {
   def apply(): BasePin = {
@@ -92,6 +93,7 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode, corePLL: PLLNode)(implici
   with HasPeripheryDES3
   with HasPeripheryGPS
   with HasPeripheryMD5
+  with HasSROT
 {
   val tlclock = new FixedClockResource("tlclk", p(DevKitFPGAFrequencyKey))
 

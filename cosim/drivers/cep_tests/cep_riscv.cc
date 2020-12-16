@@ -1,4 +1,4 @@
-//************************************************************************
+// ************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
@@ -7,53 +7,56 @@
 // Description:    
 // Notes:          
 //
-//************************************************************************
+// ************************************************************************
+
 
 //
 // for self-modifying code!!!!! look for 0x5A!!!
 //
-#if 0
-    // *************************
-    // This is from native Linux's objdump 
-    // *************************
+/*
+
+// *************************
+// This is from native Linux's objdump 
+// *************************
 volatile char get_selfModCodeValue(void) {
-  74:	55                   	push   %rbp
-  75:	48 89 e5             	mov    %rsp,%rbp
-/home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_riscv.cc:33
-  return (volatile char)0x5A; // this value will be modified to test I-cache coherency
-  78:	b8 5a 00 00 00       	mov    $0x5a,%eax
-/home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_riscv.cc:34
-}
-  7d:	5d                   	pop    %rbp
-  7e:	c3                   	retq  
-    // *************************
-    // This is from RISCV's objdump under Linux
-    // *************************
-    //
-    // from OBJDUMP
-    get_selfModCodeValue():
+ 74:	55                   	push   %rbp
+    75:	48 89 e5             	mov    %rsp,%rbp
+   /home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_riscv.cc:33
+   return (volatile char)0x5A; // this value will be modified to test I-cache coherency
+ 78:	b8 5a 00 00 00       	mov    $0x5a,%eax
+   /home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_riscv.cc:34
+   }
+7d:	5d                   	pop    %rbp
+7e:	c3                   	retq  
+// *************************
+// This is from RISCV's objdump under Linux
+// *************************
+//
+// from OBJDUMP
+get_selfModCodeValue():
 /home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_exports.cc:321
 
-    char get_selfModCodeValue(void) {
-    14a0:	1141                	addi	sp,sp,-16
+char get_selfModCodeValue(void) {
+ 14a0:	1141                	addi	sp,sp,-16
     14a2:	e422                	sd	s0,8(sp)
     14a4:	0800                	addi	s0,sp,16
-	
-	00000000000014a6 <.L0 >:
-      /home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_exports.cc:322
-	return (volatile char)0x5A; // this value will be modified to test I-cache coherency
-    14a6:	05a00793          	li	a5,90
+    
+    00000000000014a6 <.L0 >:
+  /home/aduong/CEP/CEP-master/software/freedom-u-sdk/buildroot/package/cep_diag/src/cep_exports.cc:322
+    return (volatile char)0x5A; // this value will be modified to test I-cache coherency
+ 14a6:	05a00793          	li	a5,90
     //
     // *************************	
     // This is from RISCV's objdump under BARE mode
     // *************************	
     //	
-volatile char get_selfModCodeValue(void) {
-  return (volatile char)0x5A; // this value will be modified to test I-cache coherency
-}
-    80001a12:	05a00513          	li	a0,90
+    volatile char get_selfModCodeValue(void) {
+    return (volatile char)0x5A; // this value will be modified to test I-cache coherency
+  }
+ 80001a12:	05a00513          	li	a0,90
     80001a16:	8082                	ret
 #endif
+*/
 
 // Only for RISCV
 #ifdef RISCV_CPU
@@ -83,6 +86,159 @@ volatile char get_selfModCodeValue(void) {
 #endif
 
 
+//
+// Atomic
+// return old value before operation
+//
+uint64_t cep_atomic_op(uint64_t *ptr, uint64_t val,int OP) {
+  switch (OP) {
+  case ATOMIC_OP_EXCH    : return __atomic_exchange_n(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_ADD     : return __atomic_fetch_add(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_AND     : return __atomic_fetch_and(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_OR      : return __atomic_fetch_or(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_SUB     : return __atomic_fetch_sub(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_XOR     : return __atomic_fetch_xor(ptr,val,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_LOAD    : return __atomic_load_n(ptr,__ATOMIC_SEQ_CST); break;
+  case ATOMIC_OP_STORE   : __atomic_store_n(ptr,val,__ATOMIC_SEQ_CST); return 0; break;
+  }
+  return -1;
+}
+//
+// Lock via atomic exchange (load-reserved/store-conditional ONLY on cached region, see Sifive Manual on Atominc Operation)
+//
+int cep_exchAtomicTest(int coreId, uint64_t *ptr, uint64_t mySig, uint64_t partSig, uint64_t incVal, int loop) {
+  //
+  //
+  //
+  int errCnt = 0;
+  int timeOut = 20;
+  int i=1;
+  uint64_t myCurSig = mySig;
+  uint64_t regAdr = reg_base_addr + cep_scratch0_reg + (coreId * 16);
+  //
+  while (i <= loop) {
+    // strong compare
+    //    if (__atomic_compare_exchange_n(ptr,&myCurSig,partSig,0,__ATOMIC_SEQ_CST,__ATOMIC_SEQ_CST)) { // next
+    if (__atomic_compare_exchange_n(ptr,&myCurSig,partSig,0,__ATOMIC_ACQ_REL,__ATOMIC_ACQ_REL)) { // next    
+      DUT_WRITE32_64(regAdr,mySig);
+      DUT_WRITE32_64(regAdr+8,partSig);
+      timeOut = 20;
+      mySig   += incVal;
+      partSig += incVal;
+      i++;
+      //
+    } else {
+      DUT_WRITE32_64(regAdr,myCurSig); // what I got when false!!!
+      DUT_WRITE32_64(regAdr+8,(i << 16) | timeOut);
+      timeOut--;
+      if (timeOut <= 0) {
+	errCnt = i;
+	return errCnt;
+      }
+    }
+    myCurSig = mySig; // reset since myCurSig got exchange!!
+  }
+  return errCnt;
+}
+
+//
+// Simple Atomic test (all ops)
+//
+int cep_runAtomicTest(uint64_t *ptr, uint64_t expVal) {
+  int errCnt = 0;
+  uint64_t actVal, oriVal=expVal;
+
+  //
+  // load  the location with expVal
+  //
+  __atomic_store_n(ptr,expVal,__ATOMIC_SEQ_CST);
+  //
+  // readback and check
+  //
+  actVal = __atomic_load_n(ptr,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 0;
+    return errCnt;
+  }
+  //
+  // add 1's complement to it to make it all 0xFF...FF
+  //
+  actVal = __atomic_fetch_add(ptr,~expVal,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 1;
+    return errCnt;
+  }
+  expVal = (uint64_t)-1;
+  //
+  // Add 1 to get zero
+  //
+  actVal = __atomic_fetch_add(ptr,1,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 1;
+    return errCnt;
+  }
+  expVal = 0;
+  //
+  // walk a 1 via OR to make all 0xFF 
+  //
+  for (int i=0;i<64;i++) {
+    actVal = __atomic_fetch_or(ptr,((uint64_t)1 << i),__ATOMIC_SEQ_CST);
+    if (actVal != expVal) {
+      errCnt = (i << 16) | (1 << 2);
+      return errCnt;
+    }
+    expVal |= ((uint64_t)1 << i);
+  }
+  //
+  // Subract to get 1's complement
+  //
+  actVal = __atomic_fetch_sub(ptr,oriVal,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 3;
+    return errCnt;
+  }
+  expVal = ~oriVal;
+  //
+  // XOR to get all 0xFF...FF
+  //
+  actVal = __atomic_fetch_xor(ptr,~expVal,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 4;
+    return errCnt;
+  }
+  expVal = (uint64_t)-1;
+  //
+  // walk a 0 via AND to make all 0
+  //
+  for (int i=0;i<64;i++) {
+    actVal = __atomic_fetch_and(ptr,~((uint64_t)1 << i),__ATOMIC_SEQ_CST);
+    if (actVal != expVal) {
+      errCnt = (i << 16) | (1 << 5);
+      return errCnt;
+    }
+    expVal &= ~((uint64_t)1 << i);
+  }
+  //
+  // Exchange
+  //
+  actVal = __atomic_exchange_n(ptr,oriVal,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = (1 << 6);
+    return errCnt;
+  }
+  expVal = oriVal;
+  //
+  // Final load
+  //
+  actVal = __atomic_load_n(ptr,__ATOMIC_SEQ_CST);
+  if (actVal != expVal) {
+    errCnt = 1 << 7;
+    return errCnt;
+  }
+  //
+  return errCnt;
+}
+    
 //
 // KEEP THIS ONE UNDER 64bytes (cache block) and do not change unless ...
 //

@@ -26,12 +26,15 @@ import mitllBlocks.des3._
 import mitllBlocks.md5._
 import mitllBlocks.gps._
 import mitllBlocks.dft._
+import mitllBlocks.srot._
 
 // Default FreedomU500Config
 class FreedomU500Config extends Config(
   new WithJtagDTM            ++
   new WithNMemoryChannels(1) ++
   new WithNBigCores(4)       ++
+  new WithoutTLMonitors      ++
+  new WithDTS("mit-ll,rocketchip-cep", Nil) ++
   new BaseConfig
 )
 
@@ -45,10 +48,16 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
     GPIOParams(address = BigInt(0x64002000L), width = 4))
   case PeripheryMaskROMKey => List(
     MaskROMParams(address = 0x10000, name = "BootROM", depth = 4096))
-case PeripheryDES3Key => List(
+  case PeripheryDES3Key => List(
     DES3Params(address = BigInt(CEPBaseAddresses.des3_base_addr)))
   case PeripheryAESKey => List(
-    AESParams(address = BigInt(CEPBaseAddresses.aes_base_addr)))
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.aes_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.aes_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.aes_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.aes_llki_depth),
+      dev_name            = s"aes"
+    ))
   case PeripheryIIRKey => List(
     IIRParams(address = BigInt(CEPBaseAddresses.iir_base_addr)))
   case PeripheryIDFTKey => List(
@@ -67,6 +76,11 @@ case PeripheryDES3Key => List(
      RSAParams(address = BigInt(CEPBaseAddresses.rsa_base_addr)))  
   case PeripheryCEPRegistersKey => List(
     CEPREGSParams(address = BigInt(CEPBaseAddresses.cepregisters_base_addr)))
+  case SROTKey => List(
+    SROTParams(
+      slave_address   = BigInt(CEPBaseAddresses.srot_base_addr),
+      slave_depth     = BigInt(CEPBaseAddresses.srot_base_depth)
+    ))
 })
 
 // Freedom U500 Dev Kit

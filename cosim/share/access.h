@@ -85,12 +85,14 @@ public:
   //
   // Address is Byte Address
   //
+  void Write32_32(u_int32_t address, u_int32_t dat);
   void Write32_64(u_int32_t address, u_int64_t dat);
   void Write64_64(u_int64_t address, u_int64_t dat);  
 
 
   unsigned GetSimClk();
   void SimCheckPoint(char *saveFile);
+  u_int32_t Read32_32(u_int32_t address);
   u_int64_t Read32_64(u_int32_t address);
   u_int64_t Read64_64(u_int64_t address);    
   //

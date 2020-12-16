@@ -110,6 +110,20 @@ IpCore_st ipCores[CEP_TOTAL_CORES];
 // BEGIN: CEP MMAP Utility Functions
 //************************************************************************
 // cep_read - Read from a CEP address
+uint32_t cep_read32(int device, uint32_t pAddress) {
+#ifdef BARE_MODE
+  return *(volatile uint32_t*)(ipCores[device].address + pAddress);
+#elif SIM_ENV_ONLY
+  uint32_t d32;
+  DUT_READ32_32( ipCores[device].address + pAddress, d32);
+  return d32;
+#elif LINUX_MODE
+  return lnx_cep_read32(ipCores[device].address + pAddress);
+#else  
+    return *(uint32_t*)(&(ipCores[device].mem)[pAddress]);
+#endif
+}
+// 64-bits
 uint64_t cep_read(int device, uint32_t pAddress) {
 #ifdef BARE_MODE
   return *(volatile uint64_t*)(ipCores[device].address + pAddress);
@@ -122,13 +136,27 @@ uint64_t cep_read(int device, uint32_t pAddress) {
 #else  
     return *(uint64_t*)(&(ipCores[device].mem)[pAddress]);
 #endif
-    
 }
+
 uint64_t get_physical_adr(int device, uint32_t pAddress) {
   return (ipCores[device].address + pAddress);
 }
 
 // cep_write - Write to a CEP address
+//
+void cep_write32(int device, uint32_t pAddress, uint32_t pData) {
+#ifdef BARE_MODE
+  *(volatile uint32_t*)(ipCores[device].address + pAddress) = pData;  
+#elif SIM_ENV_ONLY
+  DUT_WRITE32_32( ipCores[device].address + pAddress, pData);
+#elif LINUX_MODE
+  return lnx_cep_write32(ipCores[device].address + pAddress, pData);  
+#else
+  memcpy(ipCores[device].mem + pAddress, &pData, sizeof(pData));
+#endif  
+}
+
+//64-bit
 void cep_write(int device, uint32_t pAddress, uint64_t pData) {
 #ifdef BARE_MODE
   *(volatile uint64_t*)(ipCores[device].address + pAddress) = pData;  
@@ -140,6 +168,7 @@ void cep_write(int device, uint32_t pAddress, uint64_t pData) {
   memcpy(ipCores[device].mem + pAddress, &pData, sizeof(pData));
 #endif  
 }
+
 //************************************************************************
 // END: CEP MMAP Utility Functions
 //************************************************************************

@@ -1,3 +1,14 @@
+#//************************************************************************
+#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// SPDX short identifier: BSD-2-Clause
+#//
+#// File Name:      Makefile.vc707
+#// Program:        Common Evaluation Platform (CEP)
+#// Description:    CEP Makefile speficially targetted for the VC707
+#// Notes:          
+#//
+#//************************************************************************
+
 # See LICENSE for license details.
 base_dir := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BUILD_DIR := $(base_dir)/builds/vc707-u500devkit
@@ -14,9 +25,9 @@ sifiveblocks_dir := $(base_dir)/sifive-blocks
 VSRCS := \
 	$(rocketchip_dir)/src/main/resources/vsrc/AsyncResetReg.v \
 	$(rocketchip_dir)/src/main/resources/vsrc/plusarg_reader.v \
-    $(rocketchip_dir)/src/main/resources/vsrc/EICG_wrapper.v \
-    $(base_dir)/src/main/resources/vsrc/AnalogToUInt.v \
-    $(base_dir)/src/main/resources/vsrc/UIntToAnalog.v \
+	$(rocketchip_dir)/src/main/resources/vsrc/EICG_wrapper.v \
+	$(base_dir)/src/main/resources/vsrc/AnalogToUInt.v \
+	$(base_dir)/src/main/resources/vsrc/UIntToAnalog.v \
 	$(sifiveblocks_dir)/vsrc/SRLatch.v \
 	$(FPGA_DIR)/common/vsrc/PowerOnResetFPGAOnly.v \
 	$(FPGA_DIR)/$(BOARD)/vsrc/sdio.v \
@@ -25,45 +36,65 @@ VSRCS := \
 	$(BUILD_DIR)/$(CONFIG_PROJECT).$(CONFIG).v \
 	$(base_dir)/src/main/resources/vsrc/AnalogToUInt.v \
 	$(base_dir)/src/main/resources/vsrc/UIntToAnalog.v \
-    $(base_dir)/../aes/aes_192.v \
-    $(base_dir)/../aes/round.v \
-    $(base_dir)/../aes/table.v \
-    $(base_dir)/../dsp/FIR_filter.v \
-    $(base_dir)/../dsp/IIR_filter.v \
-    $(base_dir)/../../generated_dsp_code/dft_top.v \
-    $(base_dir)/../../generated_dsp_code/idft_top.v \
-    $(base_dir)/../des3/des3.v \
-    $(base_dir)/../des3/key_sel3.v \
-    $(base_dir)/../des3/crp.v \
-    $(base_dir)/../des3/sbox1.v \
-    $(base_dir)/../des3/sbox2.v \
-    $(base_dir)/../des3/sbox3.v \
-    $(base_dir)/../des3/sbox4.v \
-    $(base_dir)/../des3/sbox5.v \
-   	$(base_dir)/../des3/sbox6.v \
-   	$(base_dir)/../des3/sbox7.v \
+	$(base_dir)/../llki/top_pkg.sv \
+	$(base_dir)/../llki/llki_pkg.sv \
+	$(base_dir)/../aes/aes_192_mock_tss.sv \
+	$(base_dir)/../aes/aes_192.v \
+	$(base_dir)/../aes/round.v \
+	$(base_dir)/../aes/table.v \
+	$(base_dir)/../dsp/FIR_filter.v \
+	$(base_dir)/../dsp/IIR_filter.v \
+	$(base_dir)/../../generated_dsp_code/dft_top.v \
+	$(base_dir)/../../generated_dsp_code/idft_top.v \
+	$(base_dir)/../des3/des3.v \
+	$(base_dir)/../des3/key_sel3.v \
+	$(base_dir)/../des3/crp.v \
+	$(base_dir)/../des3/sbox1.v \
+	$(base_dir)/../des3/sbox2.v \
+	$(base_dir)/../des3/sbox3.v \
+	$(base_dir)/../des3/sbox4.v \
+	$(base_dir)/../des3/sbox5.v \
+	$(base_dir)/../des3/sbox6.v \
+	$(base_dir)/../des3/sbox7.v \
 	$(base_dir)/../des3/sbox8.v \
-    $(base_dir)/../md5/md5.v \
-    $(base_dir)/../md5/pancham.v \
-    $(base_dir)/../md5/pancham_round.v \
-    $(base_dir)/../md5/pancham_round.v \
-    $(base_dir)/../gps/gps.v \
-    $(base_dir)/../gps/gps_clkgen.v \
-    $(base_dir)/../gps/cacode.v \
-    $(base_dir)/../gps/pcode.v \
-    $(base_dir)/../rsa/rtl/modexp_core.v \
-    $(base_dir)/../rsa/rtl/montprod.v \
-    $(base_dir)/../rsa/rtl/residue.v \
-    $(base_dir)/../rsa/rtl/blockmem2r1w.v \
-    $(base_dir)/../rsa/rtl/blockmem2r1w.v \
-    $(base_dir)/../rsa/rtl/blockmem2r1wptr.v \
-    $(base_dir)/../rsa/rtl/blockmem2rptr1w.v \
-    $(base_dir)/../rsa/rtl/blockmem1r1w.v \
-    $(base_dir)/../rsa/rtl/shr.v \
-    $(base_dir)/../rsa/rtl/shl.v \
-    $(base_dir)/../rsa/rtl/adder.v \
-    $(base_dir)/../sha256/sha256.v \
-    $(base_dir)/../sha256/sha256_k_constants.v \
-    $(base_dir)/../sha256/sha256_w_mem.v 
+	$(base_dir)/../md5/md5.v \
+	$(base_dir)/../md5/pancham.v \
+	$(base_dir)/../md5/pancham_round.v \
+	$(base_dir)/../md5/pancham_round.v \
+	$(base_dir)/../gps/gps.v \
+	$(base_dir)/../gps/gps_clkgen.v \
+	$(base_dir)/../gps/cacode.v \
+	$(base_dir)/../gps/pcode.v \
+	$(base_dir)/../rsa/rtl/modexp_core.v \
+	$(base_dir)/../rsa/rtl/montprod.v \
+	$(base_dir)/../rsa/rtl/residue.v \
+	$(base_dir)/../rsa/rtl/blockmem2r1w.v \
+	$(base_dir)/../rsa/rtl/blockmem2r1w.v \
+	$(base_dir)/../rsa/rtl/blockmem2r1wptr.v \
+	$(base_dir)/../rsa/rtl/blockmem2rptr1w.v \
+	$(base_dir)/../rsa/rtl/blockmem1r1w.v \
+	$(base_dir)/../rsa/rtl/shr.v \
+	$(base_dir)/../rsa/rtl/shl.v \
+	$(base_dir)/../rsa/rtl/adder.v \
+	$(base_dir)/../sha256/sha256.v \
+	$(base_dir)/../sha256/sha256_k_constants.v \
+	$(base_dir)/../sha256/sha256_w_mem.v \
+	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_assert.sv \
+	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_util_pkg.sv \
+	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_fifo_sync.sv \
+	$(base_dir)/../../opentitan/hw/ip/prim_generic/rtl/prim_generic_ram_2p.sv \
+	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_pkg.sv \
+	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_adapter_reg.sv \
+	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_adapter_host.sv \
+	$(base_dir)/../llki/llki_pp_wrapper.sv \
+	$(base_dir)/../llki/srot_wrapper.sv \
+	$(base_dir)/../llki/tlul_err.sv
+
+# Freedom U500 TCL scripts have been expanded to support passing of 
+# include directories to synthesis (which is important for SystemVerilog packages)
+# It is unclear why including multiple directories doesn't work as expected
+# (per UG835, v2019.2, pg 1703 creating a list *should* work, although it doesn't seem to)
+INCDIRS := \
+	$(base_dir)/../../opentitan/hw/ip/prim/rtl
 
 include common.mk

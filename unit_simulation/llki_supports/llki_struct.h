@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      llki_struct.h
 // Program:        Common Evaluation Platform (CEP)

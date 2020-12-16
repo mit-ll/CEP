@@ -166,3 +166,10 @@ License terms       :
                         // ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 Function            : This core provides a standard SHA hash function, where the resulting hash value is 256 bits.  It will be integrated as a HW accelerator into the SoC.
 
+Title               : opentitan
+Source              : https://github.com/lowRISC/opentitan
+CEP Directory       : ./opentitan
+License Description : Apache License v2.0
+License Terms       : https://github.com/lowRISC/opentitan/blob/master/LICENSE
+Function            : OpenTitan is the first open source project building a transparent, high-quality reference design and integration guidelines for silicon root of trust (RoT) chips.
+                      Main website: www.opentitan.org

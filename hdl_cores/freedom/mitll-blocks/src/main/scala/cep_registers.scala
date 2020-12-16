@@ -109,6 +109,7 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
                 val word5               = UInt(64.W)
                 val word6               = UInt(64.W)
                 val word7               = UInt(64.W)
+                val word32_0            = UInt(32.W)
             }
             object scratch_Class {
                 def init: scratch_Class = {
@@ -121,6 +122,7 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
                     wire.word5          := 0.U
                     wire.word6          := 0.U
                     wire.word7          := 0.U
+                    wire.word32_0       := 0.U
                     wire
                 }
             }
@@ -241,7 +243,7 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
           CEPRegisterAddresses.core0_status -> RegFieldGroup("core0 Status", Some("core0 status"),    Seq(RegField  (64, core0_status))),	  
           CEPRegisterAddresses.core1_status -> RegFieldGroup("core1 Status", Some("core0 status"),    Seq(RegField  (64, core1_status))),	  
           CEPRegisterAddresses.core2_status -> RegFieldGroup("core2 Status", Some("core0 status"),    Seq(RegField  (64, core2_status))),	  
-          CEPRegisterAddresses.core3_status -> RegFieldGroup("core3 Status", Some("core0 status"),    Seq(RegField  (64, core3_status))),	  
+          CEPRegisterAddresses.core3_status -> RegFieldGroup("core3 Status", Some("core0 status"),    Seq(RegField  (64, core3_status)))
 	  )
 	}
 }

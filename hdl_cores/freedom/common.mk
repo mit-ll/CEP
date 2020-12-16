@@ -32,7 +32,10 @@ SBT ?= java -jar $(rocketchip_dir)/sbt-launch.jar
 
 # Build firrtl.jar and put it where chisel3 can find it.
 FIRRTL_JAR ?= $(rocketchip_dir)/firrtl/utils/bin/firrtl.jar
-FIRRTL ?= java -Xmx2G -Xss8M -cp $(FIRRTL_JAR) firrtl.Driver
+#FIRRTL ?= java -Xmx2G -Xss8M -cp $(FIRRTL_JAR) firrtl.Driver
+# 10/27/20 tony d. as recommended from the message
+#
+FIRRTL ?= java -Xmx2G -Xss8M -cp $(FIRRTL_JAR) firrtl.stage.FirrtlMain
 
 $(FIRRTL_JAR): $(shell find $(rocketchip_dir)/firrtl/src/main/scala -iname "*.scala")
 	$(MAKE) -C $(rocketchip_dir)/firrtl SBT="$(SBT)" root_dir=$(rocketchip_dir)/firrtl build-scala
@@ -76,14 +79,19 @@ f := $(BUILD_DIR)/$(CONFIG_PROJECT).$(CONFIG).vsrcs.F
 $(f):
 	echo $(VSRCS) > $@
 
+incdirs := $(BUILD_DIR)/$(CONFIG_PROJECT).$(CONFIG).incdirs
+$(incdirs):
+	echo $(INCDIRS) > $@
+
 bit := $(BUILD_DIR)/obj/$(MODEL).bit
-$(bit): $(romgen) $(f)
+$(bit): $(romgen) $(f) $(incdirs)
 	cd $(BUILD_DIR); vivado \
 		-nojournal -mode batch \
 		-source $(fpga_common_script_dir)/vivado.tcl \
 		-tclargs \
 		-top-module "$(MODEL)" \
 		-F "$(f)" \
+		-include_dirs "$(incdirs)" \
 		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
 		-board "$(BOARD)"
 

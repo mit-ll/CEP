@@ -28,8 +28,10 @@ u_long curTarget = 0;
 simPio gCpu;
 
 void sim_RunClk(int a) { access axc; axc.RunClk(a); }
+u_int32_t sim_Read32_32(u_int32_t adr) { access axc; return axc.Read32_32(adr); }
 u_int64_t sim_Read32_64(u_int32_t adr) { access axc; return axc.Read32_64(adr); }
 u_int64_t sim_Read64_64(u_int64_t adr) { access axc; return axc.Read64_64(adr); }
+void sim_Write32_32(u_int32_t adr, u_int32_t data) { access axc; axc.Write32_32(adr,data); }
 void sim_Write32_64(u_int32_t adr, u_int64_t data) { access axc; axc.Write32_64(adr,data); }
 void sim_Write64_64(u_int64_t adr, u_int64_t data) { access axc; axc.Write64_64(adr,data); }
 void sim_Framer_RdWr(u_int32_t adr, u_int32_t wrDat, u_int32_t *rdDat) { access axc; axc.Framer_RdWr(adr,wrDat,rdDat); }

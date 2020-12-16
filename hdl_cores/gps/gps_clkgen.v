@@ -23,6 +23,8 @@ output gps_clk_fast;
 output gps_clk_slow;
 output gps_rst;
 
+reg [2:0] count = 3'h0;
+reg enable_slow_clk;
 
 `ifdef SYNTHESIS
 wire       clk_fb;

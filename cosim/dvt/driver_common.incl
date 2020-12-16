@@ -73,6 +73,18 @@ task processCmd;
 	end
 
 //
+// WRITE32_32
+//
+	`SHIPC_WRITE32_32 : begin 
+`ifdef SHIPC_WRITE32_32_TASK
+	`SHIPC_WRITE32_32_TASK;
+`undef SHIPC_WRITE32_32_TASK
+`else
+	unsupportTask("SHIPC_WRITE32_32");
+`endif
+	end
+
+//
 // WRITE64_64
 //
 	`SHIPC_WRITE64_64 : begin 
@@ -81,6 +93,18 @@ task processCmd;
 `undef SHIPC_WRITE64_64_TASK
 `else
 	unsupportTask("SHIPC_WRITE64_64");
+`endif
+	end
+
+//
+// READ32_32
+//
+	`SHIPC_READ32_32 : begin 
+`ifdef SHIPC_READ32_32_TASK
+	`SHIPC_READ32_32_TASK;
+`undef SHIPC_READ32_32_TASK
+`else
+	unsupportTask("SHIPC_READ32_32");
 `endif
 	end
 

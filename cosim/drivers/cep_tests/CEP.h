@@ -11,8 +11,8 @@
 
 
     // CEP Verion String
-    const uint8_t CEP_MAJOR_VERSION = 0x02;
-    const uint8_t CEP_MINOR_VERSION = 0x50;
+    const uint8_t CEP_MAJOR_VERSION = 0x03;
+    const uint8_t CEP_MINOR_VERSION = 0x00;
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;
@@ -22,8 +22,6 @@
     // Maximum expected name size for the ipCoreData structure
     #define MAX_CONFIG_STRING_K     32
 
-    // Defines the total number of cores in the CEP
-    #define CEP_TOTAL_CORES         11
 
     // Indexes used to select the desired core
     #define AES_BASE_K              0
@@ -37,6 +35,9 @@
     #define IIR_BASE_K              8
     #define GPS_BASE_K              9
     #define CEP_VERSION_REG_K       10
+    #define SROT_BASE_K             11
+    // Defines the total number of cores in the CEP
+    #define CEP_TOTAL_CORES         12
 
     // Structure defining the base address and status
     // of the CEP cores
@@ -49,18 +50,18 @@
     // Array containing the base addresses and enable status of
     // all the CEP cores (indexed by the constants above)
     const cep_core_info_t cep_core_info[CEP_TOTAL_CORES] = {
-        {"AES",             0x70000000, true},      // AES
-        {"MD5",             0x70010000, true},      // MD5
+        {"AES",             0x70000000, true},     // AES
+        {"MD5",             0x70010000, true},     // MD5
         {"SHA256",          0x70020000, true},     // SHA256
         {"RSA",             0x70030000, true},     // RSA
-        {"DES3",            0x70040000, true},      // DES3
+        {"DES3",            0x70040000, true},     // DES3
         {"DFT",             0x70050000, true},     // DFT
         {"IDFT",            0x70060000, true},     // IDFT
-        {"FIR",             0x70070000, true},      // FIR
+        {"FIR",             0x70070000, true},     // FIR
         {"IIR",             0x70080000, true},     // IIR
         {"GPS",             0x70090000, true},     // GPS
-        {"CEP Version",     0x700F0000, true}       // CEP Version Register
-    };
+        {"CEP Version",     0x700F0000, true},     // CEP Version Register
+        {"SROT",            0x70100000, true}};    // SRoT
 
     // Constants copied from AES.h
     const uint32_t AES_KEY_BITS     = 192;
@@ -228,6 +229,23 @@
     const uint32_t FIR_OUT_ADDR      = FIR_IN_DATA  + BYTES_PER_WORD;
     const uint32_t FIR_OUT_DATA      = FIR_OUT_ADDR + BYTES_PER_WORD;
     const uint32_t FIR_DONE          = 0;
-    const uint32_t FIR_RESET = 40;
-    const uint32_t FIR_SHIFT = 48;
-    const uint32_t FIR_SHIFT2= 56;   
+    const uint32_t FIR_RESET        = 40;
+    const uint32_t FIR_SHIFT        = 48;
+    const uint32_t FIR_SHIFT2       = 56;   
+
+    // Constants related to the Surrogate Root of Trust
+    // These constants must be equal to those in llki_pkg.sv
+    const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;
+    const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;
+    const uint32_t SROT_KEYRAM_ADDR                 = 0x00000120;
+    const uint32_t SROT_KEYRAM_SIZE                 = 0x00000040;
+
+    // Reminder, data width is 64-bits
+    const uint32_t SROT_CTRLSTS_ADDR                = 0x00000000;
+    const uint32_t SROT_CTRLSTS_MODEBIT0_MASK       = 0x0000000000000001;   // If either mode bit is set, TileLink access to the Key and Key Index RAMs are disabled
+                                                                            // These bits are SET ONLY    
+    const uint32_t SROT_CTRLSTS_MODEBIT1_MASK       = 0x0000000000000002;
+    const uint32_t SROT_CTRLSTS_RESP_WAITING_MASK   = 0x0000000000000004;
+ 
+    const uint32_t SROT_LLKIC2_SENDRECV_ADDR        = 0x00000008;
+

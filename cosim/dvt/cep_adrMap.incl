@@ -12,16 +12,118 @@
 `ifndef CEP_ADRMAP_INCL
 `define CEP_ADRMAP_INCL
 
+// for SPU/UART/GPIO
+`define other_base_addr         'h6400_0000
+`define other_base_size         'h3000
+//
+// Debug
+//
+// NEED to multiply offset x4 to get byte address
+`define debug_base_addr           'h0000_0000
+`define	AbstractData0			'h04 
+`define	AbstractData11			'h0f 	
+`define	DebugModuleControl		'h10 
+`define	DebugModuleStatus		'h11 
+`define	HartInfo			'h12 
+`define	HaltSummary1			'h13 
+`define	HartArrayWindowSelect		'h14 
+`define	HartArrayWindow			'h15 
+`define	AbstractControlStatus		'h16 
+`define	AbstractCommand			'h17 
+`define	AbstractCommandAutoexec		'h18 
+`define	ConfigurationStringPointer0	'h19 
+`define	ConfigurationStringPointer1	'h1a 
+`define	ConfigurationStringPointer2	'h1b 
+`define	ConfigurationStringPointer3	'h1c 
+`define	NextDebugModule			'h1d 
+`define	ProgramBuffer0			'h20 
+`define	ProgramBuffer15			'h2f 
+`define	AuthenticationData		'h30 
+`define	HaltSummary2			'h34 
+`define	HaltSummary3			'h35 
+`define	SystemBusAddress_127_96		'h37 
+`define	SystemBusAccessControlStatus	'h38 
+`define	SystemBusAddress31_0		'h39 
+`define	SystemBusAddress63_32		'h3a 
+`define	SystemBusAddress95_64		'h3b 
+`define	SystemBusData31_0		'h3c 
+`define	SystemBusData63_32		'h3d 
+`define	SystemBusData95_64		'h3e 
+`define	SystemBusData127_96		'h3f 
+`define	HaltSummary0			'h40 
+
+//
+// byte offset but access as 32-bit ONLY
+`define uart_base_addr           'h6400_0000
+`define uart_txfifo       		'h00
+`define uart_rxfifo       		'h04
+`define uart_txctrl       		'h08
+//`define uart_txmark       		'h0a
+`define uart_rxctrl       		'h0c
+//`define uart_rxmark       		'h0e
+`define uart_ie       			'h10
+`define uart_ip      			'h14
+`define uart_div        		'h18
+//
+// byte offset but access as 32-bit ONLY
+//
+`define spi_base_addr            'h6400_1000
+  `define spi_sckdiv    		'h00
+  `define spi_sckmode   		'h04
+  `define spi_csid      		'h10
+  `define spi_csdef     		'h14
+  `define spi_csmode    		'h18
+  `define spi_dcssck    		'h28
+  `define spi_dsckcs    		'h2a
+  `define spi_dintercs  		'h2c
+  `define spi_dinterxfr 		'h2e
+  `define spi_extradel  		'h38
+  `define spi_sampledel 		'h3c
+  `define spi_fmt       		'h40
+  `define spi_len       		'h42
+  `define spi_txfifo    		'h48
+  `define spi_rxfifo    		'h4c
+  `define spi_txmark    		'h50
+  `define spi_rxmark    		'h54
+  `define spi_insnmode  		'h60
+  `define spi_insnfmt   		'h64
+  `define spi_insnproto 		'h65
+  `define spi_insncmd   		'h66
+  `define spi_insnpad   		'h67
+  `define spi_ie        		'h70
+  `define spi_ip        		'h74
+//
+`define gpio_base_addr           'h6400_2000
+  `define gpio_pin			'h000 
+  `define gpio_input_en			'h004 
+  `define gpio_output_en		'h008 
+  `define gpio_port_output		'h00C 
+  `define gpio_pue			'h010 
+  `define gpio_ds			'h014 
+  `define gpio_rise_ie			'h018 
+  `define gpio_rise_ip			'h01C 
+  `define gpio_fall_ie			'h020 
+  `define gpio_fall_ip			'h024 
+  `define gpio_high_ie			'h028 
+  `define gpio_high_ip			'h02C 
+  `define gpio_low_ie			'h030 
+  `define gpio_low_ip			'h034 
+  `define gpio_iof_en			'h038 
+  `define gpio_iof_sel			'h03C 
+  `define gpio_out_xor			'h040 
+//
+
+//
 `define MAX_CORES                4
 
-`define ddr3_base_adr           'h80000000
-`define ddr3_base_size          'h40000000
+`define ddr3_base_adr           'h8000_0000
+`define ddr3_base_size          'h4000_0000
 
-`define cep_fpga_base_adr       'h70000000
-`define cep_fpga_base_size      'h01000000
+`define cep_fpga_base_adr       'h7000_0000
+`define cep_fpga_base_size      'h0100_0000
 
-`define	aes_base_addr           'h70000000
-`define	fir_base_addr           'h70070000
+`define	aes_base_addr           'h7000_0000
+`define	fir_base_addr           'h7007_0000
 `define aes_ctrlstatus_addr      'h0000
 `define aes_pt0_addr             'h0008
 `define aes_pt1_addr             'h0010
@@ -37,6 +139,10 @@
 `define fir_datain_data_addr	 'h0010
 `define fir_dataout_addr_addr	 'h0018
 `define fir_dataout_data_addr	 'h0020
+
+`define	srot_base_addr           'h7010_0000
+
+//`define CEP_MAJOR_VERSION	  'h02
 
 // 64bytes
 `define cep_cache_size          64
@@ -72,8 +178,8 @@
  
 //
 `define	reg_base_addr           'h700F_0000
-`define   CEP_VERSION_REG		'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h71020000_00000000
+`define   CEP_VERSION_REG	'h700F_0000
+`define CEP_EXPECTED_VERSION 	'h00030000_00000000
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set
@@ -111,6 +217,5 @@
 `define   cep_core1_status      'h0208
 `define   cep_core2_status      'h0210
 `define   cep_core3_status      'h0218
-
 `endif
 

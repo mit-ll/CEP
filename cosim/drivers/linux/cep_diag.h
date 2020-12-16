@@ -38,6 +38,8 @@ extern "C" {
   //
   u_int64_t lnx_cep_read(u_int32_t offs);
   void lnx_cep_write(u_int32_t offs,u_int64_t pData);
+  u_int32_t lnx_cep_read32(u_int32_t offs);
+  void lnx_cep_write32(u_int32_t offs,u_int32_t pData);
   //
   u_int64_t lnx_mem_read(u_int32_t offs);
   void lnx_mem_write(u_int32_t offs,u_int64_t pData);  

@@ -5,16 +5,18 @@
 #include <stddef.h>
 #include <stdlib.h>
 
+#include <stdint.h>
+
 //#include <sys/types.h>
 #include "simdiag_global.h"
 
 //
 // random generator
 //
-extern void Random48_srand48(u_long seed);
-extern u_long Random48_mrand48 (void);
+extern void Random48_srand48(uint64_t seed);
+extern uint64_t Random48_mrand48 (void);
 extern int Random48_rand(void);
-extern u_long Random48_mrand48_custom (u_long *Random48_customDiagRandomNumber);
+extern uint64_t Random48_mrand48_custom (uint64_t *Random48_customDiagRandomNumber);
 
 #endif // RANDOM48_H
 

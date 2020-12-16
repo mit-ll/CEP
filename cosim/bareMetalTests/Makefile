@@ -56,6 +56,9 @@ BARE_TEST_LIST = 		\
 	ddr3			\
 	cacheCoherence		\
 	idcache_smc		\
+	miscTests		\
+	lrscOps			\
+	atomicOps		\
 
 
 

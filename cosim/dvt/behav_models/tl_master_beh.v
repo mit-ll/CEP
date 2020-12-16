@@ -280,7 +280,7 @@ module tl_master_beh
 	 if (!tl_err && 
 	     ((tl_master_d_bits_opcode != `TL_D_ACCESSACKDATA) ||
 	      (tl_master_d_bits_param != 0) ||
-	      (tl_master_d_bits_size != 3) ||
+//	      (tl_master_d_bits_size != 3) ||
 	      (tl_master_d_bits_source != src_id) ||
 	      (tl_master_d_bits_denied) ||
 	      (tl_master_d_bits_corrupt))) begin
@@ -296,6 +296,79 @@ module tl_master_beh
       end      
    endtask 
 
+   task tl_x_ul_read_generic;
+      input [SRC_SIZE-1:0] src_id;
+      input [ADR_WIDTH-1:0] a;
+      input [BUS_SIZE-1:0]   mask;      
+      output [DATA_WIDTH-1:0] d;
+      //
+      begin
+	 checkReset();
+	 if (tl_err) disable tl_a_ul_read;
+	 //`logI("%m : src=%d a=0x%x %t",src_id,a,$time);
+	 //
+	 // use negedge to drive output
+	 @(posedge clock); `TICK_DELAY;
+	 tl_master_a_bits_opcode = `TL_A_GET;
+	 tl_master_a_bits_param  = 0; // must
+	 if (mask == ((1<<BUS_SIZE)-1))	 	 
+	   tl_master_a_bits_size   = 3; // log2(8bytes)
+	 else
+	   tl_master_a_bits_size   = 2; // log2(8bytes)	 
+	 tl_master_a_bits_source = src_id;
+	 tl_master_a_bits_address= a;
+//	 tl_master_a_bits_mask   = 'hFF;
+	 tl_master_a_bits_mask   = mask;	 
+	 tl_master_a_bits_data   = 0; // dont care
+	 tl_master_a_valid       = 1; // issue a valid
+	 // wait until slave took it
+	 i = 0;
+	 @(posedge clock);
+	 while (!tl_master_a_ready && (i < MAX_TIMEOUT)) begin
+	    i = i + 1;	    	    
+	    @(posedge clock);	    
+	    if (i >= MAX_TIMEOUT) begin
+	       `logE(" **ERROR** timeout while waiting for ready on channelA src=%d a=0x%x",src_id,a);
+	       tl_err = 1;
+	    end
+	 end
+	 //
+	 `TICK_DELAY;	 
+	 tl_master_d_ready = 1; // ready to accept
+	 tl_master_a_valid = 0; // take valid away
+	 //
+	 // wait on channel D for  respond
+	 i = 0;
+	 @(posedge clock);	 	 
+	 //
+	 while (!tl_err && !tl_master_d_valid) begin
+	    i = i + 1;
+	    @(posedge clock);
+	    if (i > MAX_TIMEOUT) begin
+	       `logE("**ERROR** timeout while waiting for data from channelD src=%d a=0x%x",src_id,a);
+	       tl_err = 1;		  
+	    end
+	 end
+	 // check and verify the data is for this tracaction
+	 if (!tl_err && 
+	     ((tl_master_d_bits_opcode != `TL_D_ACCESSACKDATA) ||
+	      (tl_master_d_bits_param != 0) ||
+//	      (tl_master_d_bits_size != 3) ||
+	      (tl_master_d_bits_source != src_id) ||
+	      (tl_master_d_bits_denied) ||
+	      (tl_master_d_bits_corrupt))) begin
+	    `logE("**ERROR** src_id=%d reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",src_id,
+		     tl_master_d_bits_opcode,tl_master_d_bits_param,tl_master_d_bits_size,tl_master_d_bits_source,tl_master_d_bits_denied,tl_master_d_bits_corrupt);
+	    tl_err = 1;
+	 end
+	 else if (!tl_err) begin
+	    d = tl_master_d_bits_data;	       
+	    `logI("src=%d a=0x%x d=0x%x",src_id,a,d);
+	 end
+	 @(posedge clock);	 
+      end      
+   endtask 
+   
 
    
    //
@@ -326,13 +399,19 @@ module tl_master_beh
 	 checkReset();
 	 if (tl_err) disable tl_a_ul_write;
 	 `logI("src=%d a=0x%x d=0x%x mask=0x%x",src_id,a,d,mask);	 
-	 @(posedge clock);  `TICK_DELAY;	 
+	 @(posedge clock);  `TICK_DELAY;
+	 tl_master_a_bits_opcode = `TL_A_PUTFULLDATA;	 
+	 /*
 	 if (mask == ((1<<BUS_SIZE)-1))
 	   tl_master_a_bits_opcode = `TL_A_PUTFULLDATA;
 	 else
 	   tl_master_a_bits_opcode = `TL_A_PUTPARTIALDATA;	 
+	  */
 	 tl_master_a_bits_param  = 0; // must
-	 tl_master_a_bits_size   = 3; // log2(8bytes)
+	 if (mask == ((1<<BUS_SIZE)-1))	 
+	   tl_master_a_bits_size   = 3; // log2(8bytes)
+	 else
+	   tl_master_a_bits_size   = 2; // log2(8bytes)	   
 	 tl_master_a_bits_source = src_id;
 	 tl_master_a_bits_address= a;
 	 tl_master_a_bits_mask   = mask;
@@ -371,7 +450,7 @@ module tl_master_beh
 	    if (!tl_err &&
 		((tl_master_d_bits_opcode != `TL_D_ACCESSACK) ||
 		 (tl_master_d_bits_param != 0) ||
-		 (tl_master_d_bits_size != 3) ||
+//		 (tl_master_d_bits_size != 3) ||
 		 (tl_master_d_bits_source != src_id) ||
 		 (tl_master_d_bits_denied) ||
 		 (tl_master_d_bits_corrupt))) begin

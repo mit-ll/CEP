@@ -70,6 +70,8 @@ ISA_VM_LIST = $(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}0) \
 ISA_SPECIAL_TESTS= \
 	rv64mi-p-scall \
 	rv64si-p-wfi \
+	rv64ui-p-simple \
+	rv64ud-p-structural \
 
 #
 # ------------------------------------
@@ -103,6 +105,16 @@ ISA_SINGETHR_LIST = \
 	rv64ua-p-amoxor_w \
 	rv64ua-p-amoadd_d \
 	rv64ua-p-amoadd_w \
+	rv64ua-p-amoand_w \
+	rv64ua-p-amomax_d \
+	rv64ua-p-amomaxu_d \
+	rv64ua-p-amomaxu_w \
+	rv64ua-p-amomax_w \
+	rv64ua-p-amomin_d \
+	rv64ua-p-amominu_d \
+	rv64ua-p-amominu_w \
+	rv64ua-p-amomin_w \
+	rv64ud-p-ldst \
 
 #
 # ------------------------------------
@@ -122,15 +134,6 @@ ISA_PARALLEL_TEST_LIST = \
 	rv64si-p-ma_fetch \
 	rv64si-p-sbreak \
 	rv64si-p-scall \
-	rv64ua-p-amoand_w \
-	rv64ua-p-amomax_d \
-	rv64ua-p-amomaxu_d \
-	rv64ua-p-amomaxu_w \
-	rv64ua-p-amomax_w \
-	rv64ua-p-amomin_d \
-	rv64ua-p-amominu_d \
-	rv64ua-p-amominu_w \
-	rv64ua-p-amomin_w \
 	rv64ud-p-fadd \
 	rv64ud-p-fclass \
 	rv64ud-p-fcmp \
@@ -139,10 +142,8 @@ ISA_PARALLEL_TEST_LIST = \
 	rv64ud-p-fdiv \
 	rv64ud-p-fmadd \
 	rv64ud-p-fmin \
-	rv64ud-p-ldst \
 	rv64ud-p-move \
 	rv64ud-p-recoding \
-	rv64ud-p-structural \
 	rv64uf-p-fadd \
 	rv64uf-p-fclass \
 	rv64uf-p-fcmp \
@@ -179,7 +180,6 @@ ISA_PARALLEL_TEST_LIST = \
 	rv64ui-p-lwu \
 	rv64ui-p-or \
 	rv64ui-p-ori \
-	rv64ui-p-simple \
 	rv64ui-p-sll \
 	rv64ui-p-slli \
 	rv64ui-p-slliw \

@@ -196,9 +196,12 @@ public:
   // 64-bit addeess space
   // ==========================================
   //
+  void Write32_32(u_int32_t adr, u_int32_t dat) ;
   void Write64_32(u_int64_t adr, u_int32_t dat) ;
   void Write64_64(u_int64_t adr, u_int64_t dat) ;
-  void Write32_64(u_int32_t adr, u_int64_t dat) ;  
+  void Write32_64(u_int32_t adr, u_int64_t dat) ; 
+
+  u_int32_t Read32_32(u_int32_t adr) ; 
   u_int32_t Read64_32(u_int64_t adr) ;
   u_int64_t Read64_64(u_int64_t adr) ;
   u_int64_t Read32_64(u_int32_t adr) ;

@@ -452,17 +452,3 @@ make CADENCE=1      <-- run simulation targetting Cadence XCellium on RHEL7
 * By default, under each test directory, one file will be created **if and only if** it is not yet there: **vsim.do**. It is used when **vsim** command is called to control the wave capturing.. If there is a need to override, users are free to modify and change it to anyway to fit the needs. Makefile will not overwrite it as long as it is there. 
 
 * Under bare metal mode, some of main memory locations are used as mailbox to help RISCV core tracking and printing. See .**../cosim/dvt/cep_adrMap.incl** file. **NOTE**: there is also a file under .../cosim/include/cep_adrMap.h This file is auto-generated from the cep_adrMap.incl mentioned. Therefore, any modification should be made to the cep_adrMap.incl file.
-
-# Food for thought #
-
- * At the time of this writing, running regression is done one test at a time on the same machine, serially. It takes about day+ to run all tests. As more tests are added or moving the platform to support ASIC, there will be hundreds of tests added to verify full coverage of the design before any fabrication attempted. Running serially is not do-able as turn around time is key during physical design and verification process for ASIC. This requires moving to support multiple machines (as on a cloud or grid/networks) where tests can be batched to run concurrently...The Makefile structure already takes that in mind and supports it. The requirements are the grid setup where all the machines on the networks need to be configured identically w.r.t where the tools are, all disks are mounted and visible... Not sure MIT LL support such a thing due to security??
- 
- * The environment is also capable of supporting distributed simulation where multiple large blocks (multi corer per board, big large ASIC, etc...) can be spawn off to run on different machines (or physical cores) to speed up simulation. However, this requires more simulation license usages and some manual system splitting during test bench construction.
- 
- * The environment also can be expanded to support socket communication instead of shared memory such that the DUT can be run off an emulated system (Amazon FPGA cloud??) to get more performance. This should be able to support booting Linux OS for higher level verification.
- 
-   
-
-
-
-

@@ -529,6 +529,14 @@ void shIpc::Write12Bytes2Mailbox(int wordPos, u_int32_t *data) {
 // 64-bit addeess space
 // ==========================================
 //
+void shIpc::Write32_32(u_int32_t adr, u_int32_t dat) {
+  mAdr   = adr;
+  // Set data stuff
+  mPar[0] = dat;
+  // set cmd
+  SendCmdNwait(SHIPC_WRITE32_32);
+}
+
 void shIpc::Write64_64(u_int64_t adr, u_int64_t dat) {
   mAdr   = adr;
   // Set data stuff
@@ -553,6 +561,14 @@ void shIpc::Write64_32(u_int64_t adr, u_int32_t dat) {
   mPar[0] = dat;
   // set cmd
   SendCmdNwait(SHIPC_WRITE64_32);
+}
+
+u_int32_t shIpc::Read32_32(u_int32_t adr) {
+  mAdr = adr;
+  // set cmd
+  SendCmdNwait(SHIPC_READ32_32);
+  // Set data stuff
+  return mPar[0];
 }
 
 u_int64_t shIpc::Read64_64(u_int64_t adr) {

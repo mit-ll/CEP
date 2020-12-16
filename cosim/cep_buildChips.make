@@ -150,6 +150,7 @@ endif
 DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/aes/round.v			\
 	${DUT_TOP_DIR}/hdl_cores/aes/aes_192.v 			\
+	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv \
 	$(wildcard ${DUT_TOP_DIR}/generated_dsp_code/*.v)	\
 	${BHV_DIR}/ddr3.v					\
 
@@ -182,7 +183,8 @@ DUT_XILINX_TOP_TB 	= ${DVT_DIR}/${DUT_XILINX_TOP_MODULE}.v
 XILINX_MODELSIM_INI     = ${SIM_DIR}/xil_lib/modelsim.ini
 XILINX_LIBRARY_LIST     = -L unisims_ver -L unimacro_ver -L unifast_ver -L secureip -L xpm
 DUT_XILINX_VOPT_ARGS	= +acc -64 +nolibcell +nospecify +notimingchecks -modelsimini ${XILINX_MODELSIM_INI} ${WORK_DIR}.glbl ${XILINX_LIBRARY_LIST}
-DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT
+DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT+RANDOMIZE_REG_INIT+RANDOM="1'b0"
+#DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOM="1'b0"
 DUT_XILINX_VCOM_ARGS	= -64 -93 -modelsimini ${XILINX_MODELSIM_INI}
 DUT_XILINX_VSIM_ARGS	= -64 -modelsimini ${XILINX_MODELSIM_INI} ${XILINX_LIBRARY_LIST} -warning 3363 -warning 3053 -warning 8630
 
@@ -245,6 +247,10 @@ SEARCH_DIR_LIST := ${DVT_DIR}		\
 		${DUT_TOP_DIR}/hdl_cores/rsa/rtl				\
 		${DUT_TOP_DIR}/hdl_cores/sha256					\
 		${DUT_TOP_DIR}/hdl_cores/dsp				\
+		${DUT_TOP_DIR}/hdl_cores/llki				\
+		$(DUT_TOP_DIR)/opentitan/hw/ip/tlul/rtl \
+		$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl \
+		$(DUT_TOP_DIR)/opentitan/hw/ip/prim_generic/rtl \
 		${BHV_DIR} 		
 
 
@@ -313,7 +319,7 @@ ${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}
 	@for i in ${INCDIR_LIST}; do                            			\
 		echo "+incdir+"$${i} >> ${BLD_DIR}/searchPaths_build;    		\
 	done
-	${VLOG_CMD} -work ${WORK_DIR} -f ${BLD_DIR}/searchPaths_build +libext+.v ${BLD_DIR}/config.v ${DUT_VLOG_ARGS} ${DUT_VERILOG_FLIST} ${DUT_XILINX_TOP_TB}
+	${VLOG_CMD} -work ${WORK_DIR} -f ${BLD_DIR}/searchPaths_build +libext+.v +libext+.sv ${BLD_DIR}/config.v ${DUT_VLOG_ARGS} ${DUT_VERILOG_FLIST} ${DUT_XILINX_TOP_TB}
 	touch $@
 
 #

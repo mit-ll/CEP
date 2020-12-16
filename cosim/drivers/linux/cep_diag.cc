@@ -59,6 +59,7 @@ typedef struct p2vMap {
 
 p2vMap_st _cepMap;
 p2vMap_st _ddr3Map;
+p2vMap_st _otherMap; // spi/UART
 
 //
 // offs can be full address as well since it will be masked off
@@ -68,6 +69,16 @@ u_int64_t lnx_cep_read(u_int32_t offs) {
 }
 void lnx_cep_write(u_int32_t offs,u_int64_t pData) {
   memcpy(_cepMap.mem + (offs & _cepMap.mask) , &pData, sizeof(pData));
+}
+
+//
+// Access to SPI/UART Only
+//
+u_int32_t lnx_cep_read32(u_int32_t offs) {
+  return *(u_int32_t*)(&(_otherMap.mem)[offs & _otherMap.mask]);
+}
+void lnx_cep_write32(u_int32_t offs,u_int32_t pData) {
+  memcpy(_otherMap.mem + (offs & _otherMap.mask) , &pData, sizeof(pData));
 }
 
 //
@@ -125,6 +136,23 @@ static int do_cep_map() {
     _ddr3Map.mem = (unsigned char *)mmap(0, _ddr3Map.pagesize, PROT_READ | PROT_WRITE, MAP_SHARED, _ddr3Map.fd, _ddr3Map.phy_address);
     if (_ddr3Map.mem == MAP_FAILED) {
       printf("ERROR: **** Can't map memory %zu for DDR3\n", _ddr3Map.phy_address);
+      return 1;
+    }
+  }
+  //
+  // SPI/UART
+  //
+  _otherMap.phy_address = other_base_addr;
+  _otherMap.pagesize    = other_base_size;
+  _otherMap.mask        = _otherMap.pagesize -1;
+  _otherMap.fd = open("/dev/mem",O_RDWR|O_SYNC);
+  if (_otherMap.fd < 0) {
+    printf("ERROR: **** Can't open /dev/mem for OTHER @0x%016lx\n", _otherMap.phy_address);
+    return 1;
+  } else {
+    _otherMap.mem = (unsigned char *)mmap(0, _otherMap.pagesize, PROT_READ | PROT_WRITE, MAP_SHARED, _otherMap.fd, _otherMap.phy_address);
+    if (_otherMap.mem == MAP_FAILED) {
+      printf("ERROR: **** Can't map memory %zu for OTHER\n", _otherMap.phy_address);
       return 1;
     }
   }

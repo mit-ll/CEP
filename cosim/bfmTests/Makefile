@@ -55,6 +55,8 @@ BFM_TEST_LIST = \
 	ddr3Test	\
 	memPreload	\
 	regression	\
+	miscTests	\
+
 
 SINGLE_OLD_TESTS = \
 	aes		\

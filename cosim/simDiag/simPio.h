@@ -38,8 +38,10 @@ extern simPio gCpu;
 extern "C" {
   void sim_RunClk(int a);  
   u_int64_t sim_Read32_64(u_int32_t adr);
+  u_int32_t sim_Read32_32(u_int32_t adr);
   u_int64_t sim_Read64_64(u_int64_t adr);  
   void sim_Write32_64(u_int32_t adr, u_int64_t data);
+  void sim_Write32_32(u_int32_t adr, u_int32_t data);
   void sim_Write64_64(u_int64_t adr, u_int64_t data);  
   void sim_WriteDvtFlag(int msb, int lsb, int val) ;
   u_int64_t  sim_ReadDvtFlag(int msb, int lsb) ;  

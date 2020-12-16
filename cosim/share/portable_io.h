@@ -53,12 +53,18 @@
 #define DUT_WRITE32_64(a,d) sim_Write64_64(a,d)
 #define DUT_READ32_64(a,d)  d=sim_Read64_64(a)
 
+#define DUT_WRITE32_32(a,d) sim_Write32_32(a,d)
+#define DUT_READ32_32(a,d)  d=sim_Read32_32(a)
+
 #define DDR3_WRITE(a,d) sim_Write64_64(a,d)
 #define DDR3_READ(a,d)  d=sim_Read64_64(a)
 
 #else
 #define DUT_WRITE32_64(a,d) sim_Write32_64(a,d)
 #define DUT_READ32_64(a,d)  d=sim_Read32_64(a)
+
+#define DUT_WRITE32_32(a,d) sim_Write32_32(a,d)
+#define DUT_READ32_32(a,d)  d=sim_Read32_32(a)
 
 #define DDR3_WRITE(a,d) sim_Write32_64(a,d)
 #define DDR3_READ(a,d)  d=sim_Read32_64(a)
@@ -93,6 +99,9 @@
 #define DUT_WRITE32_64(a,d) lnx_cep_write(a,d)
 #define DUT_READ32_64(a,d)  { d = lnx_cep_read(a); }
 
+#define DUT_WRITE32_32(a,d) lnx_cep_write32(a,(int)d)
+#define DUT_READ32_32(a,d)  { d = (int)lnx_cep_read32(a); }
+
 #define DDR3_WRITE(a,d) *(volatile uint64_t *)((intptr_t)a)=d
 #define DDR3_READ(a,d)  d=*(volatile uint64_t *)((intptr_t)a)
 
@@ -124,6 +133,9 @@
 #else
 #define DUT_WRITE32_64(a,d) *reinterpret_cast<volatile uint64_t *>(a)=d
 #define DUT_READ32_64(a,d)  d=*reinterpret_cast<volatile uint64_t *>(a)
+
+#define DUT_WRITE32_32(a,d) *reinterpret_cast<volatile uint32_t *>(a)=d
+#define DUT_READ32_32(a,d)  d=*reinterpret_cast<volatile uint32_t *>(a)
 
 #define DDR3_WRITE(a,d) *reinterpret_cast<volatile uint64_t *>(a)=d
 #define DDR3_READ(a,d)  d=*reinterpret_cast<volatile uint64_t *>(a)

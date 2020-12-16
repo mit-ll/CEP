@@ -1,5 +1,6 @@
 //************************************************************************
 // Copyright (C) 2020 Massachusetts Institute of Technology
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      llki_rom.sv
 // Program:        Common Evaluation Platform (CEP)

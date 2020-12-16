@@ -64,6 +64,23 @@ void access::MaybeAThread() {
 // Write Acess
 // ===========================
 //
+void access::Write32_32(u_int32_t address, u_int32_t data) {
+#ifdef SIM_ENV_ONLY
+#ifdef DLL_SIM  
+#else
+  if (0) { // GetVerbose()) {
+    ptr->PrintVerbose("access::Write64_64 mSlotId=%d mLocalId=%d address=%016llx dat=%016llx\n",
+		      mSlotId,mLocalId,address,data);
+  }
+  ptr->Write32_32(address,data);
+#endif
+#else
+  *reinterpret_cast<volatile Int32U *>(address) = data;
+#endif
+
+}
+
+
 void access::Write32_64(u_int32_t address, u_int64_t data) {
 #ifdef SIM_ENV_ONLY
 #ifdef DLL_SIM  
@@ -132,6 +149,18 @@ unsigned access::GetSimClk() {
   }
 #endif
   return dat;
+}
+
+u_int32_t access::Read32_32(u_int32_t address) {
+  u_int32_t data=0;
+#ifdef SIM_ENV_ONLY
+  //shIpc *ptr = GlobalShMemory.getIpcPtr(GetSlotId(),GetLocalId());
+  data =  ptr->Read32_32(address);
+  if (0) { // GetVerbose()) {
+    ptr->PrintPostVerbose("access::Read32_32 mSlotId=%d mLocalId=%d address=%08x dat=%016llx\n",mSlotId,mLocalId,address,data);
+  }
+#endif
+  return data;
 }
 
 u_int64_t access::Read32_64(u_int32_t address) {

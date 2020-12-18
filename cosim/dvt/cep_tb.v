@@ -491,6 +491,8 @@ module cep_tb;
    wire uart_txd; 
    wire uart_rtsn; pullup (weak1) (uart_rtsn);
    assign uart_rxd = uart_txd;
+
+   // For now, we do NOT have a flash model
    // no flow control support
    //
    wire sdio_sdio_clk; 
@@ -499,17 +501,10 @@ module cep_tb;
    wire sdio_sdio_dat_1; pullup (weak1) (sdio_sdio_dat_1);
    wire sdio_sdio_dat_2; pullup (weak1) (sdio_sdio_dat_2);   
    wire sdio_sdio_dat_3; pullup (weak1) (sdio_sdio_dat_3);
-   // 512Mbit
-   s25fl512s spiFlash
-     (
-      .SCK    (sdio_sdio_clk  ), // topDesign_auto_topMod_spi_source_out_sck
-      .CSNeg  (sdio_sdio_dat_3), // topDesign_auto_topMod_spi_source_out_cs_0
-      .SI     (sdio_sdio_cmd  ), // topDesign_auto_topMod_spi_source_out_dq_0_o
-      .SO     (sdio_sdio_dat_0), // topDesign_auto_topMod_spi_source_out_dq_1_i
-      .WPNeg  (sdio_sdio_dat_1), // not used!!!
-      .HOLDNeg(sdio_sdio_dat_2), // not used
-      .RSTNeg (sys_rst_n      )
-      );
+   
+
+
+
    
    //
    // ############################################

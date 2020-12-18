@@ -59,95 +59,97 @@ int parse_message_status(uint8_t message_status, int verbose) {
     case LLKI_STATUS_GOOD                 :
       if (verbose) {
         LOGI("\n");
-        LOGI("cepSrotTest_runTest: Good message received!\n");
+        LOGI("parse_message_status: Good message received!\n");
         LOGI("\n");
       }
       break;
     case LLKI_STATUS_KEY_PRESENT            :
       LOGI("\n");
-      LOGI("cepSrotTest_runTest: LLKI-KL Key Present\n");
+      LOGI("parse_message_status: LLKI-KL Key Present\n");
       LOGI("\n");
-      return 0;
       break;
     case LLKI_STATUS_KEY_NOT_PRESENT        :
       LOGI("\n");
-      LOGI("cepSrotTest_runTest: LLKI-KL Key Not Present\n");
+      LOGI("parse_message_status: LLKI-KL Key Not Present\n");
       LOGI("\n");
       return 0;
       break;
     case LLKI_STATUS_BAD_MSG_ID             :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Bad message ID\n");
+      LOGE("parse_message_status: Bad message ID\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_BAD_MSG_LEN            :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Bad message length\n");
+      LOGE("parse_message_status: Bad message length\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KEY_INDEX_EXCEED   :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Key Index exceeds allowable bounds\n");
+      LOGE("parse_message_status: Key Index exceeds allowable bounds\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KEY_INDEX_INVALID  :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Referenced Key Index is not valid\n");
+      LOGE("parse_message_status: Referenced Key Index is not valid\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_BAD_POINTER_PAIR       :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Referenced Key Index pointer pair is not valid\n");
+      LOGE("parse_message_status: Referenced Key Index pointer pair is not valid\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_BAD_CORE_INDEX         :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Referenced Key Index specifies an out of bounds core index\n");
+      LOGE("parse_message_status: Referenced Key Index specifies an out of bounds core index\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KL_REQ_BAD_MSG_ID     :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: LLKI-KL Request Bad Message ID\n");
+      LOGE("parse_message_status: LLKI-KL Request Bad Message ID\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KL_REQ_BAD_MSG_LEN     :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: LLKI-KL Request Bad Message Length\n");
+      LOGE("parse_message_status: LLKI-KL Request Bad Message Length\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KL_RESP_BAD_MSG_ID     :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: LLKI-KL Response Bad Message ID\n");
+      LOGE("parse_message_status: LLKI-KL Response Bad Message ID\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_KL_TILELINK_ERROR      :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: LLKI-KL Tilelink Error\n");
+      LOGE("parse_message_status: LLKI-KL Tilelink Error\n");
       LOGE("\n");
       return 1;
       break;
     case LLKI_STATUS_UNKNOWN_ERROR            :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Unknown Error\n");
+      LOGE("parse_message_status: Unknown Error\n");
       LOGE("\n");
       return 1;
       break;
     default                                 :
       LOGE("\n");
-      LOGE("cepSrotTest_runTest: Unknown message error\n");
+      LOGE("parse_message_status: Unknown message error\n");
       LOGE("\n");
       return 1;
       break;
   } // end switch (my_message)
+
+  // Status is good
+  return 0;
 
 } // end parse_message_status
 

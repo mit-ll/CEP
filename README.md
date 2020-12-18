@@ -472,6 +472,9 @@ v3.0 - (18 December 2020)
 * Initial LLKI release with Surrogate Root of Trust
 * AES core replaced with LLKI-enabled AES core, all other cores remain unchanged
 
+v3.01 - (19 December 2020)
+* Removed used flash model reference in cep_tb.v
+
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
 

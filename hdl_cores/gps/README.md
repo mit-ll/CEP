@@ -1,4 +1,4 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 <p align="center">

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -32,11 +32,13 @@ uint64_t regBaseTest_ReadReg(regBaseTest_t *me,uint32_t adr);
 int regBaseTest_SetSeed(regBaseTest_t *me,int seed);
 void regBaseTest_ClearAll(regBaseTest_t *me);
 int regBaseTest_AddAReg(regBaseTest_t *me,uint32_t adr, uint64_t mask);
+int regBaseTest_AddAHole(regBaseTest_t *me,uint32_t adr, uint64_t mask);
 int regBaseTest_AddROReg(regBaseTest_t *me,uint32_t adr, uint64_t ROvalue, uint64_t mask);
 int regBaseTest_ReadRegNCompare(regBaseTest_t *me,uint32_t adr, uint64_t Data, uint64_t mask);
 int regBaseTest_GetMaxBits(regBaseTest_t *me,uint64_t mask) ;
 void regBaseTest_Srand48(regBaseTest_t *me,uint64_t seed);
 int regBaseTest_uniquifyTest(regBaseTest_t *me,int doWrite, int RdNCheck);
+int regBaseTest_punchSomeHoles(regBaseTest_t *me);
 int regBaseTest_walk_1_thruDatTest(regBaseTest_t *me,int doWrite, int RdNCheck);
 int regBaseTest_walk_0_thruDatTest(regBaseTest_t *me,int doWrite, int RdNCheck);
 int regBaseTest_checkerBoardTest(regBaseTest_t *me);
@@ -59,6 +61,7 @@ void regBaseTest_Construct(regBaseTest_t *me,
   me->mVerbose = 0;   
   //   mVerbose    = verbose;
   me->mRegCnt     = 0;
+  me->mHoleCnt    = 0;
   me->mROcnt      = 0;
   me->mSeed       = seed;
   me->mMaxBits    = 0;
@@ -71,12 +74,14 @@ void regBaseTest_Construct(regBaseTest_t *me,
   me->SetSeed_p			= regBaseTest_SetSeed		;
   me->ClearAll_p		= regBaseTest_ClearAll          ;
   me->AddAReg_p			= regBaseTest_AddAReg		;              
+  me->AddAHole_p		= regBaseTest_AddAHole		;              
   me->AddROReg_p		= regBaseTest_AddROReg		;             
   me->GetMaxBits_p		= regBaseTest_GetMaxBits	;           
   me->WriteReg_p		= regBaseTest_WriteReg		;             
   me->ReadReg_p			= regBaseTest_ReadReg		;              
   me->ReadRegNCompare_p		= regBaseTest_ReadRegNCompare	;      
   me->uniquifyTest_p		= regBaseTest_uniquifyTest	;         
+  me->punchSomeHoles_p		= regBaseTest_punchSomeHoles	;         
   me->walk_1_thruDatTest_p	= regBaseTest_walk_1_thruDatTest;   
   me->walk_0_thruDatTest_p	= regBaseTest_walk_0_thruDatTest;   
   me->checkerBoardTest_p	= regBaseTest_checkerBoardTest	;     
@@ -93,12 +98,22 @@ void regBaseTest_Construct(regBaseTest_t *me,
 //
 void regBaseTest_ClearAll(regBaseTest_t *me) {
   me->mRegCnt = 0;
+  me->mHoleCnt = 0;
+  me->mROcnt = 0;
 }
   
 int regBaseTest_AddAReg(regBaseTest_t *me, uint32_t adr, uint64_t mask) {
   me->mRegList[(me->mRegCnt*2)+0] = adr;
   me->mRegList[(me->mRegCnt*2)+1] = mask;
   me->mRegCnt++;
+  me->mMaxBits = (*me->GetMaxBits_p)(me,mask);
+  return(0);
+}
+
+int regBaseTest_AddAHole(regBaseTest_t *me, uint32_t adr, uint64_t mask) {
+  me->mHoleList[(me->mHoleCnt*2)+0] = adr;
+  me->mHoleList[(me->mHoleCnt*2)+1] = mask;
+  me->mHoleCnt++;
   me->mMaxBits = (*me->GetMaxBits_p)(me,mask);
   return(0);
 }
@@ -167,6 +182,24 @@ int regBaseTest_GetMaxBits(regBaseTest_t *me,uint64_t mask) {
 
 void regBaseTest_Srand48(regBaseTest_t *me,uint64_t seed) {
   me->customDiagRandomNumber = seed;
+}
+
+int regBaseTest_punchSomeHoles(regBaseTest_t *me) {
+  int errCnt = 0;
+  if (VERBOSE1()) {
+    LOGI("== regBaseTest_punchSomeHoles\n");
+  }
+  if (me->mHoleCnt > 0) {
+    // write only
+    for (int i=0;i<me->mHoleCnt;i++) {
+      uint32_t curAdr = me->mHoleList[(i*2)+0];
+      uint64_t wrDat = (uint64_t) (Random48_mrand48_custom(&me->customDiagRandomNumber) << 32) |
+	Random48_mrand48_custom(&me->customDiagRandomNumber);
+      errCnt += (*me->WriteReg_p)(me,curAdr,wrDat);
+    }
+  }
+  //
+  return errCnt;
 }
 
 int regBaseTest_uniquifyTest(regBaseTest_t *me,int doWrite, int RdNCheck) {
@@ -359,8 +392,10 @@ int regBaseTest_doRegTest(regBaseTest_t *me) {
   //
   // Walking 1 & 0 tests (Write Only)
   //
-
   errCnt += (*me->uniquifyTest_p)(me,1,0);
+  // punch some holes here firs
+  errCnt += (*me->punchSomeHoles_p)(me);
+  //
   errCnt += (*me->uniquifyTest_p)(me,0,1);
   
   errCnt += (*me->walk_1_thruDatTest_p)(me,1,0);

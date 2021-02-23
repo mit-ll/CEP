@@ -1,7 +1,7 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 
 <p align="center">
-   Copyright 2020 Massachusetts Institute of Technology
+   Copyright 2021 Massachusetts Institute of Technology
 </p>
 
 ## Unit Simulation README

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -19,7 +19,7 @@
 #include "cep_apis.h"
 #include "cepregression.h"
 #include "cepMacroMix.h"
-
+#include "cep_srot.h"
 //
 #include "des3_playback.h"
 #include "gps_playback.h"
@@ -51,6 +51,11 @@ void thread_entry(int cid, int nc)
   //int testId = 0x88;
   int coreId = read_csr(mhartid);
   //initConfig(); // all 4 cores do the same????
+  cep_srot srot(0);
+  srot.SetCpuActiveMask(0xf); // seed is the activeMask
+  errCnt += srot.LLKI_Setup(coreId);
+  if (errCnt) goto cleanup;
+
   //
   if (coreId == 0) {
     init_des3();
@@ -82,6 +87,7 @@ void thread_entry(int cid, int nc)
   // Notify checker about program status
   // ===================================  
   //  
+ cleanup:
   set_status(errCnt,errCnt);
   //
   // Stuck here forever...

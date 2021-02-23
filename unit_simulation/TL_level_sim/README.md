@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Massachusetts Institute of Technology #
+# Copyright 2021 Massachusetts Institute of Technology #
 
 
 This directory contains everything you need to run unit transaction-level simulation for all cores that are wrapped under tileLink.

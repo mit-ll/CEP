@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -37,10 +37,28 @@ int
 cepMemTest_WriteEntry(memBaseTest_t *me, uint64_t adr)
 {
   uint64_t dat64 = (uint64_t)me->wrPat[0];
+  uint32_t dat32 = (uint32_t)dat64;
+  uint16_t dat16 = (uint16_t)dat64;
+  uint8_t dat8   = (uint8_t)dat64;
   if (GET_VERBOSE(me)) { 
     LOGI("%s cpu=%d adr=%016lx dat=%016lx\n",__FUNCTION__,me->mTarget,adr,dat64);
   }
-  DDR3_WRITE(me->mBAR + (adr*8),dat64);
+  //
+  switch (me->mDatSize) {
+  case 8: 
+    DUT_WRITE32_8(me->mBAR + adr,dat8); 
+    break;
+  case 16: 
+    DUT_WRITE32_16(me->mBAR + adr*2,dat16); 
+    break;
+  case 32: 
+    DUT_WRITE32_32(me->mBAR + adr*4,dat32); 
+    break;
+  case 64: 
+    DDR3_WRITE(me->mBAR + (adr*8),dat64); 
+    break;
+  }
+  //
   return 0;
 }
 
@@ -48,11 +66,30 @@ int
 cepMemTest_ReadEntry(memBaseTest_t *me, uint64_t adr)
 {
   uint64_t dat64;
+  uint32_t dat32;
+  uint16_t dat16;
+  uint8_t dat8;
   if (GET_VERBOSE(me)) { 
     LOGI("%s cpu=%d adr=%016lx\n",__FUNCTION__,me->mTarget,adr); 
   }
-  DDR3_READ(me->mBAR + (adr*8),dat64);
-  me->rdPat[0] = dat64 ;
+  switch (me->mDatSize) {
+  case 8: 
+    DUT_READ32_8(me->mBAR + adr,dat8); 
+    me->rdPat[0] = dat8 ;
+    break;
+  case 16: 
+    DUT_READ32_16(me->mBAR + adr*2,dat16); 
+    me->rdPat[0] = dat16 ;
+    break;
+  case 32: 
+    DUT_READ32_32(me->mBAR + adr*4,dat32); 
+    me->rdPat[0] = dat32 ;
+    break;
+  case 64: 
+    DDR3_READ(me->mBAR + (adr*8),dat64); 
+    me->rdPat[0] = dat64 ;
+    break;
+  }
   //
   return 0;
 }
@@ -61,7 +98,7 @@ cepMemTest_ReadEntry(memBaseTest_t *me, uint64_t adr)
 // The test itself
 // =============================
 //
-int cepMemTest_runTest(int cpuId,uint64_t mem_base, int adrWidth,int seed, int verbose, int full) {
+int cepMemTest_runTest(int cpuId,uint64_t mem_base, int adrWidth, int dataWidth, int seed, int verbose, int full) {
 
   int errCnt = 0;
   //
@@ -74,7 +111,7 @@ int cepMemTest_runTest(int cpuId,uint64_t mem_base, int adrWidth,int seed, int v
   int step = (full) ? 1 : 0x10000;
   //int adrWidth = 30-2; // 1 Gbytes (30bits) for all 4 cores => each one will test 1/4 of that
   //uint64_t mem_base = ddr3_base_adr + ((cpuId&0x3) << adrWidth);  
-  cepMemTest_CREATE(memp,cpuId,mem_base, adrWidth-3, 64, step, seed + (cpuId*100));
+  cepMemTest_CREATE(memp,cpuId,mem_base, adrWidth-3, dataWidth, step, seed + (cpuId*100));
   //
   // uniquify
   //

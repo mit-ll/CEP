@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -9,12 +9,92 @@
 //
 //************************************************************************
 
+/* as reported from Chisel
+Generated Address Map
+	       0 -     1000 ARWX  debug-controller@0
+	    3000 -     4000 ARWX  error-device@3000
+	   10000 -    14000  R X  rom@10000
+	 2000000 -  2010000 ARW   clint@2000000
+	 c000000 - 10000000 ARW   interrupt-controller@c000000
+	64000000 - 64001000 ARW   serial@64000000
+	64001000 - 64002000 ARW   spi@64001000
+	64002000 - 64003000 ARW   gpio@64002000
+	70000000 - 70010000 ARW   aes@70000000
+	70010000 - 70020000 ARW   md5@70010000
+	70020000 - 70030000 ARW   sha256@70020000
+	70030000 - 70040000 ARW   rsa@70030000
+	70040000 - 70050000 ARW   des3@70040000
+	70050000 - 70060000 ARW   dft@70050000
+	70060000 - 70070000 ARW   idft@70060000
+	70070000 - 70080000 ARW   fir@70070000
+	70080000 - 70090000 ARW   iir@70080000
+	70090000 - 700a0000 ARW   gps@70090000
+	700f0000 - 70100000 ARW   cepregs@700f0000
+	80000000 - c0000000  RWXC memory@80000000
+
+*/
+
 `ifndef CEP_ADRMAP_INCL
 `define CEP_ADRMAP_INCL
 
-// for SPU/UART/GPIO
+// logicalData param for TL
+`define LOGIC_XOR   0
+`define LOGIC_OR    1
+`define LOGIC_AND   2
+`define LOGIC_SWAP  3
+
+
+// for SPI/UART/GPIO
 `define other_base_addr         'h6400_0000
 `define other_base_size         'h3000
+
+// bootrom as 4kx32 = 16Kbytes
+`define bootrom_base_addr     'h0001_0000
+`define bootrom_base_size     (1<<13)
+// 32-bit offs
+`define bootrom_base_test_offs 'h7fe
+`define bootrom_known_pat0      'h12345678
+`define bootrom_known_pat1      'h600dbabe
+
+// CLINT: core-local interrupt
+`define clint_base_addr     'h0200_0000
+`define clint_base_size     (1<<16)
+
+// NOTE: offset for MSIP to next hart is 4, the rest is 8
+`define  clint_msip_offset        'h0000
+`define  clint_mtimecmp_offset    'h4000
+// rtcTick = 1usec interval
+`define  clint_mtimer_offset      'hBFF8
+//
+
+// PLIC: platform-level interrupt controller
+`define plic_base_addr     'h0c00_0000
+`define plic_base_size     (1<<26)
+
+// PLIC registers
+// source 1 - 127, source2 = +4 ... til 127
+`define plic_source1_prio_offset       'h00_0004
+`define plic_pending_array_start       'h00_1000
+`define plic_pending_array_last        'h00_100C
+
+`define plic_hart0_m_mode_ien_start    'h00_2000
+`define plic_hart0_m_mode_ien_stop     'h00_200C
+`define plic_mode_ien_size_offset      'h80 
+
+`define plic_hart0_m_mode_prio_thresh  'h20_0000
+`define plic_hart0_m_mode_claim_done   'h20_0004
+`define plic_prio_thresh_size_offset   'h1000
+
+//QSPI0 flash 256Mb
+`define flash0_base_adr     'h2000_0000
+`define flash0_base_size     (1<<28)
+
+
+`define debug_controller_base_addr	'h0000_0000	// " ]},{"base":[12288],"size":[4096]
+`define error_device_base_addr		'h0000_3000	// "]},{"base":[65536],"size":[16384]
+`define rom_base_addr			'h0001_0000	// "]},{"base":[33554432],"size":[65536]
+`define interrupt_controller_base_addr	'h0c00_0000	// "]},{"base":[1677721600],"size":[4096]
+
 //
 // Debug
 //
@@ -123,7 +203,17 @@
 `define cep_fpga_base_size      'h0100_0000
 
 `define	aes_base_addr           'h7000_0000
+`define	md5_base_addr           'h7001_0000
+`define	sha256_base_addr        'h7002_0000
+`define	rsa_base_addr           'h7003_0000
+`define	des3_base_addr          'h7004_0000
+`define	dft_base_addr           'h7005_0000
+`define	idft_base_addr          'h7006_0000
 `define	fir_base_addr           'h7007_0000
+`define	iir_base_addr           'h7008_0000
+`define	gps_base_addr           'h7009_0000
+`define	srot_base_addr          'h7020_0000
+
 `define aes_ctrlstatus_addr      'h0000
 `define aes_pt0_addr             'h0008
 `define aes_pt1_addr             'h0010
@@ -140,9 +230,6 @@
 `define fir_dataout_addr_addr	 'h0018
 `define fir_dataout_data_addr	 'h0020
 
-`define	srot_base_addr           'h7010_0000
-
-//`define CEP_MAJOR_VERSION	  'h02
 
 // 64bytes
 `define cep_cache_size          64
@@ -175,16 +262,16 @@
 `define   CEP_GOOD_STATUS           'h600D_BABE
 `define   CEP_BAD_STATUS            'hBAD0_DADE
 `define   CEP_RUNNING_STATUS        'h1234_5678
- 
+`define   CEP_NEXT_TEST             'hBEEF_0000
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG	'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h00030000_00000000
+`define CEP_EXPECTED_VERSION 	'h10030000_00000000
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set
 //
-`define   testNset_reg          'h0010
+`define   testNset_reg          'hFD10 
 `define     isLock0_bit           0
 `define     lock0Id_bit_lo        7
 `define     lock0Id_mask        'h7F
@@ -205,17 +292,19 @@
 `define     reqId_bit_lo          40
 `define     reqId_mask            'h7F
 //
-`define   cep_scratch0_reg      'h0100
-`define   cep_scratch1_reg      'h0108
-`define   cep_scratch2_reg      'h0110
-`define   cep_scratch3_reg      'h0118
-`define   cep_scratch4_reg      'h0120
-`define   cep_scratch5_reg      'h0128
-`define   cep_scratch6_reg      'h0130
-`define   cep_scratch7_reg      'h0138
-`define   cep_core0_status      'h0200
-`define   cep_core1_status      'h0208
-`define   cep_core2_status      'h0210
-`define   cep_core3_status      'h0218
+
+`define   cep_scratch0_reg      'hFE00
+`define   cep_scratch1_reg      'hFE08
+`define   cep_scratch2_reg      'hFE10
+`define   cep_scratch3_reg      'hFE18
+`define   cep_scratch4_reg      'hFE20
+`define   cep_scratch5_reg      'hFE28
+`define   cep_scratch6_reg      'hFE30
+`define   cep_scratch7_reg      'hFE38
+`define   cep_core0_status      'hFF00
+`define   cep_core1_status      'hFF08
+`define   cep_core2_status      'hFF10
+`define   cep_core3_status      'hFF18
+
 `endif
 

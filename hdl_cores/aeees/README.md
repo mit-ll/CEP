@@ -1,8 +1,8 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 <p align="center">
-   Copyright 2020 Massachusetts Institute of Technology
+   Copyright 2021 Massachusetts Institute of Technology
 </p>
 
 ## AEEES-WB - Advanced Egregiously Extended Encryption Standard, White-Box Edition

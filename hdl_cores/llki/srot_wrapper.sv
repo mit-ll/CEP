@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:       srot_wrapper.sv
@@ -12,6 +12,14 @@
 //
 //                  The "tl" parameters have been taken from the
 //                  OpenTitan ecosystem
+//
+//                  The SRoT is a SINGLE THREADED DEVICE.
+//
+//                  As such, care should be taken when using the
+//                  SRoT in a multi-core environment.  Care should be
+//                  take that multiple cores are NOT accessing the
+//                  SRoT at the same time.
+//
 //************************************************************************
 `timescale 1ns/1ns
 
@@ -163,9 +171,13 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
   // Misc. signals
   reg [top_pkg::TL_DW-1:0]      srot_ctrlstatus_register; // Bit definition can be found in llki_pkg.sv
+  reg [top_pkg::TL_DW-1:0]      srot_scratchpad0_register;
+  reg [top_pkg::TL_DW-1:0]      srot_scratchpad1_register;
   reg                           write_error;
   reg                           read_error;
-  
+ 
+
+
   //------------------------------------------------------------------------
   // Instantitate a tlul_adapter_reg to adapt the TL Slave Interface
   //------------------------------------------------------------------------
@@ -400,6 +412,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   begin
     if (rst) begin
       srot_ctrlstatus_register    <= '0;
+      srot_scratchpad0_register   <= '0;
+      srot_scratchpad1_register   <= '0;
       write_error                 <= 1'b0;
       keyindexram_a_write_i       <= 1'b0;
       keyram_a_write_i            <= 1'b0;
@@ -475,6 +489,16 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
                 llkic2_reqfifo_wvalid_i  <= 1'b1;
               end // end else llkic2_reqfifo_full
             end // end SROT_LLKIC2_SEND_ADDR
+
+            // Write to the Scratchpad 0 Register
+            SROT_LLKIC2_SCRATCHPAD0_ADDR : begin
+              srot_scratchpad0_register   <= reg_wdata_o;
+            end
+
+            // Write to the Scratchpad 1 Register
+            SROT_LLKIC2_SCRATCHPAD1_ADDR : begin
+              srot_scratchpad1_register   <= reg_wdata_o;
+            end
 
             //    
             // All other decodes
@@ -553,6 +577,20 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               reg_rdata_i               = llkic2_respfifo_rdata_o;  
             end // end llkic2_respfifo_empty
           end // SROT_LLKIC2_RECV_ADDR
+          //
+          // Scratchpad 0 Register
+          //
+          SROT_LLKIC2_SCRATCHPAD0_ADDR : begin
+            reg_rdata_i                 = srot_scratchpad0_register;
+          end
+
+          //
+          // Scratchpad 1 Register
+          //
+          SROT_LLKIC2_SCRATCHPAD1_ADDR : begin
+            reg_rdata_i                 = srot_scratchpad1_register;
+          end
+
           //
           // All other decodes
           //            
@@ -762,10 +800,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // The received message has been checked for errors and the selected key
           // index looks ok.  
           end else begin
-            // Save the low pointer, as it will used to determine how many key
-            // words we will be sending
-            current_pointer         <= low_pointer;
-
             // Jump to the next state
             srot_current_state      <= ST_SROT_KL_REQ_HEADER;
           end   // end if (!index_valid)
@@ -786,6 +820,10 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           llkic2_respfifo_wdata_i   <= '0;
           wait_state_counter        <= SROT_WAIT_STATE_COUNTER_INIT;
           srot_current_state        <= ST_SROT_KL_REQ_ISSUE;
+
+          // Save the low pointer, as it will used to determine how many key
+          // words we will be sending as well as indexing the Key RAM
+          current_pointer           <= low_pointer;
 
           // Header generation is message specific
           case (msg_id)

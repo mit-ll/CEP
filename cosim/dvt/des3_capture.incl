@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,10 +24,10 @@ int DES3_fd;
 always @(posedge c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of DES3 stimulus");	    
    // wait until it gets out of reset
-   if (cep_tb.fpga.topDesign.topMod.des3.blackbox.reset)
-     @(negedge cep_tb.fpga.topDesign.topMod.des3.blackbox.reset);
+   if (cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.rst)
+     @(negedge cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.rst);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+   @(posedge cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.clk);
    CaptureDES3_vector=1;
    DES3_fd=$fopen("../../drivers/vectors/des3_stimulus.txt","w");
    captureDES3_Stimulus();   
@@ -35,7 +35,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_DES3_CAPTURE_EN_BIT]) begin
    if (CaptureDES3_vector) begin
       CaptureDES3_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.clk);
       $display("Stop Capturing DES3 stimulus");
       $fwrite(DES3_fd,"};\n");
       $fwrite(DES3_fd,"`define DES3_SAMPLE_COUNT %d\n",DES3_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 DES3_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(DES3_fd,"//************************************************************************\n");
-	 $fwrite(DES3_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(DES3_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(DES3_fd,"//\n");		
 	 $fwrite(DES3_fd,"// File Name:      DES3_stimulus.txt\n");
 	 $fwrite(DES3_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -75,7 +75,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureDES3_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.des3.blackbox.clk);
+	    @(negedge cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.clk);
 	    // MUST align to HEX number if _ is used!!!
 	    if (DES3_sampleNum>0) begin
 	       $fwrite(DES3_fd,"   ,");
@@ -83,14 +83,14 @@ end
 	       $fwrite(DES3_fd,"    ");		 
             end
 	    $fwrite(DES3_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.start},	
-		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.decrypt},
-		    cep_tb.fpga.topDesign.topMod.des3.blackbox.desIn[63:0],
-		    cep_tb.fpga.topDesign.topMod.des3.blackbox.key1[55:0],
-		    cep_tb.fpga.topDesign.topMod.des3.blackbox.key2[55:0],
-		    cep_tb.fpga.topDesign.topMod.des3.blackbox.key3[55:0],
-		    {3'b0,cep_tb.fpga.topDesign.topMod.des3.blackbox.out_valid},	 
-		    cep_tb.fpga.topDesign.topMod.des3.blackbox.desOut[63:0]);
+		    {3'b0,cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.start},	
+		    {3'b0,cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.decrypt},
+		    cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.desIn[63:0],
+		    cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.key1[55:0],
+		    cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.key2[55:0],
+		    cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.key3[55:0],
+		    {3'b0,cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.out_valid},	 
+		    cep_tb.fpga.topDesign.topMod.des3module.des3_mock_tss_inst.desOut[63:0]);
 	    DES3_sampleNum++;
 	 end // while (1)
       end

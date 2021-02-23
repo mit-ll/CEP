@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -26,7 +26,7 @@ void thread_entry(int cid, int nc)
 
   unsigned long scratch=0x70000008;
   
-  unsigned long adr=0x700f0000;
+  unsigned long adr=reg_base_addr; // 0x700f0000;
   unsigned long long rd64;
   int errCnt=0;
   //

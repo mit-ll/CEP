@@ -1,4 +1,4 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 [![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
@@ -8,26 +8,24 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-    <img src="./doc/version.jpg" width="98" height="60">
+    <img src="./doc/version3.1.jpg" width="98" height="60">
 </p>
 <p align="center">
-   Copyright 2020 Massachusetts Institute of Technology
+   Copyright 2021 Massachusetts Institute of Technology
 </p>
 <p align="center">
     <img src="./doc/related_logos.jpg" width="450" height="71">
 </p>
 
-The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) that provides users an open-source evaluation platform for the evaluation of custom tools and techniques.  An extensive verification environment provided to ensure the underlying functionality is maintained even after modification.
+The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) that provides users an open-source evaluation platform for the evaluation of custom tools and techniques.  An extensive verification environment is provided to ensure the underlying functionality is maintained even after modification.
 
 The Logic Locking Key Interface (LLKI) has been provided as a representative means of distributing key / configuration material to LLKI-enabled cores.  
 
-For CEP v3.0, the Surrogate Root of Trust (SRoT) and LLKI-enabled AES-192 core has been added.  Example test vectors have been with additional LLKI information being available in the comments of files located in ./hdl_cores/llki.
+For CEP v3.1+, the full LLKI has been added.  This includes the Surrogate Root of Trust (SRoT) and mock Technique Specific Shims (TSS) for all accelerator cores.
 
 <p align="center">
-    <img src="./doc/cep_v3.0_architecture.jpg">
+    <img src="./doc/cep_v3.1_architecture.jpg">
 </p>
-
-Additional information on the objectives of the CEP may be found in [./doc/CEP_SecEvalTargets.pdf](CEP_SecEvalTargets.pdf).
 
 The CEP is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
 
@@ -47,7 +45,7 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 
 ## Pre-requisites (validated test/build configuration):
 The following items describe the configuration of the system that CEP has been developed and tested on:
-* Ubuntu 16.04 LTS x86_64
+* Ubuntu 16.04 LTS x86_64 / Ubuntu 18.04 LTS x86_64
 * Modelsim Questa Sim-64 v2019.1 (for co-simulation and unit simulation)
 * Xilinx Vivado 2018.3 (Design or System Edition)
   - Plus Digilent Adept Drivers for programming the VC-707, https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads)
@@ -60,7 +58,9 @@ Other versions/combinations may work, but they have not been explicitly verified
 ## Cloning the CEP Repository and Getting External Dependencies
 Before proceeding, you'll need to install curl if it is not already installed on your system:
 
-`sudo apt install curl`
+```
+sudo apt install curl
+```
 
 After cloning the CEP repository from https://github.com/mit-ll/CEP, you will need get the external dependencies (respositories) that have not been included directly within the CEP repository (git submodules are not used).
 
@@ -78,9 +78,9 @@ To build the CEP, several packages and toolsets must be installed and built.  Fo
 
 
 ### Installing Vivado and Modelsim
-It is assumed that Vivado and Modelsim are installed on your system.  The CEP has been tested on Vivado 2018.3 System Edition, albeit Design Edition should also work.  It is noted that some of the libraries pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not source this file in the bash shell you use to build the RISC-V tools.
+It is assumed that Vivado and Modelsim are installed on your system.  It is noted that some of the libraries pulled in after sourcing the environmental script (e.g., `/opt/Xilinx/Vivado/2018.3/settings64.sh`) can conflict with the RISC-V toolchain build process.  It is recommended that you not source this file in the bash shell you use to build the RISC-V tools.
 
-Modelsim is required if you intend to run the co-simulation or unit-simulation environments located in `<CEP_ROOT>/cosim` and `<CEP_ROOT>/unit_simulation` respectively.  Version 2018.3 is recommended.  Other simulators or versions may work, but they have not been explicitly tested.
+Modelsim is required if you intend to run the co-simulation or unit-simulation environments located in `<CEP_ROOT>/cosim` and `<CEP_ROOT>/unit_simulation` respectively.  Version 2019.1 is recommended.  Other simulators or versions may work, but they have not been explicitly tested.
 
 
 ### Install the RISC-V GNU Toolchain
@@ -91,11 +91,30 @@ Begin by installing the dependencies by executing the following:
 
 Now, build the toolchain.  
 
-Ensure you have write permissions to the directory pointed to by $RISCV and that the current shell has NOT sourced the Xilinx Vivado environment script:
+Ensure you have write permissions to the directory pointed to by $RISCV and that the current shell has NOT sourced the Xilinx Vivado environment script.
 
+```
     $ cd <CEP_ROOT>/software/riscv-gnu-toolchain
     $ ./configure --prefix=/opt/riscv
     $ make -jN                                   (Where N is the number of cores that can be devoted to the build)
+```
+
+#### Ubuntu 18.04 LTS instructions
+
+If you are using Ubuntu 18.04 LTS, you need to force the compilation of the riscv-toolchain with GCC-5, which is not installed by default.
+
+First, install gcc-5
+```
+sudo apt install gcc-5
+```
+
+Second, you'll need to build the toolchain while forcing the GCC compiler version.
+
+```
+    $ cd <CEP_ROOT>/software/riscv-gnu-toolchain
+    $ ./configure CC=gcc-5 --prefix=/opt/riscv
+    $ make CC=gcc-5 -jN                                   (Where N is the number of cores that can be devoted to the build)
+```
 
 Now with the tools installed, you'll want to add them to your path:
 ```
@@ -125,6 +144,8 @@ Next, you need to install Scala which is required by Chisel.
 Install the required dependencies by running the following command:
 `sudo apt install build-essential git texinfo bison flex libgmp-dev libmpfr-dev libmpc-dev gawk libz-dev libssl-dev python unzip libncurses5-dev libglib2.0-dev libpixman-1-dev device-tree-compiler`
 
+If running on Ubuntu 18.04, you'll need to to the following:
+`sudo apt install libssl1.0-dev`
 
 ## Repository Directory Structure (highlight)
 ```
@@ -141,14 +162,16 @@ Install the required dependencies by running the following command:
               |     |          implement algorithms also have corresponding test vectors.
               |     |
               |     |-- freedom - CEP-modified variant of the Freedom U500 platform
-              |           |
-              |           |-- mitllBlocks - Chisel code for the CEP cores
+              |     |     |
+              |     |     |-- mitllBlocks - Chisel code for the CEP cores
+              |     |
+              |     |-- llki - LLKI SystemVerilog files
               |
               |-- generated_dsp_code/  - Placeholder for the generated DSP code that cannot be
               |                          directly included in the CEP repository due to licensing
               |                          restrictions.
               |
-              |-- opentitan/	       - Copy of the OpenTitan repository, some components are used by the LLKI.
+              |-- opentitan/	         - Copy of the OpenTitan repository, some components are used by the LLKI.
               |
               |-- software/        
                     |
@@ -159,10 +182,20 @@ Install the required dependencies by running the following command:
                     |                    the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
                     |
                     |-- riscv-gnu-toolchain/  - RISC-V GNU toolchain
+                    |-- riscv-tests           - RISC-V tests (used for importing into the cosimulation environment)
 
 ```
 
-### Note regarding endianess
+## Note regarding the Logic Locking Keying Interface (LLKI) and the Surrogate Root of Trust (SRoT)
+The SRoT is a SINGLE THREADED DEVICE.
+
+As such, care should be taken when using the SRoT in a multi-core environment.  Multiple cores should NOT access the SRoT at the same time.
+
+As of CEP v3.1+, all cores have been LLKI-enabled.  Thus, they must ne initialized with the appropriate mock keys.
+
+See ./cosim/drivers/diag/cepMacroMix.cc for example code. 
+
+## Note regarding endianess
 
 As one might be aware: the endianess usage is not consistent thru out the design, expesially where Chisel wrappers are used to connect to various HW cores. For some cores, little endian is used for loading keys/plain text but big-endian is used to produce cipher text as output. This creates confusion and inconsistent as one might try to understand/follow SW driver for these cores. Also, please note, RISCV is little endian.
 
@@ -199,7 +232,7 @@ For 32-bit registers: (right-justify if maps to 64-bit offset)
                                                     ... | ....                          |
 ```
 
-### Note regarding DSP cores
+## Note regarding DSP cores
 Due to licensing, the verilog source for the DFT and IDFT components are not included with the CEP repository.  Instructions for generating these cores can be found in the [./hdl_cores/dsp/README.md](./hdl_cores/dsp/README.md) file.  Scripts assume that the generated verilog has been placed in `<CEP_ROOT>/generated_dsp_code`.
 
 
@@ -286,8 +319,8 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v3.0
-         Copyright (C) 2020 Massachusetts Institute of Technology
+                      Common Evaluation Platform v3.1
+         Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
              the UCB Rocket Chip targeting the Xilinx VC-707
@@ -309,7 +342,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v3.00 was built on Sep 17 2020 12:01:26 ***
+*** CEP Tag=CEPTest CEP HW VERSION = v3.10 was built on Feb 14 2021 12:01:26 ***
  CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
@@ -362,6 +395,8 @@ Beginning with the v2.4 release, the following "generated" cores have been added
 - A(EE)ES-WB : Advanced Egregiously Extended Encryption Standard - Whitebox Edition [./hdl_cores/aeees/README.md](./hdl_cores/aeees/README.md).
 - (RI)IIR : Randomly Indeterminate Infinite Impulse Response [./hdl_cores/auto-fir/README.md](./hdl_cores/auto-fir/README.md).
 
+Reminder: Beginning with CEP v3.1, all the aforementioned cores have been Logic Locking Key Interface (LLKI) enabled, and thus must have the mock keys loaded to function properly.
+
  
 ## Co-Simulation
 The primary documentation source for the CEP co-simulation environment can be found in [./cosim/README.md](./cosim/README.md).
@@ -370,6 +405,7 @@ It is worth highlighting that simulation is dependent on completing the `Buildin
 
 The environment supports writing tests that can run in simulation or on the hardware itself.
 
+See ./cosim/drivers/diag/cepMacroMix.cc for example code.
 
 ## Unit Simulation
 The unit simulation testbenches allow for simulation of indivdual CEP cores without incurring the overhead of simulating
@@ -476,6 +512,14 @@ v3.0 - (18 December 2020)
 v3.01 - (19 December 2020)
 * Removed used flash model reference in cep_tb.v
 
+v3.1 - (22 February 2021) 
+* Full LLKI support (All CEP cores are now LLKI enabled)
+* Known Issues:
+  - cep_diag (on Linux) has NOT been updated to work with the LLKI.  Thus, running the tests that use
+    the CEP cores (e.g., cep_aes, cep_des3, etc.) will result in failure
+  - rv64si-p-dirty ISA test fails
+  - unit_simulations need to be updated to be compatible with the LLKI
+
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
 
@@ -484,7 +528,7 @@ Additional licensing information can be found in the [LICENSE](./LICENSE) and [l
 
 ## DISTRIBUTION STATEMENT A. Approved for public release: distribution unlimited.
 
-© 2020 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
+© 2021 MASSACHUSETTS INSTITUTE OF TECHNOLOGY
 
 Subject to FAR 52.227-11 – Patent Rights – Ownership by the Contractor (May 2014)
 SPDX-License-Identifier: BSD-2-Clause

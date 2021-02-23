@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -37,7 +37,8 @@
 `define CORE3_TL_PATH    fpga.topDesign.topMod.tile_3.tl_master
 `define FPGA_RESET_PATH  fpga.topDesign.wrangler
 `define RESET_PATH       fpga.topDesign.wrangler
-`define FIR_PATH         fpga.topDesign.topMod.fir
+`define FIR_PATH         fpga.topDesign.topMod.firmodule
+`define DDR_PATH         fpga.topDesign.topMod.mig
 
 `define CORE0_PC      `CORE0_PATH.core.coreMonitorBundle_pc
 `define CORE1_PC      `CORE1_PATH.core.coreMonitorBundle_pc

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -35,6 +35,6 @@ int cepMemTest_ReadEntry(memBaseTest_t *me, uint64_t adr);
 //
 // The test itself
 //
-int cepMemTest_runTest(int cpuId,uint64_t mem_base, int adrWidth,int seed, int verbose, int full);
+int cepMemTest_runTest(int cpuId,uint64_t mem_base, int adrWidth, int dataWidth, int seed, int verbose, int full);
 
 #endif

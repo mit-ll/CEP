@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -13,6 +13,7 @@
 #include "simdiag_global.h"
 #include "cep_adrMap.h"
 #include "cepSrotTest.h"
+#include "cep_srot.h"
 #include "CEP.h"
 #include "cepregression.h"
 #include "random48.h"
@@ -173,8 +174,8 @@ int cepSrotTest_runTest(int cpuId, int seed, int verbose) {
   LOGI("cepSrotTest_runTest: Loading a key into the Key RAM...                      \n");
   LOGI("----------------------------------------------------------------------------\n");
   LOGI("\n");
-  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 0, AES_MOCK_TSS_KEY_0);
-  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 8, AES_MOCK_TSS_KEY_1);
+  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 0, AES_MOCK_TSS_KEY[0]);
+  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 8, AES_MOCK_TSS_KEY[1]);
 
   LOGI("\n");
   LOGI("----------------------------------------------------------------------------\n");

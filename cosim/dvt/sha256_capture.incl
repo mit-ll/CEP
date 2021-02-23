@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,10 +24,10 @@ int SHA256_fd;
 always @(posedge c2c_capture_enable[`DVTF_SHA256_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of SHA256 stimulus");	    
    // wait until it gets out of reset
-   if (cep_tb.fpga.topDesign.topMod.sha256.blackbox.rst)
-     @(negedge cep_tb.fpga.topDesign.topMod.sha256.blackbox.rst);
+   if (cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.rst)
+     @(negedge cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.rst);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.sha256.blackbox.clk);
+   @(posedge cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.clk);
    CaptureSHA256_vector=1;
    SHA256_fd=$fopen("../../drivers/vectors/sha256_stimulus.txt","w");
    captureSHA256_Stimulus();   
@@ -35,7 +35,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_SHA256_CAPTURE_EN_BIT]) begin
    if (CaptureSHA256_vector) begin
       CaptureSHA256_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.sha256.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.clk);
       $display("Stop Capturing SHA256 stimulus");
       $fwrite(SHA256_fd,"};\n");
       $fwrite(SHA256_fd,"`define SHA256_SAMPLE_COUNT %d\n",SHA256_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 SHA256_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(SHA256_fd,"//************************************************************************\n");
-	 $fwrite(SHA256_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(SHA256_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(SHA256_fd,"//\n");		
 	 $fwrite(SHA256_fd,"// File Name:      SHA256_stimulus.txt\n");
 	 $fwrite(SHA256_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -73,7 +73,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureSHA256_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.sha256.blackbox.clk);
+	    @(negedge cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.clk);
 	    // MUST align to HEX number if _ is used!!!
 	    if (SHA256_sampleNum>0) begin
 	       $fwrite(SHA256_fd,"   ,");
@@ -82,12 +82,12 @@ end
             end
 	    // MUST align to HEX number if _ is used!!!
 	    $fwrite(SHA256_fd,"'h%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256.blackbox.init},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256.blackbox.next},
-		    cep_tb.fpga.topDesign.topMod.sha256.blackbox.block[511:0],	 	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256.blackbox.ready},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256.blackbox.digest_valid},	 
-		    cep_tb.fpga.topDesign.topMod.sha256.blackbox.digest[255:0]
+		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.init},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.next},
+		    cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.block[511:0],	 	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.ready},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.digest_valid},	 
+		    cep_tb.fpga.topDesign.topMod.sha256module.sha256_mock_tss_inst.digest[255:0]
 		    );
 
 	    SHA256_sampleNum++;

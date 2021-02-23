@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -60,6 +60,32 @@ always @(posedge `SHIPC_CLK ) __simTime = __simTime + 1;
 task processCmd;
   begin
       case (__shIpc_cmd)
+
+//
+// ATOMIC_RDW64
+//
+	`SHIPC_ATOMIC_RDW64 : begin 
+`ifdef SHIPC_ATOMIC_RDW64_TASK
+	`SHIPC_ATOMIC_RDW64_TASK;
+`undef SHIPC_ATOMIC_RDW64_TASK
+`else
+	unsupportTask("SHIPC_ATOMIC_RDW64");
+`endif
+	end
+
+//
+// WRITE64_BURST
+//
+	`SHIPC_WRITE64_BURST : begin 
+`ifdef SHIPC_WRITE64_BURST_TASK
+	`SHIPC_WRITE64_BURST_TASK;
+`undef SHIPC_WRITE64_BURST_TASK
+`else
+	unsupportTask("SHIPC_WRITE64_BURST");
+`endif
+	end
+
+
 //
 // WRITE32_64
 //
@@ -85,6 +111,30 @@ task processCmd;
 	end
 
 //
+// WRITE32_16
+//
+	`SHIPC_WRITE32_16 : begin 
+`ifdef SHIPC_WRITE32_16_TASK
+	`SHIPC_WRITE32_16_TASK;
+`undef SHIPC_WRITE32_16_TASK
+`else
+	unsupportTask("SHIPC_WRITE32_16");
+`endif
+	end
+
+//
+// WRITE32_8
+//
+	`SHIPC_WRITE32_8 : begin 
+`ifdef SHIPC_WRITE32_8_TASK
+	`SHIPC_WRITE32_8_TASK;
+`undef SHIPC_WRITE32_8_TASK
+`else
+	unsupportTask("SHIPC_WRITE32_8");
+`endif
+	end
+
+//
 // WRITE64_64
 //
 	`SHIPC_WRITE64_64 : begin 
@@ -93,6 +143,30 @@ task processCmd;
 `undef SHIPC_WRITE64_64_TASK
 `else
 	unsupportTask("SHIPC_WRITE64_64");
+`endif
+	end
+
+//
+// READ32_8
+//
+	`SHIPC_READ32_8 : begin 
+`ifdef SHIPC_READ32_8_TASK
+	`SHIPC_READ32_8_TASK;
+`undef SHIPC_READ32_8_TASK
+`else
+	unsupportTask("SHIPC_READ32_8");
+`endif
+	end
+
+//
+// READ32_16
+//
+	`SHIPC_READ32_16 : begin 
+`ifdef SHIPC_READ32_16_TASK
+	`SHIPC_READ32_16_TASK;
+`undef SHIPC_READ32_16_TASK
+`else
+	unsupportTask("SHIPC_READ32_16");
 `endif
 	end
 
@@ -129,6 +203,17 @@ task processCmd;
 `undef SHIPC_READ64_64_TASK
 `else
 	unsupportTask("SHIPC_READ64_64");
+`endif
+	end
+//
+// READ64_BURST
+//
+	`SHIPC_READ64_BURST : begin 
+`ifdef SHIPC_READ64_BURST_TASK
+	`SHIPC_READ64_BURST_TASK;
+`undef SHIPC_READ64_BURST_TASK
+`else
+	unsupportTask("SHIPC_READ64_BURST");
 `endif
 	end
 

@@ -1,8 +1,8 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 <p align="center">
-   Copyright 2020 Massachusetts Institute of Technology
+   Copyright 2021 Massachusetts Institute of Technology
 </p>
 
 ## Auto-FIR Script
@@ -42,6 +42,14 @@ If `--allclean` is specified, then following ADDITIONAL files will be deleted:
 ```
     firgen.tgz
     rm -f synth-jan-14-2009.tar.gz
+```
+
+## Ubuntu 18.04 note:
+If running the build on Ubuntu 18.04, you'll need to ensure rthe Verilog-Perl module is installed.
+
+This can be accomplished by running the following command:
+```
+sudo cpan install Verilog-Perl
 ```
 
 #### Return to the root CEP [README](../../README.md)

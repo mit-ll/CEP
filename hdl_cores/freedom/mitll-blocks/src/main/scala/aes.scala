@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : aes.scala
@@ -22,24 +22,8 @@ import freechips.rocketchip.tilelink._
 import mitllBlocks.cep_addresses._
 
 //--------------------------------------------------------------------------------------
-// BEGIN: AES "Periphery" connections
+// BEGIN: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
-
-// The following class is used to pass paramaters down into the core
-case class COREParams(
-  slave_base_addr     : BigInt,
-  slave_depth         : BigInt,
-  llki_base_addr      : BigInt,
-  llki_depth          : BigInt,
-  dev_name            : String
-)
-
-// The following parameter pass attachment info to the lower level objects/classes/etc.
-case class COREAttachParams(
-  coreparams        : COREParams,
-  llki_bus          : TLBusWrapper,
-  slave_bus         : TLBusWrapper,
-)
 
 // Parameters associated with the core
 case object PeripheryAESKey extends Field[Seq[COREParams]]
@@ -47,18 +31,18 @@ case object PeripheryAESKey extends Field[Seq[COREParams]]
 // This trait "connects" the core to the Rocket Chip and passes the parameters down
 // to the instantiation
 trait HasPeripheryAES { this: BaseSubsystem =>
-  val node = p(PeripheryAESKey).map { params =>
+  val aesnode = p(PeripheryAESKey).map { params =>
 
     // Initialize the attachment parameters
     val coreattachparams = COREAttachParams(
       coreparams  = params,
-      llki_bus    = pbus,
+      llki_bus    = pbus, // The LLKI connects to the periphery bus
       slave_bus   = pbus
     )
 
     // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
     // and thus should be unique to this core and NOT a verilog reserved keyword
-    val aesmodule = LazyModule(new TLModule(coreattachparams)(p))
+    val aesmodule = LazyModule(new aesTLModule(coreattachparams)(p))
 
     // Perform the slave "attachments" to the slave bus
     coreattachparams.slave_bus.coupleTo(coreattachparams.coreparams.dev_name + "_slave") {
@@ -79,14 +63,15 @@ trait HasPeripheryAES { this: BaseSubsystem =>
 }}
 
 //--------------------------------------------------------------------------------------
-// END: Classes, Objects, and Traits to support connecting to TileLink
+// END: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
+ 
 
 
 //--------------------------------------------------------------------------------------
-// BEGIN: AES TileLink Module
+// BEGIN: TileLink Module
 //--------------------------------------------------------------------------------------
-class TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) extends LazyModule {
+class aesTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) extends LazyModule {
 
   // Create a Manager / Slave / Sink node
   // The OpenTitan-based Tilelink interfaces support 4 beatbytes only
@@ -115,11 +100,18 @@ class TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) exten
   )
 
   // Instantiate the implementation
-  lazy val module = new TLModuleImp(coreattachparams.coreparams, this)
+  lazy val module = new aesTLModuleImp(coreattachparams.coreparams, this)
 
 }
+//--------------------------------------------------------------------------------------
+// END: TileLink Module
+//--------------------------------------------------------------------------------------
 
-class TLModuleImp(coreparams: COREParams, outer: TLModule) extends LazyModuleImp(outer) {
+
+//--------------------------------------------------------------------------------------
+// BEGIN: TileLink Module Implementation
+//--------------------------------------------------------------------------------------
+class aesTLModuleImp(coreparams: COREParams, outer: aesTLModule) extends LazyModuleImp(outer) {
 
   // "Connect" to llki node's signals and parameters
   val (llki, llkiEdge)    = outer.llki_node.in(0)
@@ -135,7 +127,7 @@ class TLModuleImp(coreparams: COREParams, outer: TLModule) extends LazyModuleImp
     val io = IO(new Bundle {
       // Clock and Reset
       val clk                 = Input(Clock())
-      val rst                 = Input(Bool())
+      val rst                 = Input(Reset())
 
       // Slave - Tilelink A Channel (Signal order/names from Tilelink Specification v1.8.0)
       val slave_a_opcode      = Input(UInt(3.W))
@@ -173,8 +165,8 @@ class TLModuleImp(coreparams: COREParams, outer: TLModule) extends LazyModuleImp
   } // end class llki_pp_wrapper
 
   // Instantiate the LLKI Protocol Processing Block with CORE SPECIFIC decode constants
-  val llki_pp_inst = Module(new llki_pp_wrapper(CEPBaseAddresses.aes_llki_ctrlsts_addr, 
-                                                CEPBaseAddresses.aes_llki_sendrecv_addr))
+  val llki_pp_inst = Module(new llki_pp_wrapper(coreparams.llki_ctrlsts_addr, 
+                                                coreparams.llki_sendrecv_addr))
 
   // The following "requires" are included to avoid size mismatches between the
   // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
@@ -270,13 +262,13 @@ class TLModuleImp(coreparams: COREParams, outer: TLModule) extends LazyModuleImp
   val out_valid           = Wire(Bool())
 
   // Map the core specific blackbox IO
-  aes_192_mock_tss_inst.io.clk   := clock            
-  aes_192_mock_tss_inst.io.rst   := reset            
-  aes_192_mock_tss_inst.io.start := start            
-  aes_192_mock_tss_inst.io.state := Cat(state0, state1)
-  aes_192_mock_tss_inst.io.key   := Cat(key0, key1, key2)
-  out                       := aes_192_mock_tss_inst.io.out  
-  out_valid                 := aes_192_mock_tss_inst.io.out_valid
+  aes_192_mock_tss_inst.io.clk    := clock            
+  aes_192_mock_tss_inst.io.rst    := reset            
+  aes_192_mock_tss_inst.io.start  := start            
+  aes_192_mock_tss_inst.io.state  := Cat(state0, state1)
+  aes_192_mock_tss_inst.io.key    := Cat(key0, key1, key2)
+  out                             := aes_192_mock_tss_inst.io.out  
+  out_valid                       := aes_192_mock_tss_inst.io.out_valid
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
@@ -293,9 +285,10 @@ class TLModuleImp(coreparams: COREParams, outer: TLModule) extends LazyModuleImp
     AESAddresses.aes_key2_addr -> RegFieldGroup("aes_key2", Some("AES Key Word 2"), Seq(RegField(64, key2)))
   )  // regmap
 
-}  // end TLAESModuleImp
+}
+
 //--------------------------------------------------------------------------------------
-// END: AES TileLink Module
+// END: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
 
 

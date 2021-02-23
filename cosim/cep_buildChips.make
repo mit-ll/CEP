@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      cep_buildChips.make
@@ -73,6 +73,17 @@ RISCV_HEXDUMP     = /usr/bin/hexdump
 RISCV_TEST_DIR     = ${DUT_TOP_DIR}/software/riscv-tests
 
 #
+# Files/stuffs need to build bare metal tests in virtual mode
+#
+#riscv64-unknown-elf-gcc -march=rv64g -mabi=lp64 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g -DENTROPY=0xdb1550c -std=gnu99 -O2 -I/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v -I/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/macros/scalar -T/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/link.ld /data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/entry.S /data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/*.c rv64uc/rvc.S -o rv64uc-v-rvc
+#riscv64-unknown-elf-objdump -S -C -d -l -x --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data rv64uc-v-rvc > rv64uc-v-rvc.dump
+
+RISCV_VIRT_CFLAGS  += -march=rv64g -mabi=lp64 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -DENTROPY=0xdb1550c -static 
+RISCV_VIRT_LFLAGS  += -T${SIM_DIR}/drivers/virtual/link.ld
+RISCV_VIRT_CFILES  += ${SIM_DIR}/drivers/virtual/*.c ${SIM_DIR}/drivers/virtual/multi_entry.S 
+RISCV_VIRT_INC     += -I${SIM_DIR}/drivers/virtual -I${RISCV_TEST_DIR}/isa/macros/scalar 
+
+#
 # flags to compile codes for bare metal
 #
 RISCV_BARE_CFLAG  += -DBARE_MODE -static -DRISCV_CPU
@@ -124,10 +135,25 @@ else
 
 RISCV_WRAPPER_ELF = ${RISCV_WRAPPER}
 
+#
+# with -g, tests in virtual adr will run forever when it takes a page fault..!! (sending stuffs to console and stop)
+# so build with -g for dump file only
+#
+#
+ifeq (${DUT_IN_VIRTUAL},1)
+riscv_wrapper.elf: riscv_virt.S riscv_wrapper.cc ${RISCV_VIRT_CFILES}
+	$(RISCV_GCC) ${RISCV_VIRT_CFLAGS} ${RISCV_VIRT_LFLAGS} -g ${RISCV_VIRT_INC} $^ -o riscv_withG.elf
+	${RISCV_OBJDUMP} -S -C -d -l -x riscv_withG.elf > riscv_wrapper.dump; rm riscv_withG.elf;
+	$(RISCV_GCC) ${RISCV_VIRT_CFLAGS} ${RISCV_VIRT_LFLAGS} ${RISCV_VIRT_INC} $^ -o riscv_wrapper.elf
+	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex
+	${BIN_DIR}/createPassFail.pl riscv_wrapper.dump PassFail.hex
+else
 riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${BARE_OBJ_DIR}/syscalls.bobj ${BARE_OBJ_DIR}/bare_malloc.bobj ${CEP_BARE_OBJECTS} ${CEP_BARE_DIAG_OBJECTS}
 	$(RISCV_GCC) -T ${RISCV_BARE_LDFILE} ${RISCV_BARE_LDFLAG} $^ -o $@
 	${RISCV_OBJDUMP} -S -C -d -l -x riscv_wrapper.elf > riscv_wrapper.dump
 	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex
+
+endif
 
 %.bobj: %.cc ${VERILOG_DEFINE_LIST} 
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
@@ -150,7 +176,7 @@ endif
 DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/aes/round.v			\
 	${DUT_TOP_DIR}/hdl_cores/aes/aes_192.v 			\
-	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv \
+	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv 		\
 	$(wildcard ${DUT_TOP_DIR}/generated_dsp_code/*.v)	\
 	${BHV_DIR}/ddr3.v					\
 
@@ -184,7 +210,7 @@ XILINX_MODELSIM_INI     = ${SIM_DIR}/xil_lib/modelsim.ini
 XILINX_LIBRARY_LIST     = -L unisims_ver -L unimacro_ver -L unifast_ver -L secureip -L xpm
 DUT_XILINX_VOPT_ARGS	= +acc -64 +nolibcell +nospecify +notimingchecks -modelsimini ${XILINX_MODELSIM_INI} ${WORK_DIR}.glbl ${XILINX_LIBRARY_LIST}
 DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT+RANDOMIZE_REG_INIT+RANDOM="1'b0"
-#DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOM="1'b0"
+#DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOM="1'b0"+RANDOMIZE_MEM_INIT
 DUT_XILINX_VCOM_ARGS	= -64 -93 -modelsimini ${XILINX_MODELSIM_INI}
 DUT_XILINX_VSIM_ARGS	= -64 -modelsimini ${XILINX_MODELSIM_INI} ${XILINX_LIBRARY_LIST} -warning 3363 -warning 3053 -warning 8630
 
@@ -246,11 +272,11 @@ SEARCH_DIR_LIST := ${DVT_DIR}		\
 		${DUT_TOP_DIR}/hdl_cores/md5					\
 		${DUT_TOP_DIR}/hdl_cores/rsa/rtl				\
 		${DUT_TOP_DIR}/hdl_cores/sha256					\
-		${DUT_TOP_DIR}/hdl_cores/dsp				\
-		${DUT_TOP_DIR}/hdl_cores/llki				\
-		$(DUT_TOP_DIR)/opentitan/hw/ip/tlul/rtl \
-		$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl \
-		$(DUT_TOP_DIR)/opentitan/hw/ip/prim_generic/rtl \
+		${DUT_TOP_DIR}/hdl_cores/dsp					\
+		${DUT_TOP_DIR}/hdl_cores/llki 					\
+		$(DUT_TOP_DIR)/opentitan/hw/ip/tlul/rtl 			\
+		$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl 			\
+		$(DUT_TOP_DIR)/opentitan/hw/ip/prim_generic/rtl 		\
 		${BHV_DIR} 		
 
 

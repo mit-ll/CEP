@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -62,7 +62,19 @@ void *c_module(void *arg) {
   int full = 0;
   int adrWidth = 30-2; // 1 Gbytes (30bits) for all 4 cores => each one will test 1/4 of that
   u_int32_t mem_base = ddr3_base_adr + ((cpuId&0x3) << adrWidth);  
-  if (!errCnt) { errCnt = cepMemTest_runTest(cpuId,mem_base,adrWidth,seed, verbose, full); }
+  //
+  int dataWidth = 0;
+  for (int i=0;i<4;i++) {
+    switch ((i + cpuId) & 0x3) {
+    case 0 : dataWidth = 8; break;
+    case 1 : dataWidth = 16; break;
+    case 2 : dataWidth = 32; break;
+    case 3 : dataWidth = 64; break;
+    }
+    if (!errCnt) { errCnt = cepMemTest_runTest(cpuId,mem_base,adrWidth,dataWidth ,seed + ((cpuId+i)*0x10), verbose, full); }
+  }
+  //
+  //
   //
   pio.RunClk(100);  
   //

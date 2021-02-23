@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -61,12 +61,14 @@ struct regBaseTest_ {
   //
   void (*ClearAll_p)             (regBaseTest_t *);
   int (*AddAReg_p)              (regBaseTest_t *, uint32_t, uint64_t);
+  int (*AddAHole_p)             (regBaseTest_t *, uint32_t, uint64_t);
   int (*AddROReg_p)             (regBaseTest_t *,uint32_t, uint64_t, uint64_t );
   int (*GetMaxBits_p)           (regBaseTest_t *, uint64_t);
   int (*WriteReg_p)             (regBaseTest_t *,uint32_t,uint64_t);
   uint64_t (*ReadReg_p)         (regBaseTest_t *,uint32_t);
   int (*ReadRegNCompare_p)      (regBaseTest_t *,uint32_t, uint64_t, uint64_t);
   int (*uniquifyTest_p)         (regBaseTest_t *,int, int);
+  int (*punchSomeHoles_p)       (regBaseTest_t *);
   int (*walk_1_thruDatTest_p)   (regBaseTest_t *,int, int);
   int (*walk_0_thruDatTest_p)   (regBaseTest_t *,int, int);
   int (*checkerBoardTest_p)     (regBaseTest_t *);
@@ -88,6 +90,8 @@ struct regBaseTest_ {
   int mSeed;
   int mMaxBits;
   uint64_t mRegList[0x1000*2]; 
+  uint64_t mHoleList[0x1000*2]; // non existing register to write garbage to
+  int mHoleCnt;
   int mROcnt;
   int mNoWr2ROreg;
   uint64_t mROList[0x1000*3]; 

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,18 +24,18 @@ int RSA_fd;
 always @(posedge c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of RSA stimulus");	    
    // wait until it gets out of reset
-   if (!cep_tb.fpga.topDesign.topMod.rsa.blackbox.reset_n)
-     @(posedge cep_tb.fpga.topDesign.topMod.rsa.blackbox.reset_n);
+   if (!cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.reset_n)
+     @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.reset_n);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.rsa.blackbox.clk);
+   @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
    CaptureRSA_vector=1;
    RSA_fd=$fopen("../../drivers/vectors/rsa_stimulus.txt","w");
    captureRSA_Stimulus();   
 end	
-always @(negedge c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT]) begin
+always @(negedge c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT]) begin 
    if (CaptureRSA_vector) begin
       CaptureRSA_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.rsa.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
       $display("Stop Capturing RSA stimulus");
       $fwrite(RSA_fd,"};\n");
       $fwrite(RSA_fd,"`define RSA_SAMPLE_COUNT %d\n",RSA_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 RSA_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(RSA_fd,"//************************************************************************\n");
-	 $fwrite(RSA_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(RSA_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(RSA_fd,"//\n");		
 	 $fwrite(RSA_fd,"// File Name:      RSA_stimulus.txt\n");
 	 $fwrite(RSA_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -92,7 +92,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureRSA_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.rsa.blackbox.clk);
+	    @(negedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
 	    // MUST align to HEX number if _ is used!!!
 	    if (RSA_sampleNum>0) begin
 	       $fwrite(RSA_fd,"   ,");
@@ -100,29 +100,29 @@ end
 	       $fwrite(RSA_fd,"    ");		 
             end
 	    $fwrite(RSA_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_mem_api_cs},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_mem_api_rst},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_mem_api_wr},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.message_mem_api_cs},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.message_mem_api_rst},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.message_mem_api_wr},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_mem_api_cs},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_mem_api_rst},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_mem_api_wr},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.result_mem_api_cs},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.result_mem_api_rst},
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.start},
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_length[7:0],	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_length[12:0]},
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_mem_api_write_data[31:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.message_mem_api_write_data[31:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_mem_api_write_data[31:0],
-		    {3'b0,cep_tb.fpga.topDesign.topMod.rsa.blackbox.ready},	 	 
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.cycles[63:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.exponent_mem_api_read_data[31:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.message_mem_api_read_data[31:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.modulus_mem_api_read_data[31:0],
-		    cep_tb.fpga.topDesign.topMod.rsa.blackbox.result_mem_api_read_data[31:0]
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_cs},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_rst},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_wr},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.message_mem_api_cs},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.message_mem_api_rst},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.message_mem_api_wr},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_mem_api_cs},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_mem_api_rst},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_mem_api_wr},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.result_mem_api_cs},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.result_mem_api_rst},
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.start},
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_length[7:0],	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_length[12:0]},
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_write_data[31:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.message_mem_api_write_data[31:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_mem_api_write_data[31:0],
+		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.ready},	 	 
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.cycles[63:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_read_data[31:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.message_mem_api_read_data[31:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.modulus_mem_api_read_data[31:0],
+		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.result_mem_api_read_data[31:0]
 		    );
 
 	    RSA_sampleNum++;

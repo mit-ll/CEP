@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,10 +24,10 @@ int GPS_fd;
 always @(posedge c2c_capture_enable[`DVTF_GPS_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of GPS stimulus");	    
    // wait until it gets out of reset
-   if (cep_tb.fpga.topDesign.topMod.gps.blackbox.sync_rst_in)
-     @(negedge cep_tb.fpga.topDesign.topMod.gps.blackbox.sync_rst_in);
+   if (cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sync_rst_in)
+     @(negedge cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sync_rst_in);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.gps.blackbox.sys_clk_50);
+   @(posedge cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sys_clk_50);
    CaptureGPS_vector=1;
    GPS_fd=$fopen("../../drivers/vectors/gps_stimulus.txt","w");
    captureGPS_Stimulus();   
@@ -35,7 +35,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_GPS_CAPTURE_EN_BIT]) begin
    if (CaptureGPS_vector) begin
       CaptureGPS_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.gps.blackbox.sys_clk_50);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sys_clk_50);
       $display("Stop Capturing GPS stimulus");
       $fwrite(GPS_fd,"};\n");
       $fwrite(GPS_fd,"`define GPS_SAMPLE_COUNT %d\n",GPS_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 GPS_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(GPS_fd,"//************************************************************************\n");
-	 $fwrite(GPS_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(GPS_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(GPS_fd,"//\n");		
 	 $fwrite(GPS_fd,"// File Name:      GPS_stimulus.txt\n");
 	 $fwrite(GPS_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -73,7 +73,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureGPS_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.gps.blackbox.sys_clk_50);
+	    @(negedge cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sys_clk_50);
 	    // MUST align to HEX number if _ is used!!!
 	    if (GPS_sampleNum>0) begin
 	       $fwrite(GPS_fd,"   ,");
@@ -82,12 +82,12 @@ end
             end
 	    // MUST align to HEX number if _ is used!!!
 	    $fwrite(GPS_fd,"'h%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.gps.blackbox.startRound},
-		    {2'b0,cep_tb.fpga.topDesign.topMod.gps.blackbox.sv_num[5:0]},	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.gps.blackbox.l_code_valid},	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.gps.blackbox.ca_code[12:0]},	 
-		    cep_tb.fpga.topDesign.topMod.gps.blackbox.l_code[127:0],
-		    cep_tb.fpga.topDesign.topMod.gps.blackbox.p_code[127:0]);
+		    {3'b0,cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.startRound},
+		    {2'b0,cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.sv_num[5:0]},	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.l_code_valid},	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.ca_code[12:0]},	 
+		    cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.l_code[127:0],
+		    cep_tb.fpga.topDesign.topMod.gpsmodule.gps_mock_tss_inst.gps_inst.p_code[127:0]);
 	    GPS_sampleNum++;
 	 end // while (1)
       end

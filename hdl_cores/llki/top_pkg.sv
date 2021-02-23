@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:       top_pkg.sv

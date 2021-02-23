@@ -1,6 +1,6 @@
 // See LICENSE for license details.
 //
-// Modifications Copyright (C) 2020 Massachusetts Institute of Technology
+// Modifications Copyright 2021 Massachusetts Institute of Technology
 //
 #include <stdint.h>
 
@@ -224,8 +224,8 @@ void print_greeting()
     kputs("       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-                   "); 
     kputs("       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.                      "); 
     kputs("                                                                             ");
-    kputs("                     Common Evaluation Platform v3.0                         ");
-    kputs("         Copyright (C) 2020 Massachusetts Institute of Technology            ");
+    kputs("                     Common Evaluation Platform v3.1                         ");
+    kputs("         Copyright 2021 Massachusetts Institute of Technology            ");
     kputs("                                                                             ");
     kputs("            Built upon the SiFive Freedom U500 Platform using                ");
     kputs("             the UCB Rocket Chip targeting the Xilinx VC-707                 ");

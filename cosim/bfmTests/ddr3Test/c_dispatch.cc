@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -80,6 +80,7 @@ int main(int argc, char *argv[])
   // Enable main memory logging
   //
   //DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEM_LOGGING, DVTF_ENABLE_MAIN_MEM_LOGGING, 1);
+  DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEMWR_LOGGING, DVTF_ENABLE_MAIN_MEMWR_LOGGING, 1);
   //
   // ============================  
   // wait until all the threads are done

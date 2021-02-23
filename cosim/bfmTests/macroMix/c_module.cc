@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -59,7 +59,7 @@ void *c_module(void *arg) {
   //int calibDone = calibrate_ddr3(50);
   pio.RunClk(1000);
   //
-  int mask = 0xFFFFFFFF;
+  int mask = seed; // seed is used as cpuActiveMask from c_displatch
   if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, seed, verbose); }
   //
   pio.RunClk(100);  

@@ -1,4 +1,4 @@
-# Copyright (C) 2020 Massachusetts Institute of Technology #
+# Copyright 2021 Massachusetts Institute of Technology #
 
 
 This directory contains everything you need to run unit level simulation for the **md5** core (DUT)

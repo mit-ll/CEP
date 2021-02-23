@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -24,6 +24,7 @@
 #include "simPio.h"
 #endif
 
+#include "CEP.h"
 #include "cep_aes.h"
 #include "cep_des3.h"
 #include "cep_md5.h"
@@ -33,6 +34,7 @@
 #include "cep_iir.h"
 #include "cep_dft.h"
 #include "cep_rsa.h"
+#include "cep_srot.h"
 
 
 //
@@ -43,17 +45,18 @@
 int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
   //
   int errCnt = 0;
+
 #ifndef BARE_MODE
   cep_aes aes(seed,verbose);
   cep_des3 des3(seed,verbose);
-  cep_sha256 sha256(seed,verbose);
   cep_md5 md5(seed,verbose);
-  cep_gps gps(seed,verbose);
+  cep_sha256 sha256(seed,verbose);
   cep_fir fir(seed,verbose);
   cep_iir iir(seed,verbose);
+  cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
   cep_dft dft(seed,verbose);
-  cep_rsa rsa(seed,verbose);    
-  
+  cep_rsa rsa(seed,verbose);
+
   //
   int captureOn = 0;
 #ifdef CAPTURE_CMD_SEQUENCE
@@ -61,6 +64,13 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
 #endif
   int maxLoop;
   //
+  //
+  // do the LLKI unlock here
+  //
+  cep_srot srot(verbose);
+  srot.SetCpuActiveMask(mask);
+  errCnt += srot.LLKI_Setup(cpuId);
+  if (errCnt) return errCnt;
   //
   //
   switch (cpuId) {
@@ -77,7 +87,7 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     aes.freeMe();
     if (errCnt) return errCnt;
-    
+
     //
     // DES3
     //
@@ -102,8 +112,11 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     errCnt += md5.RunMd5Test(maxLoop);
     //
     md5.freeMe();
+
+    // Free the srot object at the end of thread 0 (freeing it too soon will result
+    // problems with the other threads who use the object)
+
     if (errCnt) return errCnt;
-    
     break;
     
   case 1 : 
@@ -119,7 +132,7 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     sha256.freeMe();
     if (errCnt) return errCnt;
-    
+  
     //
     // FIR
     //
@@ -144,8 +157,8 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     errCnt += iir.RunIirTest(maxLoop);
     //
     iir.freeMe();
+
     if (errCnt) return errCnt;
-    //
     break;
 
   case 2:
@@ -172,8 +185,10 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     errCnt += dft.RunDftTest(maxLoop);
     //
     dft.freeMe();
+
     if (errCnt) return errCnt;    
     break;
+  
   case 3:
     //
     // RSA
@@ -196,10 +211,13 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     }
     //
     rsa.freeMe();
+
     if (errCnt) return errCnt;    
     break;
-  }
-  // else do nothing
+
+  } // switch (cpuId)
+
+// else do nothing
 #endif
   
   return errCnt;

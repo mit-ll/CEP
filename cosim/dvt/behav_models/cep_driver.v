@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -206,6 +206,70 @@ endtask // READ_ERROR_CNT_TASK;
 
    //
    // ---------------------------   
+   // WRITE64_BURST
+   // ---------------------------
+   //
+`ifdef USE_DPI
+`define SHIPC_WRITE64_BURST_TASK WRITE64_BURST_DPI()
+task   WRITE64_BURST_DPI;
+   reg [3:0] bits_size;
+begin
+   //`logI("%m a=%x d=%x",a,d);
+   //
+   bits_size = $clog2(inBox.mAdrHi << 3); // unit of 8 bytes
+   
+`ifdef BFM_MODE
+   case (MY_LOCAL_ID)
+     0: begin
+	for (int i=0;i<inBox.mAdrHi;i++) `CORE0_TL_PATH.tl_buf[i] = inBox.mPar[i];
+	`CORE0_TL_PATH.tl_a_ul_write_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,'hFF,bits_size);
+     end
+     1: begin
+	for (int i=0;i<inBox.mAdrHi;i++) `CORE1_TL_PATH.tl_buf[i] = inBox.mPar[i];
+	`CORE1_TL_PATH.tl_a_ul_write_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,'hFF,bits_size);
+     end
+     2: begin
+	for (int i=0;i<inBox.mAdrHi;i++) `CORE2_TL_PATH.tl_buf[i] = inBox.mPar[i];
+	`CORE2_TL_PATH.tl_a_ul_write_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,'hFF,bits_size);
+     end
+     3: begin
+	for (int i=0;i<inBox.mAdrHi;i++) `CORE3_TL_PATH.tl_buf[i] = inBox.mPar[i];
+	`CORE3_TL_PATH.tl_a_ul_write_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,'hFF,bits_size);
+     end     
+   endcase // case (MY_LOCAL_ID)
+`endif
+end
+endtask // WRITE64_BURST_TASK
+`endif
+
+   //
+   // ---------------------------   
+   // ATOMIC_RDW64
+   // ---------------------------
+   //
+`ifdef USE_DPI
+ `define SHIPC_ATOMIC_RDW64_TASK ATOMIC_RDW64_DPI()
+   task   ATOMIC_RDW64_DPI;
+      reg [3:0] bits_size;
+      begin
+	 //`logI("%m a=%x d=%x",a,d);
+	 //
+	 bits_size = 3;
+	 
+ `ifdef BFM_MODE
+	 case (MY_LOCAL_ID)
+	   0: `CORE0_TL_PATH.tl_a_ul_logical_data(MY_LOCAL_ID & 'h1, inBox.mAdr,inBox.mAdrHi,inBox.mPar[0],inBox.mPar[1],bits_size);
+	   1: `CORE1_TL_PATH.tl_a_ul_logical_data(MY_LOCAL_ID & 'h1, inBox.mAdr,inBox.mAdrHi,inBox.mPar[0],inBox.mPar[1],bits_size);
+	   2: `CORE2_TL_PATH.tl_a_ul_logical_data(MY_LOCAL_ID & 'h1, inBox.mAdr,inBox.mAdrHi,inBox.mPar[0],inBox.mPar[1],bits_size);
+	   3: `CORE3_TL_PATH.tl_a_ul_logical_data(MY_LOCAL_ID & 'h1, inBox.mAdr,inBox.mAdrHi,inBox.mPar[0],inBox.mPar[1],bits_size);
+	 endcase	
+	 
+ `endif
+      end
+   endtask // ATOMIC_RDW64_TASK
+`endif
+   //
+   // ---------------------------   
    // WRITE64_64
    // ---------------------------
    //
@@ -232,6 +296,44 @@ begin
 `endif
 end
 endtask // WRITE64_64_TASK
+`endif
+
+   //
+   // ---------------------------   
+   // READ64_BURST
+   // ---------------------------
+   //
+`ifdef USE_DPI   
+`define SHIPC_READ64_BURST_TASK READ64_BURST_DPI()
+task READ64_BURST_DPI;
+   reg [3:0] bits_size;
+   begin
+   //`logI("%m a=%x d=%x",a,d);
+   //
+   bits_size = $clog2(inBox.mAdrHi << 3); // unit of 8 bytes
+   
+`ifdef BFM_MODE
+   case (MY_LOCAL_ID)
+     0: begin
+	`CORE0_TL_PATH.tl_a_ul_read_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,bits_size);
+	for (int i=0;i<inBox.mAdrHi;i++) inBox.mPar[i] = `CORE0_TL_PATH.tl_buf[i];
+     end
+     1: begin
+	`CORE1_TL_PATH.tl_a_ul_read_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,bits_size);
+	for (int i=0;i<inBox.mAdrHi;i++) inBox.mPar[i] = `CORE1_TL_PATH.tl_buf[i];	
+     end
+     2: begin
+	`CORE2_TL_PATH.tl_a_ul_read_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,bits_size);
+	for (int i=0;i<inBox.mAdrHi;i++) inBox.mPar[i] = `CORE2_TL_PATH.tl_buf[i];	
+     end
+     3: begin
+	`CORE3_TL_PATH.tl_a_ul_read_burst(MY_LOCAL_ID & 'h1, inBox.mAdr,bits_size);
+	for (int i=0;i<inBox.mAdrHi;i++) inBox.mPar[i] = `CORE3_TL_PATH.tl_buf[i];	
+     end     
+   endcase // case (MY_LOCAL_ID)
+`endif
+end
+endtask // WRITE64_BURST_TASK
 `endif
    
    //
@@ -273,10 +375,10 @@ endtask // READ64_64_TASK
 task   WRITE32_64_DPI;
    reg [63:0] d;
 begin
-   //`logI("%m a=%x d=%x",a,d);
    //
    d[63:32] = inBox.mPar[0];
    d[31:0]  = inBox.mPar[1];
+   `logI("%m a=%x d=%x",inBox.mAdr,d);   
 `ifdef BFM_MODE
    if (backdoor_enable) begin
       cep_tb.write_ddr3_backdoor(inBox.mAdr,d);
@@ -295,6 +397,51 @@ begin
 end
 endtask // WRITE32_64_TASK
 
+`define SHIPC_WRITE32_8_TASK WRITE32_8_DPI()
+task   WRITE32_8_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask, byte8;
+begin
+   //`logI("%m a=%x d=%x",a,d);
+   //
+   mask = 1 << inBox.mAdr[2:0];
+   //
+   byte8 = inBox.mPar[0] & 'hff;
+   d = {8{byte8}};
+`ifdef BFM_MODE
+   case (MY_LOCAL_ID)
+     0: `CORE0_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,0);
+     1: `CORE1_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,0);
+     2: `CORE2_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,0);
+     3: `CORE3_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,0);     
+   endcase // case (MY_LOCAL_ID)
+`endif
+end
+endtask // WRITE32_8_TASK
+
+`define SHIPC_WRITE32_16_TASK WRITE32_16_DPI()
+task   WRITE32_16_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask;
+   reg [15:0] word;
+begin
+   //`logI("%m a=%x d=%x",a,d);
+   //
+   mask = 3 << (inBox.mAdr[2:1]*2);
+   //
+   word = inBox.mPar[0] & 'hffff;
+   d = {4{word}};
+`ifdef BFM_MODE
+   case (MY_LOCAL_ID)
+     0: `CORE0_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,1);
+     1: `CORE1_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,1);
+     2: `CORE2_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,1);
+     3: `CORE3_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,1);     
+   endcase // case (MY_LOCAL_ID)
+`endif
+end
+endtask // WRITE32_16_TASK
+
 `define SHIPC_WRITE32_32_TASK WRITE32_32_DPI()
 task   WRITE32_32_DPI;
    reg [63:0] d;
@@ -309,14 +456,14 @@ begin
    d[31:0] = inBox.mPar[0];   
 `ifdef BFM_MODE
    case (MY_LOCAL_ID)
-     0: `CORE0_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
-     1: `CORE1_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
-     2: `CORE2_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);
-     3: `CORE3_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask);     
+     0: `CORE0_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,2);
+     1: `CORE1_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,2);
+     2: `CORE2_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,2);
+     3: `CORE3_TL_PATH.tl_a_ul_write_generic(MY_LOCAL_ID & 'h1, inBox.mAdr,d,mask,2);     
    endcase // case (MY_LOCAL_ID)
 `endif
 end
-endtask // WRITE32_64_TASK
+endtask // WRITE32_32_TASK
    
 `else   
 
@@ -377,6 +524,58 @@ reg [63:0] d;
    end
 endtask // READ32_64_TASK
 
+`define SHIPC_READ32_8_TASK READ32_8_DPI()
+task READ32_8_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask;
+   begin
+      mask = 1 << inBox.mAdr[2:0];
+`ifdef BFM_MODE
+      case (MY_LOCAL_ID)
+	0: `CORE0_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 0, d);
+	1: `CORE1_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 0, d);
+	2: `CORE2_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 0, d);
+	3: `CORE3_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 0, d);     
+      endcase // case (MY_LOCAL_ID)
+      case (inBox.mAdr[2:0])
+	0 : inBox.mPar[0] = d[(8*0)+7:(8*0)];
+	1 : inBox.mPar[0] = d[(8*1)+7:(8*1)];
+	2 : inBox.mPar[0] = d[(8*2)+7:(8*2)];
+	3 : inBox.mPar[0] = d[(8*3)+7:(8*3)];
+	4 : inBox.mPar[0] = d[(8*4)+7:(8*4)];
+	5 : inBox.mPar[0] = d[(8*5)+7:(8*5)];
+	6 : inBox.mPar[0] = d[(8*6)+7:(8*6)];
+	7 : inBox.mPar[0] = d[(8*7)+7:(8*7)];
+      endcase
+`endif      
+      //`logI("%m a=%x d=%x",a,d);
+end
+endtask // READ32_8_TASK
+
+`define SHIPC_READ32_16_TASK READ32_16_DPI()
+task READ32_16_DPI;
+   reg [63:0] d;
+   reg [7:0]  mask;
+   begin
+      mask = 3 << (inBox.mAdr[2:1]*2);      
+`ifdef BFM_MODE
+      case (MY_LOCAL_ID)
+	0: `CORE0_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 1, d);
+	1: `CORE1_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 1, d);
+	2: `CORE2_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 1, d);
+	3: `CORE3_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 1, d);     
+      endcase // case (MY_LOCAL_ID)
+      case (inBox.mAdr[2:1])
+	0 : inBox.mPar[0] = d[(16*0)+15:(16*0)];
+	1 : inBox.mPar[0] = d[(16*1)+15:(16*1)];
+	2 : inBox.mPar[0] = d[(16*2)+15:(16*2)];
+	3 : inBox.mPar[0] = d[(16*3)+15:(16*3)];
+      endcase
+`endif      
+      //`logI("%m a=%x d=%x",a,d);
+end
+endtask // READ32_16_TASK
+
 `define SHIPC_READ32_32_TASK READ32_32_DPI()
 task READ32_32_DPI;
    reg [63:0] d;
@@ -386,16 +585,16 @@ task READ32_32_DPI;
       else mask = 'h0F;      
 `ifdef BFM_MODE
       case (MY_LOCAL_ID)
-	0: `CORE0_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
-	1: `CORE1_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
-	2: `CORE2_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);
-	3: `CORE3_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, d);     
+	0: `CORE0_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 2, d);
+	1: `CORE1_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 2, d);
+	2: `CORE2_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 2, d);
+	3: `CORE3_TL_PATH.tl_x_ul_read_generic(MY_LOCAL_ID & 'h1, inBox.mAdr, mask, 2, d);     
       endcase // case (MY_LOCAL_ID)
       inBox.mPar[0] = inBox.mAdr[2] ? d[63:32] : d[31:0];
 `endif      
       //`logI("%m a=%x d=%x",a,d);
 end
-endtask // READ32_64_TASK
+endtask // READ32_32_TASK
    
 `else
    // -------------- OLD PLI     
@@ -538,10 +737,10 @@ endtask // READ32_64_TASK
    always @(negedge dvtFlags[`DVTF_FIR_CAPTURE_EN_BIT]) cep_tb.c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT] = 0;   
    //
    always @(posedge dvtFlags[`DVTF_GET_CORE_STATUS]) begin
-      if      (dvtFlags[1:0] == 0) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core0_status;
-      else if (dvtFlags[1:0] == 1) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core1_status;
-      else if (dvtFlags[1:0] == 2) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core2_status;
-      else if (dvtFlags[1:0] == 3) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregs.core3_status;
+      if      (dvtFlags[1:0] == 0) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregsmodule.core0_status;
+      else if (dvtFlags[1:0] == 1) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregsmodule.core1_status;
+      else if (dvtFlags[1:0] == 2) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregsmodule.core2_status;
+      else if (dvtFlags[1:0] == 3) dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO] = cep_tb.fpga.topDesign.topMod.cepregsmodule.core3_status;
       //`logI("Core status=%x",dvtFlags[`DVTF_PAT_HI:`DVTF_PAT_LO]);
       dvtFlags[`DVTF_GET_CORE_STATUS]=0;
    end
@@ -556,14 +755,14 @@ endtask // READ32_64_TASK
    reg 	checkToHost=0;
    
    //
-   reg [63:0] passFail [3:0] = '{default:0};
+   reg [63:0] passFail [4:0] = '{default:0};
    //
    // 0 = pass, 1=fail, 2=finish
    //
    // ONLY need core0 to do this
    initial begin
       $readmemh("PassFail.hex",passFail);
-      `logI("PassFail=%x %x %x",passFail[0],passFail[1],passFail[2]);
+      `logI("PassFail=%x %x %x %x %x",passFail[0],passFail[1],passFail[2],passFail[3],passFail[4]);
    end
    //
    always @(posedge dvtFlags[`DVTF_GET_CORE_RESET_STATUS]) begin
@@ -599,11 +798,13 @@ endtask // READ32_64_TASK
 	    end
 	 end
 	 assign pcPass = `CORE0_VALID &&
-			 ((`CORE0_PC[30:0] === passFail[0][30:0]) ||
-			  ((`CORE0_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||		 
-			  ((`CORE0_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));
+			 ((`CORE0_PC[29:0] === passFail[0][29:0]) ||
+			  ((`CORE0_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||		 
+			  ((`CORE0_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
 	 
-	 assign pcFail = `CORE0_VALID && (`CORE0_PC[30:0] === passFail[1][30:0]);
+	 assign pcFail = `CORE0_VALID &&
+			 (((`CORE0_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
+			  (`CORE0_PC[29:0] === passFail[1][29:0]));
       end
       else if (MY_LOCAL_ID == 1) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -616,10 +817,12 @@ endtask // READ32_64_TASK
 	    end
 	 end
 	 assign pcPass = `CORE1_VALID &&
-			 ((`CORE1_PC[30:0] === passFail[0][30:0]) ||
-			  ((`CORE1_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
-			  ((`CORE1_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));
-	 assign pcFail = `CORE1_VALID && (`CORE1_PC[30:0] === passFail[1][30:0]);
+			 ((`CORE1_PC[29:0] === passFail[0][29:0]) ||
+			  ((`CORE1_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||
+			  ((`CORE1_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
+	 assign pcFail = `CORE1_VALID &&
+			 (((`CORE1_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
+			  (`CORE1_PC[29:0] === passFail[1][29:0]));
       end
       else if (MY_LOCAL_ID == 2) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -632,10 +835,12 @@ endtask // READ32_64_TASK
 	    end
 	 end
 	 assign pcPass = `CORE2_VALID && 
-			 ((`CORE2_PC[30:0] === passFail[0][30:0]) || 
-			  ((`CORE2_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0)) ||
-			  ((`CORE2_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0) && checkToHost));	 
-	 assign pcFail = `CORE2_VALID && (`CORE2_PC[30:0] === passFail[1][30:0]);
+			 ((`CORE2_PC[29:0] === passFail[0][29:0]) || 
+			  ((`CORE2_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||
+			  ((`CORE2_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
+	 assign pcFail = `CORE2_VALID &&
+			 (((`CORE2_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
+			  (`CORE2_PC[29:0] === passFail[1][29:0]));	 
       end
       else if (MY_LOCAL_ID == 3) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -648,10 +853,12 @@ endtask // READ32_64_TASK
 	    end
 	 end
 	 assign pcPass = `CORE3_VALID && 
-			 ((`CORE3_PC[30:0] === passFail[0][30:0]) || 
-			  ((`CORE3_PC[30:0] == passFail[3][30:0]) && (passFail[3][30:0] != 0)) |
-			  ((`CORE3_PC[30:0] == passFail[2][30:0]) && (passFail[2][30:0] != 0) && checkToHost));	 
-	 assign pcFail = `CORE3_VALID && (`CORE3_PC[30:0] === passFail[1][30:0]);
+			 ((`CORE3_PC[29:0] === passFail[0][29:0]) || 
+			  ((`CORE3_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0)) |
+			  ((`CORE3_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0) && checkToHost));
+	 assign pcFail = `CORE3_VALID &&
+			 (((`CORE3_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
+			  (`CORE3_PC[29:0] === passFail[1][29:0]));	 
       end
    endgenerate
 `endif //  `ifdef RISCV_TESTS

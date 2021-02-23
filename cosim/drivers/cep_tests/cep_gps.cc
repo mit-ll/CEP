@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      cep_gps.cc/h
@@ -161,6 +161,8 @@ int cep_gps::GetCA_code(int svNum)
   int CACode = 0;
   int chip=0;
   //
+#if defined(BARE_MODE)
+#else
   for (int i=0;i<11;i++) {
     g1[i] = 1;
     g2[i] = 1;
@@ -287,6 +289,7 @@ int cep_gps::GetCA_code(int svNum)
     g1[j] = g1[j-1]; // shift
     g2[j] = g2[j-1];
   }
+#endif
   //
   return CACode;
 }

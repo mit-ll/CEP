@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -21,6 +21,7 @@
 #include "CEP.h"
 #include "cepregression.h"
 #include "cep_aes.h"
+#include "cep_srot.h"
 
 //
 //
@@ -122,6 +123,7 @@ void *c_module(void *arg) {
 #include "dft_playback.h"
 #include "rsa_playback.h"  
 
+
   //
   int maxTests = 9;
   uint64_t upper, lower;
@@ -130,6 +132,14 @@ void *c_module(void *arg) {
   //
   int mask = (1 << maxTests)-1;
   int doneMask=0;
+  //
+  // With LLKI, must run the key loading!!!
+  //
+  cep_srot srot(verbose);
+  srot.SetCpuActiveMask(seed); // seed is the activeMask
+  errCnt += srot.LLKI_Setup(cpuId);
+  if (errCnt) goto cleanup;
+  //
   while ((doneMask != mask) && (errCnt == 0)) {
     test2Run = findATest2Run(cpuId,doneMask,maxTests);
     if (test2Run == -1) {
@@ -192,6 +202,7 @@ void *c_module(void *arg) {
 	errCnt += cep_playback(dft_playback, upper, lower, dft_cmdCnt4Single, dft_size, verbose);
 	break;
 #if 0
+	// MUST
       case 9:
 	upper = rsa_adrBase + rsa_adrSize;
 	lower = rsa_adrBase;

@@ -1,4 +1,4 @@
-Copyright (C) 2020 Massachusetts Institute of Technology
+Copyright 2021 Massachusetts Institute of Technology
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

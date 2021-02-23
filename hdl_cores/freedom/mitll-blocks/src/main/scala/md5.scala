@@ -1,15 +1,17 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : md5.scala
 // Project      : Common Evaluation Platform (CEP)
-// Description  : TileLink interface to the verilog AES core
+// Description  : TileLink interface to the verilog MD5 core
 //
 //--------------------------------------------------------------------------------------
 package mitllBlocks.md5
 
-import Chisel._
+import chisel3._
+import chisel3.util._
+import chisel3.experimental.{IntParam, BaseModule}
 import freechips.rocketchip.config.Field
 import freechips.rocketchip.subsystem.{BaseSubsystem, PeripheryBusKey}
 import freechips.rocketchip.config.Parameters
@@ -20,186 +22,284 @@ import freechips.rocketchip.tilelink._
 import mitllBlocks.cep_addresses._
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Classes, Objects, and Traits to support connecting to TileLink
+// BEGIN: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
-case object PeripheryMD5Key extends Field[Seq[MD5Params]]
 
+// Parameters associated with the core
+case object PeripheryMD5Key extends Field[Seq[COREParams]]
+
+// This trait "connects" the core to the Rocket Chip and passes the parameters down
+// to the instantiation
 trait HasPeripheryMD5 { this: BaseSubsystem =>
-  val MD5Nodes = p(PeripheryMD5Key).map { ps =>
-    MD5.attach(MD5AttachParams(ps, pbus))
-  }
-}
+  val md5node = p(PeripheryMD5Key).map { params =>
 
-case class MD5Params(address: BigInt)
+    // Initialize the attachment parameters
+    val coreattachparams = COREAttachParams(
+      coreparams  = params,
+      llki_bus    = pbus, // The LLKI connects to the periphery bus
+      slave_bus   = pbus
+    )
 
-case class MD5AttachParams(
-  md5params         : MD5Params,
-  controlBus        : TLBusWrapper)
-  (implicit val p   : Parameters)
+    // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
+    // and thus should be unique to this core and NOT a verilog reserved keyword
+    val md5module = LazyModule(new md5TLModule(coreattachparams)(p))
 
-class TLMD5(busWidthBytes: Int, params: MD5Params)(implicit p: Parameters)
-  extends MD5(busWidthBytes, params) with HasTLControlRegMap
-
-object MD5 {
-
-  def attach(params: MD5AttachParams): TLMD5 = {
-    implicit val p = params.p
-    val md5 = LazyModule(new TLMD5(params.controlBus.beatBytes, params.md5params))
-
-    params.controlBus.coupleTo(s"slave_named_md5") {
-      md5.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    // Perform the slave "attachments" to the slave bus
+    coreattachparams.slave_bus.coupleTo(coreattachparams.coreparams.dev_name + "_slave") {
+      md5module.slave_node :*=
+      TLFragmenter(coreattachparams.slave_bus.beatBytes, coreattachparams.slave_bus.blockBytes) :*= _
     }
 
-    InModuleBody { md5.module.clock := params.controlBus.module.clock }
-    InModuleBody { md5.module.reset := params.controlBus.module.reset }
+    // Perform the slave "attachments" to the llki bus
+    coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
+      md5module.llki_node :*= 
+      TLSourceShrinker(16) :*= _
+    }
 
-    md5
-  }
+    // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
+    InModuleBody { md5module.module.reset := coreattachparams.slave_bus.module.reset }
+    InModuleBody { md5module.module.clock := coreattachparams.slave_bus.module.clock }
+
+}}
+
+//--------------------------------------------------------------------------------------
+// BEGIN: Module "Periphery" connections
+//--------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------
+// BEGIN: TileLink Module
+//--------------------------------------------------------------------------------------
+class md5TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) extends LazyModule {
+
+  // Create a Manager / Slave / Sink node
+  // The OpenTitan-based Tilelink interfaces support 4 beatbytes only
+  val llki_node = TLManagerNode(Seq(TLSlavePortParameters.v1(
+    Seq(TLSlaveParameters.v1(
+      address             = Seq(AddressSet(
+                              coreattachparams.coreparams.llki_base_addr, 
+                              coreattachparams.coreparams.llki_depth)),
+      resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
+                              Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
+      regionType          = RegionType.IDEMPOTENT,
+      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      fifoId              = Some(0))), // requests are handled in order
+    beatBytes = coreattachparams.llki_bus.beatBytes)))
+
+  // Create the RegisterRouter node
+  val slave_node = TLRegisterNode(
+    address     = Seq(AddressSet(
+                    coreattachparams.coreparams.slave_base_addr, 
+                    coreattachparams.coreparams.slave_depth)),
+    device      = new SimpleDevice(coreattachparams.coreparams.dev_name + "-slave", 
+                    Seq("mitll," + coreattachparams.coreparams.dev_name + "-slave")),
+    beatBytes   = coreattachparams.slave_bus.beatBytes
+  )
+
+  // Instantiate the implementation
+  lazy val module = new md5TLModuleImp(coreattachparams.coreparams, this)
 
 }
 //--------------------------------------------------------------------------------------
-// END: Classes, Objects, and Traits to support connecting to TileLink
+// END: TileLink Module
 //--------------------------------------------------------------------------------------
 
 
-//--------------------------------------------------------------------------------------
-// BEGIN: md5 TileLink Module
-//--------------------------------------------------------------------------------------
-abstract class MD5(busWidthBytes: Int, val c: MD5Params)(implicit p: Parameters)
-    extends RegisterRouter (
-      RegisterRouterParams(
-        name = "md5",
-        compat = Seq("mitll,md5"), 
-        base = c.address,
-        size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
-        beatBytes = busWidthBytes))
-    {
-
-        ResourceBinding {Resource(ResourceAnchors.aliases, "md5").bind(ResourceAlias(device.label))}
-
-        lazy val module = new LazyModuleImp(this) {
-
-            // Instantitate the md5 blackbox
-//            val blackbox = Module(new pancham)
-// use md5.v to conform to standardized BE format
-	      val blackbox = Module(new md5)
-
-            // Instantiate registers for the blackbox inputs
-            val md5_msg_in_valid               = RegInit(0.U(1.W))
-            val rst                            = RegInit(0.U(1.W))
-	    // 
-            val init                           = RegInit(0.U(1.W))
-            // Class and companion Object to support instantiation and initialization of
-            // state due to the need to have subword assignment for vectors > 64-bits
-            // 
-            // Fields in the bundle enumerate from to low.  When converting this bundle
-            // to UInt it is equivalent to Cat(Word1, Word0) or if subword assignment
-            // was supported.
-
-            // Class and companion Object to support instantiation and initialization of
-            // key due to the need to have subword assignment for vectors > 64-bits
-            class Msgin_Class extends Bundle {
-                val word0               = UInt(64.W)
-                val word1               = UInt(64.W)
-                val word2               = UInt(64.W)
-                val word3               = UInt(64.W)
-                val word4               = UInt(64.W)
-                val word5               = UInt(64.W)
-                val word6               = UInt(64.W)
-                val word7               = UInt(64.W)
-            }
-            object Msgin_Class {
-                def init: Msgin_Class = {
-                    val wire = Wire(new Msgin_Class)
-                    wire.word0          := 0.U
-                    wire.word1          := 0.U
-                    wire.word2          := 0.U
-                    wire.word3          := 0.U
-                    wire.word4          := 0.U
-                    wire.word5          := 0.U
-                    wire.word6          := 0.U
-                    wire.word7          := 0.U
-                    wire
-                }
-            }
-            val msg_padded                   = RegInit(Msgin_Class.init)
-
-
-            // Instantiate wires for the blackbox outputs
-            val msg_output0                    = Wire(UInt(64.W))
-            val msg_output1                    = Wire(UInt(64.W))
-            val ready                          = Wire(Bool())
-            val md5_msg_out_valid              = Wire(Bool())
-
-            // Map the inputs to the blackbox
-            blackbox.io.clk             := clock                    // Implicit module clock
-            blackbox.io.rst             := reset | rst              // Implicit module reset or'ed with addressable reset
-            blackbox.io.init            := init                     // Implicit module reset or'ed with addressable reset        	    
-            blackbox.io.msg_in_valid    := md5_msg_in_valid         // Message input valid bit
-            blackbox.io.msg_padded      := msg_padded.asUInt        // Message input
-            // Map the outputs from the blockbox
-            msg_output0                 := blackbox.io.msg_output(127,64)   // Message output bits
-            msg_output1                 := blackbox.io.msg_output(63,0)     // Message output bits  	    
-            md5_msg_out_valid           := blackbox.io.msg_out_valid        // Message output valid bit driven by pancham.v
-            ready                       := blackbox.io.ready                // Ready bit driven by pancham.v
-
-            // Define the register map
-            // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
-            regmap (
-                MD5Addresses.md5_ready         -> RegFieldGroup("md5_ready", Some("md5_ready Register"),    Seq(RegField.r(1,  ready           ))),
-                MD5Addresses.md5_msg_padded_w0 -> RegFieldGroup("md5_in0", Some("md5 msg input word 0"),    Seq(RegField  (64, msg_padded.word0))),
-                MD5Addresses.md5_msg_padded_w1 -> RegFieldGroup("md5_in1", Some("md5 msg input word 1"),    Seq(RegField  (64, msg_padded.word1))),
-                MD5Addresses.md5_msg_padded_w2 -> RegFieldGroup("md5_in2", Some("md5 msg input word 2"),    Seq(RegField  (64, msg_padded.word2))),
-                MD5Addresses.md5_msg_padded_w3 -> RegFieldGroup("md5_in3", Some("md5 msg input word 3"),    Seq(RegField  (64, msg_padded.word3))),
-                MD5Addresses.md5_msg_padded_w4 -> RegFieldGroup("md5_in4", Some("md5 msg input word 4"),    Seq(RegField  (64, msg_padded.word4))),
-                MD5Addresses.md5_msg_padded_w5 -> RegFieldGroup("md5_in5", Some("md5 msg input word 5"),    Seq(RegField  (64, msg_padded.word5))),
-                MD5Addresses.md5_msg_padded_w6 -> RegFieldGroup("md5_in6", Some("md5 msg input word 6"),    Seq(RegField  (64, msg_padded.word6))),
-                MD5Addresses.md5_msg_padded_w7 -> RegFieldGroup("md5_in7", Some("md5 msg input word 7"),    Seq(RegField  (64, msg_padded.word7))),
-                MD5Addresses.md5_msg_output_w0 -> RegFieldGroup("md5 msg output0", Some("md5 msg output1"), Seq(RegField.r(64, msg_output0))),
-                MD5Addresses.md5_msg_output_w1 -> RegFieldGroup("md5 msg output1", Some("md5 msg output1"), Seq(RegField.r(64, msg_output1))),
-                MD5Addresses.md5_in_valid      -> RegFieldGroup("md5 msg in valid", Some("md5 in valid"),   Seq(RegField  (1,  md5_msg_in_valid))),
-                MD5Addresses.md5_out_valid     -> RegFieldGroup("md5 msg out valid", Some("md5 out valid"), Seq(RegField.r(1,  md5_msg_out_valid))),
-                MD5Addresses.md5_rst           -> RegFieldGroup("message_rst", Some("message_rst"),         Seq(RegField  (1, rst),
-					       	  			       				        RegField  (1, init)))
-            )  // regmap
-
-        }   // lazy val module
-    }  // abstract class AES
-//--------------------------------------------------------------------------------------
-// END: AES TileLink Module
-//--------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Black box wrapper for Verilog Module
-//
-// Note: Name must match Verilog module name, signal names
-//   declared within much match the name, width, and direction of
-//   the Verilog module.
+// BEGIN: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
-//class pancham() extends BlackBox {
-// use md5.v to conform to standardized BE format
-class md5() extends BlackBox {
+class md5TLModuleImp(coreparams: COREParams, outer: md5TLModule) extends LazyModuleImp(outer) {
 
-  val io = IO(new Bundle {
-    // Clock and Reset
-    val clk         = Clock(INPUT)
-    val rst         = Bool(INPUT)
+  // "Connect" to llki node's signals and parameters
+  val (llki, llkiEdge)    = outer.llki_node.in(0)
 
-    // Added 05/12/2020: To clear internal states to start new transaction
-    val init        = Bool(INPUT)
+  // Define the LLKI Protocol Processing blackbox and its associated IO
+  class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
+      Map(
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+      )
+  ) {
 
-    // Inputs
-    val msg_in_valid    = Bool(INPUT)
-    val msg_padded      = Bits(INPUT,512)
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                 = Input(Clock())
+      val rst                 = Input(Bool())
+
+      // Slave - Tilelink A Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_a_opcode      = Input(UInt(3.W))
+      val slave_a_param       = Input(UInt(3.W))
+      val slave_a_size        = Input(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_a_source      = Input(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_a_address     = Input(UInt(LLKITilelinkParameters.AddressBits.W))
+      val slave_a_mask        = Input(UInt(LLKITilelinkParameters.BeatBytes.W))
+      val slave_a_data        = Input(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_a_corrupt     = Input(Bool())
+      val slave_a_valid       = Input(Bool())
+      val slave_a_ready       = Output(Bool())
+
+      // Slave - Tilelink D Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_d_opcode      = Output(UInt(3.W))
+      val slave_d_param       = Output(UInt(3.W))
+      val slave_d_size        = Output(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_d_source      = Output(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_d_sink        = Output(UInt(LLKITilelinkParameters.SinkBits.W))
+      val slave_d_denied      = Output(Bool())
+      val slave_d_data        = Output(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_d_corrupt     = Output(Bool())
+      val slave_d_valid       = Output(Bool())
+      val slave_d_ready       = Input(Bool())
+
+      // LLKI discrete interface
+      val llkid_key_data      = Output(UInt(64.W))
+      val llkid_key_valid     = Output(Bool())
+      val llkid_key_ready     = Input(Bool())
+      val llkid_key_complete  = Input(Bool())
+      val llkid_clear_key     = Output(Bool())
+      val llkid_clear_key_ack = Input(Bool())
+
+    })
+  } // end class llki_pp_wrapper
+
+  // Instantiate the LLKI Protocol Processing Block with CORE SPECIFIC decode constants
+  val llki_pp_inst = Module(new llki_pp_wrapper(coreparams.llki_ctrlsts_addr, 
+                                                coreparams.llki_sendrecv_addr))
+
+  // The following "requires" are included to avoid size mismatches between the
+  // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
+  // from the cep_addresses package and must match those in "top_pkg.sv", borrowed from OpenTitan
+  //
+  // Exceptions:
+  //  - llkiEdge address gets optimized down to 31-bits during chisel generation
+  //  - llkiEdge sink bits are 1, but masterEdge sink bits are 2 
+  //  - llkiEdge size bits are 3, but masterEdge size bits are 4
+  //
+  require(llkiEdge.bundle.addressBits  == LLKITilelinkParameters.AddressBits - 1, s"SROT: llkiEdge addressBits exp/act ${LLKITilelinkParameters.AddressBits - 1}/${llkiEdge.bundle.addressBits}")
+  require(llkiEdge.bundle.dataBits     == LLKITilelinkParameters.BeatBytes * 8, s"SROT: llkiEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${llkiEdge.bundle.dataBits}")
+  require(llkiEdge.bundle.sourceBits   == LLKITilelinkParameters.SourceBits, s"SROT: llkiEdge sourceBits exp/act ${LLKITilelinkParameters.SourceBits}/${llkiEdge.bundle.sourceBits}")
+  require(llkiEdge.bundle.sinkBits     == LLKITilelinkParameters.SinkBits - 1, s"SROT: llkiEdge sinkBits exp/act ${LLKITilelinkParameters.SinkBits - 1}/${llkiEdge.bundle.sinkBits}")
+  require(llkiEdge.bundle.sizeBits     == LLKITilelinkParameters.SizeBits, s"SROT: llkiEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits}/${llkiEdge.bundle.sizeBits}")
+
+  // Connect the Clock and Reset
+  llki_pp_inst.io.clk                 := clock
+  llki_pp_inst.io.rst                 := reset
+
+  // Connect the Slave A Channel to the Black box IO
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_size        := llki.a.bits.size
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
+
+  // Connect the Slave D Channel to the Black Box IO    
+  llki.d.bits.opcode                  := llki_pp_inst.io.slave_d_opcode
+  llki.d.bits.param                   := llki_pp_inst.io.slave_d_param
+  llki.d.bits.size                    := llki_pp_inst.io.slave_d_size
+  llki.d.bits.source                  := llki_pp_inst.io.slave_d_source
+  llki.d.bits.sink                    := llki_pp_inst.io.slave_d_sink(0)
+  llki.d.bits.denied                  := llki_pp_inst.io.slave_d_denied
+  llki.d.bits.data                    := llki_pp_inst.io.slave_d_data
+  llki.d.bits.corrupt                 := llki_pp_inst.io.slave_d_corrupt
+  llki.d.valid                        := llki_pp_inst.io.slave_d_valid
+  llki_pp_inst.io.slave_d_ready       := llki.d.ready
+
+  // Define blackbox and its associated IO
+  class md5_mock_tss() extends BlackBox {
+
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                 = Input(Clock())
+      val rst                 = Input(Reset())
+
+      // Inputs
+      val init                = Input(Bool())
+      val msg_in_valid        = Input(Bool())
+      val msg_padded          = Input(UInt(512.W))
 
       // Outputs
-    val msg_output      = Bits(OUTPUT,128)
-    val msg_out_valid   = Bool(OUTPUT)
-    val ready           = Bool(OUTPUT)
-  })
+      val msg_output          = Output(UInt(128.W))
+      val msg_out_valid       = Output(Bool())
+      val ready               = Output(Bool())
+
+      // LLKI discrete interface
+      val llkid_key_data      = Input(UInt(64.W))
+      val llkid_key_valid     = Input(Bool())
+      val llkid_key_ready     = Output(Bool())
+      val llkid_key_complete  = Output(Bool())
+      val llkid_clear_key     = Input(Bool())
+      val llkid_clear_key_ack = Output(Bool())
+
+    })
+  }
+
+  // Instantiate the blackbox
+  val md5_mock_tss_inst   = Module(new md5_mock_tss())
+
+  // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
+  md5_mock_tss_inst.io.llkid_key_data     := llki_pp_inst.io.llkid_key_data
+  md5_mock_tss_inst.io.llkid_key_valid    := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready         := md5_mock_tss_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete      := md5_mock_tss_inst.io.llkid_key_complete
+  md5_mock_tss_inst.io.llkid_clear_key    := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack     := md5_mock_tss_inst.io.llkid_clear_key_ack
+
+  val init                   = RegInit(false.B)
+  val rst                    = RegInit(false.B)
+  val msg_in_valid           = RegInit(false.B)
+  val msg_padded_w0          = RegInit(0.U(64.W))
+  val msg_padded_w1          = RegInit(0.U(64.W))
+  val msg_padded_w2          = RegInit(0.U(64.W))
+  val msg_padded_w3          = RegInit(0.U(64.W))
+  val msg_padded_w4          = RegInit(0.U(64.W))
+  val msg_padded_w5          = RegInit(0.U(64.W))
+  val msg_padded_w6          = RegInit(0.U(64.W))
+  val msg_padded_w7          = RegInit(0.U(64.W))
+  val msg_output             = Wire(UInt(256.W))
+  val msg_out_valid          = Wire(Bool())
+  val ready                  = Wire(Bool())
+
+  md5_mock_tss_inst.io.clk                := clock
+  md5_mock_tss_inst.io.rst                := (reset.asBool || rst).asAsyncReset
+  md5_mock_tss_inst.io.init               := init
+  md5_mock_tss_inst.io.msg_in_valid       := msg_in_valid
+  md5_mock_tss_inst.io.msg_padded         := Cat(msg_padded_w0, msg_padded_w1,
+                                                 msg_padded_w2, msg_padded_w3,
+                                                 msg_padded_w4, msg_padded_w5, 
+                                                 msg_padded_w6, msg_padded_w7)
+  msg_output                              := md5_mock_tss_inst.io.msg_output
+  msg_out_valid                           := md5_mock_tss_inst.io.msg_out_valid
+  ready                                   := md5_mock_tss_inst.io.ready
+
+  // Define the register map
+  // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
+  outer.slave_node.regmap (
+      MD5Addresses.md5_ready         -> RegFieldGroup("md5_ready", Some("md5_ready Register"),    Seq(RegField.r(1,  ready           ))),
+      MD5Addresses.md5_msg_padded_w0 -> RegFieldGroup("md5_in0", Some("md5 msg input word 0"),    Seq(RegField  (64, msg_padded_w0))),
+      MD5Addresses.md5_msg_padded_w1 -> RegFieldGroup("md5_in1", Some("md5 msg input word 1"),    Seq(RegField  (64, msg_padded_w1))),
+      MD5Addresses.md5_msg_padded_w2 -> RegFieldGroup("md5_in2", Some("md5 msg input word 2"),    Seq(RegField  (64, msg_padded_w2))),
+      MD5Addresses.md5_msg_padded_w3 -> RegFieldGroup("md5_in3", Some("md5 msg input word 3"),    Seq(RegField  (64, msg_padded_w3))),
+      MD5Addresses.md5_msg_padded_w4 -> RegFieldGroup("md5_in4", Some("md5 msg input word 4"),    Seq(RegField  (64, msg_padded_w4))),
+      MD5Addresses.md5_msg_padded_w5 -> RegFieldGroup("md5_in5", Some("md5 msg input word 5"),    Seq(RegField  (64, msg_padded_w5))),
+      MD5Addresses.md5_msg_padded_w6 -> RegFieldGroup("md5_in6", Some("md5 msg input word 6"),    Seq(RegField  (64, msg_padded_w6))),
+      MD5Addresses.md5_msg_padded_w7 -> RegFieldGroup("md5_in7", Some("md5 msg input word 7"),    Seq(RegField  (64, msg_padded_w7))),
+      MD5Addresses.md5_msg_output_w0 -> RegFieldGroup("md5 msg output0", Some("md5 msg output1"), Seq(RegField.r(64, msg_output(127,64)))),
+      MD5Addresses.md5_msg_output_w1 -> RegFieldGroup("md5 msg output1", Some("md5 msg output1"), Seq(RegField.r(64, msg_output(63,0)))),
+      MD5Addresses.md5_in_valid      -> RegFieldGroup("md5 msg in valid", Some("md5 in valid"),   Seq(RegField  (1,  msg_in_valid))),
+      MD5Addresses.md5_out_valid     -> RegFieldGroup("md5 msg out valid", Some("md5 out valid"), Seq(RegField.r(1,  msg_out_valid))),
+      MD5Addresses.md5_rst           -> RegFieldGroup("message_rst", Some("message_rst"),         Seq(RegField  (1, rst),
+                                                                                                      RegField  (1, init)))
+  )  // regmap
 
 }
 //--------------------------------------------------------------------------------------
-// END: Black box wrapper for Verilog Module
+// END: TileLink Module Implementation
 //--------------------------------------------------------------------------------------

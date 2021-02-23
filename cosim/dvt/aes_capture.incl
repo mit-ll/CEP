@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -52,7 +52,7 @@ end
 	 AES_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(AES_fd,"//************************************************************************\n");
-	 $fwrite(AES_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(AES_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(AES_fd,"//\n");		
 	 $fwrite(AES_fd,"// File Name:      AES_stimulus.txt\n");
 	 $fwrite(AES_fd,"// Program:        Common Evaluation Platform (CEP)\n");

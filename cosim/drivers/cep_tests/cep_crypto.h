@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -14,13 +14,16 @@
 #include "stdint.h"
 #include "stdio.h"
 
-#define MAX_MSG_SIZE 2048
-#define MAX_KEY_SIZE 2048
+#define MAX_MSG_SIZE        2048
+#define MAX_KEY_SIZE        2048
+
 //
-// CEP's AES 
+// CEP's Crypto
 //
 class cep_crypto { 
+  //
   // public stuffs
+  //
 public: //
   // constructors must be default to avoid unwind_Resume problem in bare mode
   cep_crypto() {};
@@ -62,10 +65,12 @@ public: //
   void init(void);
   void freeMe(void);
   //
+  
   //
+  // Protected / Private cep_crypto items
   //
  protected:
-  //
+
   int mSeed;
   int mVerbose;
   int mKeySize;
@@ -92,7 +97,7 @@ public: //
   //
   uint64_t mAdrBase;
   uint64_t mAdrSize;
-};
 
-//
+}; // class cep_crypto
 #endif
+

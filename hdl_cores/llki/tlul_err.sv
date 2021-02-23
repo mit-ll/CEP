@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:       tlul_err.sv
@@ -106,8 +106,9 @@ module tlul_err import tlul_pkg::*; (
                           & mask_chk
                           & (op_get | op_partial | fulldata_chk) ;
 
-  // Only 32 bit data width for current tlul_err
-  `ASSERT_INIT(dataWidthOnly32_A, DW == 32)
+  // Only 32/64 bit data width for current tlul_err
+   `ASSERT_INIT(dataWidthOnly32_A, (DW == 32) || (DW == 64));
+   
 
 endmodule
 

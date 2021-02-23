@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -155,6 +155,9 @@ void cep_iir::LoadInSamples(int samCnt) {
   uint64_t word;
   for(int i = 0; i < samCnt; i++) { //  8-bytes/word
     word = (uint64_t)float_to_fixed(mInput[i]);
+    // duplicate 32 to 64 for coverage
+    word |= (word << 32) | (word & 0xFFFFFFFFLL);
+    //
     cep_writeNcapture(IIR_BASE_K, IIR_IN_DATA, word); //Write data
     cep_writeNcapture(IIR_BASE_K, IIR_IN_ADDR, i);     //Write addr
     cep_writeNcapture(IIR_BASE_K, IIR_IN_WRITE, 0x02);  //Load data

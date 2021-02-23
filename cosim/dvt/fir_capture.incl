@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,10 +24,10 @@ int FIR_fd;
 always @(posedge c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of FIR stimulus");	    
    // wait until it gets out of reset
-   if (!cep_tb.fpga.topDesign.topMod.fir.blackbox.reset)
-     @(posedge cep_tb.fpga.topDesign.topMod.fir.blackbox.reset);
+   if (!cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.reset)
+     @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.reset);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.fir.blackbox.clk);
+   @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
    CaptureFIR_vector=1;
    FIR_fd=$fopen("../../drivers/vectors/fir_stimulus.txt","w");
    captureFIR_Stimulus();   
@@ -35,7 +35,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT]) begin
    if (CaptureFIR_vector) begin
       CaptureFIR_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.fir.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
       $display("Stop Capturing FIR stimulus");
       $fwrite(FIR_fd,"};\n");
       $fwrite(FIR_fd,"`define FIR_SAMPLE_COUNT %d\n",FIR_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 FIR_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(FIR_fd,"//************************************************************************\n");
-	 $fwrite(FIR_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(FIR_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(FIR_fd,"//\n");		
 	 $fwrite(FIR_fd,"// File Name:      FIR_stimulus.txt\n");
 	 $fwrite(FIR_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -71,7 +71,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureFIR_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.fir.blackbox.clk);
+	    @(negedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
 	    // MUST align to HEX number if _ is used!!!
 	    if (FIR_sampleNum>0) begin
 	       $fwrite(FIR_fd,"   ,");
@@ -80,8 +80,8 @@ end
             end
 	    // MUST align to HEX number if _ is used!!!
 	    $fwrite(FIR_fd,"'h%x_%x\n",
-	    	    cep_tb.fpga.topDesign.topMod.fir.blackbox.inData[31:0],
-		    cep_tb.fpga.topDesign.topMod.fir.blackbox.outData[31:0]);
+	    	    cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.inData[31:0],
+		    cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.outData[31:0]);
 	    FIR_sampleNum++;
 	 end // while (1)
       end

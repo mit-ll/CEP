@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      cepregression.cc
@@ -881,7 +881,7 @@ void md5_hashString(const char *pString, unsigned char *pHash) {
 //************************************************************************
 /*Wait for modexp ready signal*/
 void rsa_wait_ready(){
-    while(cep_read(RSA_ADDR_BASE_K, RSA_ADDR_STATUS)!= 0x0000000000000001);
+    while(cep_read(RSA_BASE_K, RSA_ADDR_STATUS)!= 0x0000000000000001);
 }
 
 /*Check if both inputs are equal*/
@@ -925,38 +925,38 @@ void rsa_modexp_32bits(uint32_t Wmsg, uint32_t Wexp, uint32_t Wmod, uint32_t Wre
   
     printf("RSA: *** Writing -> MES: %08lX EXP: %08lX MOD: %08lx\r\n", (unsigned long int) Wmsg, (unsigned long int) Wexp, (unsigned long int) Wmod);
 
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000004);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000000);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_DATA, Wexp);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000003);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000004);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_DATA, Wexp);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000003);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL, 0x0000000000000000);
 
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000004);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_DATA    , Wmod);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_CTRL    , 0x0000000000000003);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_CTRL    , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000004);
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_DATA    , Wmod);
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL    , 0x0000000000000003);
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL    , 0x0000000000000000);
 
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000004);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_DATA    , Wmsg);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000003);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000004);
+    cep_write(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_MESSAGE_DATA    , Wmsg);
+    cep_write(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000003);
+    cep_write(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL   , 0x0000000000000000);
 
-    //    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_LENGTH , 0x0000000000000001*32);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_EXPONENT_LENGTH , CountExpBits(Wexp));
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_MODULUS_LENGTH  , 0x0000000000000001);
+    //    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_LENGTH , 0x0000000000000001*32);
+    cep_write(RSA_BASE_K, RSA_ADDR_EXPONENT_LENGTH , CountExpBits(Wexp));
+    cep_write(RSA_BASE_K, RSA_ADDR_MODULUS_LENGTH  , 0x0000000000000001);
 
     // Start processing and wait for ready.
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000002);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000002);
+    cep_write(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000000);
     rsa_wait_ready();
 
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_RESULT_CTRL  , 0x0000000000000002);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_RESULT_CTRL  , 0x0000000000000000);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_RESULT_CTRL     , 0x0000000000000001);
-    Rres = cep_read(RSA_ADDR_BASE_K, RSA_ADDR_RESULT_DATA);
-    cep_write(RSA_ADDR_BASE_K, RSA_ADDR_RESULT_CTRL     , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_RESULT_CTRL  , 0x0000000000000002);
+    cep_write(RSA_BASE_K, RSA_ADDR_RESULT_CTRL  , 0x0000000000000000);
+    cep_write(RSA_BASE_K, RSA_ADDR_RESULT_CTRL     , 0x0000000000000001);
+    Rres = cep_read(RSA_BASE_K, RSA_ADDR_RESULT_DATA);
+    cep_write(RSA_BASE_K, RSA_ADDR_RESULT_CTRL     , 0x0000000000000000);
      
     success=success & rsa_assertEquals(Wres, Rres);
     rsa_assertSuccess(success);
@@ -1647,8 +1647,8 @@ int cep_MD5_test(void) {
 // ===========
 void init_rsa(void) {
 #if 1 // def BARE_MODE
-  ipCores[RSA_ADDR_BASE_K].address = cep_core_info[RSA_ADDR_BASE_K].base_address;
-  ipCores[RSA_ADDR_BASE_K].enabled = true;
+  ipCores[RSA_BASE_K].address = cep_core_info[RSA_BASE_K].base_address;
+  ipCores[RSA_BASE_K].enabled = true;
 #endif  
 }
 
@@ -1743,6 +1743,22 @@ int cep_SHA256_test(void) {
   return success ? 0 : 1; //@
 }
 
+// ===========
+// SRoT Test
+// ===========
+void init_srot(void) {
+#if 1 // def BARE_MODE
+  ipCores[SROT_BASE_K].address = cep_core_info[SROT_BASE_K].base_address;
+  ipCores[SROT_BASE_K].enabled = true;  
+#endif  
+}
+
+void init_cepregs(void) {
+#if 1 // def BARE_MODE
+  ipCores[CEP_VERSION_REG_K].address = cep_core_info[CEP_VERSION_REG_K].base_address;
+  ipCores[CEP_VERSION_REG_K].enabled = true;  
+#endif  
+}
 
 
 //************************************************************************
@@ -1798,7 +1814,7 @@ int run_ceptest(int mask) {
 	if (errCnt) { return 1; }
 	break;
 	
-      case RSA_ADDR_BASE_K:
+      case RSA_BASE_K:
 	errCnt += cep_RSA_test();      
 	if (errCnt) { return 1; }
 	break;

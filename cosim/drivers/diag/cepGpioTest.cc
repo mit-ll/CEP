@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -87,6 +87,7 @@ int cepGpioTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_sel	, 0xF);
   (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_out_xor	, 0xF);
   //
+  (*regp->AddAHole_p)(regp, gpio_base_addr + 0xFFC	, 0xFFFFFFFF);
   // now do it
   errCnt = (*regp->doRegTest_p)(regp);
   //

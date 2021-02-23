@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -100,6 +100,12 @@ Table 5.3: Summary of TileLink messages, ordered by channel and opcode.
 `define REPORT_TtoT 3
 `define REPORT_BtoB 4
 `define REPORT_NtoN 5
+
+// logicalData param
+`define LOGIC_XOR   0
+`define LOGIC_OR    1
+`define LOGIC_AND   2
+`define LOGIC_SWAP  3
 
 //
 // 08/26/19: aduong : Channel A/D only (UL)
@@ -221,7 +227,7 @@ module tl_master_beh
       input [DATA_WIDTH-1:0] d;
       //
       begin
-	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1);
+	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1,3);
       end
    endtask // tl_a_ul_write_generic
    
@@ -299,7 +305,8 @@ module tl_master_beh
    task tl_x_ul_read_generic;
       input [SRC_SIZE-1:0] src_id;
       input [ADR_WIDTH-1:0] a;
-      input [BUS_SIZE-1:0]   mask;      
+      input [BUS_SIZE-1:0]   mask;
+      input [1:0] 	     bits_size;       // log2(8bytes)
       output [DATA_WIDTH-1:0] d;
       //
       begin
@@ -311,10 +318,13 @@ module tl_master_beh
 	 @(posedge clock); `TICK_DELAY;
 	 tl_master_a_bits_opcode = `TL_A_GET;
 	 tl_master_a_bits_param  = 0; // must
+	 tl_master_a_bits_size   = bits_size;
+	 /*
 	 if (mask == ((1<<BUS_SIZE)-1))	 	 
 	   tl_master_a_bits_size   = 3; // log2(8bytes)
 	 else
 	   tl_master_a_bits_size   = 2; // log2(8bytes)	 
+	  */
 	 tl_master_a_bits_source = src_id;
 	 tl_master_a_bits_address= a;
 //	 tl_master_a_bits_mask   = 'hFF;
@@ -381,7 +391,7 @@ module tl_master_beh
       //
       begin
 	 //
-	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1);
+	 tl_a_ul_write_generic(src_id,a,d,(1<<BUS_SIZE)-1,3);
       end
    endtask // tl_a_ul_write_generic
    
@@ -393,6 +403,7 @@ module tl_master_beh
       input [ADR_WIDTH-1:0] a;
       input [DATA_WIDTH-1:0] d;
       input [BUS_SIZE-1:0]   mask;
+      input [1:0] 	     bits_size;
       //
       begin
 	 //
@@ -408,10 +419,14 @@ module tl_master_beh
 	   tl_master_a_bits_opcode = `TL_A_PUTPARTIALDATA;	 
 	  */
 	 tl_master_a_bits_param  = 0; // must
+	 /*
 	 if (mask == ((1<<BUS_SIZE)-1))	 
 	   tl_master_a_bits_size   = 3; // log2(8bytes)
 	 else
 	   tl_master_a_bits_size   = 2; // log2(8bytes)	   
+	  */
+	 tl_master_a_bits_size   = bits_size;
+	 //
 	 tl_master_a_bits_source = src_id;
 	 tl_master_a_bits_address= a;
 	 tl_master_a_bits_mask   = mask;
@@ -462,6 +477,214 @@ module tl_master_beh
       end
    endtask // checkReset
 
+   reg [DATA_WIDTH-1:0] tl_buf [31:0]; // for burst
+
+   //
+   // TL-UL-TL_A_PUTPARTIALDATA : burst!!
+   // one ack per 64-bytes
+   //
+   task tl_a_ul_write_burst; 
+      input [SRC_SIZE-1:0] src_id;
+      input [ADR_WIDTH-1:0] a;
+      input [BUS_SIZE-1:0]  mask;      
+      input [3:0] 	     bits_size;
+      //
+      int 		     cnt,i, ackCnt;
+      begin
+	 //
+	 checkReset();
+	 if (tl_err) disable tl_a_ul_write_burst;
+	 tl_master_d_ready = 1; // not ready to accept	 	 
+	 `logI("src=%d a=0x%x size=%d mask=0x%x",src_id,a,cnt,mask);	 
+	 @(posedge clock);  `TICK_DELAY;
+	 tl_master_a_bits_opcode = `TL_A_PUTFULLDATA;	 
+	 tl_master_a_bits_param  = 0; // must
+	 tl_master_a_bits_size   = bits_size;
+	 tl_master_a_bits_mask   = mask;
+	 //
+	 cnt = (1 << bits_size) >> 3;
+	 i = 0;
+	 ackCnt = 0;
+	 while (i < cnt) begin
+	    tl_master_a_bits_source = src_id;
+	    tl_master_a_bits_address= a;
+	    tl_master_a_bits_data   = tl_buf[i]; // dont care
+	    tl_master_a_valid       = 1; // issue a valid
+	    @(posedge clock);  `TICK_DELAY;
+	    //`logI("Cnt=%d i=%d data=%x",cnt,i,tl_buf[i]);
+	    if (tl_master_a_ready) i++;
+	    if (tl_master_d_valid) ackCnt++;
+	 end
+	 tl_master_a_valid       = 0;
+	 // wait until slave took it
+	 i = 0;
+	 @(posedge clock);
+	 if (tl_master_d_valid) ackCnt++;	 
+	 while (!tl_master_a_ready && (i < MAX_TIMEOUT)) begin
+	    i = i + 1;			    
+	    @(posedge clock);
+	    if (tl_master_d_valid) ackCnt++;	    
+	    if (i >= MAX_TIMEOUT) begin
+	       `logE("**ERROR** timeout while waiting for ready on channelA src=%d a=0x%x",src_id,a);
+	       tl_err = 1;
+	    end
+	 end
+	 //
+	 `TICK_DELAY;	 
+	 tl_master_d_ready = 1; // ready to accept
+	 tl_master_a_valid = 0; // take valid away
+	 //
+	 // wait on channel D for  respond
+	 if (!tl_err) begin
+	    // how many ack?? one per 8 64-bits
+	    cnt = (cnt <= 8) ? 1 : (cnt >> 3);
+	    while (ackCnt < cnt) begin
+	       //
+	       i = 0;
+	       @(posedge clock);
+	       while (!tl_master_d_valid && (i < MAX_TIMEOUT)) begin
+		  i = i + 1;	       	       
+		  @(posedge clock);
+		  if (i >= MAX_TIMEOUT) begin
+		     `logE("**ERROR** timeout while waiting for data from channelD src=%d a=0x%x",src_id,a);
+		     tl_err = 1;		  
+		  end
+	       end
+	       ackCnt++;
+	       // check and verify the data is for this tracaction
+	       if (!tl_err &&
+		   ((tl_master_d_bits_opcode != `TL_D_ACCESSACK) ||
+		    (tl_master_d_bits_param != 0) ||
+		    (tl_master_d_bits_source != src_id) ||
+		    (tl_master_d_bits_denied) ||
+		    (tl_master_d_bits_corrupt))) begin
+		  `logE("**ERROR** src_id=%d reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",src_id,
+			tl_master_d_bits_opcode,tl_master_d_bits_param,tl_master_d_bits_size,tl_master_d_bits_source,tl_master_d_bits_denied,tl_master_d_bits_corrupt);
+	       end
+	    end // while (ackCnt < cnt)
+	 end // if (tl_master_a_ready)
+	 @(posedge clock);	 
+      end
+   endtask // checkReset
+
+   //
+   // TL-UL-GET  (64 bits for now)
+   //
+   event mark;
+   task tl_a_ul_read_burst;
+      input [SRC_SIZE-1:0] src_id;
+      input [ADR_WIDTH-1:0] a;
+      input [3:0] 	    bits_size;
+      //
+      int 		     cnt,i,to;      
+      //
+      begin
+	 checkReset();
+	 if (tl_err) disable tl_a_ul_read_burst;
+	 tl_master_d_ready = 0; // not ready to accept	 	 
+	 `logI("%m : src=%x2d a=0x%x %t",src_id,a,$time);
+	 //
+	 // use negedge to drive output
+	 @(posedge clock); `TICK_DELAY;
+	 tl_master_a_bits_opcode = `TL_A_GET;
+	 tl_master_a_bits_param  = 0; // must
+	 tl_master_a_bits_size   = bits_size; // log2(8bytes)
+	 tl_master_a_bits_source = src_id;
+	 tl_master_a_bits_address= a;
+	 tl_master_a_bits_mask   = 'hFF;
+	 tl_master_a_bits_data   = 0; // dont care
+	 tl_master_a_valid       = 1; // issue a valid
+	 // wait until slave took it
+	 to = 0;
+	 @(posedge clock);
+	 while (!tl_master_a_ready && (i < MAX_TIMEOUT)) begin
+	    to++;
+	    @(posedge clock);	    
+	    if (to >= MAX_TIMEOUT) begin
+	       `logE(" **ERROR** timeout while waiting for ready on channelA src=%d a=0x%x",src_id,a);
+	       tl_err = 1;
+	    end
+	 end
+	 //
+	 `TICK_DELAY;	 
+	 tl_master_d_ready = 1; // ready to accept
+	 tl_master_a_valid = 0; // take valid away
+	 //
+	 // wait on channel D for  respond
+	 cnt = (1 << bits_size) >> 3;
+	 i = 0;
+	 while (i < cnt) begin
+	    @(posedge clock);
+	    if (tl_master_d_valid) begin
+	       tl_buf[i] = tl_master_d_bits_data;
+	       //`logI("src=%d a=0x%x d[%d]=0x%x",src_id,a,i,tl_buf[i]);		  
+	       i++;
+	    end 
+	 end // while (i < cnt)
+      end
+   endtask // checkReset
+
+   //
+   // TL-UL-LogicalData
+   //
+   task tl_a_ul_logical_data;
+      input [SRC_SIZE-1:0]   src_id;
+      input [ADR_WIDTH-1:0]  a;
+      input [2:0] 	     param	 ;
+      input [DATA_WIDTH-1:0] d;
+      input [BUS_SIZE-1:0]   mask;
+      input [1:0] 	     bits_size;
+      //
+      begin
+	 //
+	 checkReset();
+	 if (tl_err) disable tl_a_ul_write;
+	 `logI("src=%d a=0x%x d=0x%x mask=0x%x",src_id,a,d,mask);	 
+	 @(posedge clock);  `TICK_DELAY;
+	 tl_master_a_bits_opcode = `TL_A_LOGICALDATA;
+	 tl_master_a_bits_param  = param; // must
+	 tl_master_a_bits_size   = bits_size;
+	 //
+	 tl_master_a_bits_source = src_id;
+	 tl_master_a_bits_address= a;
+	 tl_master_a_bits_mask   = mask;
+	 tl_master_a_bits_data   = d; // dont care
+	 tl_master_a_valid       = 1; // issue a valid
+	 // wait until slave took it
+	 i = 0;
+	 @(posedge clock);	 	 
+	 while (!tl_master_a_ready && (i < MAX_TIMEOUT)) begin
+	    i = i + 1;			    
+	    @(posedge clock);
+	    if (i >= MAX_TIMEOUT) begin
+	       `logE("**ERROR** timeout while waiting for ready on channelA src=%d a=0x%x",src_id,a);
+	       tl_err = 1;
+	    end
+	 end
+	 //
+	 `TICK_DELAY;	 
+	 tl_master_d_ready = 1; // ready to accept
+	 tl_master_a_valid = 0; // take valid away
+	 //
+	 // wait on channel D for  respond
+	 if (!tl_err) begin
+	    //
+	    i = 0;
+	    @(posedge clock);
+	    while (!tl_master_d_valid && (i < MAX_TIMEOUT)) begin
+	       i = i + 1;	       	       
+	       @(posedge clock);
+	       if (i >= MAX_TIMEOUT) begin
+		  `logE("**ERROR** timeout while waiting for data from channelD src=%d a=0x%x",src_id,a);
+		  tl_err = 1;		  
+	       end
+	    end
+	    // get new data if SAWP?? FIXME!!!
+	    
+	 end // if (tl_master_a_ready)
+	 @(posedge clock);	 
+      end
+   endtask // checkReset
 
    //
    // =============================
@@ -566,8 +789,8 @@ module tl_master_beh
 	      default: wd64 = ~(1 << (63-i)); // walking 1 from LSB	      
 	    endcase // case (CHIP_ID)
 	    // write
-	    tl_a_ul_write_generic(CHIP_ID & 1, adr, {wd64[63:32],32'h12345678},'hF0); // upper
-	    tl_a_ul_write_generic(CHIP_ID & 1, adr, {32'h9ABCDEF0,wd64[31:0]},'h0F); // lower
+	    tl_a_ul_write_generic(CHIP_ID & 1, adr, {wd64[63:32],32'h12345678},'hF0,2); // upper
+	    tl_a_ul_write_generic(CHIP_ID & 1, adr, {32'h9ABCDEF0,wd64[31:0]},'h0F,2); // lower
 	    // read back and compare
 	    tl_a_ul_read(CHIP_ID & 1, adr, rd64); // source=0 or 1 ONLY
 	    //

@@ -49,33 +49,111 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
   case PeripheryMaskROMKey => List(
     MaskROMParams(address = 0x10000, name = "BootROM", depth = 4096))
   case PeripheryDES3Key => List(
-    DES3Params(address = BigInt(CEPBaseAddresses.des3_base_addr)))
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.des3_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.des3_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.des3_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.des3_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.des3_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.des3_llki_sendrecv_addr),
+      dev_name            = s"des3"
+    ))
   case PeripheryAESKey => List(
     COREParams(
       slave_base_addr     = BigInt(CEPBaseAddresses.aes_base_addr),
       slave_depth         = BigInt(CEPBaseAddresses.aes_depth),
       llki_base_addr      = BigInt(CEPBaseAddresses.aes_llki_base_addr),
       llki_depth          = BigInt(CEPBaseAddresses.aes_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.aes_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.aes_llki_sendrecv_addr),
       dev_name            = s"aes"
     ))
   case PeripheryIIRKey => List(
-    IIRParams(address = BigInt(CEPBaseAddresses.iir_base_addr)))
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.iir_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.iir_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.iir_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.iir_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.iir_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.iir_llki_sendrecv_addr),
+      dev_name            = s"iir"
+    ))
   case PeripheryIDFTKey => List(
-    IDFTParams(address = BigInt(CEPBaseAddresses.idft_base_addr)))  
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.idft_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.idft_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.idft_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.idft_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.idft_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.idft_llki_sendrecv_addr),
+      dev_name            = s"idft"
+    ))
   case PeripheryGPSKey => List(
-    GPSParams(address = BigInt(CEPBaseAddresses.gps_base_addr)))    
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.gps_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.gps_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.gps_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.gps_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_llki_sendrecv_addr),
+      dev_name            = s"gps"
+    ))
   case PeripheryMD5Key => List(
-    MD5Params(address = BigInt(CEPBaseAddresses.md5_base_addr)))         
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.md5_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.md5_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.md5_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.md5_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.md5_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.md5_llki_sendrecv_addr),
+      dev_name            = s"md5"
+    ))
   case PeripheryDFTKey => List(
-    DFTParams(address = BigInt(CEPBaseAddresses.dft_base_addr)))
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.dft_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.dft_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.dft_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.dft_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.dft_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.dft_llki_sendrecv_addr),
+      dev_name            = s"dft"
+    ))
   case PeripheryFIRKey => List(
-     FIRParams(address = BigInt(CEPBaseAddresses.fir_base_addr)))  
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.fir_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.fir_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.fir_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.fir_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.fir_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.fir_llki_sendrecv_addr),
+      dev_name            = s"fir"
+    ))
   case PeripherySHA256Key => List(
-     SHA256Params(address = BigInt(CEPBaseAddresses.sha256_base_addr)))   
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.sha256_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.sha256_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_llki_sendrecv_addr),
+      dev_name            = s"sha256"
+    ))
   case PeripheryRSAKey => List(
-     RSAParams(address = BigInt(CEPBaseAddresses.rsa_base_addr)))  
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.rsa_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.rsa_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.rsa_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.rsa_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.rsa_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.rsa_llki_sendrecv_addr),
+      dev_name            = s"rsa"
+    ))
   case PeripheryCEPRegistersKey => List(
-    CEPREGSParams(address = BigInt(CEPBaseAddresses.cepregisters_base_addr)))
+    CEPREGSParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.cepregs_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.cepregs_base_depth),
+      dev_name            = s"cepregs"
+    ))
   case SROTKey => List(
     SROTParams(
       slave_address   = BigInt(CEPBaseAddresses.srot_base_addr),

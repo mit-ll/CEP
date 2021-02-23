@@ -1,15 +1,17 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : sha256.scala
 // Project      : Common Evaluation Platform (CEP)
-// Description  : TileLink interface to the verilog AES core
+// Description  : TileLink interface to the verilog SHA256 core
 //
 //--------------------------------------------------------------------------------------
 package mitllBlocks.sha256
 
-import Chisel._
+import chisel3._
+import chisel3.util._
+import chisel3.experimental.{IntParam, BaseModule}
 import freechips.rocketchip.config.Field
 import freechips.rocketchip.subsystem.{BaseSubsystem, PeripheryBusKey}
 import freechips.rocketchip.config.Parameters
@@ -20,194 +22,289 @@ import freechips.rocketchip.tilelink._
 import mitllBlocks.cep_addresses._
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Classes, Objects, and Traits to support connecting to TileLink
+// BEGIN: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
-case object PeripherySHA256Key extends Field[Seq[SHA256Params]]
 
+// Parameters associated with the core
+case object PeripherySHA256Key extends Field[Seq[COREParams]]
+
+// This trait "connects" the core to the Rocket Chip and passes the parameters down
+// to the instantiation
 trait HasPeripherySHA256 { this: BaseSubsystem =>
-  val SHA256Nodes = p(PeripherySHA256Key).map { ps =>
-    SHA256.attach(SHA256AttachParams(ps, pbus))
-  }
-}
+  val sha256node = p(PeripherySHA256Key).map { params =>
 
-case class SHA256Params(address: BigInt)
+    // Initialize the attachment parameters
+    val coreattachparams = COREAttachParams(
+      coreparams  = params,
+      llki_bus    = pbus, // The LLKI connects to the periphery bus
+      slave_bus   = pbus
+    )
 
-case class SHA256AttachParams(
-  sha256params         : SHA256Params,
-  controlBus        : TLBusWrapper)
-  (implicit val p   : Parameters)
+    // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
+    // and thus should be unique to this core and NOT a verilog reserved keyword
+    val sha256module = LazyModule(new sha256TLModule(coreattachparams)(p))
 
-class TLSHA256(busWidthBytes: Int, params: SHA256Params)(implicit p: Parameters)
-  extends SHA256(busWidthBytes, params) with HasTLControlRegMap
-
-object SHA256 {
-
-  def attach(params: SHA256AttachParams): TLSHA256 = {
-    implicit val p = params.p
-    val sha256 = LazyModule(new TLSHA256(params.controlBus.beatBytes, params.sha256params))
-
-    params.controlBus.coupleTo(s"slave_named_sha256") {
-      sha256.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    // Perform the slave "attachments" to the slave bus
+    coreattachparams.slave_bus.coupleTo(coreattachparams.coreparams.dev_name + "_slave") {
+      sha256module.slave_node :*=
+      TLFragmenter(coreattachparams.slave_bus.beatBytes, coreattachparams.slave_bus.blockBytes) :*= _
     }
 
-    InModuleBody { sha256.module.clock := params.controlBus.module.clock }
-    InModuleBody { sha256.module.reset := params.controlBus.module.reset }
+    // Perform the slave "attachments" to the llki bus
+    coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
+      sha256module.llki_node :*= 
+      TLSourceShrinker(16) :*= _
+    }
 
-    sha256
-  }
+    // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
+    InModuleBody { sha256module.module.reset := coreattachparams.slave_bus.module.reset }
+    InModuleBody { sha256module.module.clock := coreattachparams.slave_bus.module.clock }
+
+}}
+
+//--------------------------------------------------------------------------------------
+// END: Module "Periphery" connections
+//--------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------
+// BEGIN: TileLink Module
+//--------------------------------------------------------------------------------------
+class sha256TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) extends LazyModule {
+
+  // Create a Manager / Slave / Sink node
+  // The OpenTitan-based Tilelink interfaces support 4 beatbytes only
+  val llki_node = TLManagerNode(Seq(TLSlavePortParameters.v1(
+    Seq(TLSlaveParameters.v1(
+      address             = Seq(AddressSet(
+                              coreattachparams.coreparams.llki_base_addr, 
+                              coreattachparams.coreparams.llki_depth)),
+      resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
+                              Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
+      regionType          = RegionType.IDEMPOTENT,
+      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      fifoId              = Some(0))), // requests are handled in order
+    beatBytes = coreattachparams.llki_bus.beatBytes)))
+
+  // Create the RegisterRouter node
+  val slave_node = TLRegisterNode(
+    address     = Seq(AddressSet(
+                    coreattachparams.coreparams.slave_base_addr, 
+                    coreattachparams.coreparams.slave_depth)),
+    device      = new SimpleDevice(coreattachparams.coreparams.dev_name + "-slave", 
+                    Seq("mitll," + coreattachparams.coreparams.dev_name + "-slave")),
+    beatBytes   = coreattachparams.slave_bus.beatBytes
+  )
+
+  // Instantiate the implementation
+  lazy val module = new sha256TLModuleImp(coreattachparams.coreparams, this)
 
 }
 //--------------------------------------------------------------------------------------
-// END: Classes, Objects, and Traits to support connecting to TileLink
+// END: TileLink Module
 //--------------------------------------------------------------------------------------
 
 
-//--------------------------------------------------------------------------------------
-// BEGIN: sha256 TileLink Module
-//--------------------------------------------------------------------------------------
-abstract class SHA256(busWidthBytes: Int, val c: SHA256Params)(implicit p: Parameters)
-    extends RegisterRouter (
-      RegisterRouterParams(
-        name = "sha256",
-        compat = Seq("mitll,sha256"), 
-        base = c.address,
-        size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
-        beatBytes = busWidthBytes))
-    {
-
-        ResourceBinding {Resource(ResourceAnchors.aliases, "sha256").bind(ResourceAlias(device.label))}
-
-        lazy val module = new LazyModuleImp(this) {
-
-            // Macro definition for creating rising edge detectors
-            def rising_edge(x: Bool)    = x && !RegNext(x)
-
-            // Instantitate the sha256 blackbox
-            val blackbox = Module(new sha256)
-
-            // Instantiate registers for the blackbox inputs
-
-            val rst                            = RegInit(0.U(1.W))
-            val next                           = RegInit(false.B)
-            val init                           = RegInit(false.B)
-
-
-            // Class and companion Object to support instantiation and initialization of
-            // state due to the need to have subword assignment for vectors > 64-bits
-            // 
-            // Fields in the bundle enumerate from to low.  When converting this bundle
-            // to UInt it is equivalent to Cat(Word1, Word0) or if subword assignment
-            // was supported.
-
-            // Class and companion Object to support instantiation and initialization of
-            // key due to the need to have subword assignment for vectors > 64-bits
-	    // change to BE format to conform to stadardized from CPE's SW perspective
-            class block_Class extends Bundle {
-                val word0               = UInt(64.W)
-                val word1               = UInt(64.W)
-                val word2               = UInt(64.W)
-                val word3               = UInt(64.W)
-                val word4               = UInt(64.W)
-                val word5               = UInt(64.W)
-                val word6               = UInt(64.W)
-                val word7               = UInt(64.W)
-            }
-            object block_Class {
-                def init: block_Class = {
-                    val wire = Wire(new block_Class)
-                    wire.word0          := 0.U
-                    wire.word1          := 0.U
-                    wire.word2          := 0.U
-                    wire.word3          := 0.U
-                    wire.word4          := 0.U
-                    wire.word5          := 0.U
-                    wire.word6          := 0.U
-                    wire.word7          := 0.U
-                    wire
-                }
-            }
-            val block                   = RegInit(block_Class.init)
-
-
-            // Instantiate wires for the blackbox outputs
-            val digest0                    = Wire(UInt(64.W))
-            val digest1                    = Wire(UInt(64.W))
-            val digest2                    = Wire(UInt(64.W))
-            val digest3                    = Wire(UInt(64.W))
-            val ready                          = Wire(Bool())
-            val digest_valid                   = Wire(Bool())
-
-            // Map the inputs to the blackbox
-            blackbox.io.clk             := clock                    // Implicit module clock
-            blackbox.io.rst             := reset                    // Implicit module reset                      
-            blackbox.io.next            := rising_edge(next)        // Next rising edge generated from addressable registers    
-            blackbox.io.block           := block.asUInt             // Block input data
-            blackbox.io.init            := rising_edge(init)        // Init rising edge generated from addressable registers
-
-            // Map the outputs from the blockbox
-            digest0                 := blackbox.io.digest(255,192)  // Output data bits
-            digest1                 := blackbox.io.digest(191,128)  // Output data bits
-            digest2                 := blackbox.io.digest(127,64)   // Output data bits
-            digest3                 := blackbox.io.digest(63,0)     // Output data bits
-            digest_valid            := blackbox.io.digest_valid     // Output data valid bit
-            ready                   := blackbox.io.ready            // Ready bit
-
-            // Define the register map
-            // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
-            regmap (
-                SHA256Addresses.sha256_ctrlstatus_addr ->RegFieldGroup("sha256_ready", Some("sha256_ready Register"),Seq(RegField.r(1,  ready),
-                                                                                                                         RegField  (1,  init),
-                                                                                                                         RegField  (1,  next))),
-                SHA256Addresses.sha256_block_w0 -> RegFieldGroup("sha256 0", Some("sha256 msg input word 0"),        Seq(RegField  (64, block.word0))),
-                SHA256Addresses.sha256_block_w1 -> RegFieldGroup("sha256 0", Some("sha256 msg input word 1"),        Seq(RegField  (64, block.word1))),
-                SHA256Addresses.sha256_block_w2 -> RegFieldGroup("sha256 2", Some("sha256 msg input word 2"),        Seq(RegField  (64, block.word2))),
-                SHA256Addresses.sha256_block_w3 -> RegFieldGroup("sha256 3", Some("sha256 msg input word 3"),        Seq(RegField  (64, block.word3))),
-                SHA256Addresses.sha256_block_w4 -> RegFieldGroup("sha256 4", Some("sha256 msg input word 4"),        Seq(RegField  (64, block.word4))),
-                SHA256Addresses.sha256_block_w5 -> RegFieldGroup("sha256 5", Some("sha256 msg input word 5"),        Seq(RegField  (64, block.word5))),
-                SHA256Addresses.sha256_block_w6 -> RegFieldGroup("sha256 6", Some("sha256 msg input word 6"),        Seq(RegField  (64, block.word6))),
-                SHA256Addresses.sha256_block_w7 -> RegFieldGroup("sha256 7", Some("sha256 msg input word 7"),        Seq(RegField  (64, block.word7))),
-                SHA256Addresses.sha256_done     -> RegFieldGroup("sha256 done", Some("sha256 done"),                 Seq(RegField.r(1,  digest_valid))),
-                SHA256Addresses.sha256_digest_w0 -> RegFieldGroup("sha256 msg output0", Some("sha256 msg output1"),  Seq(RegField.r(64, digest0))),
-                SHA256Addresses.sha256_digest_w1 -> RegFieldGroup("sha256 msg output1", Some("sha256 msg output1"),  Seq(RegField.r(64, digest1))),
-                SHA256Addresses.sha256_digest_w2 -> RegFieldGroup("sha256 msg output0", Some("sha256 msg output1"),  Seq(RegField.r(64, digest2))),
-                SHA256Addresses.sha256_digest_w3 -> RegFieldGroup("sha256 msg output1", Some("sha256 msg output1"),  Seq(RegField.r(64, digest3)))
-               
-            )  // regmap
-
-        }   // lazy val module
-    }  // abstract class AES
-//--------------------------------------------------------------------------------------
-// END: AES TileLink Module
-//--------------------------------------------------------------------------------------
-
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Black box wrapper for Verilog Module
-//
-// Note: Name must match Verilog module name, signal names
-//   declared within much match the name, width, and direction of
-//   the Verilog module.
+// BEGIN: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
-class sha256() extends BlackBox {
+class sha256TLModuleImp(coreparams: COREParams, outer: sha256TLModule) extends LazyModuleImp(outer) {
 
-  val io = IO(new Bundle {
-    // Clock and Reset
-    val clk         = Clock(INPUT)
-    val rst         = Bool(INPUT)
+  // "Connect" to llki node's signals and parameters
+  val (llki, llkiEdge)    = outer.llki_node.in(0)
 
-    // Inputs
-    val init    = Bool(INPUT)
-    val next    = Bool(INPUT)
+  // Define the LLKI Protocol Processing blackbox and its associated IO
+  class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
+      Map(
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+      )
+  ) {
 
-    val block   = Bits(INPUT,512)
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                 = Input(Clock())
+      val rst                 = Input(Reset())
+
+      // Slave - Tilelink A Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_a_opcode      = Input(UInt(3.W))
+      val slave_a_param       = Input(UInt(3.W))
+      val slave_a_size        = Input(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_a_source      = Input(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_a_address     = Input(UInt(LLKITilelinkParameters.AddressBits.W))
+      val slave_a_mask        = Input(UInt(LLKITilelinkParameters.BeatBytes.W))
+      val slave_a_data        = Input(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_a_corrupt     = Input(Bool())
+      val slave_a_valid       = Input(Bool())
+      val slave_a_ready       = Output(Bool())
+
+      // Slave - Tilelink D Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_d_opcode      = Output(UInt(3.W))
+      val slave_d_param       = Output(UInt(3.W))
+      val slave_d_size        = Output(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_d_source      = Output(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_d_sink        = Output(UInt(LLKITilelinkParameters.SinkBits.W))
+      val slave_d_denied      = Output(Bool())
+      val slave_d_data        = Output(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_d_corrupt     = Output(Bool())
+      val slave_d_valid       = Output(Bool())
+      val slave_d_ready       = Input(Bool())
+
+      // LLKI discrete interface
+      val llkid_key_data      = Output(UInt(64.W))
+      val llkid_key_valid     = Output(Bool())
+      val llkid_key_ready     = Input(Bool())
+      val llkid_key_complete  = Input(Bool())
+      val llkid_clear_key     = Output(Bool())
+      val llkid_clear_key_ack = Input(Bool())
+
+    })
+  } // end class llki_pp_wrapper
+
+  // Instantiate the LLKI Protocol Processing Block with CORE SPECIFIC decode constants
+  val llki_pp_inst = Module(new llki_pp_wrapper(coreparams.llki_ctrlsts_addr, 
+                                                coreparams.llki_sendrecv_addr))
+
+  // The following "requires" are included to avoid size mismatches between the
+  // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
+  // from the cep_addresses package and must match those in "top_pkg.sv", borrowed from OpenTitan
+  //
+  // Exceptions:
+  //  - llkiEdge address gets optimized down to 31-bits during chisel generation
+  //  - llkiEdge sink bits are 1, but masterEdge sink bits are 2 
+  //  - llkiEdge size bits are 3, but masterEdge size bits are 4
+  //
+  require(llkiEdge.bundle.addressBits  == LLKITilelinkParameters.AddressBits - 1, s"SROT: llkiEdge addressBits exp/act ${LLKITilelinkParameters.AddressBits - 1}/${llkiEdge.bundle.addressBits}")
+  require(llkiEdge.bundle.dataBits     == LLKITilelinkParameters.BeatBytes * 8, s"SROT: llkiEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${llkiEdge.bundle.dataBits}")
+  require(llkiEdge.bundle.sourceBits   == LLKITilelinkParameters.SourceBits, s"SROT: llkiEdge sourceBits exp/act ${LLKITilelinkParameters.SourceBits}/${llkiEdge.bundle.sourceBits}")
+  require(llkiEdge.bundle.sinkBits     == LLKITilelinkParameters.SinkBits - 1, s"SROT: llkiEdge sinkBits exp/act ${LLKITilelinkParameters.SinkBits - 1}/${llkiEdge.bundle.sinkBits}")
+  require(llkiEdge.bundle.sizeBits     == LLKITilelinkParameters.SizeBits, s"SROT: llkiEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits}/${llkiEdge.bundle.sizeBits}")
+
+  // Connect the Clock and Reset
+  llki_pp_inst.io.clk                 := clock
+  llki_pp_inst.io.rst                 := reset
+
+  // Connect the Slave A Channel to the Black box IO
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_size        := llki.a.bits.size
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
+
+  // Connect the Slave D Channel to the Black Box IO    
+  llki.d.bits.opcode                  := llki_pp_inst.io.slave_d_opcode
+  llki.d.bits.param                   := llki_pp_inst.io.slave_d_param
+  llki.d.bits.size                    := llki_pp_inst.io.slave_d_size
+  llki.d.bits.source                  := llki_pp_inst.io.slave_d_source
+  llki.d.bits.sink                    := llki_pp_inst.io.slave_d_sink(0)
+  llki.d.bits.denied                  := llki_pp_inst.io.slave_d_denied
+  llki.d.bits.data                    := llki_pp_inst.io.slave_d_data
+  llki.d.bits.corrupt                 := llki_pp_inst.io.slave_d_corrupt
+  llki.d.valid                        := llki_pp_inst.io.slave_d_valid
+  llki_pp_inst.io.slave_d_ready       := llki.d.ready
+
+  // Define blackbox and its associated IO
+  class sha256_mock_tss() extends BlackBox {
+
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                 = Input(Clock())
+      val rst                 = Input(Bool())
+
+      // Inputs
+      val init                = Input(Bool())
+      val next                = Input(Bool())
+      val block               = Input(UInt(512.W))
 
       // Outputs
-    val digest_valid    = Bool(OUTPUT)
-    val digest          = Bits(OUTPUT,256)
-    val ready           = Bool(OUTPUT)
-  })
+      val digest_valid        = Output(Bool())
+      val digest              = Output(UInt(256.W))
+      val ready               = Output(Bool())
+
+      // LLKI discrete interface
+      val llkid_key_data      = Input(UInt(64.W))
+      val llkid_key_valid     = Input(Bool())
+      val llkid_key_ready     = Output(Bool())
+      val llkid_key_complete  = Output(Bool())
+      val llkid_clear_key     = Input(Bool())
+      val llkid_clear_key_ack = Output(Bool())
+
+    })
+  }
+
+  // Instantiate the blackbox
+  val sha256_mock_tss_inst   = Module(new sha256_mock_tss())
+
+  // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
+  sha256_mock_tss_inst.io.llkid_key_data  := llki_pp_inst.io.llkid_key_data
+  sha256_mock_tss_inst.io.llkid_key_valid := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready         := sha256_mock_tss_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete      := sha256_mock_tss_inst.io.llkid_key_complete
+  sha256_mock_tss_inst.io.llkid_clear_key := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack     := sha256_mock_tss_inst.io.llkid_clear_key_ack
+
+  // Macro definition for creating rising edge detectors
+  def rising_edge(x: Bool)    = x && !RegNext(x)
+
+  // Define registers and wires associated with the Core I/O
+  val next                   = RegInit(false.B)
+  val init                   = RegInit(false.B)
+  val block0                 = RegInit(0.U(64.W))
+  val block1                 = RegInit(0.U(64.W))
+  val block2                 = RegInit(0.U(64.W))
+  val block3                 = RegInit(0.U(64.W))
+  val block4                 = RegInit(0.U(64.W))
+  val block5                 = RegInit(0.U(64.W))
+  val block6                 = RegInit(0.U(64.W))
+  val block7                 = RegInit(0.U(64.W))
+  val digest_valid           = Wire(Bool())
+  val digest                 = Wire(UInt(256.W))
+  val ready                  = Wire(Bool())
+
+  // Connect the Core I/O
+  sha256_mock_tss_inst.io.clk             := clock
+  sha256_mock_tss_inst.io.rst             := reset
+  sha256_mock_tss_inst.io.init            := rising_edge(init)
+  sha256_mock_tss_inst.io.next            := rising_edge(next)
+  sha256_mock_tss_inst.io.block           := Cat(block0, block1, 
+                                                 block2, block3, 
+                                                 block4, block5, 
+                                                 block6, block7)
+  digest                                  := sha256_mock_tss_inst.io.digest
+  digest_valid                            := sha256_mock_tss_inst.io.digest_valid
+  ready                                   := sha256_mock_tss_inst.io.ready
+
+  // Define the register map
+  // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
+  outer.slave_node.regmap (
+      SHA256Addresses.sha256_ctrlstatus_addr ->RegFieldGroup("sha256_ready", Some("sha256_ready Register"),Seq(RegField.r(1,  ready),
+                                                                                                               RegField  (1,  init),
+                                                                                                               RegField  (1,  next))),
+      SHA256Addresses.sha256_block_w0 -> RegFieldGroup("sha256 0", Some("sha256 msg input word 0"),        Seq(RegField  (64, block0))),
+      SHA256Addresses.sha256_block_w1 -> RegFieldGroup("sha256 1", Some("sha256 msg input word 1"),        Seq(RegField  (64, block1))),
+      SHA256Addresses.sha256_block_w2 -> RegFieldGroup("sha256 2", Some("sha256 msg input word 2"),        Seq(RegField  (64, block2))),
+      SHA256Addresses.sha256_block_w3 -> RegFieldGroup("sha256 3", Some("sha256 msg input word 3"),        Seq(RegField  (64, block3))),
+      SHA256Addresses.sha256_block_w4 -> RegFieldGroup("sha256 4", Some("sha256 msg input word 4"),        Seq(RegField  (64, block4))),
+      SHA256Addresses.sha256_block_w5 -> RegFieldGroup("sha256 5", Some("sha256 msg input word 5"),        Seq(RegField  (64, block5))),
+      SHA256Addresses.sha256_block_w6 -> RegFieldGroup("sha256 6", Some("sha256 msg input word 6"),        Seq(RegField  (64, block6))),
+      SHA256Addresses.sha256_block_w7 -> RegFieldGroup("sha256 7", Some("sha256 msg input word 7"),        Seq(RegField  (64, block7))),
+      SHA256Addresses.sha256_done     -> RegFieldGroup("sha256 done", Some("sha256 done"),                 Seq(RegField.r(1,  digest_valid))),
+      SHA256Addresses.sha256_digest_w0 -> RegFieldGroup("sha256 msg output0", Some("sha256 msg output0"),  Seq(RegField.r(64, digest(255,192)))),
+      SHA256Addresses.sha256_digest_w1 -> RegFieldGroup("sha256 msg output1", Some("sha256 msg output1"),  Seq(RegField.r(64, digest(191,128)))),
+      SHA256Addresses.sha256_digest_w2 -> RegFieldGroup("sha256 msg output2", Some("sha256 msg output2"),  Seq(RegField.r(64, digest(127, 64)))),
+      SHA256Addresses.sha256_digest_w3 -> RegFieldGroup("sha256 msg output3", Some("sha256 msg output3"),  Seq(RegField.r(64, digest( 63,  0))))               
+  )  // regmap
 
 }
 //--------------------------------------------------------------------------------------
-// END: Black box wrapper for Verilog Module
+// END: TileLink Module Implementation
 //--------------------------------------------------------------------------------------

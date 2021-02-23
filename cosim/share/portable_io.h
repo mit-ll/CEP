@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -50,25 +50,28 @@
 #endif
 
 #ifdef USE_DPI
+#define DUT_ATOMIC_RMW64(a,p,m,d) sim_Atomic_Rdw64(a,p,m,d)
+#define DUT_WRITE32_BURST(a,s,d) sim_Write64_BURST(a,s,d)
+#define DUT_READ32_BURST(a,s,d)  sim_Read64_BURST(a,s,d)
+
 #define DUT_WRITE32_64(a,d) sim_Write64_64(a,d)
 #define DUT_READ32_64(a,d)  d=sim_Read64_64(a)
 
 #define DUT_WRITE32_32(a,d) sim_Write32_32(a,d)
 #define DUT_READ32_32(a,d)  d=sim_Read32_32(a)
 
+#define DUT_WRITE32_16(a,d) sim_Write32_16(a,d)
+#define DUT_READ32_16(a,d)  d=sim_Read32_16(a)
+
+#define DUT_WRITE32_8(a,d) sim_Write32_8(a,d)
+#define DUT_READ32_8(a,d)  d=sim_Read32_8(a)
+
+
 #define DDR3_WRITE(a,d) sim_Write64_64(a,d)
 #define DDR3_READ(a,d)  d=sim_Read64_64(a)
 
 #else
-#define DUT_WRITE32_64(a,d) sim_Write32_64(a,d)
-#define DUT_READ32_64(a,d)  d=sim_Read32_64(a)
-
-#define DUT_WRITE32_32(a,d) sim_Write32_32(a,d)
-#define DUT_READ32_32(a,d)  d=sim_Read32_32(a)
-
-#define DDR3_WRITE(a,d) sim_Write32_64(a,d)
-#define DDR3_READ(a,d)  d=sim_Read32_64(a)
-
+// no more VPI
 #endif
 
 #define DUT_WRITE_DVT(msb,lsb,val) sim_WriteDvtFlag(msb,lsb,val)
@@ -102,6 +105,12 @@
 #define DUT_WRITE32_32(a,d) lnx_cep_write32(a,(int)d)
 #define DUT_READ32_32(a,d)  { d = (int)lnx_cep_read32(a); }
 
+#define DUT_WRITE32_16(a,d) lnx_cep_write16(a,(uint16_t)d)
+#define DUT_READ32_16(a,d)  { d = (uint16_t)lnx_cep_read16(a); }
+
+#define DUT_WRITE32_8(a,d) lnx_cep_write8(a,(uint8_t)d)
+#define DUT_READ32_8(a,d)  { d = (uint8_t)lnx_cep_read8(a); }
+
 #define DDR3_WRITE(a,d) *(volatile uint64_t *)((intptr_t)a)=d
 #define DDR3_READ(a,d)  d=*(volatile uint64_t *)((intptr_t)a)
 
@@ -127,6 +136,12 @@
 #define DDR3_READ(a,d)  d=*(volatile uint64_t *)((intptr_t)a)
 
 // ONLY in bare metal MODE
+#define DUT_WRITE32_8(a,d) *reinterpret_cast<volatile uint8_t *>(a)=d
+#define DUT_READ32_8(a,d)  d=*reinterpret_cast<volatile uint8_t *>(a)
+
+#define DUT_WRITE32_16(a,d) *reinterpret_cast<volatile uint16_t *>(a)=d
+#define DUT_READ32_16(a,d)  d=*reinterpret_cast<volatile uint16_t *>(a)
+
 #define DUT_WRITE32_32(a,d) *reinterpret_cast<volatile uint32_t *>(a)=d
 #define DUT_READ32_32(a,d)  d=*reinterpret_cast<volatile uint32_t *>(a)
 
@@ -136,6 +151,12 @@
 
 #define DUT_WRITE32_32(a,d) *reinterpret_cast<volatile uint32_t *>(a)=d
 #define DUT_READ32_32(a,d)  d=*reinterpret_cast<volatile uint32_t *>(a)
+
+#define DUT_WRITE32_16(a,d) *reinterpret_cast<volatile uint16_t *>(a)=d
+#define DUT_READ32_16(a,d)  d=*reinterpret_cast<volatile uint16_t *>(a)
+
+#define DUT_WRITE32_8(a,d) *reinterpret_cast<volatile uint8_t *>(a)=d
+#define DUT_READ32_8(a,d)  d=*reinterpret_cast<volatile uint8_t *>(a)
 
 #define DDR3_WRITE(a,d) *reinterpret_cast<volatile uint64_t *>(a)=d
 #define DDR3_READ(a,d)  d=*reinterpret_cast<volatile uint64_t *>(a)

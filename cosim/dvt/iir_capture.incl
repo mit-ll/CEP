@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -24,10 +24,10 @@ int IIR_fd;
 always @(posedge c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT]) begin
    $display("Enable cycle-by-cycle capturing of IIR stimulus");	    
    // wait until it gets out of reset
-   //if (!cep_tb.fpga.topDesign.topMod.iir.blackbox.reset)
-     @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.reset);
+   //if (!cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.reset)
+     @(posedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.reset);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
+   @(posedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.clk);
    CaptureIIR_vector=1;
    IIR_fd=$fopen("../../drivers/vectors/iir_stimulus.txt","w");
    captureIIR_Stimulus();   
@@ -35,7 +35,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT]) begin
    if (CaptureIIR_vector) begin
       CaptureIIR_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.clk);
       $display("Stop Capturing IIR stimulus");
       $fwrite(IIR_fd,"};\n");
       $fwrite(IIR_fd,"`define IIR_SAMPLE_COUNT %d\n",IIR_sampleNum);      
@@ -52,7 +52,7 @@ end
 	 IIR_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(IIR_fd,"//************************************************************************\n");
-	 $fwrite(IIR_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(IIR_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(IIR_fd,"//\n");		
 	 $fwrite(IIR_fd,"// File Name:      IIR_stimulus.txt\n");
 	 $fwrite(IIR_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -70,7 +70,7 @@ end
 	 //
 	 // wait until valid in to interleaver
 	 while (CaptureIIR_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
+	    @(negedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.clk);
 	    // MUST align to HEX number if _ is used!!!
 	    if (IIR_sampleNum>0) begin
 	       $fwrite(IIR_fd,"   ,");
@@ -79,9 +79,9 @@ end
             end
 	    // MUST align to HEX number if _ is used!!!
 	    $fwrite(IIR_fd,"'h%x_%x_%x\n",
-		{3'b0,cep_tb.fpga.topDesign.topMod.iir.blackbox.reset},
-		    cep_tb.fpga.topDesign.topMod.iir.blackbox.inData[31:0],
-		    cep_tb.fpga.topDesign.topMod.iir.blackbox.outData[31:0]);
+		{3'b0,cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.reset},
+		    cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.inData[31:0],
+		    cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.outData[31:0]);
 	    IIR_sampleNum++;
 	 end // while (1)
       end

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -57,6 +57,10 @@ uint64_t  cepUartTest_ReadEntry(regBaseTest_t *me, uint32_t adr) {
 //
 int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int stopBits, int verbose) {
   int errCnt = 0;
+  int ti=0, ri=0, tmp;
+  char rxDat;
+  int fr=0,ft=0; // first RX/TX to use 64-bits
+  uint64_t dat64;
   //
   // write divisor register
   //
@@ -74,21 +78,36 @@ int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int 
     LOGI("%s: OK divisor act=0x%x exp=0x%x\n",__FUNCTION__,act,divisor);
   }
   // enable tx/rx
-  int dat  = ((1 << 0) |  // txen
+  int dat  = ((1 << 16) | // watermark
+	      (1 << 0) |  // txen
 	      ((stopBits & 0x1) << 1) ); // 0=1 stop bit, 1=2 stop bits
   //
   DUT_WRITE32_32(uart_base_addr + uart_txctrl,dat);
   DUT_WRITE32_32(uart_base_addr + uart_rxctrl,dat);
   //
-  int ti=0, ri=0, tmp;
-  char rxDat;
+  // Enable interrupt pending
+  //
+  dat = ((1 << 0) | // TX interrupt Enable
+	 (1 << 1)); // RX interrupt Enable
+  DUT_WRITE32_32(uart_base_addr + uart_ie,dat);
+  // verify the TX interrupt pending is there
+  DUT_READ32_32(uart_base_addr + uart_ip, tmp);
+  if (tmp != 1) { // TX pending and no RX pending
+    LOGE("%s: No TX pending when fifo is empty (0x%x)??\n",__FUNCTION__,tmp);
+    errCnt++;
+  } else if (verbose) {
+    LOGI("%s: OK TX pending is set when fifo is empty (0x%x)\n",__FUNCTION__,tmp);
+  }
+  //
+  //
+  //
   while ((ri < txLen) && (!errCnt)) {
     // TX?
     if (ti < txLen) { // still more to TX?? (include NULL)
       DUT_READ32_32(uart_base_addr + uart_txfifo, tmp);
       if (((tmp >> 31) & 0x1) == 0) { // not full
-	DUT_WRITE32_32(uart_base_addr + uart_txfifo, (uint32_t)txStr[ti]);
-	ti++;
+	  DUT_WRITE32_32(uart_base_addr + uart_txfifo, (uint32_t)txStr[ti]);
+	  ti++;
       }
     }
     // any RX?
@@ -112,7 +131,8 @@ int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int 
   }
   // disable
   DUT_WRITE32_32(uart_base_addr + uart_txctrl,0);
-  DUT_WRITE32_32(uart_base_addr + uart_rxctrl,0);
+    DUT_WRITE32_32(uart_base_addr + uart_rxctrl,0);
+    DUT_WRITE32_32(uart_base_addr + uart_ie,0);
   return errCnt;
 }
 
@@ -132,6 +152,9 @@ int cepUartTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   (*regp->AddAReg_p)(regp, uart_base_addr + uart_ie,     0x3);
   //  (*regp->AddAReg_p)(regp, uart_base_addr + uart_ie,     0xFFFFFFFF);
   (*regp->AddAReg_p)(regp, uart_base_addr + uart_div,     0xFFFF);
+
+  // add a hole in 4K
+  (*regp->AddAHole_p)(regp, uart_base_addr + 0xFFC,0xFFFFFFFF);
 
   // now do it
   errCnt = (*regp->doRegTest_p)(regp);
@@ -155,10 +178,21 @@ int cepUartTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
 
 int cepUartTest_runTest(int cpuId, int seed, int verbose) {
   int errCnt = 0;
-  char txStr[]  = "Hello";
-  char txStr2[] = "MIT LL";
+  char txStr[]  = "MIT";
+  char txStr2[] = "LL";
+  // divisor 16 is smallest!!!, try 15 .loop forever..
+  //if (!errCnt) { errCnt += cepUartTest_runTxRxTest(cpuId,1<< 15, txStr,  1, 0, 1); }
   if (!errCnt) { errCnt += cepUartTest_runTxRxTest(cpuId,16, txStr,  strlen(txStr), 0, 1); }
-  if (!errCnt) { errCnt += cepUartTest_runTxRxTest(cpuId,24, txStr2, strlen(txStr2),1, 1); }
+  if (!errCnt) { errCnt += cepUartTest_runTxRxTest(cpuId,32-1,txStr2, strlen(txStr2),1, 1); }
+  // this is just for coverage
+  DUT_WRITE32_32(uart_base_addr + uart_div, 1 << 15);
+  for (int i=0;i<8;i++) {
+    DUT_WRITE32_32(uart_base_addr + uart_txfifo, 0);
+  }
+  int tmp;
+  DUT_READ32_32(uart_base_addr + uart_rxfifo, tmp);
+  //
   if (!errCnt) { errCnt += cepUartTest_runRegTest(cpuId,32, seed, verbose); }
+  //
   return errCnt;
 }

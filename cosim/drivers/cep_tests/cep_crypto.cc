@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -217,7 +217,7 @@ void cep_crypto::SetCaptureMode(int mode, const char *path, const char *testName
       LOGI("%s: Opening file %s for sequence capturing\n",__FUNCTION__,fName);
       // print CopyRigth
       fprintf(mFd,"//************************************************************************\n");
-      fprintf(mFd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+      fprintf(mFd,"// Copyright 2021 Massachusetts Institute of Technology\n");
       fprintf(mFd,"//\n");
       fprintf(mFd,"// This file is auto-generated for test: %s. Do not modify!!!\n", testName);
       fprintf(mFd,"//\n");      
@@ -328,3 +328,4 @@ void cep_crypto::MarkSingle(int loop) {
     mSingle = mCount;
   }
 }
+

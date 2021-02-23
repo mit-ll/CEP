@@ -1,15 +1,17 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : rsa.scala
 // Project      : Common Evaluation Platform (CEP)
-// Description  : TileLink interface to the verilog AES core
+// Description  : TileLink interface to the verilog RSA core
 //
 //--------------------------------------------------------------------------------------
 package mitllBlocks.rsa
 
-import Chisel._
+import chisel3._
+import chisel3.util._
+import chisel3.experimental.{IntParam, BaseModule}
 import freechips.rocketchip.config.Field
 import freechips.rocketchip.subsystem.{BaseSubsystem, PeripheryBusKey}
 import freechips.rocketchip.config.Parameters
@@ -20,259 +22,348 @@ import freechips.rocketchip.tilelink._
 import mitllBlocks.cep_addresses._
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Classes, Objects, and Traits to support connecting to TileLink
+// BEGIN: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
-case object PeripheryRSAKey extends Field[Seq[RSAParams]]
 
+// Parameters associated with the core
+case object PeripheryRSAKey extends Field[Seq[COREParams]]
+
+// This trait "connects" the core to the Rocket Chip and passes the parameters down
+// to the instantiation
 trait HasPeripheryRSA { this: BaseSubsystem =>
-  val RSANodes = p(PeripheryRSAKey).map { ps =>
-    RSA.attach(RSAAttachParams(ps, pbus))
-  }
-}
+  val rsanode = p(PeripheryRSAKey).map { params =>
 
-case class RSAParams(address: BigInt)
+    // Initialize the attachment parameters
+    val coreattachparams = COREAttachParams(
+      coreparams  = params,
+      llki_bus    = pbus, // The LLKI connects to the periphery bus
+      slave_bus   = pbus
+    )
 
-case class RSAAttachParams(
-  rsaparams         : RSAParams,
-  controlBus        : TLBusWrapper)
-  (implicit val p   : Parameters)
+    // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
+    // and thus should be unique to this core and NOT a verilog reserved keyword
+    val rsamodule = LazyModule(new rsaTLModule(coreattachparams)(p))
 
-class TLRSA(busWidthBytes: Int, params: RSAParams)(implicit p: Parameters)
-  extends RSA(busWidthBytes, params) with HasTLControlRegMap
-
-object RSA {
-
-  def attach(params: RSAAttachParams): TLRSA = {
-    implicit val p = params.p
-    val rsa = LazyModule(new TLRSA(params.controlBus.beatBytes, params.rsaparams))
-
-    params.controlBus.coupleTo(s"slave_named_rsa") {
-      rsa.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    // Perform the slave "attachments" to the slave bus
+    coreattachparams.slave_bus.coupleTo(coreattachparams.coreparams.dev_name + "_slave") {
+      rsamodule.slave_node :*=
+      TLFragmenter(coreattachparams.slave_bus.beatBytes, coreattachparams.slave_bus.blockBytes) :*= _
     }
 
-    InModuleBody { rsa.module.clock := params.controlBus.module.clock }
-    InModuleBody { rsa.module.reset := params.controlBus.module.reset }
+    // Perform the slave "attachments" to the llki bus
+    coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
+      rsamodule.llki_node :*= 
+      TLSourceShrinker(16) :*= _
+    }
 
-    rsa
-  }
+    // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
+    InModuleBody { rsamodule.module.reset := coreattachparams.slave_bus.module.reset }
+    InModuleBody { rsamodule.module.clock := coreattachparams.slave_bus.module.clock }
+
+}}
+//--------------------------------------------------------------------------------------
+// END: Module "Periphery" connections
+//--------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------
+// BEGIN: TileLink Module
+//--------------------------------------------------------------------------------------
+class rsaTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) extends LazyModule {
+
+  // Create a Manager / Slave / Sink node
+  // The OpenTitan-based Tilelink interfaces support 4 beatbytes only
+  val llki_node = TLManagerNode(Seq(TLSlavePortParameters.v1(
+    Seq(TLSlaveParameters.v1(
+      address             = Seq(AddressSet(
+                              coreattachparams.coreparams.llki_base_addr, 
+                              coreattachparams.coreparams.llki_depth)),
+      resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
+                              Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
+      regionType          = RegionType.IDEMPOTENT,
+      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      fifoId              = Some(0))), // requests are handled in order
+    beatBytes = coreattachparams.llki_bus.beatBytes)))
+
+  // Create the RegisterRouter node
+  val slave_node = TLRegisterNode(
+    address     = Seq(AddressSet(
+                    coreattachparams.coreparams.slave_base_addr, 
+                    coreattachparams.coreparams.slave_depth)),
+    device      = new SimpleDevice(coreattachparams.coreparams.dev_name + "-slave", 
+                    Seq("mitll," + coreattachparams.coreparams.dev_name + "-slave")),
+    beatBytes   = coreattachparams.slave_bus.beatBytes
+  )
+
+  // Instantiate the implementation
+  lazy val module = new rsaTLModuleImp(coreattachparams.coreparams, this)
 
 }
 //--------------------------------------------------------------------------------------
-// END: Classes, Objects, and Traits to support connecting to TileLink
+// END: TileLink Module
 //--------------------------------------------------------------------------------------
 
 
+
 //--------------------------------------------------------------------------------------
-// BEGIN: rsa TileLink Module
+// BEGIN: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
-abstract class RSA(busWidthBytes: Int, val c: RSAParams)(implicit p: Parameters)
-    extends RegisterRouter (
-      RegisterRouterParams(
-        name = "rsa",
-        compat = Seq("mitll,rsa"), 
-        base = c.address,
-        size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
-        beatBytes = busWidthBytes))
-    {
+class rsaTLModuleImp(coreparams: COREParams, outer: rsaTLModule) extends LazyModuleImp(outer) {
 
-        ResourceBinding {Resource(ResourceAnchors.aliases, "rsa").bind(ResourceAlias(device.label))}
+  // "Connect" to llki node's signals and parameters
+  val (llki, llkiEdge)    = outer.llki_node.in(0)
 
-        lazy val module = new LazyModuleImp(this) {
+  // Define the LLKI Protocol Processing blackbox and its associated IO
+  class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
+      Map(
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+      )
+  ) {
 
-            // Macro definition for creating rising edge detectors
-            def rising_edge(x: Bool)    = x && !RegNext(x)
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                 = Input(Clock())
+      val rst                 = Input(Reset())
 
-            // Instantitate the rsa blackbox
-            val blackbox = Module(new modexp_core)
+      // Slave - Tilelink A Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_a_opcode      = Input(UInt(3.W))
+      val slave_a_param       = Input(UInt(3.W))
+      val slave_a_size        = Input(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_a_source      = Input(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_a_address     = Input(UInt(LLKITilelinkParameters.AddressBits.W))
+      val slave_a_mask        = Input(UInt(LLKITilelinkParameters.BeatBytes.W))
+      val slave_a_data        = Input(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_a_corrupt     = Input(Bool())
+      val slave_a_valid       = Input(Bool())
+      val slave_a_ready       = Output(Bool())
 
-            // Instantiate registers for the blackbox inputs
-            
-            val st                                   = RegInit(0.U(1.W))    // Start bit
-            val exp_len                              = RegInit(0.U(8.W))    // Exp length
-            val mod_len                              = RegInit(0.U(8.W))    // Mod length
+      // Slave - Tilelink D Channel (Signal order/names from Tilelink Specification v1.8.0)
+      val slave_d_opcode      = Output(UInt(3.W))
+      val slave_d_param       = Output(UInt(3.W))
+      val slave_d_size        = Output(UInt(LLKITilelinkParameters.SizeBits.W))
+      val slave_d_source      = Output(UInt(LLKITilelinkParameters.SourceBits.W))
+      val slave_d_sink        = Output(UInt(LLKITilelinkParameters.SinkBits.W))
+      val slave_d_denied      = Output(Bool())
+      val slave_d_data        = Output(UInt((LLKITilelinkParameters.BeatBytes * 8).W))
+      val slave_d_corrupt     = Output(Bool())
+      val slave_d_valid       = Output(Bool())
+      val slave_d_ready       = Input(Bool())
 
-            val ready                                = RegInit(0.U(1.W))    // Ready bit drive by modexp_core.v
-            val cycles                               = RegInit(0.U(64.W))   // Cycles count driven by modexp_core.v
+      // LLKI discrete interface
+      val llkid_key_data      = Output(UInt(64.W))
+      val llkid_key_valid     = Output(Bool())
+      val llkid_key_ready     = Input(Bool())
+      val llkid_key_complete  = Input(Bool())
+      val llkid_clear_key     = Output(Bool())
+      val llkid_clear_key_ack = Input(Bool())
 
-            val exp_mem_api_write_data               = RegInit(0.U(32.W))   // Exp memory write data
-            val exp_mem_api_read_data                = RegInit(0.U(32.W))   // Exp memory read data
-            val exp_mem_api_ctrl                     = RegInit(0.U(3.W))    // Exp memory control register
-            val exp_mem_api_ctrl_wire1               = Wire(Bool())         // Exp memory chip select signal
-            val exp_mem_api_ctrl_wire2               = Wire(Bool())         // Exp memory write enable signal
-            val exp_mem_api_ctrl_wire3               = Wire(Bool())         // Exp memory pointer reset signal 
+    })
+  } // end class llki_pp_wrapper
 
-            val mod_mem_api_write_data               = RegInit(0.U(32.W))   // Mod memory write data   
-            val mod_mem_api_read_data                = RegInit(0.U(32.W))   // Mod memory read data
-            val mod_mem_api_ctrl                     = RegInit(0.U(3.W))    // Mod memory control register
-            val mod_mem_api_ctrl_wire1               = Wire(Bool())         // Mod memory chip select signal
-            val mod_mem_api_ctrl_wire2               = Wire(Bool())         // Mod memory write enable signal
-            val mod_mem_api_ctrl_wire3               = Wire(Bool())         // Mod memory pointer reset signal 
+  // Instantiate the LLKI Protocol Processing Block with CORE SPECIFIC decode constants
+  val llki_pp_inst = Module(new llki_pp_wrapper(coreparams.llki_ctrlsts_addr, 
+                                                coreparams.llki_sendrecv_addr))
 
-            val mess_mem_api_write_data              = RegInit(0.U(32.W))   // Message memory write data
-            val mess_mem_api_read_data               = RegInit(0.U(32.W))   // Message memory read data
-            val mess_mem_api_ctrl                    = RegInit(0.U(3.W))    // Message memory control register
-            val mess_mem_api_ctrl_wire1              = Wire(Bool())         // Message memory chip select signal          
-            val mess_mem_api_ctrl_wire2              = Wire(Bool())         // Message memory write enable signal
-            val mess_mem_api_ctrl_wire3              = Wire(Bool())         // Message memory pointer reset signal 
+  // The following "requires" are included to avoid size mismatches between the
+  // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
+  // from the cep_addresses package and must match those in "top_pkg.sv", borrowed from OpenTitan
+  //
+  // Exceptions:
+  //  - llkiEdge address gets optimized down to 31-bits during chisel generation
+  //  - llkiEdge sink bits are 1, but masterEdge sink bits are 2 
+  //  - llkiEdge size bits are 3, but masterEdge size bits are 4
+  //
+  require(llkiEdge.bundle.addressBits  == LLKITilelinkParameters.AddressBits - 1, s"SROT: llkiEdge addressBits exp/act ${LLKITilelinkParameters.AddressBits - 1}/${llkiEdge.bundle.addressBits}")
+  require(llkiEdge.bundle.dataBits     == LLKITilelinkParameters.BeatBytes * 8, s"SROT: llkiEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${llkiEdge.bundle.dataBits}")
+  require(llkiEdge.bundle.sourceBits   == LLKITilelinkParameters.SourceBits, s"SROT: llkiEdge sourceBits exp/act ${LLKITilelinkParameters.SourceBits}/${llkiEdge.bundle.sourceBits}")
+  require(llkiEdge.bundle.sinkBits     == LLKITilelinkParameters.SinkBits - 1, s"SROT: llkiEdge sinkBits exp/act ${LLKITilelinkParameters.SinkBits - 1}/${llkiEdge.bundle.sinkBits}")
+  require(llkiEdge.bundle.sizeBits     == LLKITilelinkParameters.SizeBits, s"SROT: llkiEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits}/${llkiEdge.bundle.sizeBits}")
 
-            val res_mem_api_read_data                = RegInit(0.U(32.W))   // Result memory read data
-            val res_mem_api_ctrl                     = RegInit(0.U(2.W))    // Result memory control register
-            val res_mem_api_ctrl_wire1               = Wire(Bool())         // Result memory chip select signal
-            val res_mem_api_ctrl_wire2               = Wire(Bool())         // Result memory pointer reset signal 
+  // Connect the Clock and Reset
+  llki_pp_inst.io.clk                 := clock
+  llki_pp_inst.io.rst                 := reset
 
-           
-            exp_mem_api_ctrl_wire1 := exp_mem_api_ctrl(0)
-            exp_mem_api_ctrl_wire2 := exp_mem_api_ctrl(1)
-            exp_mem_api_ctrl_wire3 := exp_mem_api_ctrl(2)
+  // Connect the Slave A Channel to the Black box IO
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_size        := llki.a.bits.size
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
 
-            mod_mem_api_ctrl_wire1 := mod_mem_api_ctrl(0)
-            mod_mem_api_ctrl_wire2 := mod_mem_api_ctrl(1)
-            mod_mem_api_ctrl_wire3 := mod_mem_api_ctrl(2)
+  // Connect the Slave D Channel to the Black Box IO    
+  llki.d.bits.opcode                  := llki_pp_inst.io.slave_d_opcode
+  llki.d.bits.param                   := llki_pp_inst.io.slave_d_param
+  llki.d.bits.size                    := llki_pp_inst.io.slave_d_size
+  llki.d.bits.source                  := llki_pp_inst.io.slave_d_source
+  llki.d.bits.sink                    := llki_pp_inst.io.slave_d_sink(0)
+  llki.d.bits.denied                  := llki_pp_inst.io.slave_d_denied
+  llki.d.bits.data                    := llki_pp_inst.io.slave_d_data
+  llki.d.bits.corrupt                 := llki_pp_inst.io.slave_d_corrupt
+  llki.d.valid                        := llki_pp_inst.io.slave_d_valid
+  llki_pp_inst.io.slave_d_ready       := llki.d.ready
 
+  // Define blackbox and its associated IO
+  class modexp_core_mock_tss() extends BlackBox {
 
-            mess_mem_api_ctrl_wire1 := mess_mem_api_ctrl(0)
-            mess_mem_api_ctrl_wire2 := mess_mem_api_ctrl(1)
-            mess_mem_api_ctrl_wire3 := mess_mem_api_ctrl(2)
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val clk                           = Input(Clock())
+      val rst                           = Input(Reset())
 
-            res_mem_api_ctrl_wire1 := res_mem_api_ctrl(0)
-            res_mem_api_ctrl_wire2 := res_mem_api_ctrl(1)
+      // Core I/O
+      val start                         = Input(Bool())
+      val exponent_length               = Input(UInt(13.W))
+      val modulus_length                = Input(UInt(8.W))
+      val ready                         = Output(Bool())
+      val cycles                        = Output(UInt(64.W))
+      val exponent_mem_api_cs           = Input(Bool())
+      val exponent_mem_api_wr           = Input(Bool())
+      val exponent_mem_api_rst          = Input(Bool())
+      val exponent_mem_api_write_data   = Input(UInt(32.W))
+      val exponent_mem_api_read_data    = Output(UInt(32.W))
+      val modulus_mem_api_cs            = Input(Bool())
+      val modulus_mem_api_wr            = Input(Bool())
+      val modulus_mem_api_rst           = Input(Bool())
+      val modulus_mem_api_write_data    = Input(UInt(32.W))
+      val modulus_mem_api_read_data     = Output(UInt(32.W))
+      val message_mem_api_cs            = Input(Bool())
+      val message_mem_api_wr            = Input(Bool())
+      val message_mem_api_rst           = Input(Bool())
+      val message_mem_api_write_data    = Input(UInt(32.W))
+      val message_mem_api_read_data     = Output(UInt(32.W))
+      val result_mem_api_cs             = Input(Bool())
+      val result_mem_api_rst            = Input(Bool())
+      val result_mem_api_read_data      = Output(UInt(32.W))
 
+      // LLKI discrete interface
+      val llkid_key_data                = Input(UInt(64.W))
+      val llkid_key_valid               = Input(Bool())
+      val llkid_key_ready               = Output(Bool())
+      val llkid_key_complete            = Output(Bool())
+      val llkid_clear_key               = Input(Bool())
+      val llkid_clear_key_ack           = Output(Bool())
 
-            // Map the inputs to the blackbox
-            blackbox.io.clk                       := clock                    // Implicit module clock
-            blackbox.io.reset_n                   := ~reset                   // Implicit module reset                      
-            blackbox.io.start                     := st    
-            blackbox.io.exponent_length           := exp_len
-            blackbox.io.modulus_length            := mod_len
+    })
+  }
 
-            // Map ctrl outputs from blackbox
-            ready := blackbox.io.ready
-            cycles := blackbox.io.cycles            
-            
-            //Exponent Inteferace
-            blackbox.io.exponent_mem_api_cs         := rising_edge(exp_mem_api_ctrl_wire1)
-            blackbox.io.exponent_mem_api_wr         := rising_edge(exp_mem_api_ctrl_wire2)  
-            blackbox.io.exponent_mem_api_rst        := rising_edge(exp_mem_api_ctrl_wire3) 
-            blackbox.io.exponent_mem_api_write_data := exp_mem_api_write_data
-            exp_mem_api_read_data                   := blackbox.io.exponent_mem_api_read_data
+  // Instantiate the blackbox
+  val modexp_core_mock_tss_inst   = Module(new modexp_core_mock_tss())
 
-            //Modulus Inteferace
-            blackbox.io.modulus_mem_api_cs          := rising_edge(mod_mem_api_ctrl_wire1) 
-            blackbox.io.modulus_mem_api_wr          := rising_edge(mod_mem_api_ctrl_wire2) 
-            blackbox.io.modulus_mem_api_rst         := rising_edge(mod_mem_api_ctrl_wire3) 
-            blackbox.io.modulus_mem_api_write_data  := mod_mem_api_write_data
-            mod_mem_api_read_data                   := blackbox.io.modulus_mem_api_read_data
+  // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
+  modexp_core_mock_tss_inst.io.llkid_key_data   := llki_pp_inst.io.llkid_key_data
+  modexp_core_mock_tss_inst.io.llkid_key_valid  := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready               := modexp_core_mock_tss_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete            := modexp_core_mock_tss_inst.io.llkid_key_complete
+  modexp_core_mock_tss_inst.io.llkid_clear_key  := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack           := modexp_core_mock_tss_inst.io.llkid_clear_key_ack
 
-            //Message Inteferace
-            blackbox.io.message_mem_api_cs          := rising_edge(mess_mem_api_ctrl_wire1) 
-            blackbox.io.message_mem_api_wr          := rising_edge(mess_mem_api_ctrl_wire2)   
-            blackbox.io.message_mem_api_rst         := rising_edge(mess_mem_api_ctrl_wire3) 
-            blackbox.io.message_mem_api_write_data  := mess_mem_api_write_data
-            mess_mem_api_read_data                  := blackbox.io.message_mem_api_read_data
+  // Define registers and wires associated with the Core I/O
+  val start                                 = RegInit(false.B)
+  val exponent_length                       = RegInit(0.U(8.W))
+  val modulus_length                        = RegInit(0.U(8.W))
+  val ready                                 = RegInit(false.B)
+  val cycles                                = RegInit(0.U(64.W))
 
-            //Result Inteferace
-            blackbox.io.result_mem_api_cs          :=  rising_edge(res_mem_api_ctrl_wire1) 
-            blackbox.io.result_mem_api_rst         :=  rising_edge(res_mem_api_ctrl_wire2) 
+  val exponent_mem_api_cs                   = RegInit(false.B)
+  val exponent_mem_api_wr                   = RegInit(false.B)
+  val exponent_mem_api_rst                  = RegInit(false.B)
+  val exponent_mem_api_write_data           = RegInit(0.U(32.W))
+  val exponent_mem_api_read_data            = RegInit(0.U(32.W))
 
-            when (rising_edge(res_mem_api_ctrl_wire1) ) {
-                res_mem_api_read_data := blackbox.io.result_mem_api_read_data
-            }    
-            
+  val modulus_mem_api_cs                    = RegInit(false.B)
+  val modulus_mem_api_wr                    = RegInit(false.B)
+  val modulus_mem_api_rst                   = RegInit(false.B)
+  val modulus_mem_api_write_data            = RegInit(0.U(32.W))
+  val modulus_mem_api_read_data             = RegInit(0.U(32.W))
 
+  val message_mem_api_cs                    = RegInit(false.B)
+  val message_mem_api_wr                    = RegInit(false.B)
+  val message_mem_api_rst                   = RegInit(false.B)
+  val message_mem_api_write_data            = RegInit(0.U(32.W))
+  val message_mem_api_read_data             = RegInit(0.U(32.W))
 
-            // Define the register map
-            // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
-            regmap (
-                RSAAddresses.rsa_ctrlstatus_addr  -> RegFieldGroup("rsa_ready", Some("rsa_ready Register"),Seq(RegField.r(1,  ready),
-                                                                                                               RegField  (1,  st))),
-                RSAAddresses.rsa_exp_data_addr    ->    Seq(RegField   (32, exp_mem_api_write_data),
-						  	    RegField.r (32, exp_mem_api_read_data)), // [63;32]
-                RSAAddresses.rsa_exp_ctrl_addr    ->    Seq(RegField   (3 , exp_mem_api_ctrl)),
+  val result_mem_api_cs                     = RegInit(false.B)
+  val result_mem_api_rst                    = RegInit(false.B)
+  val result_mem_api_read_data              = RegInit(0.U(32.W))
 
-                RSAAddresses.rsa_mod_data         ->    Seq(RegField   (32, mod_mem_api_write_data),
-						  	    RegField.r (32, mod_mem_api_read_data)), // [63:32]
-                RSAAddresses.rsa_mod_ctrl_addr    ->    Seq(RegField   (3,  mod_mem_api_ctrl)),
+  // Macro definition for creating rising edge detectors
+  def rising_edge(x: Bool)    = x && !RegNext(x)
 
-                RSAAddresses.rsa_message_data     ->    Seq(RegField   (32, mess_mem_api_write_data),
-						  	    RegField.r (32, mess_mem_api_read_data)), // [63:32]		
-                RSAAddresses.rsa_message_ctrl_addr->    Seq(RegField  (3,  mess_mem_api_ctrl)),    
+  // Connect the Clock and Reset
+  modexp_core_mock_tss_inst.io.clk                          := clock
+  modexp_core_mock_tss_inst.io.rst                          := reset
 
-                RSAAddresses.rsa_mod_length       ->    Seq(RegField  (8 , mod_len)),
-                RSAAddresses.rsa_exp_length       ->    Seq(RegField  (13 , exp_len)),
+  // Connect the Core I/O
+  modexp_core_mock_tss_inst.io.start                        := start;
+  modexp_core_mock_tss_inst.io.exponent_length              := exponent_length;
+  modexp_core_mock_tss_inst.io.modulus_length               := modulus_length;
+  ready                                                     := modexp_core_mock_tss_inst.io.ready
+  cycles                                                    := modexp_core_mock_tss_inst.io.cycles
 
-                RSAAddresses.rsa_result_data_addr ->    Seq(RegField.r(32, res_mem_api_read_data)),
-                RSAAddresses.rsa_result_ctrl_addr ->    Seq(RegField  (2,  res_mem_api_ctrl)),  
+  modexp_core_mock_tss_inst.io.exponent_mem_api_cs          := rising_edge(exponent_mem_api_cs)
+  modexp_core_mock_tss_inst.io.exponent_mem_api_wr          := rising_edge(exponent_mem_api_wr)
+  modexp_core_mock_tss_inst.io.exponent_mem_api_rst         := rising_edge(exponent_mem_api_rst)
+  modexp_core_mock_tss_inst.io.exponent_mem_api_write_data  := exponent_mem_api_write_data
+  exponent_mem_api_read_data                                := modexp_core_mock_tss_inst.io.exponent_mem_api_read_data
 
-                RSAAddresses.rsa_cycles_addr      ->    Seq(RegField.r(64, cycles))
-            )  // regmap
+  modexp_core_mock_tss_inst.io.modulus_mem_api_cs           := rising_edge(modulus_mem_api_cs)
+  modexp_core_mock_tss_inst.io.modulus_mem_api_wr           := rising_edge(modulus_mem_api_wr)
+  modexp_core_mock_tss_inst.io.modulus_mem_api_rst          := rising_edge(modulus_mem_api_rst)
+  modexp_core_mock_tss_inst.io.modulus_mem_api_write_data   := modulus_mem_api_write_data
+  modulus_mem_api_read_data                                 := modexp_core_mock_tss_inst.io.modulus_mem_api_read_data
 
-        }   // lazy val module
-    }  // abstract class AES
+  modexp_core_mock_tss_inst.io.message_mem_api_cs           := rising_edge(message_mem_api_cs)
+  modexp_core_mock_tss_inst.io.message_mem_api_wr           := rising_edge(message_mem_api_wr)
+  modexp_core_mock_tss_inst.io.message_mem_api_rst          := rising_edge(message_mem_api_rst)
+  modexp_core_mock_tss_inst.io.message_mem_api_write_data   := message_mem_api_write_data
+  message_mem_api_read_data                                 := modexp_core_mock_tss_inst.io.message_mem_api_read_data
+
+  modexp_core_mock_tss_inst.io.result_mem_api_cs            := rising_edge(result_mem_api_cs)
+  modexp_core_mock_tss_inst.io.result_mem_api_rst           := rising_edge(result_mem_api_rst)
+
+  when (rising_edge(result_mem_api_cs)) {
+    result_mem_api_read_data                                := modexp_core_mock_tss_inst.io.result_mem_api_read_data
+  }
+
+  // Define the register map
+  // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
+  outer.slave_node.regmap (
+    RSAAddresses.rsa_ctrlstatus_addr  ->    RegFieldGroup("rsa_ready", Some("rsa_ready Register"),Seq(RegField.r(1,  ready),
+                                                                                                      RegField  (1,  start))),
+    RSAAddresses.rsa_exp_data_addr    ->    Seq(RegField   (32, exponent_mem_api_write_data),
+                                                RegField.r (32, exponent_mem_api_read_data)), // [63;32]
+    RSAAddresses.rsa_exp_ctrl_addr    ->    Seq(RegField   (1 , exponent_mem_api_cs),
+                                                RegField   (1 , exponent_mem_api_wr),
+                                                RegField   (1 , exponent_mem_api_rst)),
+    RSAAddresses.rsa_mod_data         ->    Seq(RegField   (32, modulus_mem_api_write_data),
+                                                RegField.r (32, modulus_mem_api_read_data)), // [63:32]
+    RSAAddresses.rsa_mod_ctrl_addr    ->    Seq(RegField   (1 , modulus_mem_api_cs),
+                                                RegField   (1 , modulus_mem_api_wr),
+                                                RegField   (1 , modulus_mem_api_rst)),
+    RSAAddresses.rsa_message_data     ->    Seq(RegField   (32, message_mem_api_write_data),
+                                                RegField.r (32, message_mem_api_read_data)), // [63:32]    
+    RSAAddresses.rsa_message_ctrl_addr->    Seq(RegField   (1 , message_mem_api_cs),
+                                                RegField   (1 , message_mem_api_wr),
+                                                RegField   (1 , message_mem_api_rst)),
+    RSAAddresses.rsa_mod_length       ->    Seq(RegField   (8 , modulus_length)),
+    RSAAddresses.rsa_exp_length       ->    Seq(RegField   (13, exponent_length)),
+    RSAAddresses.rsa_result_data_addr ->    Seq(RegField.r (32, result_mem_api_read_data)),
+    RSAAddresses.rsa_result_ctrl_addr ->    Seq(RegField   (1 , result_mem_api_cs),
+                                                RegField   (1 , result_mem_api_rst)),  
+    RSAAddresses.rsa_cycles_addr      ->    Seq(RegField.r (64, cycles))
+  )  // regmap
+
+}
 //--------------------------------------------------------------------------------------
 // END: AES TileLink Module
 //--------------------------------------------------------------------------------------
 
-
-//--------------------------------------------------------------------------------------
-// BEGIN: Black box wrapper for Verilog Module
-//
-// Note: Name must match Verilog module name, signal names
-//   declared within much match the name, width, and direction of
-//   the Verilog module.
-//--------------------------------------------------------------------------------------
-class modexp_core() extends BlackBox {
-
-  val io = IO(new Bundle {
-    // Clock and Reset
-    val clk             = Clock(INPUT)
-    val reset_n         = Bool(INPUT)
-
-    // Control/Status
-        //Inputs
-    val start    = Bool(INPUT)
-    val exponent_length = Bits(INPUT,13)
-    val modulus_length = Bits(INPUT,8)
-        //Outputs
-    val ready    = Bool(OUTPUT)
-    val cycles = Bits(OUTPUT, 64)
-
-    //Exponent Interface
-        //Inputs
-    val exponent_mem_api_cs = Bool(INPUT)
-    val exponent_mem_api_wr = Bool(INPUT)
-    val exponent_mem_api_rst = Bool(INPUT)
-    val exponent_mem_api_write_data = Bits(INPUT,32)
-        //Outputs
-    val exponent_mem_api_read_data = Bits(OUTPUT,32)
-
-    //Modulus Inteferace
-        //Inputs
-    val modulus_mem_api_cs = Bool(INPUT)
-    val modulus_mem_api_wr = Bool(INPUT)
-    val modulus_mem_api_rst = Bool(INPUT)
-    val modulus_mem_api_write_data = Bits(INPUT,32)
-        //Outputs
-    val modulus_mem_api_read_data = Bits(OUTPUT,32)
-
-    //Message Inteferace
-        //Inputs
-    val message_mem_api_cs = Bool(INPUT)
-    val message_mem_api_wr = Bool(INPUT)
-    val message_mem_api_rst = Bool(INPUT)
-    val message_mem_api_write_data = Bits(INPUT,32)
-        //Outputs
-    val message_mem_api_read_data = Bits(OUTPUT,32)
-
-    //Result interface
-        //Inputs
-    val result_mem_api_cs = Bool(INPUT)
-    val result_mem_api_rst = Bool(INPUT)
-        //Outputs
-    val result_mem_api_read_data = Bits(OUTPUT,32)
-
-  })
-
-}
-//--------------------------------------------------------------------------------------
-// END: Black box wrapper for Verilog Module
-//--------------------------------------------------------------------------------------

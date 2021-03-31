@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      cep_iir.cc/h
@@ -32,6 +32,9 @@ public: //
   cep_iir() { }
   ~cep_iir(); 
 
+  void Reset(int assert);  
+  void Reset(void);  
+
   int RunIirTest(int maxLoop);
 
  protected:
@@ -42,7 +45,6 @@ public: //
   void do_filter(const double *b, const double *a, int filterLength, const double *in, double *out, int length);
   void LoadInSamples(int samCnt);
   void Start(void);
-  void Reset(void);  
   int  waitTilDone(int maxTO);
   void ReadOutSamples(int samCnt);
   int CheckSamples(int samCnt);

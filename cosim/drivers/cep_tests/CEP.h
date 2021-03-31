@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -12,7 +12,7 @@
 
     // CEP Verion String
     const uint8_t CEP_MAJOR_VERSION = 0x03;
-    const uint8_t CEP_MINOR_VERSION = 0x00;
+    const uint8_t CEP_MINOR_VERSION = 0x10;
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;
@@ -24,10 +24,13 @@
 
 
     // Indexes used to select the desired core
+    // Also used by the LLKI to identify the core index
+    // that a key is destined for... must match 
+    // the values in LLKI_CORE_INDEX_ARRAY in llki_pkg.sv
     #define AES_BASE_K              0
     #define MD5_BASE_K              1
     #define SHA256_BASE_K           2
-    #define RSA_ADDR_BASE_K         3
+    #define RSA_BASE_K              3
     #define DES3_BASE_K             4
     #define DFT_BASE_K              5
     #define IDFT_BASE_K             6
@@ -61,7 +64,7 @@
         {"IIR",             0x70080000, true},     // IIR
         {"GPS",             0x70090000, true},     // GPS
         {"CEP Version",     0x700F0000, true},     // CEP Version Register
-        {"SROT",            0x70100000, true}};    // SRoT
+        {"SROT",            0x70200000, true}};    // SRoT
 
     // Constants copied from AES.h
     const uint32_t AES_KEY_BITS     = 192;
@@ -171,6 +174,7 @@
     const uint32_t GPS_CA_BYTES = BYTES_PER_WORD;
     const uint32_t GPS_P_BYTES = 128 / BITS_PER_BYTE;
     const uint32_t GPS_L_BYTES = 128 / BITS_PER_BYTE;
+    const uint32_t GPS_KEY_BYTES = 192 / BITS_PER_BYTE;
     const uint32_t GPS_GEN_NEXT = 0;
     const uint32_t GPS_GEN_DONE = 0;
     const uint32_t GPS_CA_BASE = GPS_GEN_NEXT + GPS_GEN_NEXT_BYTES;
@@ -178,6 +182,9 @@
     const uint32_t GPS_L_BASE = GPS_P_BASE + GPS_P_BYTES;
     const uint32_t GPS_SV_NUM = GPS_L_BASE + GPS_L_BYTES;
     const uint32_t GPS_RESET = GPS_SV_NUM + BYTES_PER_WORD;
+    const uint32_t GPS_KEY_BASE = GPS_RESET + BYTES_PER_WORD;
+    const uint32_t GPS_PCODE_SPEED = GPS_KEY_BASE + GPS_KEY_BYTES;
+    const uint32_t GPS_PCODE_XINI = GPS_PCODE_SPEED + BYTES_PER_WORD;
 
     // Constants from DFT.h
     const uint32_t DFT_BLOCK_BITS    = 32;
@@ -233,14 +240,19 @@
     const uint32_t FIR_SHIFT        = 48;
     const uint32_t FIR_SHIFT2       = 56;   
 
+    // ------------------------------------------------------------------------------------------------------------
     // Constants related to the Surrogate Root of Trust
-    // These constants must be equal to those in llki_pkg.sv
-    const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;
-    const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;
-    const uint32_t SROT_KEYRAM_ADDR                 = 0x00000120;
-    const uint32_t SROT_KEYRAM_SIZE                 = 0x00000040;
+    // These constants MUST be equal to those in llki_pkg.sv
+    //
+    // Note: Other LLKI related constants/definitions may be found in cep_crypto.h
+    // ------------------------------------------------------------------------------------------------------------
+    const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;   // Offset from SROT_BASE_K
+    const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;  
+    const uint32_t SROT_KEYRAM_ADDR                 = 0x00000200;   // Offset from SROT_BASE_K 
+                                                                    // Note: This cannot be less than SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8)!!!
+    const uint32_t SROT_KEYRAM_SIZE                 = 0x00000100;
 
-    // Reminder, data width is 64-bits
+    // Reminder: data width is 64-bits
     const uint32_t SROT_CTRLSTS_ADDR                = 0x00000000;
     const uint32_t SROT_CTRLSTS_MODEBIT0_MASK       = 0x0000000000000001;   // If either mode bit is set, TileLink access to the Key and Key Index RAMs are disabled
                                                                             // These bits are SET ONLY    
@@ -248,4 +260,7 @@
     const uint32_t SROT_CTRLSTS_RESP_WAITING_MASK   = 0x0000000000000004;
  
     const uint32_t SROT_LLKIC2_SENDRECV_ADDR        = 0x00000008;
+    const uint32_t SROT_LLKIC2_SCRATCHPAD0_ADDR     = 0x00000010;
+    const uint32_t SROT_LLKIC2_SCRATCHPAD1_ADDR     = 0x00000018;
+    // ------------------------------------------------------------------------------------------------------------
 

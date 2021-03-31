@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -64,6 +64,55 @@ void access::MaybeAThread() {
 // Write Acess
 // ===========================
 //
+int access::Atomic_Rdw64(u_int64_t address, int param, int mask, u_int64_t *data) {
+#ifdef SIM_ENV_ONLY
+#ifdef DLL_SIM  
+#else
+  if (0) { // GetVerbose()) {
+    ptr->PrintVerbose("access::Write64_BURST mSlotId=%d mLocalId=%d address=%016llx dat=%016llx\n",
+		      mSlotId,mLocalId,address,data);
+  }
+  ptr->Atomic_Rdw64(address,param,mask,data);
+  return 0;
+#endif
+#else
+  // Not supported for now!!
+  //*reinterpret_cast<volatile Int32U *>(address) = data;
+#endif
+
+}
+
+int access::Write64_BURST(u_int64_t address, int wordCnt, u_int64_t *data) {
+#ifdef SIM_ENV_ONLY
+#ifdef DLL_SIM  
+#else
+  if (0) { // GetVerbose()) {
+    ptr->PrintVerbose("access::Write64_BURST mSlotId=%d mLocalId=%d address=%016llx dat=%016llx\n",
+		      mSlotId,mLocalId,address,data[0]);
+  }
+  ptr->Write64_BURST(address,wordCnt,data);
+  return 0;
+#endif
+#else
+  // Not supported for now!!
+  //*reinterpret_cast<volatile Int32U *>(address) = data;
+#endif
+
+}
+
+int access::Read64_BURST(u_int64_t address, int wordCnt, u_int64_t *data) {
+  int errCnt =0;
+#ifdef SIM_ENV_ONLY
+  //shIpc *ptr = GlobalShMemory.getIpcPtr(GetSlotId(),GetLocalId());
+  ptr->Read64_BURST(address,wordCnt,data);
+  if (0) { // GetVerbose()) {
+    ptr->PrintPostVerbose("access::Read32_32 mSlotId=%d mLocalId=%d address=%08x dat=%016llx\n",mSlotId,mLocalId,address,data);
+  }
+#endif
+  return errCnt;
+}
+
+
 void access::Write32_32(u_int32_t address, u_int32_t data) {
 #ifdef SIM_ENV_ONLY
 #ifdef DLL_SIM  
@@ -76,6 +125,38 @@ void access::Write32_32(u_int32_t address, u_int32_t data) {
 #endif
 #else
   *reinterpret_cast<volatile Int32U *>(address) = data;
+#endif
+
+}
+
+void access::Write32_16(u_int32_t address, u_int16_t data) {
+#ifdef SIM_ENV_ONLY
+#ifdef DLL_SIM  
+#else
+  if (0) { // GetVerbose()) {
+    ptr->PrintVerbose("access::Write64_64 mSlotId=%d mLocalId=%d address=%016llx dat=%016llx\n",
+		      mSlotId,mLocalId,address,data);
+  }
+  ptr->Write32_16(address,data);
+#endif
+#else
+  *reinterpret_cast<volatile u_int16_t *>(address) = data;
+#endif
+
+}
+
+void access::Write32_8(u_int32_t address, u_int8_t data) {
+#ifdef SIM_ENV_ONLY
+#ifdef DLL_SIM  
+#else
+  if (0) { // GetVerbose()) {
+    ptr->PrintVerbose("access::Write64_64 mSlotId=%d mLocalId=%d address=%016llx dat=%016llx\n",
+		      mSlotId,mLocalId,address,data);
+  }
+  ptr->Write32_8(address,data);
+#endif
+#else
+  *reinterpret_cast<volatile u_int8_t *>(address) = data;
 #endif
 
 }
@@ -149,6 +230,30 @@ unsigned access::GetSimClk() {
   }
 #endif
   return dat;
+}
+
+u_int8_t access::Read32_8(u_int32_t address) {
+  u_int8_t data=0;
+#ifdef SIM_ENV_ONLY
+  //shIpc *ptr = GlobalShMemory.getIpcPtr(GetSlotId(),GetLocalId());
+  data =  ptr->Read32_8(address);
+  if (0) { // GetVerbose()) {
+    ptr->PrintPostVerbose("access::Read32_8 mSlotId=%d mLocalId=%d address=%08x dat=%016llx\n",mSlotId,mLocalId,address,data);
+  }
+#endif
+  return data;
+}
+
+u_int16_t access::Read32_16(u_int32_t address) {
+  u_int16_t data=0;
+#ifdef SIM_ENV_ONLY
+  //shIpc *ptr = GlobalShMemory.getIpcPtr(GetSlotId(),GetLocalId());
+  data =  ptr->Read32_16(address);
+  if (0) { // GetVerbose()) {
+    ptr->PrintPostVerbose("access::Read32_16 mSlotId=%d mLocalId=%d address=%08x dat=%016llx\n",mSlotId,mLocalId,address,data);
+  }
+#endif
+  return data;
 }
 
 u_int32_t access::Read32_32(u_int32_t address) {

@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : srot.scala
@@ -56,7 +56,7 @@ trait HasSROT { this: BaseSubsystem =>
     )
 
     // Define the SRoT Tilelink module
-    val srotModule = LazyModule(new TLSROTModule(srotattachparams)(p))
+    val srotModule = LazyModule(new srotTLModule(srotattachparams)(p))
 
     // Perform the slave "attachments" to the periphery bus
     srotattachparams.slave_bus.coupleTo("srot_slave") {
@@ -90,7 +90,7 @@ trait HasSROT { this: BaseSubsystem =>
 //   "kicked off" because of the inclusion of diplomacy widgets will result in the A
 //   channel data bus being tied to ZERO.
 //--------------------------------------------------------------------------------------
-class TLSROTModule(srotattachparams: SROTAttachParams)(implicit p: Parameters) extends LazyModule {
+class srotTLModule(srotattachparams: SROTAttachParams)(implicit p: Parameters) extends LazyModule {
 
   // Create a Manager / Slave / Sink node
   val slave_node = TLManagerNode(Seq(TLSlavePortParameters.v1(
@@ -120,11 +120,11 @@ class TLSROTModule(srotattachparams: SROTAttachParams)(implicit p: Parameters) e
     )))
     
     // Instantiate the implementation
-    lazy val module = new TLSROTModuleImp(srotattachparams.srotparams, this)
+    lazy val module = new srotTLModuleImp(srotattachparams.srotparams, this)
 
 } // end TLSROTModule
  
-class TLSROTModuleImp(srotparams: SROTParams, outer: TLSROTModule) extends LazyModuleImp(outer) {
+class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyModuleImp(outer) {
 
   // "Connect" to Slave Node's signals and parameters
   val (slave, slaveEdge)    = outer.slave_node.in(0)

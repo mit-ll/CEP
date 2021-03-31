@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -107,6 +107,23 @@ int clear_printf_mem(int coreId) {
 //
 // Load the image into main memory
 //
+// 
+//
+int read_binFile(char *imageF, uint64_t *buf, int wordCnt) {
+#ifdef SIM_ENV_ONLY  
+  FILE *fd=NULL;
+  int i = 0;
+  fd=fopen(imageF,"rb");
+  while (!feof(fd) && (i < wordCnt)) {
+    fread(&(buf[i]),sizeof(uint64_t),1,fd);
+    LOGI("fread i=%d 0x%016lx\n",i,buf[i]);
+    i++;
+  }
+  fclose(fd);
+#endif
+  return 0;
+}
+
 int load_mainMemory(char *imageF, uint32_t ddr3_base, int srcOffset, int destOffset, int backdoor_on, int verify) {
   int errCnt = 0;
 #ifdef SIM_ENV_ONLY  
@@ -371,6 +388,7 @@ void set_fail(void) {
 #endif
 }
 
+
 int set_status(int errCnt, int testId) {
 #ifdef BARE_MODE  
   int i=0, coreId;
@@ -558,3 +576,19 @@ void writeDvt(int msb, int lsb, int bits) {
 #endif
 }
 
+//
+// Toggle dMI reset
+//
+void toggleDmiReset(void) {
+  //
+#ifdef SIM_ENV_ONLY    
+  DUT_WRITE_DVT(DVTF_TOGGLE_DMI_RESET_BIT, DVTF_TOGGLE_DMI_RESET_BIT, 1);
+  int loop = 100;
+  int dmiReset = 1;
+  do {
+    dmiReset = DUT_READ_DVT(DVTF_TOGGLE_DMI_RESET_BIT, DVTF_TOGGLE_DMI_RESET_BIT);
+    loop--;
+  } while (dmiReset && (loop > 0));
+#endif
+
+}

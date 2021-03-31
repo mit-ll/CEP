@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 //
 // File Name:      rsa_tb.sv
 // Program:        Common Evaluation Platform (CEP)
@@ -39,10 +39,11 @@
 // o1=output#1, o2=output#2, etc..
 // j* = dont care input/output (used for HEX filler)
 //
-`define APPLY_N_CHECK(x,ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,o1,o2,o3,o4,o5,o6) \
-{ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6} =x;\
-  exp_pat={exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6};\
-  act_pat={o1,o2,o3,o4,o5,o6}; \
+`define APPLY_N_CHECK(x,l1o,lr,lc,la,l1i,lkv,lck,ld,ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,o1,o2,o3,o4,o5,o6) \
+{l1o,elr,elc,ela,l1i,lkv,lck,ld, \
+ ji1,i1,ji2,i2,ji3,i3,ji4,i4,ji5,i5,ji6,i6,ji7,i7,ji8,i8,ji9,i9,ji10,i10,ji11,i11,ji12,i12,i13,ji14,i14,i15,i16,i17,jo1,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6} =x;\
+  exp_pat={elr,elc,ela,exp_``o1,exp_``o2,exp_``o3,exp_``o4,exp_``o5,exp_``o6};\
+  act_pat={ lr, lc, la,o1,o2,o3,o4,o5,o6}; \
   if (exp_pat!=act_pat) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s,%s,%s,%s,%s}", `"o1`",`"o2`",`"o3`",`"o4`",`"o5`",`"o6`"); \
@@ -61,11 +62,24 @@ module `TB_NAME ;
    //
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
    reg [`RSA_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
+  //
+   // LLKI IOs
+   //
+   reg 				  elr,elc,ela;
+   reg 				  l1o;
+   reg [1:0] 			  l1i;
+   
+   wire 			  llkid_key_ready;
+   wire 			  llkid_key_complete;
+   wire 			  llkid_clear_key_ack;
+   reg 				  llkid_clear_key;   
+   reg 				  llkid_key_valid;   
+   reg [63:0] 			  llkid_key_data;     
    //
    // IOs
    //
    reg 			    clk=0;
-   reg 			    reset_n=0;
+   reg 			    rst=1;
    reg 			    start=0;
    reg [12 : 0] 	    exponent_length=0;
    reg [07 : 0] 	    modulus_length=0;
@@ -122,29 +136,11 @@ module `TB_NAME ;
    initial begin
       forever #5 clk = !clk;
    end
-   //
-   // include LLKI
-   //
-`ifdef LLKI_EN
- `include "../llki_supports/llki_rom.sv"
-   //
-   // LLKI supports
-   //
-   llki_discrete_if #(.core_id(`RSA_ID)) discrete();
-   // LLKI master
-   llki_discrete_master discreteMaster(.llki(discrete.master), .rst(!reset_n), .*);
-   //    
-   //
-   // DUT instantiation
-   //
-   `DUT_NAME #(.MY_STRUCT(RSA_LLKI_STRUCT)) dut(.llki(discrete.slave),.*);   
-`else
    //    
    //
    // DUT instantiation
    //
    `DUT_NAME dut(.*);
-`endif
 
    //
    // -------------------
@@ -155,7 +151,8 @@ module `TB_NAME ;
       //
       // Pulse the DUT's reset & drive input to zeros (known states)
       //
-      {start,
+      {llkid_key_valid,llkid_clear_key,llkid_key_data,
+       start,
        exponent_length,
        modulus_length,
        exponent_mem_api_cs,
@@ -173,62 +170,11 @@ module `TB_NAME ;
        result_mem_api_cs,
        result_mem_api_rst} = 0;
       //
-      reset_n = 0;
+      rst = 1;
       repeat (5) @(posedge clk);
-      @(negedge clk);      // in stimulus, reset_n de-asserted after negedge
-      #2 reset_n = 1;
+      @(negedge clk);      // in stimulus, rst de-asserted after negedge
+      #2 rst = 0;
       @(negedge clk);            
-      //
-      // do the unlocking here if enable
-      //
-`ifdef LLKI_EN
-      discreteMaster.unlockReq(errCnt);
-      discreteMaster.clearKey(errCnt);
-      // do the playback and verify that it breaks since we clear the key
-      playback_data(1);
-      //
-      if (errCnt) begin
-	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",dut_name_list[0],errCnt);
-	 errCnt  = 0;
-	 //
-	 // need to pulse the reset since the core might stuck in some bad state
-	 //
-      {start,
-       exponent_length,
-       modulus_length,
-       exponent_mem_api_cs,
-       exponent_mem_api_wr,
-       exponent_mem_api_rst,
-       exponent_mem_api_write_data,
-       modulus_mem_api_cs,
-       modulus_mem_api_wr,
-       modulus_mem_api_rst,
-       modulus_mem_api_write_data,
-       message_mem_api_cs,
-       message_mem_api_wr,
-       message_mem_api_rst,
-       message_mem_api_write_data,
-       result_mem_api_cs,
-       result_mem_api_rst} = 0;
-
-	 //
-	 reset_n = 0;
-	 repeat (21) @(posedge clk);
-	 @(negedge clk);      // in stimulus, reset de-asserted after negedge
-	 #2 reset_n = 1;
-	 repeat (100) @(negedge clk);  // need to wait this long for output to stablize	 
-	 //
-	 // unlock again
-	 //
-	 discreteMaster.unlockReq(errCnt);      
-      end
-      else begin
-	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",dut_name_list[0],errCnt);
-	 errCnt++; // fail
-      end
-
-`endif      
-      
       //
       //
       if (!errCnt) playback_data(0);
@@ -259,6 +205,9 @@ module `TB_NAME ;
 	 for (i=0;i<`RSA_SAMPLE_COUNT;i++) begin
 	    // the order MUST match the samples' order
 	    `APPLY_N_CHECK(RSA_buffer[i],
+			   l1o,llkid_key_ready,llkid_key_complete,llkid_clear_key_ack,
+			   l1i,llkid_key_valid,llkid_clear_key,
+			   llkid_key_data,
 			   ji1,exponent_mem_api_cs,
 			   ji2,exponent_mem_api_rst,
 			   ji3,exponent_mem_api_wr,

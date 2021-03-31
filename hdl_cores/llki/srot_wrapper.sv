@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:       srot_wrapper.sv
@@ -12,6 +12,14 @@
 //
 //                  The "tl" parameters have been taken from the
 //                  OpenTitan ecosystem
+//
+//                  The SRoT is a SINGLE THREADED DEVICE.
+//
+//                  As such, care should be taken when using the
+//                  SRoT in a multi-core environment.  Care should be
+//                  take that multiple cores are NOT accessing the
+//                  SRoT at the same time.
+//
 //************************************************************************
 `timescale 1ns/1ns
 
@@ -145,10 +153,15 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
   // Define some of the wires and registers associated with the tlul_adapter_reg
   wire                          reg_we_o;
+  reg                           reg_we_o_d1;
   wire                          reg_re_o;
+  reg                           reg_re_o_d1;
   wire [top_pkg::TL_AW-1:0]     reg_addr_o;
+  reg  [top_pkg::TL_AW-1:0]     reg_addr_o_d1;
   wire [top_pkg::TL_DW-1:0]     reg_wdata_o;
   reg [top_pkg::TL_DW-1:0]      reg_rdata_i;
+  wire                          rdata_valid_i;
+  reg                           rdata_valid_i_d1;
   reg                           reg_error_i;
 
   // Define some of the wires and registers associated with the tlul_adapter_host
@@ -163,33 +176,44 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
   // Misc. signals
   reg [top_pkg::TL_DW-1:0]      srot_ctrlstatus_register; // Bit definition can be found in llki_pkg.sv
+  reg [top_pkg::TL_DW-1:0]      srot_scratchpad0_register;
+  reg [top_pkg::TL_DW-1:0]      srot_scratchpad1_register;
   reg                           write_error;
   reg                           read_error;
-  
+ 
+  // Defined earlier in the file so it can be used as a selector input for
+  // the KeyIndexRAM and KeyRAM address inputs
+  SROT_STATE_TYPE               srot_current_state;
+
   //------------------------------------------------------------------------
   // Instantitate a tlul_adapter_reg to adapt the TL Slave Interface
   //------------------------------------------------------------------------
   tlul_adapter_reg #(
-    .RegAw      (top_pkg::TL_AW   ),
-    .RegDw      (top_pkg::TL_DW   )
+    .RegAw          (top_pkg::TL_AW   ),
+    .RegDw          (top_pkg::TL_DW   )
   ) u_tlul_adapter_reg_inst (
-    .clk_i      (clk              ),
-    .rst_ni     (~rst             ),
+    .clk_i          (clk              ),
+    .rst_ni         (~rst             ),
 
-    .tl_i       (slave_tl_h2d     ),
-    .tl_o       (slave_tl_d2h     ),
+    .tl_i           (slave_tl_h2d     ),
+    .tl_o           (slave_tl_d2h     ),
 
-    .we_o       (reg_we_o         ),
-    .re_o       (reg_re_o         ),
-    .addr_o     (reg_addr_o       ),
-    .wdata_o    (reg_wdata_o      ),
-    .be_o       (                 ),  // Accesses are assumed to be word-wide
-    .rdata_i    (reg_rdata_i      ),
-    .error_i    (reg_error_i      )
+    .we_o           (reg_we_o         ),
+    .re_o           (reg_re_o         ),
+    .addr_o         (reg_addr_o       ),
+    .wdata_o        (reg_wdata_o      ),
+    .be_o           (                 ),    // Accesses are assumed to be word-wide
+    .rdata_i        (reg_rdata_i      ),
+    .rdata_valid_i  (rdata_valid_i    ),    // Should be asserted when the read data
+                                            // data is actually available
+    .error_i        (reg_error_i      )
   );
 
   // The reg_error_i will be asserted if either a read or write error occurs
-  assign reg_error_i = read_error || write_error;
+  assign reg_error_i    = read_error || write_error;
+
+  // Read data takes one cycle to produce a result (to avoid the live decode problem)
+  assign rdata_valid_i  = reg_re_o_d1;
   //------------------------------------------------------------------------
 
 
@@ -322,35 +346,24 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   //------------------------------------------------------------------------
   // Key Index RAM
   //------------------------------------------------------------------------
-  reg                       keyindexram_a_write_i;
-  reg [top_pkg::TL_AW-1:0]  keyindexram_a_addr_i;
-  reg [top_pkg::TL_DW-1:0]  keyindexram_a_wdata_i;
-  wire [top_pkg::TL_DW-1:0] keyindexram_a_rdata_o;
+  reg                       keyindexram_write_i;
+  reg [top_pkg::TL_AW-1:0]  keyindexram_addr_i;
+  reg [top_pkg::TL_AW-1:0]  keyindexram_stm_addr_i;
+  reg [top_pkg::TL_DW-1:0]  keyindexram_wdata_i;
+  wire [top_pkg::TL_DW-1:0] keyindexram_rdata_o;
 
-  reg [top_pkg::TL_AW-1:0]  keyindexram_b_addr_i;
-  wire [top_pkg::TL_DW-1:0] keyindexram_b_rdata_o;
-
-  prim_generic_ram_2p #(
+  prim_generic_ram_1p #(
     .Width              (top_pkg::TL_DW),
     .Depth              (SROT_KEYINDEXRAM_SIZE)
   ) key_index_ram_inst (
-    .clk_a_i            (clk),
-    .clk_b_i            (clk),
+    .clk_i              (clk),
 
-    .a_req_i            (1'b1),                     // Always selected
-    .a_write_i          (keyindexram_a_write_i),
-    .a_addr_i           (keyindexram_a_addr_i[$clog2(SROT_KEYINDEXRAM_SIZE) - 1:0]),
-    .a_wdata_i          (keyindexram_a_wdata_i),
-    .a_wmask_i          ('1),                       // Mask is unused
-    .a_rdata_o          (keyindexram_a_rdata_o),      
-
-    .b_req_i            (1'b1),                     // Always selected
-    .b_write_i          (1'b0),                     // Port B is Read Only
-    .b_addr_i           (keyindexram_b_addr_i[$clog2(SROT_KEYINDEXRAM_SIZE) - 1:0]),
-    .b_wdata_i          ('0),                       // Port B is Read Only
-    .b_wmask_i          ('1),                       // Mask is unused
-    .b_rdata_o          (keyindexram_b_rdata_o)
-
+    .req_i              (1'b1),                     // Always selected
+    .write_i            (keyindexram_write_i),
+    .addr_i             (keyindexram_addr_i[$clog2(SROT_KEYINDEXRAM_SIZE) - 1:0]),
+    .wdata_i            (keyindexram_wdata_i),
+    .wmask_i            ('1),                       // Mask is unused
+    .rdata_o            (keyindexram_rdata_o)
   );
   //------------------------------------------------------------------------
 
@@ -359,36 +372,57 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   //------------------------------------------------------------------------
   // Key RAM
   //------------------------------------------------------------------------
-  reg                       keyram_a_write_i;
-  reg [top_pkg::TL_AW-1:0]  keyram_a_addr_i;
-  reg [top_pkg::TL_DW-1:0]  keyram_a_wdata_i;
-  wire [top_pkg::TL_DW-1:0] keyram_a_rdata_o;
+  reg                       keyram_write_i;
+  reg [top_pkg::TL_AW-1:0]  keyram_addr_i;
+  reg [top_pkg::TL_AW-1:0]  keyram_stm_addr_i;
+  reg [top_pkg::TL_DW-1:0]  keyram_wdata_i;
+  wire [top_pkg::TL_DW-1:0] keyram_rdata_o;
 
-  reg [top_pkg::TL_AW-1:0]  keyram_b_addr_i;
-  wire [top_pkg::TL_DW-1:0] keyram_b_rdata_o;
-
-  prim_generic_ram_2p #(
+  prim_generic_ram_1p #(
     .Width              (top_pkg::TL_DW),
     .Depth              (SROT_KEYRAM_SIZE)
   ) key_ram_inst (
-    .clk_a_i            (clk),
-    .clk_b_i            (clk),
+    .clk_i              (clk),
 
-    .a_req_i            (1'b1),                 // Always selected
-    .a_write_i          (keyram_a_write_i),
-    .a_addr_i           (keyram_a_addr_i[$clog2(SROT_KEYRAM_SIZE) - 1:0]),
-    .a_wdata_i          (keyram_a_wdata_i),
-    .a_wmask_i          ('1),                   // Mask is unused
-    .a_rdata_o          (keyram_a_rdata_o),      
-
-    .b_req_i            (1'b1),                 // Always selected
-    .b_write_i          (1'b0),                 // Port B is Read Only
-    .b_addr_i           (keyram_b_addr_i[$clog2(SROT_KEYRAM_SIZE) - 1:0]),
-    .b_wdata_i          ('0),                   // Port B is Read Only
-    .b_wmask_i          ('1),                   // Mask is unused
-    .b_rdata_o          (keyram_b_rdata_o)
-
+    .req_i              (1'b1),                 // Always selected
+    .write_i            (keyram_write_i),
+    .addr_i             (keyram_addr_i[$clog2(SROT_KEYRAM_SIZE) - 1:0]),
+    .wdata_i            (keyram_wdata_i),
+    .wmask_i            ('1),                   // Mask is unused
+    .rdata_o            (keyram_rdata_o)
   );
+  //------------------------------------------------------------------------
+
+
+
+  //------------------------------------------------------------------------
+  // KeyIndexRAM and KeyRAM Address Generation
+  //
+  // The RAMs have a single read-write port (1RW).  Writes will only
+  // occur over Tilelink, but reads could come from either Tilelink OR
+  // the SRoT state machine.
+  //
+  // So, if the STM is not idle, it "owns" the address inputs.
+  // 
+  // If a write occurs, the address needs to be delayed one cycle to allow
+  // the write decode to occur properly.
+  //
+  // Otherwise, a tilelink read is "assumed" and thus the "raw" address
+  // output from the tlul_adapter_reg commponent is used.
+  //------------------------------------------------------------------------
+  always @*
+  begin
+    if (srot_current_state != ST_SROT_IDLE) begin
+      keyindexram_addr_i          <= keyindexram_stm_addr_i;
+      keyram_addr_i               <= keyram_stm_addr_i;
+    end else if (reg_we_o_d1) begin
+      keyindexram_addr_i          <= (reg_addr_o_d1 - SROT_KEYINDEXRAM_ADDR) >> 3;
+      keyram_addr_i               <= (reg_addr_o_d1 - SROT_KEYRAM_ADDR) >> 3;
+    end else begin
+      keyindexram_addr_i          <= (reg_addr_o - SROT_KEYINDEXRAM_ADDR) >> 3;
+      keyram_addr_i               <= (reg_addr_o - SROT_KEYRAM_ADDR) >> 3;
+    end   // end if (reg_we_do_d1)
+  end // end always @*
   //------------------------------------------------------------------------
 
 
@@ -399,34 +433,48 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   always @(posedge clk or posedge rst)
   begin
     if (rst) begin
+      reg_addr_o_d1               <= '0;
+      reg_we_o_d1                 <= '0;
+      reg_re_o_d1                 <= '0;
       srot_ctrlstatus_register    <= '0;
-      write_error                 <= 1'b0;
-      keyindexram_a_write_i       <= 1'b0;
-      keyram_a_write_i            <= 1'b0;
-      keyindexram_a_addr_i        <= '0;
-      keyindexram_a_wdata_i       <= '0;
-      keyram_a_addr_i             <= '0;
-      keyram_a_wdata_i            <= '0;
-      llkic2_reqfifo_wvalid_i     <= 1'b0;
-      llkic2_reqfifo_wdata_i      <= 1'b0;
+      srot_scratchpad0_register   <= '0;
+      srot_scratchpad1_register   <= '0;
+      write_error                 <= '0;
+      keyindexram_write_i         <= '0;
+      keyram_write_i              <= '0;
+      keyindexram_wdata_i         <= '0;
+      keyram_wdata_i              <= '0;
+      llkic2_reqfifo_wvalid_i     <= '0;
+      llkic2_reqfifo_wdata_i      <= '0;
+      rdata_valid_i_d1            <= '0;
     end else begin
       
       // Default signal assignments
       write_error                 <= 1'b0;
-      keyindexram_a_write_i       <= 1'b0;
-      keyram_a_write_i            <= 1'b0;
+      keyindexram_write_i         <= 1'b0;
+      keyram_write_i              <= 1'b0;
       llkic2_reqfifo_wvalid_i     <= 1'b0;
       llkic2_reqfifo_wdata_i      <= 1'b0;
- 
-      // The Key Index and Key RAM A ports are registered to
-      // align them with the corresponding write enables
-      keyindexram_a_addr_i        <= (reg_addr_o - SROT_KEYINDEXRAM_ADDR) >> 3;
-      keyindexram_a_wdata_i       <= reg_wdata_o;
-      keyram_a_addr_i             <= (reg_addr_o - SROT_KEYRAM_ADDR) >> 3;
-      keyram_a_wdata_i            <= reg_wdata_o;
+
+      // Registered version of the tlul_adapter_reg output (used outside of the 
+      // write decode process) to ensure proper alignment
+      reg_addr_o_d1               <= reg_addr_o;
+      reg_we_o_d1                 <= reg_we_o;
+      reg_re_o_d1                 <= reg_re_o;
+
+      // Delayed version of rdata_valid_i used to account
+      // for the registered reads of the RAM components
+      rdata_valid_i_d1            <= rdata_valid_i;
+
+      // Delay the wdata by once cycle to ensure proper alignment
+      keyindexram_wdata_i         <= reg_wdata_o;
+      keyram_wdata_i              <= reg_wdata_o;
 
       // Implement other bits of the Control / Status Register
       srot_ctrlstatus_register[SROT_CTRLSTS_RESP_WAITING]   <= ~llkic2_respfifo_empty;
+
+      // Test Bits
+      srot_ctrlstatus_register[63:32]						<= 32'hDEAD_BEEF;
 
       // A write has been requested
       if (reg_we_o) begin
@@ -443,7 +491,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           if (srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_0] || srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_1])
             ;
           else
-            keyram_a_write_i                <= 1'b1;
+            keyram_write_i                  <= 1'b1;
 
         // Decode to the Key Index RAM
         end else if (reg_addr_o >= SROT_KEYINDEXRAM_ADDR && reg_addr_o <= (SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8) - 1)) begin
@@ -452,7 +500,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           if (srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_0] || srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_1])
             ;
           else
-            keyindexram_a_write_i           <= 1'b1;
+            keyindexram_write_i             <= 1'b1;
 
         // All other write decode events
         end else begin
@@ -475,6 +523,16 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
                 llkic2_reqfifo_wvalid_i  <= 1'b1;
               end // end else llkic2_reqfifo_full
             end // end SROT_LLKIC2_SEND_ADDR
+
+            // Write to the Scratchpad 0 Register
+            SROT_LLKIC2_SCRATCHPAD0_ADDR : begin
+              srot_scratchpad0_register   <= reg_wdata_o;
+            end
+
+            // Write to the Scratchpad 1 Register
+            SROT_LLKIC2_SCRATCHPAD1_ADDR : begin
+              srot_scratchpad1_register   <= reg_wdata_o;
+            end
 
             //    
             // All other decodes
@@ -508,7 +566,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
     llkic2_respfifo_rready_i      = 1'b0;
 
     // A read has been requested
-    if (reg_re_o) begin
+    if (reg_re_o_d1) begin
 
       // Read or Writes to either RAMs while in operational mode should cause an error of some
       // sort, but we do not currently have a means of handling tilelink errors.  Thus, the
@@ -516,26 +574,26 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
       // Decode to the Key RAM
       // Note: Addresses are in terms of bytes and the datapath is 64-bit wide
-      if (reg_addr_o >= SROT_KEYRAM_ADDR && reg_addr_o <= (SROT_KEYRAM_ADDR + (SROT_KEYRAM_SIZE * 8) - 1)) begin
+      if (reg_addr_o_d1 >= SROT_KEYRAM_ADDR && reg_addr_o_d1 <= (SROT_KEYRAM_ADDR + (SROT_KEYRAM_SIZE * 8) - 1)) begin
           
         // Both mode bits MUST BE ZERO to allow access to the key and key index RAMs
         if (srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_0] || srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_1])
           ;
         else
-          reg_rdata_i                   = keyram_a_rdata_o;
+          reg_rdata_i                   = keyram_rdata_o;
 
       // Decode to the Key Index RAM
-      end else if (reg_addr_o >= SROT_KEYINDEXRAM_ADDR && reg_addr_o <= (SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8) - 1)) begin
+      end else if (reg_addr_o_d1 >= SROT_KEYINDEXRAM_ADDR && reg_addr_o_d1 <= (SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8) - 1)) begin
 
         // Both mode bits MUST BE ZERO to allow access to the key and key index RAMs
         if (srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_0] || srot_ctrlstatus_register[SROT_CTRLSTS_MODEBIT_1])
           ;
         else
-          reg_rdata_i                   = keyindexram_a_rdata_o;
+          reg_rdata_i                   = keyindexram_rdata_o;
 
       // All other write decode events
       end else begin
-        case (reg_addr_o)
+        case (reg_addr_o_d1)
           //
           // SROT Control Status Register
           //
@@ -554,10 +612,24 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             end // end llkic2_respfifo_empty
           end // SROT_LLKIC2_RECV_ADDR
           //
+          // Scratchpad 0 Register
+          //
+          SROT_LLKIC2_SCRATCHPAD0_ADDR : begin
+            reg_rdata_i                 = srot_scratchpad0_register;
+          end
+
+          //
+          // Scratchpad 1 Register
+          //
+          SROT_LLKIC2_SCRATCHPAD1_ADDR : begin
+            reg_rdata_i                 = srot_scratchpad1_register;
+          end
+
+          //
           // All other decodes
           //            
           default             : begin
-            read_error                  <= 1'b1;
+            read_error                  = 1'b1;
           end // end default
         endcase   // endcase reg_addr_o
       end // end if address decode
@@ -577,7 +649,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   // SROT_CTRLSTS_ADDR register to determine when a response has been
   // received.
   //------------------------------------------------------------------------
-  SROT_STATE_TYPE       srot_current_state;
   reg [31:0]            rsvd;
   reg [7:0]             msg_id;
   reg [7:0]             status;
@@ -592,13 +663,13 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   reg [7:0]             wait_state_counter;
 
   // Perform a continuous assignment of the key index RAM fields,
-  // making conding of the SRoT STM a bit cleaner
+  // making conding of the SRoT STM a bit cleaner.
   always @*
   begin
-    low_pointer         = keyindexram_b_rdata_o[15:0];
-    high_pointer        = keyindexram_b_rdata_o[31:16];
-    core_index          = keyindexram_b_rdata_o[39:32];
-    index_valid         = keyindexram_b_rdata_o[63];
+    low_pointer         = keyindexram_rdata_o[15:0];
+    high_pointer        = keyindexram_rdata_o[31:16];
+    core_index          = keyindexram_rdata_o[39:32];
+    index_valid         = keyindexram_rdata_o[63];
   end   // end always @*
 
 
@@ -609,10 +680,10 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       host_addr_i               <= '0;
       host_we_i                 <= '0;
       host_wdata_i              <= '0;
-      keyindexram_b_addr_i      <= '0;
-      keyram_b_addr_i           <= '0;
-      llkic2_reqfifo_clr_i     <= 1'b0;
-      llkic2_reqfifo_rready_i  <= 1'b0;
+      keyindexram_stm_addr_i    <= '0;
+      keyram_stm_addr_i         <= '0;
+      llkic2_reqfifo_clr_i      <= 1'b0;
+      llkic2_reqfifo_rready_i   <= 1'b0;
       llkic2_respfifo_wvalid_i  <= 1'b0;
       llkic2_respfifo_wdata_i   <= '0;
       rsvd                      <= '0;
@@ -636,8 +707,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyindexram_b_addr_i      <= '0;
-          keyram_b_addr_i           <= '0;
+          keyindexram_stm_addr_i    <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= 1'b0;
           llkic2_respfifo_wvalid_i  <= 1'b0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -651,7 +722,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           srot_current_state        <= ST_SROT_IDLE;
 
           // The SRoT STM will stay idle until it determines that a message is
-          // present in the Send FIFO.  All messages from RISC-V are expect to
+          // present in the Send FIFO.  All messages from RISC-V are expected to
           // be one 64-bit word in length.
           if (~llkic2_reqfifo_empty && llkic2_reqfifo_rvalid_o) begin
 
@@ -659,6 +730,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             msg_id                    <= llkic2_reqfifo_rdata_o[7:0];
             msg_len                   <= llkic2_reqfifo_rdata_o[23:16];
             key_index                 <= llkic2_reqfifo_rdata_o[31:24];
+
             rsvd                      <= llkic2_reqfifo_rdata_o[63:32];
 
             // Assert the Send FIFO read enable
@@ -678,8 +750,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyindexram_b_addr_i      <= '0;
-          keyram_b_addr_i           <= '0;
+          keyindexram_stm_addr_i    <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -692,8 +764,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_MID_C2LOADKEYREQ,
             LLKI_MID_C2CLEARKEYREQ,
             LLKI_MID_C2KEYSTATUSREQ : begin
-              keyindexram_b_addr_i    <= key_index;
-              srot_current_state      <= ST_SROT_RETRIEVE_KEY_INDEX;
+              keyindexram_stm_addr_i  <= key_index;
+              srot_current_state      <= ST_SROT_RETRIEVE_KEY_INDEX_WAIT_STATE;
               ;
             end
             // All other message ID (error condition)
@@ -714,12 +786,31 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
           // The Key Index must >= 0 and < SROT_KEYINDEXRAM_SIZE
           if (key_index >= SROT_KEYINDEXRAM_SIZE) begin
-            llkic2_reqfifo_clr_i     <= 1'b1;
+            llkic2_reqfifo_clr_i      <= 1'b1;
             status                    <= LLKI_STATUS_KEY_INDX_EXCEED;
             srot_current_state        <= ST_SROT_C2_RESPONSE;
           end // end if (key_index >= SROT_KEYINDEXRAM_SIZE)
 
         end // end ST_SROT_MESSAGE_CHECK
+        //------------------------------------------------------------------
+        // Wait State - Since STM outputs are registered as well as the
+        // memory outputs, it will take two cycles following the assertion 
+        // of the address for the data to show up.
+        //------------------------------------------------------------------
+        ST_SROT_RETRIEVE_KEY_INDEX_WAIT_STATE : begin
+          // Default signal assignment
+          host_req_i                <= '0;
+          host_addr_i               <= '0;
+          host_we_i                 <= '0;
+          host_wdata_i              <= '0;
+          keyram_stm_addr_i         <= '0;
+          llkic2_reqfifo_rready_i   <= '0;
+          llkic2_respfifo_wvalid_i  <= '0;
+          llkic2_respfifo_wdata_i   <= '0;
+          current_pointer           <= '0;
+          wait_state_counter        <= SROT_WAIT_STATE_COUNTER_INIT;
+          srot_current_state        <= ST_SROT_RETRIEVE_KEY_INDEX;
+        end // end ST_SROT_RETRIEVE_KEY_INDEX_WAIT_STATE
         //------------------------------------------------------------------
         // Retrieve (and check) key index State
         //------------------------------------------------------------------
@@ -729,7 +820,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -762,10 +853,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // The received message has been checked for errors and the selected key
           // index looks ok.  
           end else begin
-            // Save the low pointer, as it will used to determine how many key
-            // words we will be sending
-            current_pointer         <= low_pointer;
-
             // Jump to the next state
             srot_current_state      <= ST_SROT_KL_REQ_HEADER;
           end   // end if (!index_valid)
@@ -774,18 +861,22 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
         //------------------------------------------------------------------
         // Create Header for the request to the specified LLKI-PP
         //------------------------------------------------------------------
-        ST_SROT_KL_REQ_HEADER                   : begin
+        ST_SROT_KL_REQ_HEADER             : begin
           // Default signal assignment
           host_req_i                <= '0;
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
           wait_state_counter        <= SROT_WAIT_STATE_COUNTER_INIT;
           srot_current_state        <= ST_SROT_KL_REQ_ISSUE;
+
+          // Save the low pointer, as it will used to determine how many key
+          // words we will be sending as well as indexing the Key RAM
+          current_pointer           <= low_pointer;
 
           // Header generation is message specific
           case (msg_id)
@@ -833,7 +924,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // Default signal assignment
           host_req_i                <= '0;
           host_we_i                 <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -870,7 +961,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // Default signal assignment
           host_req_i                <= '0;
           host_we_i                 <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -879,6 +970,9 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
           // The request has been acknowledged
           if (host_valid_o) begin
+
+            // Point the Key RAM to the current word
+            keyram_stm_addr_i       <= current_pointer;
 
             // If this is a Load Key request, then we need to begin
             // the cycle of reading the ready bit from the selected
@@ -902,7 +996,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -922,9 +1015,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // Wait until the request has been granted, then jump to
           // the check status state
           end else if (host_gnt_o) begin
-            // Point the Key RAM to the current word
-            keyram_b_addr_i         <= current_pointer;
-
             // Jump to next 
             srot_current_state      <= ST_SROT_KL_CHECK_READY_STATUS;
           end
@@ -947,12 +1037,19 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // Valid data has been returned
           if (host_valid_o) begin
 
+          	// If a response is waiting at this point, the select LLKI PP block
+          	// has prematurely generated a response, likely due to an error condition.
+          	// Jump to fetching the response status
+          	if (host_rdata_o[LLKIKL_CTRLSTS_RESP_WAITING] == 1'b1) begin
+              
+              srot_current_state        <= ST_SROT_KL_READ_RESP_STATUS;
+
             // The select LLKI-PP is ready for a key
-            if (host_rdata_o[LLKIKL_CTRLSTS_READY_FOR_KEY] == 1'b1) begin
+            end else if (host_rdata_o[LLKIKL_CTRLSTS_READY_FOR_KEY] == 1'b1) begin
               // Issue the key write, understanding that if host_gnt_o is
               // already asserted, this will only be set for a single clock cycle
               host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
-              host_wdata_i              <= keyram_b_rdata_o;
+              host_wdata_i              <= keyram_rdata_o;
               host_req_i                <= 1'b1;
               host_we_i                 <= 1'b1;
 
@@ -1004,7 +1101,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
           // Hold the signals, until host_gnt_o is issued
           host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
-          host_wdata_i              <= keyram_b_rdata_o;
+          host_wdata_i              <= keyram_rdata_o;
           host_req_i                <= 1'b1;
           host_we_i                 <= 1'b1;
 
@@ -1042,6 +1139,9 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             // We have more words.  Increment the current pointer and
             // read the LLKI-PP ready status
             end else begin
+              // Point the Key RAM to the next word
+              keyram_stm_addr_i     <= current_pointer + 1;
+
               current_pointer       <= current_pointer + 1;
               srot_current_state    <= ST_SROT_KL_READ_READY_STATUS;
             end // end if (current_pointer == high_pointer)
@@ -1058,7 +1158,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i         <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -1092,7 +1192,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i           <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -1127,7 +1227,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i           <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -1157,7 +1257,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyram_b_addr_i           <= '0;
+          keyram_stm_addr_i           <= '0;
           llkic2_reqfifo_rready_i   <= 1'b0;
           llkic2_respfifo_wvalid_i  <= 1'b0;
           llkic2_respfifo_wdata_i   <= '0;
@@ -1197,8 +1297,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyindexram_b_addr_i      <= '0;
-          keyram_b_addr_i           <= '0;
+          keyindexram_stm_addr_i      <= '0;
+          keyram_stm_addr_i           <= '0;
           llkic2_reqfifo_rready_i   <= 1'b0;
           llkic2_respfifo_wdata_i   <= '0;
           llkic2_respfifo_wvalid_i  <= 1'b0;
@@ -1250,7 +1350,9 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_STATUS_KL_REQ_BAD_MSG_ID,
             LLKI_STATUS_KL_REQ_BAD_MSG_LEN,
             LLKI_STATUS_KL_RESP_BAD_MSG_ID,            
-            LLKI_STATUS_KL_TILELINK_ERROR     : begin
+            LLKI_STATUS_KL_TILELINK_ERROR,
+            LLKI_STATUS_KL_LOSS_OF_SYNC,
+            LLKI_STATUS_KL_BAD_KEY_LEN     	: begin
               llkic2_respfifo_wdata_i[7:0]    <= LLKI_MID_C2ERRORRESP;
               llkic2_respfifo_wdata_i[15:8]   <= status;
               llkic2_respfifo_wdata_i[23:16]  <= 8'h01;
@@ -1280,8 +1382,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyindexram_b_addr_i      <= '0;
-          keyram_b_addr_i           <= '0;
+          keyindexram_stm_addr_i      <= '0;
+          keyram_stm_addr_i           <= '0;
           llkic2_reqfifo_clr_i      <= '0;
           llkic2_reqfifo_rready_i   <= '0;
           llkic2_respfifo_wvalid_i  <= '0;

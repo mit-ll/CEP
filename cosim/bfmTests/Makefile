@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX License Identifier: MIT
 #//
 #// File Name:      
@@ -54,20 +54,14 @@ BFM_TEST_LIST = \
 	multiLock	\
 	ddr3Test	\
 	memPreload	\
-	regression	\
 	miscTests	\
-
-
-SINGLE_OLD_TESTS = \
-	aes		\
-	des3		\
-	sha256		\
-	md5		\
-	gps		\
-	iir		\
-	fir		\
-	dft		\
-
+	accessTest	\
+	clintTest	\
+	plicTest	\
+	fragmentors	\
+	srotBadKeys	\
+	srotMemTest	\
+	srotKeyTest	\
 
 
 
@@ -102,9 +96,7 @@ FPGA_INST_NAME     ?= /cep_tb/fpga
 
 merge:
 	@if test -d ${DUT_COVERAGE_PATH}; then	\
-		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb; \
-		${VCOVER_CMD} report -html -output covhtmlreport -annotate -details -assert -directive -cvg -code bcefst -threshL 50 -threshH 90 \
-		${TEST_SUITE}.ucdb)	\
+		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;) \
 	fi
 
 # fixme !!! These need to be in a do file

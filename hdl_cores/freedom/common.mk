@@ -104,6 +104,18 @@ $(mcs): $(bit)
 .PHONY: mcs
 mcs: $(mcs)
 
+# Build simulation files
+sim: $(romgen) $(f) $(incdirs)
+	cd $(BUILD_DIR); vivado \
+		-nojournal -mode batch \
+		-source $(fpga_common_script_dir)/prep_simulation.tcl \
+		-tclargs \
+		-top-module "$(MODEL)" \
+		-F "$(f)" \
+		-include_dirs "$(incdirs)" \
+		-ip-vivado-tcls "$(shell find '$(BUILD_DIR)' -name '*.vivado.tcl')" \
+		-board "$(BOARD)"
+
 # Build Libero project
 prjx := $(BUILD_DIR)/libero/$(MODEL).prjx
 $(prjx): $(verilog)

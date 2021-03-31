@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -38,6 +38,13 @@ extern "C" {
   //
   u_int64_t lnx_cep_read(u_int32_t offs);
   void lnx_cep_write(u_int32_t offs,u_int64_t pData);
+
+  u_int8_t lnx_cep_read8(u_int32_t offs);
+  void lnx_cep_write8(u_int32_t offs,u_int8_t pData);
+
+  u_int16_t lnx_cep_read16(u_int32_t offs);
+  void lnx_cep_write16(u_int32_t offs,u_int16_t pData);
+
   u_int32_t lnx_cep_read32(u_int32_t offs);
   void lnx_cep_write32(u_int32_t offs,u_int32_t pData);
   //

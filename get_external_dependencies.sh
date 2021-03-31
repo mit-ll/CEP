@@ -1,6 +1,6 @@
 #!/bin/bash
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      get_external_dependencies.sh
@@ -28,6 +28,9 @@
 #
 # The entries that have been commented out reflect dependencies that have been directly included within the CEP repo.  Unc               ommenting
 # them and running this script will result in clobbering the current directory (and potentially loosing CEP-specific modifications)
+#
+# When a respository is commented out (such as https://github.com/sifive/freedom), this is included as a reference pointer to the original
+#   repository commit that the current codebase was "forked" from...
 #
 declare -a repo_names=(       "#"
                               "# The following dependencies are related to the Freedom U500 Platform"
@@ -220,7 +223,8 @@ echo ""
 echo "------------------------------------------------------------------------------------------"
 echo "---                       CEP Get External Dependencies Script                         ---"
 echo "------------------------------------------------------------------------------------------"
-echo " This script should be run from the root directory of your CEP clone."
+echo " This script should ONLY be run from the root directory of your CEP clone.  Otherwise, it "
+echo " may corrupt your CEP installation."
 echo ""
 
 # Check for tools to be installed 
@@ -234,6 +238,13 @@ if ! [ -x "$(command -v wget)" ]; then
 fi
 if ! [ -x "$(command -v tar)" ]; then
     echo "Error: tar is not installed on your system.  Install using \"sudo apt install tar\""
+    exit 1
+fi
+
+# Check that get_external_dependencies.sh exists in the current directory.  This is a bit of a safety check that
+# the script is being run from the CEP root directory; then
+if [ ! -f "get_external_dependencies.sh" ]; then
+    echo "Error: script should be run from your CEP root directory."
     exit 1
 fi
 

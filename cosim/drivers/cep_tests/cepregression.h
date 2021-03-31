@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -33,6 +33,8 @@ extern "C" {
   void init_dft(void) ;
   void init_idft(void) ;  
   void init_rsa(void) ;
+  void init_srot(void);
+  void init_cepregs(void);
   
   int cep_AES_test(void);
   int cep_DES3_test(void);

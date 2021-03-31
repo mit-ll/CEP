@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -109,20 +109,19 @@ public:
   void InitSemaphore();
   void SendCmdNwait(u_int32_t cmd);
   int CheckCmdOK();
+  void Atomic_Rdw64(u_int64_t adr, int param, int mask, u_int64_t *dat);
+  void Write64_BURST(u_int64_t adr, int wordCnt, u_int64_t *dat) ;
   void Write256(u_int32_t adr, u_int32_t *dat) ;
   void Write64(u_int32_t adr, u_int64_t dat) ;
-  void Write32(u_int32_t adr, u_int32_t dat) ;
+  void Write8(u_int32_t adr, u_int8_t dat) ;
   void PciCfgWrite(int inst, u_int32_t adr, u_int32_t dat) ;
-  void Write16(u_int32_t adr, Int16U dat) ;
-  void Write8(u_int32_t adr, Int8U dat) ;
   void WriteStatus(u_int32_t dat) ;
   void WriteMailBox(u_int32_t cmd, u_int32_t dat);
+  void Read64_BURST(u_int64_t adr, int wordCnt, u_int64_t *dat) ;
   void Read256(u_int32_t adr, u_int32_t *dat) ;
   u_int64_t Read64(u_int32_t adr) ;
-  u_int32_t Read32(u_int32_t adr) ;
+  u_int8_t Read8(u_int32_t adr) ;
   u_int32_t PciCfgRead(int inst, u_int32_t adr) ;
-  Int16U Read16(u_int32_t adr) ;
-  Int8U Read8(u_int32_t adr) ;
   u_int32_t ReadStatus() ;
   u_int32_t ReadErrorCount() ;
   void Print(const char *fmt, ...) ;
@@ -197,11 +196,15 @@ public:
   // ==========================================
   //
   void Write32_32(u_int32_t adr, u_int32_t dat) ;
+  void Write32_16(u_int32_t adr, u_int16_t dat) ;
+  void Write32_8 (u_int32_t adr, u_int8_t dat) ;
   void Write64_32(u_int64_t adr, u_int32_t dat) ;
   void Write64_64(u_int64_t adr, u_int64_t dat) ;
   void Write32_64(u_int32_t adr, u_int64_t dat) ; 
 
   u_int32_t Read32_32(u_int32_t adr) ; 
+  u_int16_t Read32_16(u_int32_t adr) ; 
+  u_int8_t Read32_8(u_int32_t adr) ; 
   u_int32_t Read64_32(u_int64_t adr) ;
   u_int64_t Read64_64(u_int64_t adr) ;
   u_int64_t Read32_64(u_int32_t adr) ;
@@ -306,8 +309,7 @@ private:
   // for DPI as well
   volatile u_int32_t mAdrHi; // upper address
   volatile u_int64_t mAdr;
-  volatile u_int64_t  mPar[8]; // upto 16 32bits = cache size
-
+  volatile u_int64_t  mPar[32]; // upto 16 32bits = cache size
 };
 //
 #endif

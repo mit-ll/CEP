@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX License Identifier: MIT
 #//
 #// File Name:      Makefile     
@@ -9,6 +9,7 @@
 #//	to run , type "make" 
 #//
 #//************************************************************************
+#
 LLKI_EN      = 1
 
 #
@@ -29,24 +30,19 @@ export CADENCE_ENABLE_AVSREQ_44905_PHASE_1:=1
 endif
 #
 #
-#
-#
 ifeq (${LLKI_EN},0)
-DUT_NAME     = modexp_core
+$(error *** LLKI_EN=0 no longer supported ***)
 else
 DUT_NAME     = modexp_core_mock_tss
-DEFINE_LIST += +define+LLKI_EN
-LLKI_FILES  += ../llki_supports/llki_discrete.sv
 endif
 
 ifeq (${USE_MOCK_LLKI},1)
 DEFINE_LIST += +define+USE_MOCK_LLKI
 endif
-
 #
-# Use files from checked-in
+# Use file from checked-in
 #
-CORE_VFILES = ../../hdl_cores/rsa/rtl/*.v
+CORE_VFILES = ../../hdl_cores/rsa/rtl/*.v ../../hdl_cores/rsa/rtl/*.sv -y ../../hdl_cores/llki
 
 #
 #
@@ -58,9 +54,9 @@ DEFINE_LIST += +define+DUT_NAME=${DUT_NAME} +define+TB_NAME=${TB_NAME}
 #
 all: rsa_stimulus.txt
 ifeq (${CADENCE},1)
-	xrun -64 -sv +acc *.sv ${CORE_VFILES} ${LLKI_FILES} ${DEFINE_LIST} -y ../llki_supports +libext+.v +libext+.sv +incdir+../llki_supports -xlm_bq1
+	xrun -64 -sv +acc *.sv ${LLKI_FILES} ${DEFINE_LIST} ${CORE_VFILES} -y ../llki_supports +libext+.v +libext+.sv +incdir+../llki_supports -xlm_bq1
 else
-	vlog -64 -sv +acc *.sv ${CORE_VFILES} ${LLKI_FILES} ${DEFINE_LIST} -y ../llki_supports +libext+.v +libext+.sv +incdir+../llki_supports
+	vlog -64 -sv +acc *.sv ${LLKI_FILES} ${DEFINE_LIST} ${CORE_VFILES} +libext+.v +libext+.sv
 	vopt -64 +nolibcell +nospecify +notimingchecks ${TB_NAME} -o ${TB_NAME}_opt
 	vsim -64 ${TB_NAME}_opt -batch -do vsim.do -logfile ${TB_NAME}.log -wlf ${TB_NAME}.wlf
 endif
@@ -69,7 +65,7 @@ rsa_stimulus.txt : rsa_stimulus.txt.gz
 	gunzip -c $< > $@
 
 clean:
-	rm -rf work *.wlf *.log *.txt
+	rm -rf work *.wlf *.log *.txt 
 	rm -rf xcelium.d
 
 

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -181,6 +181,28 @@ int shIpc::CheckCmdOK() {
 //
 // Write Functions
 //
+void shIpc::Atomic_Rdw64(u_int64_t adr, int param, int mask, u_int64_t *dat) {
+  // Set data stuff
+  mAdr   = adr;
+  mAdrHi = param;
+  mPar[0] = *dat;
+  mPar[1] = mask;
+  // set cmd
+  SendCmdNwait(SHIPC_ATOMIC_RDW64);
+  *dat = mPar[0]; 
+}
+
+void shIpc::Write64_BURST(u_int64_t adr, int wordCnt, u_int64_t *dat) {
+  // Set data stuff
+  mAdr   = adr;
+  mAdrHi = wordCnt;
+  for (int i=0;i<wordCnt;i++) {
+    mPar[i] = dat[i];
+  }
+  // set cmd
+  SendCmdNwait(SHIPC_WRITE64_BURST);
+}
+
 void shIpc::Write256(u_int32_t adr, u_int32_t *dat) {
   // Set data stuff
   mAdr = adr;
@@ -198,13 +220,7 @@ void shIpc::Write64(u_int32_t adr, u_int64_t dat) {
   // set cmd
   SendCmdNwait(SHIPC_WRITE64);
 }
-void shIpc::Write32(u_int32_t adr, u_int32_t dat) {
-  mAdr = adr;
-  // Set data stuff
-  mPar[0] = dat;
-  // set cmd
-  SendCmdNwait(SHIPC_WRITE32);
-}
+
 void shIpc::I2cAsicWrite32(u_int32_t ctrl,u_int32_t adr, u_int32_t dat) {
   mAdr = adr;
   // Set data stuff
@@ -224,20 +240,6 @@ void shIpc::PciCfgWrite(int inst, u_int32_t adr, u_int32_t dat) {
 }
 
 
-void shIpc::Write16(u_int32_t adr, Int16U dat) {
-  mAdr = adr;
-  // Set data stuff
-  mPar[0] = (u_int32_t) dat;
-  // set cmd
-  SendCmdNwait(SHIPC_WRITE16);
-}
-void shIpc::Write8(u_int32_t adr, Int8U dat) {
-  mAdr = adr;
-  // Set data stuff
-  mPar[0] = (u_int32_t) dat;
-  // set cmd
-  SendCmdNwait(SHIPC_WRITE8);
-}
 void shIpc::WriteStatus(u_int32_t dat) {
   // Set data stuff
   mPar[0] = dat;
@@ -274,6 +276,18 @@ u_int64_t shIpc::ReadDvtFlag(int msb, int lsb) {
 //
 // Read Functions
 //
+void shIpc::Read64_BURST(u_int64_t adr, int wordCnt, u_int64_t *dat) {
+  mAdr = adr;
+  mAdrHi = wordCnt;
+  // set cmd
+  SendCmdNwait(SHIPC_READ64_BURST);
+  // Load data stuff
+  for (int i=0;i<wordCnt;i++) {
+    dat[i] = mPar[i];
+  }
+}
+
+
 void shIpc::Read256(u_int32_t adr, u_int32_t *dat) {
   mAdr = adr;
   // set cmd
@@ -293,13 +307,7 @@ u_int64_t shIpc::Read64(u_int32_t adr) {
   dat |= (u_int64_t) mPar[1];
   return dat;
 }
-u_int32_t shIpc::Read32(u_int32_t adr) {
-  mAdr = adr;
-  // set cmd
-  SendCmdNwait(SHIPC_READ32);
-  // Set data stuff
-  return  mPar[0];
-}
+
 u_int32_t shIpc::I2cAsicRead32(u_int32_t ctrl,u_int32_t adr) {
   mAdr = adr;
   mPar[0] = ctrl;
@@ -315,20 +323,6 @@ u_int32_t shIpc::PciCfgRead(int inst,u_int32_t adr) {
   SendCmdNwait(SHIPC_PCICFGREAD);
   // Set data stuff
   return  mPar[0];
-}
-Int16U shIpc::Read16(u_int32_t adr) {
-  mAdr = adr;
-  // set cmd
-  SendCmdNwait(SHIPC_READ16);
-  // Set data stuff
-  return ((Int16U) mPar[0]);
-}
-Int8U shIpc::Read8(u_int32_t adr) {
-  mAdr = adr;
-  // set cmd
-  SendCmdNwait(SHIPC_READ8);
-  // Set data stuff
-  return ((Int8U) mPar[0]);
 }
 u_int32_t shIpc::ReadStatus() {
   SendCmdNwait(SHIPC_READ_STATUS);
@@ -529,6 +523,21 @@ void shIpc::Write12Bytes2Mailbox(int wordPos, u_int32_t *data) {
 // 64-bit addeess space
 // ==========================================
 //
+void shIpc::Write32_16(u_int32_t adr, u_int16_t dat) {
+  mAdr = adr;
+  // Set data stuff
+  mPar[0] = (u_int32_t) dat;
+  // set cmd
+  SendCmdNwait(SHIPC_WRITE32_16);
+}
+void shIpc::Write32_8(u_int32_t adr, u_int8_t dat) {
+  mAdr = adr;
+  // Set data stuff
+  mPar[0] = (u_int32_t) dat;
+  // set cmd
+  SendCmdNwait(SHIPC_WRITE32_8);
+}
+
 void shIpc::Write32_32(u_int32_t adr, u_int32_t dat) {
   mAdr   = adr;
   // Set data stuff
@@ -561,6 +570,21 @@ void shIpc::Write64_32(u_int64_t adr, u_int32_t dat) {
   mPar[0] = dat;
   // set cmd
   SendCmdNwait(SHIPC_WRITE64_32);
+}
+
+u_int16_t shIpc::Read32_16(u_int32_t adr) {
+  mAdr = adr;
+  // set cmd
+  SendCmdNwait(SHIPC_READ32_16);
+  // Set data stuff
+  return ((u_int16_t) mPar[0]);
+}
+u_int8_t shIpc::Read32_8(u_int32_t adr) {
+  mAdr = adr;
+  // set cmd
+  SendCmdNwait(SHIPC_READ32_8);
+  // Set data stuff
+  return ((u_int8_t) mPar[0]);
 }
 
 u_int32_t shIpc::Read32_32(u_int32_t adr) {

@@ -1,11 +1,12 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
-<p align="center">
-   Copyright 2020 Massachusetts Institute of Technology
-</p>
+[![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
-<br>
+<p align="center">
+   Copyright 2021 Massachusetts Institute of Technology
+</p>
 
 # CEP-DSP: Core blocks
 
@@ -95,3 +96,4 @@ Generated source should be placed in <CEP_ROOT>/generated_dsp_code
 * FIR (already included in repo)
   * Save the generated Verilog file to `FIR_filter.v`
 
+#### Return to the root CEP [README](../../README.md)

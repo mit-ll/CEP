@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      	cacode.v
@@ -23,34 +23,27 @@ module cacode
 reg [10:1] g1, g2;
 reg chip;
 
-   
-
 always @ (posedge clk) begin
     if (rst)
         begin
             g1 <= 10'b1111111111;
             g2 <= 10'b1111111111;
-        end
-    
-    else begin
-       if (prn_changed) begin
-          g1 <= 10'b1111111111;
-          g2 <= 10'b1111111111;	  
-       end
-       else if (enb)
-         begin
-            g1[10:1] <= {g1[9:1], g1[3] ^ g1[10]};
-            g2[10:1] <= {g2[9:1], g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10]};
-         end
-    end // else: !if(rst)
-end // always @ (posedge clk)
-//   
+        end else begin
+            if (prn_changed) begin
+               g1 <= 10'b1111111111;
+               g2 <= 10'b1111111111;
+            end else if (enb) begin
+                g1[10:1] <= {g1[9:1], g1[3] ^ g1[10]};
+                g2[10:1] <= {g2[9:1], g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10]};
+            end
+        end // else: !if(rst)
+    end // always @ (posedge clk)
 
 always @(*)
     begin
         if(rst)
            chip <= 1'b0; 
-       else
+        else
     begin
         case (prn_num)
             6'd1 :
@@ -127,7 +120,6 @@ always @(*)
                 chip <= g1[10] ^ g2[2] ^ g2[8];
             6'd37:
                 chip <= g1[10] ^ g2[4] ^ g2[10];
-            //
             default:
                 chip <= 1'b0;  //invalid prn_num
         endcase

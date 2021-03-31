@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -85,16 +85,26 @@ public:
   //
   // Address is Byte Address
   //
-  void Write32_32(u_int32_t address, u_int32_t dat);
+  int  Atomic_Rdw64(u_int64_t address, int param, int mask, u_int64_t *data);
+  int  Write64_BURST(u_int64_t address, int wordCnt, u_int64_t *dat);
+  int  Read64_BURST (u_int64_t address, int wordCnt, u_int64_t *dat);
+
   void Write32_64(u_int32_t address, u_int64_t dat);
   void Write64_64(u_int64_t address, u_int64_t dat);  
+  void Write32_32(u_int32_t address, u_int32_t dat);
+  void Write32_16(u_int32_t address, u_int16_t dat);
+  void Write32_8(u_int32_t address, u_int8_t dat);
 
 
   unsigned GetSimClk();
   void SimCheckPoint(char *saveFile);
-  u_int32_t Read32_32(u_int32_t address);
   u_int64_t Read32_64(u_int32_t address);
+  u_int32_t Read32_32(u_int32_t address);
+  u_int16_t Read32_16(u_int32_t address);
+  u_int8_t Read32_8(u_int32_t address);
+
   u_int64_t Read64_64(u_int64_t address);    
+
   //
   // to support showTime
   //

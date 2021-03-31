@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -14,13 +14,16 @@
 #include "stdint.h"
 #include "stdio.h"
 
-#define MAX_MSG_SIZE 2048
-#define MAX_KEY_SIZE 2048
+#define MAX_MSG_SIZE        2048
+#define MAX_KEY_SIZE        2048
+
 //
-// CEP's AES 
+// CEP's Crypto
 //
 class cep_crypto { 
+  //
   // public stuffs
+  //
 public: //
   // constructors must be default to avoid unwind_Resume problem in bare mode
   cep_crypto() {};
@@ -52,6 +55,7 @@ public: //
   //
   // To support capturing for playback in BAREMetal mode and Unit-testbench
   //
+  void SetSrotFlag(int mode) { mSrotFlag = mode; } // no write to file
   void SetCaptureMode(int mode, const char *path, const char *testName);  
   void cep_writeNcapture(int device, uint32_t pAddress, uint64_t pData);
   uint64_t cep_readNcapture(int device, uint32_t pAddress);
@@ -62,10 +66,12 @@ public: //
   void init(void);
   void freeMe(void);
   //
+  
   //
+  // Protected / Private cep_crypto items
   //
  protected:
-  //
+
   int mSeed;
   int mVerbose;
   int mKeySize;
@@ -82,6 +88,7 @@ public: //
   // To support capture and playback (bareMetal & unit testbench)
   //
   int mCapture;
+  int mSrotFlag;
   int mC2C_Capture;
   char mTestName[128];
   FILE *mFd;
@@ -92,7 +99,7 @@ public: //
   //
   uint64_t mAdrBase;
   uint64_t mAdrSize;
-};
 
-//
+}; // class cep_crypto
 #endif
+

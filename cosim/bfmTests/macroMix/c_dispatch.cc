@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   //
   // each bit is to turn on the given core (bit0 = core0, bit1=core1, etc..)
   //
-  long unsigned int mask = 0xF;
+  long unsigned int mask = 0xf;
   //
   // Set the active CPU mask before spawn the threads...
   //
@@ -60,7 +60,7 @@ int main(int argc, char *argv[])
   initConfig();
   for (int i=0;i<maxHost;i++) {
     if ((long unsigned int)(1 << i) & mask) {
-      thr.ForkAThread(activeSlot,i,verbose, seed * (1+i), c_module);
+      thr.ForkAThread(activeSlot,i,verbose, mask, c_module);
     }
   }
   //

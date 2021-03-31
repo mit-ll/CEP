@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:       llki_pp_wrapper.sv
@@ -112,6 +112,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   wire [top_pkg::TL_AW-1:0]     reg_addr_o;
   wire [top_pkg::TL_DW-1:0]     reg_wdata_o;
   reg [top_pkg::TL_DW-1:0]      reg_rdata_i;
+  wire                          rdata_valid_i;
   reg                           reg_error_i;
 
   // Misc. signals
@@ -123,26 +124,31 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   // Instantitate a tlul_adapter_reg to adapt the TL Slave Interface
   //------------------------------------------------------------------------
   tlul_adapter_reg #(
-    .RegAw      (top_pkg::TL_AW   ),
-    .RegDw      (top_pkg::TL_DW   )
+    .RegAw          (top_pkg::TL_AW   ),
+    .RegDw          (top_pkg::TL_DW   )
   ) u_tlul_adapter_reg_inst (
-    .clk_i      (clk              ),
-    .rst_ni     (~rst             ),
+    .clk_i          (clk              ),
+    .rst_ni         (~rst             ),
 
-    .tl_i       (slave_tl_h2d     ),
-    .tl_o       (slave_tl_d2h     ),
+    .tl_i           (slave_tl_h2d     ),
+    .tl_o           (slave_tl_d2h     ),
 
-    .we_o       (reg_we_o         ),
-    .re_o       (reg_re_o         ),
-    .addr_o     (reg_addr_o       ),
-    .wdata_o    (reg_wdata_o      ),
-    .be_o       (                 ),  // Accesses are assumed to be word-wide
-    .rdata_i    (reg_rdata_i      ),
-    .error_i    (reg_error_i      )
+    .we_o           (reg_we_o         ),
+    .re_o           (reg_re_o         ),
+    .addr_o         (reg_addr_o       ),
+    .wdata_o        (reg_wdata_o      ),
+    .be_o           (                 ),  // Accesses are assumed to be word-wide
+    .rdata_i        (reg_rdata_i      ),
+    .rdata_valid_i  (rdata_valid_i    ),
+    .error_i        (reg_error_i      )
   );
 
   // The reg_error_i will be asserted if either a read or write error occurs
-  assign reg_error_i = read_error || write_error;
+  assign reg_error_i    = read_error || write_error;
+
+  // For the llki_pp_wrapper component, all read data is "immediatelty" available,
+  // since there is no RAM components
+  assign rdata_valid_i  = reg_re_o;
   //------------------------------------------------------------------------
 
 
@@ -343,8 +349,8 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
         end   // ST_LLKIPP_MESSAGE_CHECK
         //------------------------------------------------------------------
         // Load Key Words State - This state will "pass" the key words
-        // received over the LLKI-PP TileLink interface and pass them
-        // to the LLKI-Discrete interface.
+        // received over the LLKI-PP TileLink interface to the
+        // LLKI-Discrete interface.
         //
         // It is the responsibility of the SRoT to read the status of the
         // key ready bit between EACH KEY WORD before sending the next one
@@ -368,6 +374,12 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               msg_id                    <= LLKI_MID_KLERRORRESP;
               status                    <= LLKI_STATUS_KL_LOSS_OF_SYNC;
               llkipp_current_state      <= ST_LLKIPP_RESPONSE;
+            // We have attempted to load a key whose length does not match the expected
+            // key length for this core.  Clear the core, and send an error response
+            end else if (llkid_key_complete) begin
+              msg_id                    <= LLKI_MID_KLERRORRESP;
+              status                    <= LLKI_STATUS_KL_BAD_KEY_LEN;
+              llkipp_current_state      <= ST_LLKIPP_CLEAR_KEY;
             // If a key word has been received and msg_len == 2, then this
             // is the LAST word of the load key request (understanding the
             // msg_len also includes the header and we are using it for
@@ -406,8 +418,16 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
           // Clear Key has been acknowledged, time to send the response
           if (llkid_clear_key_ack) begin
-            msg_id                      <= LLKI_MID_KLCLEARKEYACK;
-            status                      <= LLKI_STATUS_GOOD;
+
+            // If we got here due to a normal clear key request, then
+            // we need to assign the msg_id and status, otherwise
+            // just jump to the response state
+            if (msg_id != LLKI_MID_KLERRORRESP) begin
+              msg_id                    <= LLKI_MID_KLCLEARKEYACK;
+              status                    <= LLKI_STATUS_GOOD;
+            end
+
+            // Jump to the response state
             llkipp_current_state        <= ST_LLKIPP_RESPONSE;
           end
 

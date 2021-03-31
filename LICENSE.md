@@ -1,4 +1,10 @@
-Copyright (C) 2020 Massachusetts Institute of Technology
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
+[//]: # (SPDX short identifier: BSD-2-Clause)
+
+[![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+
+Copyright 2021 Massachusetts Institute of Technology
 
 Redistribution and use in source and binary forms, with or without modification, are permitted provided that the following conditions are met:
 

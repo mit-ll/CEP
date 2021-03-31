@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -16,6 +16,7 @@
 #include "cep_apis.h"
 #include "cep_adrMap.h"
 #include "simPio.h"
+#include "cepregression.h"
 /*
  * main 
  */
@@ -56,9 +57,10 @@ int main(int argc, char *argv[])
   //
   // c_module is the threead to run
   //
+ initConfig();
   for (int i=0;i<maxHost;i++) {
     if ((long unsigned int)(1 << i) & mask) {
-      thr.ForkAThread(activeSlot,i,verbose, seed * (1+i), c_module);
+      thr.ForkAThread(activeSlot,i,verbose, mask, c_module);
     }
   }
   //

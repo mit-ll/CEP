@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -22,6 +22,10 @@ extern "C" {
 #endif
 
 #define flush_page(addr) asm volatile ("sfence.vma %0" : : "r" (addr) : "memory")
+
+// cache size is 64 bytes 
+#define BLOCK_SIZE_BITS 6
+#define BLOCK_SIZE (1 << BLOCK_SIZE_BITS)
 
 //int main(void)
 void thread_entry(int cid, int nc)
@@ -60,7 +64,7 @@ void thread_entry(int cid, int nc)
     // write to different block
     //
     for (b=0;b<max_blocks;b++) {
-      DUT_WRITE32_64(my_base | (1 << (6+b)) , pattern[coreId] + b);
+      DUT_WRITE32_64(my_base | (1 << (BLOCK_SIZE_BITS+b)) , pattern[coreId] + b);
       // Add this line to get test to pass on RHEL7/gcc-7 but may be we are hiding a bug???
       //flush_page(my_base | (1 << (6+b)));
     }
@@ -70,7 +74,7 @@ void thread_entry(int cid, int nc)
       to = 1000;
       while (to > 0) {
 	// check the pattern to make sure it get here
-	DUT_READ32_64(pn_base + (1 << (6+b)),rd64);
+	DUT_READ32_64(pn_base + (1 << (BLOCK_SIZE_BITS+b)),rd64);
 	if (rd64 != (pattern[partnerId]+b)) {
 	  to--;
 	} else {
@@ -87,7 +91,7 @@ void thread_entry(int cid, int nc)
     for (b=0;b<max_blocks;b++) {
       if (errCnt) { break; }
       // now check my
-      DUT_READ32_64(my_base + (1 << (6+b)),rd64);      
+      DUT_READ32_64(my_base + (1 << (BLOCK_SIZE_BITS+b)),rd64);      
       if ((pattern[coreId]+b) != rd64) {
 	stat = testId[coreId] | (i << 16);
 	errCnt++;

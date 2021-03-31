@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -62,14 +62,25 @@ void *c_module(void *arg) {
 
 #if 0
   int i;
-  for (i=0;i<4;i++) {
-    DUT_WRITE32_64(reg_base_addr + cep_core0_status + (i*8), (uint64_t)0x123456789abcde00 + (i*8));
-  }
-  for (i=0;i<4;i++) {  
-    DUT_WRITE_DVT(DVTF_PAT_HI, DVTF_PAT_LO, i);
-    DUT_WRITE_DVT(DVTF_GET_CORE_STATUS, DVTF_GET_CORE_STATUS, 1);
-    uint64_t d64 = DUT_READ_DVT(DVTF_PAT_HI, DVTF_PAT_LO);
-    LOGI("CoreId=%d = 0x%016lx\n",i,d64);
+  uint64_t buf[8] = {0x8888888888888888,
+		     0x1111111111111111,
+		     0x2222222222222222,
+		     0x3333333333333333,
+		     0x4444444444444444,
+		     0x5555555555555555,
+		     0x6666666666666666,
+		     0x7777777777777777};
+  uint64_t rdBuf[8];
+  // DUT_WRITE32_64(reg_base_addr + cep_scratch0_reg, buf[0]);
+  DUT_WRITE32_BURST(reg_base_addr + cep_scratch0_reg, 8, buf);
+  DUT_READ32_BURST(reg_base_addr + cep_scratch0_reg, 8, rdBuf);
+  for (int i=0;i<8;i++) {
+    if (buf[i] != rdBuf[i]) {
+      LOGE("ERROR: i=%d exp=0x%016lx act=0x%016lx\n",i,buf[i],rdBuf[i]);
+      errCnt++;
+    } else {
+      LOGI("OK: i=%d exp=0x%016lx act=0x%016lx\n",i,buf[i],rdBuf[i]);
+    }
   }
 #endif
   

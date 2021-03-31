@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -16,7 +16,7 @@
 extern "C" {
 #endif
   int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose);
-  //  int cepMacroMix_runTest2(int cpuId, int mask, int seed, int verbose);  
+  int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose);
 
   #ifdef __cplusplus
 }

@@ -1,0 +1,7 @@
+.*
+bfmTests_work/*
+regressionSummary
+macroMix/BIO_OUT
+searchPaths_build 
+
+!.gitignore

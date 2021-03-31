@@ -1,5 +1,5 @@
 //--------------------------------------------------------------------------------------
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File         : cep_registers.scala
@@ -9,7 +9,9 @@
 //--------------------------------------------------------------------------------------
 package mitllBlocks.cep_registers
 
-import Chisel._
+import chisel3._
+import chisel3.util._
+import chisel3.experimental.{IntParam, BaseModule}
 import freechips.rocketchip.config.Field
 import freechips.rocketchip.subsystem.{BaseSubsystem, PeripheryBusKey}
 import freechips.rocketchip.config.Parameters
@@ -20,69 +22,75 @@ import freechips.rocketchip.tilelink._
 import mitllBlocks.cep_addresses._
 
 //--------------------------------------------------------------------------------------
-// BEGIN: Classes, Objects, and Traits to support connecting to TileLink
+// BEGIN: Module "Periphery" connections
 //--------------------------------------------------------------------------------------
+
+// Parameters associated with the core
 case object PeripheryCEPRegistersKey extends Field[Seq[CEPREGSParams]]
 
+// This trait "connects" the core to the Rocket Chip and passes the parameters down
+// to the instantiation
 trait HasPeripheryCEPRegisters { this: BaseSubsystem =>
-  val CEPRegistersNodes = p(PeripheryCEPRegistersKey).map { ps =>
-    CEPREGS.attach(CEPREGSAttachParams(ps, pbus))
-  }
-}
+  val cepregsnode = p(PeripheryCEPRegistersKey).map { params =>
 
-case class CEPREGSParams(address: BigInt)
+    // Initialize the attachment parameters
+    val cepregsattachparams = CEPREGSAttachParams(
+      cepregsparams = params,
+      slave_bus     = pbus
+    )
 
-case class CEPREGSAttachParams(
-  regparams         : CEPREGSParams,
-  controlBus        : TLBusWrapper)
-  (implicit val p   : Parameters)
+    // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
+    // and thus should be unique to this core and NOT a verilog reserved keyword
+    val cepregsmodule = LazyModule(new TLModule(cepregsattachparams)(p))
 
-class TLCEPREGS(busWidthBytes: Int, params: CEPREGSParams)(implicit p: Parameters)
-  extends CEPREGS(busWidthBytes, params) with HasTLControlRegMap
-
-object CEPREGS {
-
-  def attach(params: CEPREGSAttachParams): TLCEPREGS = {
-    implicit val p = params.p
-    val cepregs = LazyModule(new TLCEPREGS(params.controlBus.beatBytes, params.regparams))
-
-    params.controlBus.coupleTo(s"slave_named_cepregs") {
-      cepregs.controlXing(NoCrossing) := TLFragmenter(params.controlBus.beatBytes, params.controlBus.blockBytes) := _
+    // Perform the slave "attachments" to the slave bus
+    cepregsattachparams.slave_bus.coupleTo(cepregsattachparams.cepregsparams.dev_name + "_slave") {
+      cepregsmodule.slave_node :*=
+      TLFragmenter(cepregsattachparams.slave_bus.beatBytes, cepregsattachparams.slave_bus.blockBytes) :*= _
     }
 
-    InModuleBody { cepregs.module.clock := params.controlBus.module.clock }
-    InModuleBody { cepregs.module.reset := params.controlBus.module.reset }
+    // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
+    InModuleBody { cepregsmodule.module.reset := cepregsattachparams.slave_bus.module.reset }
+    InModuleBody { cepregsmodule.module.clock := cepregsattachparams.slave_bus.module.clock }
 
-    cepregs
-  }
+}}
+//--------------------------------------------------------------------------------------
+// END: Module "Periphery" connections
+//--------------------------------------------------------------------------------------
+ 
+
+
+//--------------------------------------------------------------------------------------
+// BEGIN: TileLink Module
+//--------------------------------------------------------------------------------------
+class TLModule(cepregsattachparams: CEPREGSAttachParams)(implicit p: Parameters) extends LazyModule {
+
+  // Create the RegisterRouter node
+  val slave_node = TLRegisterNode(
+    address     = Seq(AddressSet(
+                    cepregsattachparams.cepregsparams.slave_base_addr, 
+                    cepregsattachparams.cepregsparams.slave_depth)),
+    device      = new SimpleDevice(cepregsattachparams.cepregsparams.dev_name + "-slave", 
+                    Seq("mitll," + cepregsattachparams.cepregsparams.dev_name + "-slave")),
+    beatBytes   = cepregsattachparams.slave_bus.beatBytes
+  )
+
+  // Instantiate the implementation
+  lazy val module = new TLModuleImp(cepregsattachparams.cepregsparams, this)
 
 }
 //--------------------------------------------------------------------------------------
-// END: Classes, Objects, and Traits to support connecting to TileLink
+// END: TileLink Module
 //--------------------------------------------------------------------------------------
 
 
+
 //--------------------------------------------------------------------------------------
-// BEGIN: TileLink Test Register
+// BEGIN: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
-abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Parameters)
-    extends RegisterRouter(
-      RegisterRouterParams(
-        name = "cepregs",
-        compat = Seq("mitll,cepregs"), 
-        base = c.address,
-        size = 0x10000,    // Size should be an even power of two, otherwise the compilation causes an undefined exception
-        beatBytes = busWidthBytes))
-    {
+class TLModuleImp(cepregsparams: CEPREGSParams, outer: TLModule) extends LazyModuleImp(outer) {
 
-      val busWidthBits = busWidthBytes * 8
-      require(busWidthBits == 64, "CEPREGS: busWidthBits must be 64")
-
-  		ResourceBinding {Resource(ResourceAnchors.aliases, "cepregs").bind(ResourceAlias(device.label))}
-
-		lazy val module = new LazyModuleImp(this) {
-	
-        class Version_Class extends Bundle {
+  class Version_Class extends Bundle {
           val reserved            = UInt(48.W)
           val major               = UInt(8.W)
           val minor               = UInt(8.W)
@@ -91,41 +99,39 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
           def init: Version_Class = {
             val wire = Wire(new Version_Class)
             wire.reserved         := 0.U
-            wire.major            := UInt(CEPVersion.CEP_MAJOR_VERSION)
-            wire.minor            := UInt(CEPVersion.CEP_MINOR_VERSION)
+            wire.major            := CEPVersion.CEP_MAJOR_VERSION.U
+            wire.minor            := CEPVersion.CEP_MINOR_VERSION.U
             wire
           }
         }
         val version_register      = RegInit(Version_Class.init)
-//
-// Tony Duong: 05/13/20 Added scratchpad and TestNset registers for multicore sync/communication
-//
-	class scratch_Class extends Bundle {
-                val word0               = UInt(64.W)
-                val word1               = UInt(64.W)
-                val word2               = UInt(64.W)
-                val word3               = UInt(64.W)
-                val word4               = UInt(64.W)
-                val word5               = UInt(64.W)
-                val word6               = UInt(64.W)
-                val word7               = UInt(64.W)
-                val word32_0            = UInt(32.W)
-            }
-            object scratch_Class {
-                def init: scratch_Class = {
-                    val wire = Wire(new scratch_Class)
-                    wire.word0          := 0.U
-                    wire.word1          := 0.U
-                    wire.word2          := 0.U
-                    wire.word3          := 0.U
-                    wire.word4          := 0.U
-                    wire.word5          := 0.U
-                    wire.word6          := 0.U
-                    wire.word7          := 0.U
-                    wire.word32_0       := 0.U
-                    wire
-                }
-            }
+
+    class scratch_Class extends Bundle {
+      val word0               = UInt(64.W)
+      val word1               = UInt(64.W)
+      val word2               = UInt(64.W)
+      val word3               = UInt(64.W)
+      val word4               = UInt(64.W)
+      val word5               = UInt(64.W)
+      val word6               = UInt(64.W)
+      val word7               = UInt(64.W)
+      val word32_0            = UInt(32.W)
+    }
+    object scratch_Class {
+      def init: scratch_Class = {
+        val wire = Wire(new scratch_Class)
+          wire.word0          := 0.U
+          wire.word1          := 0.U
+          wire.word2          := 0.U
+          wire.word3          := 0.U
+          wire.word4          := 0.U
+          wire.word5          := 0.U
+          wire.word6          := 0.U
+          wire.word7          := 0.U
+          wire.word32_0       := 0.U
+          wire
+        }
+      }
    val scratch             = RegInit(scratch_Class.init)
    val core0_status        = RegInit(0. U(64.W))
    val core1_status        = RegInit(0. U(64.W))
@@ -143,7 +149,7 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
       val wire = Wire(new lock_Class)
          wire.isLocked     := 0.U
          wire.coreId       := 0.U
-	 wire
+     wire
       }
     }
     val lock0 = RegInit(lock_Class.init)
@@ -171,20 +177,20 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
       //
       when ((lockNum === 0.U) & (lock0.isLocked === 0.U)) {
          lock0.coreId   := reqId
-	 lock0.isLocked := 1.U
+     lock0.isLocked := 1.U
       }
       .elsewhen ((lockNum === 1.U) & (lock1.isLocked === 0.U)) {
          lock1.coreId   := reqId
-	 lock1.isLocked := 1.U      
+     lock1.isLocked := 1.U      
       }
       .elsewhen ((lockNum === 2.U) & (lock2.isLocked === 0.U)) {
          lock2.coreId   := reqId
-	 lock2.isLocked := 1.U      
+     lock2.isLocked := 1.U      
       }
       .elsewhen ((lockNum === 3.U) & (lock3.isLocked === 0.U)) {
          lock3.coreId   := reqId
-	 lock3.isLocked := 1.U      
-      }		      
+     lock3.isLocked := 1.U      
+      }           
    }
    //
    // Release lock when done
@@ -208,46 +214,44 @@ abstract class CEPREGS(busWidthBytes: Int, val c: CEPREGSParams)(implicit p: Par
          lock3.isLocked := 0.U
       }      
    }
-   //
-   regmap (
-          CEPRegisterAddresses.version_register -> RegFieldGroup("cep_version_register", Some(""),Seq(
-            RegField.r  (48, version_register.reserved),
-            RegField.r  (8,  version_register.major),
-            RegField.r  (8,  version_register.minor))),
-	    //
-	    // Added 05/13/20, Tony Duong to help bare metal Muxtex testing.
-	    //
-          CEPRegisterAddresses.testNset -> RegFieldGroup("test and set register", Some(""),Seq(
-            RegField.r  (1,  lock0.isLocked),         // [7:0]
-            RegField.r  (7,  lock0.coreId),           // 
-            RegField.r  (1,  lock1.isLocked),         // [15:8]
-            RegField.r  (7,  lock1.coreId),           // 
-            RegField.r  (1,  lock2.isLocked),         // [23:16]
-            RegField.r  (7,  lock2.coreId),           // 
-            RegField.r  (1,  lock3.isLocked),         // [31:24]
-            RegField.r  (7,  lock3.coreId),           // 
-            RegField    (1,  reqLock),       // [32]
-            RegField    (1,  releaseLock),   // [33]
-            RegField    (2,  lockNum),       // [35:34]	    	    
-            RegField.r  (4,  0.U),           // [39:36]	    
-            RegField    (7,  reqId),         // [46:40]
-	    RegField.r  (17, 0.U))),         // [63:47]     
-          CEPRegisterAddresses.scratch_w0 -> RegFieldGroup("scratch_in0", Some("scratch word 0"),    Seq(RegField  (64, scratch.word0))),
-          CEPRegisterAddresses.scratch_w1 -> RegFieldGroup("scratch_in1", Some("scratch word 1"),    Seq(RegField  (64, scratch.word1))),
-          CEPRegisterAddresses.scratch_w2 -> RegFieldGroup("scratch_in2", Some("scratch word 2"),    Seq(RegField  (64, scratch.word2))),
-          CEPRegisterAddresses.scratch_w3 -> RegFieldGroup("scratch_in3", Some("scratch word 3"),    Seq(RegField  (64, scratch.word3))),
-          CEPRegisterAddresses.scratch_w4 -> RegFieldGroup("scratch_in4", Some("scratch word 4"),    Seq(RegField  (64, scratch.word4))),
-          CEPRegisterAddresses.scratch_w5 -> RegFieldGroup("scratch_in5", Some("scratch word 5"),    Seq(RegField  (64, scratch.word5))),
-          CEPRegisterAddresses.scratch_w6 -> RegFieldGroup("scratch_in6", Some("scratch word 6"),    Seq(RegField  (64, scratch.word6))),
-          CEPRegisterAddresses.scratch_w7 -> RegFieldGroup("scratch_in7", Some("scratch word 7"),    Seq(RegField  (64, scratch.word7))),
-          CEPRegisterAddresses.core0_status -> RegFieldGroup("core0 Status", Some("core0 status"),    Seq(RegField  (64, core0_status))),	  
-          CEPRegisterAddresses.core1_status -> RegFieldGroup("core1 Status", Some("core0 status"),    Seq(RegField  (64, core1_status))),	  
-          CEPRegisterAddresses.core2_status -> RegFieldGroup("core2 Status", Some("core0 status"),    Seq(RegField  (64, core2_status))),	  
-          CEPRegisterAddresses.core3_status -> RegFieldGroup("core3 Status", Some("core0 status"),    Seq(RegField  (64, core3_status)))
-	  )
-	}
+  
+  // Define the register map
+  // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
+  outer.slave_node.regmap (
+    CEPRegisterAddresses.version_register -> RegFieldGroup("cep_version_register", Some(""),Seq(
+      RegField.r  (48, version_register.reserved),
+      RegField.r  (8,  version_register.major),
+      RegField.r  (8,  version_register.minor))),
+    CEPRegisterAddresses.testNset -> RegFieldGroup("test and set register", Some(""),Seq(
+      RegField.r  (1,  lock0.isLocked),         // [7:0]
+      RegField.r  (7,  lock0.coreId),           // 
+      RegField.r  (1,  lock1.isLocked),         // [15:8]
+      RegField.r  (7,  lock1.coreId),           // 
+      RegField.r  (1,  lock2.isLocked),         // [23:16]
+      RegField.r  (7,  lock2.coreId),           // 
+      RegField.r  (1,  lock3.isLocked),         // [31:24]
+      RegField.r  (7,  lock3.coreId),           // 
+      RegField    (1,  reqLock),       // [32]
+      RegField    (1,  releaseLock),   // [33]
+      RegField    (2,  lockNum),       // [35:34]             
+      RegField.r  (4,  0.U),           // [39:36]     
+      RegField    (7,  reqId),         // [46:40]
+    RegField.r  (17, 0.U))),         // [63:47]     
+      CEPRegisterAddresses.scratch_w0 -> RegFieldGroup("scratch_in0", Some("scratch word 0"),    Seq(RegField  (64, scratch.word0))),
+      CEPRegisterAddresses.scratch_w1 -> RegFieldGroup("scratch_in1", Some("scratch word 1"),    Seq(RegField  (64, scratch.word1))),
+      CEPRegisterAddresses.scratch_w2 -> RegFieldGroup("scratch_in2", Some("scratch word 2"),    Seq(RegField  (64, scratch.word2))),
+      CEPRegisterAddresses.scratch_w3 -> RegFieldGroup("scratch_in3", Some("scratch word 3"),    Seq(RegField  (64, scratch.word3))),
+      CEPRegisterAddresses.scratch_w4 -> RegFieldGroup("scratch_in4", Some("scratch word 4"),    Seq(RegField  (64, scratch.word4))),
+      CEPRegisterAddresses.scratch_w5 -> RegFieldGroup("scratch_in5", Some("scratch word 5"),    Seq(RegField  (64, scratch.word5))),
+      CEPRegisterAddresses.scratch_w6 -> RegFieldGroup("scratch_in6", Some("scratch word 6"),    Seq(RegField  (64, scratch.word6))),
+      CEPRegisterAddresses.scratch_w7 -> RegFieldGroup("scratch_in7", Some("scratch word 7"),    Seq(RegField  (64, scratch.word7))),
+      CEPRegisterAddresses.core0_status -> RegFieldGroup("core0 Status", Some("core0 status"),    Seq(RegField  (64, core0_status))),     
+      CEPRegisterAddresses.core1_status -> RegFieldGroup("core1 Status", Some("core0 status"),    Seq(RegField  (64, core1_status))),     
+      CEPRegisterAddresses.core2_status -> RegFieldGroup("core2 Status", Some("core0 status"),    Seq(RegField  (64, core2_status))),     
+      CEPRegisterAddresses.core3_status -> RegFieldGroup("core3 Status", Some("core0 status"),    Seq(RegField  (64, core3_status)))
+    ) // regmap
 }
 //--------------------------------------------------------------------------------------
-// END: TileLink Test Register
+// END: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
 

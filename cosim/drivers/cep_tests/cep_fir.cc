@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      cep_fir.cc/h
@@ -150,10 +150,14 @@ void cep_fir::do_filter(const double *b, const double *a, int filterLength, cons
     }
 }
 
+
 void cep_fir::LoadInSamples(int samCnt) {
   uint64_t word;
   for(int i = 0; i < samCnt; i++) { //  8-bytes/word
     word = (uint64_t)float_to_fixed(mInput[i]);
+    // duplicate 32 to 64 for coverage
+    word |= (word << 32) | (word & 0xFFFFFFFFLL);
+    //
     cep_writeNcapture(FIR_BASE_K, FIR_IN_DATA, word); //Write data
     cep_writeNcapture(FIR_BASE_K, FIR_IN_ADDR, i);     //Write addr
     cep_writeNcapture(FIR_BASE_K, FIR_IN_WRITE, 0x02);  //Load data
@@ -164,6 +168,10 @@ void cep_fir::LoadInSamples(int samCnt) {
 void cep_fir::Start(void) {
   cep_writeNcapture(FIR_BASE_K, FIR_START, 0x1);
   cep_writeNcapture(FIR_BASE_K, FIR_START, 0x0);
+}
+
+void cep_fir::Reset(int assert) {
+  cep_writeNcapture(FIR_BASE_K, FIR_RESET, assert);
 }
 
 void cep_fir::Reset(void) {
@@ -243,7 +251,7 @@ int cep_fir::RunFirTest(int maxLoop) {
     if (GetVerbose()) {
       LOGI("%s: Loop %d\n",__FUNCTION__,i);
     }
-    //Reset();
+    Reset();
     // build 32 samples
     for (int j=0; j < MAX_SAMPLES; j++) {
       mInput[j] = fixed_to_float((Random48_rand() + (int32_t)(j+1)*4) & 0x3FFFFFFF);

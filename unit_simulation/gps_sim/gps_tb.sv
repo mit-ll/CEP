@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 //
 // File Name:      gps_tb.sv
 // Program:        Common Evaluation Platform (CEP)
@@ -39,11 +39,15 @@
 // o1=output#1, o2=output#2, etc..
 // j* = dont care input/output (used for HEX filler)
 //
-`define APPLY_N_CHECK(x,j2,i2,j3,i3,j4,o1,j5,o2,o3,o4) \
-  {j2,i2,j3,i3,j4,exp_``o1,j5,exp_``o2,exp_``o3,exp_``o4}=x; \
-  exp_pat={exp_``o1,exp_``o2,exp_``o3,exp_``o4}; \
-  act_pat={o1,o2,o3,o4}; \
-  if (exp_pat!=act_pat) begin \
+// HACK!!!! o3 = l_code, o2 = l_code_valid, only if l_code_valid
+// added i4,5,6 = aes_key,pcode_speeds,pcode_initializers.
+//
+`define APPLY_N_CHECK(x, l1o,lr,lc,la,l1i,lkv,lck,ld,j2,i1,i2,j3,i3,i4,xx,i5,i6, j4,o1,j5,o2,o3,o4) \
+  {l1o,elr,elc,ela,l1i,lkv,lck,ld, \
+   j2,i1,i2,j3,i3,i4,xx,i5,i6,j4,exp_``o1,j5,exp_``o2,exp_``o3,exp_``o4}=x; \
+  exp_pat={elr,elc,ela,exp_``o1,exp_``o2,exp_``o3,exp_``o4}; \
+  act_pat={ lr, lc, la,o1,o2,o3,o4}; \
+  if ((samCnt > 24) && (exp_pat!=act_pat)) begin \
      $display("ERROR: miscompared at sample#%0d",i); \
      if (errCnt==0) $display("  PAT={%s,%s,%s,%s}", `"o1`",`"o2`",`"o3`",`"o4`"); \
      $display("  EXP=0x%x",exp_pat); \
@@ -51,44 +55,63 @@
      errCnt++;\
   end
 
-
-
-
-
 //
 //
 module `TB_NAME ;
 
    //
    //
+   int samCnt  = 0;
    string dut_name_list [] = '{`MKSTR(`DUT_NAME)};
    reg [`GPS_OUTPUT_WIDTH-1:0]  exp_pat, act_pat;
    //
+   // LLKI IOs
+   //
+   reg            elr,elc,ela;
+   reg            l1o;
+   reg [1:0]      l1i;
+   
+   wire           llkid_key_ready;
+   wire           llkid_key_complete;
+   wire           llkid_clear_key_ack;
+   reg            llkid_clear_key;   
+   reg            llkid_key_valid;   
+   reg [63:0]     llkid_key_data;    
+   //
    // IOs
    //
-   reg 		    sys_clk_50=0;
-   reg 		    sync_rst_in=1;
+   reg            sys_clk_50=0;
+   reg            sync_rst_in=1;
+   reg            sync_rst_in_dut=1;   
    
-   reg [5:0] 	    sv_num=0;
-   reg 		    startRound=0;
-   wire [12:0] 	    ca_code;
-   wire [127:0]     p_code;
-   wire [127:0]     l_code;
-   wire 	    l_code_valid;
+   reg [5:0]      sv_num=0;
+   reg            startRound=0;
+   // added by Brandon
+   reg [191:0] 	  aes_key=0;
+   reg [30:0] 	  pcode_speeds=0;
+   reg [47:0] 	  pcode_initializers=0;
+   //
+   wire [12:0]    ca_code;
+   wire [127:0]   p_code;
+   wire [127:0]   l_code;
+   wire           l_code_valid;
    
    //
    // filler & expected output
    //
-   reg [12:0] 	    exp_ca_code=0;
-   reg [127:0]     exp_p_code=0;
-   reg [127:0]     exp_l_code=0;
-   reg 		   exp_l_code_valid=0;
+   reg [12:0]     exp_ca_code=0;
+   reg [127:0]    exp_p_code=0;
+   reg [127:0]    exp_l_code=0;
+   reg            exp_l_code_valid=0;
 
    reg [2:0] 	   j1=0;
-   reg [2:0] 	   j2=0;
+   reg [1:0] 	   j2=0;
    reg [1:0] 	   j3=0;
    reg [2:0] 	   j4=0;
    reg [2:0] 	   j5=0;
+   reg [0:0] 	   j6=0;
+   reg 		   xx=0; // for pcode_speeds
+    
    
    //
    int 		errCnt=0;
@@ -98,29 +121,11 @@ module `TB_NAME ;
    initial begin
       forever #5 sys_clk_50 = !sys_clk_50;
    end
-   //
-   // include LLKI
-   //
-`ifdef LLKI_EN
- `include "../llki_supports/llki_rom.sv"
-   //
-   // LLKI supports
-   //
-   llki_discrete_if #(.core_id(`GPS_ID)) discrete();
-   // LLKI master
-   llki_discrete_master discreteMaster(.llki(discrete.master), .clk(sys_clk_50),.rst(sync_rst_in),.*);
-   //    
-   //
-   // DUT instantiation
-   //
-   `DUT_NAME #(.MY_STRUCT(GPS_LLKI_STRUCT)) dut(.llki(discrete.slave),.*);   
-`else
    //    
    //
    // DUT instantiation
    //
    `DUT_NAME dut(.*);
-`endif
    //
    // -------------------
    // Test starts here
@@ -130,48 +135,15 @@ module `TB_NAME ;
 	 //
 	 // Pulse the DUT's reset & drive input to zeros (known states)
 	 //
-	 {startRound,sv_num} = 0;
-	 
-	 //
-	 sync_rst_in = 1;
-	 repeat (21) @(posedge sys_clk_50); // MUST be 21 for this core because slow clock must align
-	 @(negedge sys_clk_50);      // in stimulus, rst de-asserted after negedge
-	 #2 sync_rst_in = 0;
-	 repeat (50) @(negedge sys_clk_50); // for output to stablize           
+      sync_rst_in_dut = 1;
+      {llkid_key_valid,llkid_clear_key,llkid_key_data,startRound,sv_num} = 0;
       
       //
-      // do the unlocking here if enable
-      //
-`ifdef LLKI_EN
-      discreteMaster.unlockReq(errCnt);
-      discreteMaster.clearKey(errCnt);
-      // do the playback and verify that it breaks since we clear the key
-      playback_data(1);
-      //
-      if (errCnt) begin
-	 $display("==== DUT=%s error count detected as expected due to logic lock... %0d errors ====",dut_name_list[0],errCnt);
-	 errCnt  = 0;
-	 //
-	 // need to pulse the reset since the core might stuck in some bad state
-	 //
-	 {startRound,sv_num} = 0;	 
-	 sync_rst_in = 1;
-	 repeat (5) @(posedge sys_clk_50);
-	 @(negedge sys_clk_50);      // in stimulus, rst de-asserted after negedge
-	 #2 sync_rst_in = 0;
-	 repeat (30) @(negedge sys_clk_50);  // need to wait this long for output to stablize	 
-	 //
-	 // unlock again
-	 //
-	 discreteMaster.unlockReq(errCnt);      
-      end
-      else begin
-	 $display("==== DUT=%s  error=%0d?? Expect at least 1 ====",dut_name_list[0],errCnt);
-	 errCnt++; // fail
-      end
-
-`endif      
-      
+      sync_rst_in = 1;
+      repeat (21) @(posedge sys_clk_50); // MUST be 21 for this core because slow clock must align
+      @(negedge sys_clk_50);      // in stimulus, rst de-asserted after negedge
+      #2 sync_rst_in = 0;
+      repeat (50) @(negedge sys_clk_50); // for output to stablize           
       //
       //
       if (!errCnt) playback_data(0);
@@ -179,10 +151,10 @@ module `TB_NAME ;
       // print summary
       //
       if (errCnt) begin
-	 $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
+         $display("==== DUT=%s TEST FAILED with %0d errors ====",dut_name_list[0],errCnt);
       end
       else begin
-	 $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
+         $display("==== DUT=%s TEST PASSED  ====",dut_name_list[0]);
       end
       //
       $finish;
@@ -194,25 +166,32 @@ module `TB_NAME ;
       int i;
       event err;
       begin
-	 //
-	 // open file for checking
-	 //
-	 $display("Reading %d samples from buffer GPS_buffer",`GPS_SAMPLE_COUNT);
-	 // now playback and check
-	 for (i=0;i<`GPS_SAMPLE_COUNT;i++) begin
-	    // the order MUST match the samples' order
-	    `APPLY_N_CHECK(GPS_buffer[i],
-			   j2,startRound,
+         //
+         // open file for checking
+         //
+         $display("Reading %d samples from buffer GPS_buffer",`GPS_SAMPLE_COUNT);
+         // now playback and check
+         for (i=0;i<`GPS_SAMPLE_COUNT;i++) begin
+	    samCnt = i;
+            // the order MUST match the samples' order
+            `APPLY_N_CHECK(GPS_buffer[i],
+			   l1o,llkid_key_ready,llkid_key_complete,llkid_clear_key_ack,
+			   l1i,llkid_key_valid,llkid_clear_key,
+			   llkid_key_data,
+			   j2,sync_rst_in_dut,startRound,
 			   j3,sv_num[5:0],
+			   aes_key[191:0],
+			   xx,pcode_speeds[30:0],
+			   pcode_initializers[47:0],
 			   j4,l_code_valid,
 			   j5,ca_code[12:0],
 			   l_code[127:0],
 			   p_code[127:0]);
 
-	    @(negedge sys_clk_50); // next sample
-	    // get out as soon found one error
-	    if (errCnt && StopOnError) break;    
-	 end // for (int i=0;i<`GPS_SAMPLE_COUNT;i++)
+            @(negedge sys_clk_50); // next sample
+            // get out as soon found one error
+            if (errCnt && StopOnError) break;    
+         end // for (int i=0;i<`GPS_SAMPLE_COUNT;i++)
       end
    endtask //   
    

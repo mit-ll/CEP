@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -119,54 +119,54 @@ module tl_master_beh
      input 	       clock, 
      input 	       reset, 
      // Channel A
-     input 	       auto_control_xing_in_a_ready, 
-     output reg        auto_control_xing_in_a_valid=0, 
-     output reg [2:0]  auto_control_xing_in_a_bits_opcode=0, 
-     output reg [2:0]  auto_control_xing_in_a_bits_param=0, 
-     output reg [1:0]  auto_control_xing_in_a_bits_size=0, 
-     output reg [7:0]  auto_control_xing_in_a_bits_source=0, 
-     output reg [30:0] auto_control_xing_in_a_bits_address=0, 
-     output reg [7:0]  auto_control_xing_in_a_bits_mask=0, 
-     output reg [63:0] auto_control_xing_in_a_bits_data=0, 
-     output reg        auto_control_xing_in_a_bits_corrupt=0, 
+     input 	       a_ready, 
+     output reg        a_valid=0, 
+     output reg [2:0]  a_bits_opcode=0, 
+     output reg [2:0]  a_bits_param=0, 
+     output reg [1:0]  a_bits_size=0, 
+     output reg [7:0]  a_bits_source=0, 
+     output reg [30:0] a_bits_address=0, 
+     output reg [7:0]  a_bits_mask=0, 
+     output reg [63:0] a_bits_data=0, 
+     output reg        a_bits_corrupt=0, 
      // Channel D
-     output reg        auto_control_xing_in_d_ready=1, // default 
-     input 	       auto_control_xing_in_d_valid, 
-     input [2:0]       auto_control_xing_in_d_bits_opcode, 
-     input [1:0]       auto_control_xing_in_d_bits_param, 
-     input [1:0]       auto_control_xing_in_d_bits_size, 
-     input [7:0]       auto_control_xing_in_d_bits_source,
-     input [63:0]      auto_control_xing_in_d_bits_data,
-     input [3-1:0]     auto_control_xing_in_d_bits_sink,
-     input 	       auto_control_xing_in_d_bits_denied,
-     input 	       auto_control_xing_in_d_bits_corrupt
+     output reg        d_ready=1, // default 
+     input 	       d_valid, 
+     input [2:0]       d_bits_opcode, 
+     input [1:0]       d_bits_param, 
+     input [1:0]       d_bits_size, 
+     input [7:0]       d_bits_source,
+     input [63:0]      d_bits_data,
+     input [3-1:0]     d_bits_sink,
+     input 	       d_bits_denied,
+     input 	       d_bits_corrupt
 );
 
    /* NOT USED FOR NOW!!! */
    // Channel B
-   reg 				 auto_control_xing_in_b_ready=0;
-   reg 				 auto_control_xing_in_b_valid = 0; 
-   reg [2:0] 			 auto_control_xing_in_b_bits_opcode = 0; 
-   reg [1:0] 			 auto_control_xing_in_b_bits_param = 0; 
-   reg [TL_SIZE-1:0] 		 auto_control_xing_in_b_bits_size = 0; 
-   reg [SRC_SIZE-1:0] 		 auto_control_xing_in_b_bits_source = 0; 
-   reg [ADR_WIDTH-1:0] 		 auto_control_xing_in_b_bits_address = 0; 
-   reg [BUS_SIZE-1:0] 		 auto_control_xing_in_b_bits_mask = 0; 
-   reg 				 auto_control_xing_in_b_bits_corrupt = 0;
+   reg 				 b_ready=0;
+   reg 				 b_valid = 0; 
+   reg [2:0] 			 b_bits_opcode = 0; 
+   reg [1:0] 			 b_bits_param = 0; 
+   reg [TL_SIZE-1:0] 		 b_bits_size = 0; 
+   reg [SRC_SIZE-1:0] 		 b_bits_source = 0; 
+   reg [ADR_WIDTH-1:0] 		 b_bits_address = 0; 
+   reg [BUS_SIZE-1:0] 		 b_bits_mask = 0; 
+   reg 				 b_bits_corrupt = 0;
    // Channel C    
-   reg 				 auto_control_xing_in_c_ready = 0; 
-   reg 				 auto_control_xing_in_c_valid=0; 
-   reg [2:0] 			 auto_control_xing_in_c_bits_opcode=0; 
-   reg [2:0] 			 auto_control_xing_in_c_bits_param=0; 
-   reg [TL_SIZE-1:0] 		 auto_control_xing_in_c_bits_size=0; 
-   reg [SRC_SIZE-1:0] 		 auto_control_xing_in_c_bits_source=0; 
-   reg [ADR_WIDTH-1:0] 		 auto_control_xing_in_c_bits_address=0; 
-   reg [DATA_WIDTH-1:0] 	 auto_control_xing_in_c_bits_data=0; 
-   reg 				 auto_control_xing_in_c_bits_corrupt=0; 
+   reg 				 c_ready = 0; 
+   reg 				 c_valid=0; 
+   reg [2:0] 			 c_bits_opcode=0; 
+   reg [2:0] 			 c_bits_param=0; 
+   reg [TL_SIZE-1:0] 		 c_bits_size=0; 
+   reg [SRC_SIZE-1:0] 		 c_bits_source=0; 
+   reg [ADR_WIDTH-1:0] 		 c_bits_address=0; 
+   reg [DATA_WIDTH-1:0] 	 c_bits_data=0; 
+   reg 				 c_bits_corrupt=0; 
    // Channel E		   
-   reg 				 auto_control_xing_in_e_ready = 0; 
-   reg 				 auto_control_xing_in_e_valid=0; 
-   reg [SINK_SIZE-1:0] 		 auto_control_xing_in_e_bits_sink=0;
+   reg 				 e_ready = 0; 
+   reg 				 e_valid=0; 
+   reg [SINK_SIZE-1:0] 		 e_bits_sink=0;
    // Misc.
    reg [SRC_SIZE-1:0] 		 constants_hartid  = 0;
    
@@ -245,18 +245,18 @@ module tl_master_beh
 	 //
 	 // use negedge to drive output
 	 @(posedge clock); `TICK_DELAY;
-	 auto_control_xing_in_a_bits_opcode = `TL_A_GET;
-	 auto_control_xing_in_a_bits_param  = 0; // must
-	 auto_control_xing_in_a_bits_size   = 3; // log2(8bytes)
-	 auto_control_xing_in_a_bits_source = src_id;
-	 auto_control_xing_in_a_bits_address= a;
-	 auto_control_xing_in_a_bits_mask   = 'hFF;
-	 auto_control_xing_in_a_bits_data   = 0; // dont care
-	 auto_control_xing_in_a_valid       = 1; // issue a valid
+	 a_bits_opcode = `TL_A_GET;
+	 a_bits_param  = 0; // must
+	 a_bits_size   = 3; // log2(8bytes)
+	 a_bits_source = src_id;
+	 a_bits_address= a;
+	 a_bits_mask   = 'hFF;
+	 a_bits_data   = 0; // dont care
+	 a_valid       = 1; // issue a valid
 	 // wait until slave took it
 	 i = 0;
 	 @(posedge clock);
-	 while (!auto_control_xing_in_a_ready && (i < MAX_TIMEOUT)) begin
+	 while (!a_ready && (i < MAX_TIMEOUT)) begin
 	    i = i + 1;	    	    
 	    @(posedge clock);	    
 	    if (i >= MAX_TIMEOUT) begin
@@ -266,14 +266,14 @@ module tl_master_beh
 	 end
 	 //
 	 `TICK_DELAY;	 
-	 auto_control_xing_in_d_ready = 1; // ready to accept
-	 auto_control_xing_in_a_valid = 0; // take valid away
+	 d_ready = 1; // ready to accept
+	 a_valid = 0; // take valid away
 	 //
 	 // wait on channel D for  respond
 	 i = 0;
 	 //	    @(posedge clock); // FIXME!!! No delay from a_valid to d_valid !!!!???? from chisel???	 
 	 //
-	 while (!tl_err && !auto_control_xing_in_d_valid) begin
+	 while (!tl_err && !d_valid) begin
 	    i = i + 1;
 	    @(posedge clock);
 	    if (i > MAX_TIMEOUT) begin
@@ -283,18 +283,18 @@ module tl_master_beh
 	 end
 	 // check and verify the data is for this tracaction
 	 if (!tl_err && 
-	     ((auto_control_xing_in_d_bits_opcode != `TL_D_ACCESSACKDATA) ||
-	      (auto_control_xing_in_d_bits_param != 0) ||
-	      (auto_control_xing_in_d_bits_size != 3) ||
-	      (auto_control_xing_in_d_bits_source != src_id) ||
-	      (auto_control_xing_in_d_bits_denied) ||
-	      (auto_control_xing_in_d_bits_corrupt))) begin
+	     ((d_bits_opcode != `TL_D_ACCESSACKDATA) ||
+	      (d_bits_param != 0) ||
+	      (d_bits_size != 3) ||
+	      (d_bits_source != src_id) ||
+	      (d_bits_denied) ||
+	      (d_bits_corrupt))) begin
 	    $display("**ERROR** reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",
-		     auto_control_xing_in_d_bits_opcode,auto_control_xing_in_d_bits_param,auto_control_xing_in_d_bits_size,auto_control_xing_in_d_bits_source,auto_control_xing_in_d_bits_denied,auto_control_xing_in_d_bits_corrupt);
+		     d_bits_opcode,d_bits_param,d_bits_size,d_bits_source,d_bits_denied,d_bits_corrupt);
 	    tl_err = 1;
 	 end
 	 else if (!tl_err) begin
-	    d = auto_control_xing_in_d_bits_data;	       
+	    d = d_bits_data;	       
 	    if (DEBUG) $display("src=%d a=0x%x d=0x%x",src_id,a,d);
 	 end
 	 @(posedge clock);	 
@@ -331,20 +331,20 @@ module tl_master_beh
 	 if (DEBUG) $display("src=%d a=0x%x d=0x%x mask=0x%x",src_id,a,d,mask);	 
 	 @(posedge clock);  `TICK_DELAY;	 
 	 if (mask == ((1<<BUS_SIZE)-1))
-	   auto_control_xing_in_a_bits_opcode = `TL_A_PUTFULLDATA;
+	   a_bits_opcode = `TL_A_PUTFULLDATA;
 	 else
-	   auto_control_xing_in_a_bits_opcode = `TL_A_PUTPARTIALDATA;	 
-	 auto_control_xing_in_a_bits_param  = 0; // must
-	 auto_control_xing_in_a_bits_size   = 3; // log2(8bytes)
-	 auto_control_xing_in_a_bits_source = src_id;
-	 auto_control_xing_in_a_bits_address= a;
-	 auto_control_xing_in_a_bits_mask   = mask;
-	 auto_control_xing_in_a_bits_data   = d; // dont care
-	 auto_control_xing_in_a_valid       = 1; // issue a valid
+	   a_bits_opcode = `TL_A_PUTPARTIALDATA;	 
+	 a_bits_param  = 0; // must
+	 a_bits_size   = 3; // log2(8bytes)
+	 a_bits_source = src_id;
+	 a_bits_address= a;
+	 a_bits_mask   = mask;
+	 a_bits_data   = d; // dont care
+	 a_valid       = 1; // issue a valid
 	 // wait until slave took it
 	 i = 0;
 	 @(posedge clock);	 	 
-	 while (!auto_control_xing_in_a_ready && (i < MAX_TIMEOUT)) begin
+	 while (!a_ready && (i < MAX_TIMEOUT)) begin
 	    i = i + 1;			    
 	    @(posedge clock);
 	    if (i >= MAX_TIMEOUT) begin
@@ -354,8 +354,8 @@ module tl_master_beh
 	 end
 	 //
 	 `TICK_DELAY;	 
-	 auto_control_xing_in_d_ready = 1; // ready to accept
-	 auto_control_xing_in_a_valid = 0; // take valid away
+	 d_ready = 1; // ready to accept
+	 a_valid = 0; // take valid away
 	 //
 	 // wait on channel D for  respond
 	 if (!tl_err) begin
@@ -364,7 +364,7 @@ module tl_master_beh
 	    //
 	    //	    @(posedge clock); // FIXME!!! No delay from a_valid to d_valid !!!!???? from chisel???
 	    //
-	    while (!auto_control_xing_in_d_valid && (i < MAX_TIMEOUT)) begin
+	    while (!d_valid && (i < MAX_TIMEOUT)) begin
 	       i = i + 1;	       	       
 	       @(posedge clock);
 	       if (i >= MAX_TIMEOUT) begin
@@ -374,16 +374,16 @@ module tl_master_beh
 	    end
 	    // check and verify the data is for this tracaction
 	    if (!tl_err &&
-		((auto_control_xing_in_d_bits_opcode != `TL_D_ACCESSACK) ||
-		 (auto_control_xing_in_d_bits_param != 0) ||
-		 (auto_control_xing_in_d_bits_size != 3) ||
-		 (auto_control_xing_in_d_bits_source != src_id) ||
-		 (auto_control_xing_in_d_bits_denied) ||
-		 (auto_control_xing_in_d_bits_corrupt))) begin
+		((d_bits_opcode != `TL_D_ACCESSACK) ||
+		 (d_bits_param != 0) ||
+		 (d_bits_size != 3) ||
+		 (d_bits_source != src_id) ||
+		 (d_bits_denied) ||
+		 (d_bits_corrupt))) begin
 	       $display("**ERROR** reported from channelD op/par/sz/src/den/cor=%x/%x/%x/%x/%x/%x",
-			auto_control_xing_in_d_bits_opcode,auto_control_xing_in_d_bits_param,auto_control_xing_in_d_bits_size,auto_control_xing_in_d_bits_source,auto_control_xing_in_d_bits_denied,auto_control_xing_in_d_bits_corrupt);
+			d_bits_opcode,d_bits_param,d_bits_size,d_bits_source,d_bits_denied,d_bits_corrupt);
 	    end
-	 end // if (auto_control_xing_in_a_ready)
+	 end // if (a_ready)
 	 @(posedge clock);	 
       end
    endtask // checkReset
@@ -397,41 +397,41 @@ module tl_master_beh
    integer t;
    
    always @(posedge clock) begin
-      if (auto_control_xing_in_b_valid) begin
-	 if (auto_control_xing_in_b_bits_opcode == `TL_B_PROBE) begin
+      if (b_valid) begin
+	 if (b_bits_opcode == `TL_B_PROBE) begin
 	    $display("Got a PROBE from channel B src=0x%x adr=0x%x cap=0x%x.. Sending back probeACK on C",
-		  auto_control_xing_in_b_bits_source,auto_control_xing_in_b_bits_address,auto_control_xing_in_b_bits_param);
+		  b_bits_source,b_bits_address,b_bits_param);
 	    //
 	    // copy before they go away
-	    auto_control_xing_in_c_bits_param   = auto_control_xing_in_b_bits_param;
-	    auto_control_xing_in_c_bits_size    = auto_control_xing_in_b_bits_size;
-	    auto_control_xing_in_c_bits_source  = auto_control_xing_in_b_bits_source;
-	    auto_control_xing_in_c_bits_address = auto_control_xing_in_b_bits_address;
-	    auto_control_xing_in_c_bits_data    = 0;
-	    auto_control_xing_in_c_bits_corrupt = 0;
+	    c_bits_param   = b_bits_param;
+	    c_bits_size    = b_bits_size;
+	    c_bits_source  = b_bits_source;
+	    c_bits_address = b_bits_address;
+	    c_bits_data    = 0;
+	    c_bits_corrupt = 0;
 	    // respond
 	    @(negedge clock);
-	    auto_control_xing_in_b_ready = 0;
-	    auto_control_xing_in_c_valid = 1;
-	    auto_control_xing_in_c_bits_opcode  = `TL_C_PROBEACK;
+	    b_ready = 0;
+	    c_valid = 1;
+	    c_bits_opcode  = `TL_C_PROBEACK;
 	    // wait until slave took it
 	    t = 0;
 	    @(posedge clock);	 	 
-	    while (!auto_control_xing_in_c_ready && (t < MAX_TIMEOUT)) begin
+	    while (!c_ready && (t < MAX_TIMEOUT)) begin
 	       t = t + 1;			    
 	       @(posedge clock);
 	       if (i >= MAX_TIMEOUT) begin
-		  $display("**ERROR** timeout while waiting for ready on channelB src=%d a=0x%x",auto_control_xing_in_c_bits_source,auto_control_xing_in_c_bits_address);
+		  $display("**ERROR** timeout while waiting for ready on channelB src=%d a=0x%x",c_bits_source,c_bits_address);
 		  tl_err = 1;
 	       end
 	    end
 	    @(negedge clock);
-	    auto_control_xing_in_c_valid = 0; // take it away
-	    auto_control_xing_in_b_ready = 1;
-	 end // if (auto_control_xing_in_b_bits_param == `CAP_toN)
+	    c_valid = 0; // take it away
+	    b_ready = 1;
+	 end // if (b_bits_param == `CAP_toN)
 	 else begin
 	    $display("ERROR:Got a PROBE from channel B src=0x%x adr=0x%x.. but don't  know how to repsond to OPCODE=0x%x PARAM=%d",
-		  auto_control_xing_in_b_bits_source,auto_control_xing_in_b_bits_address,auto_control_xing_in_b_bits_opcode,auto_control_xing_in_b_bits_param);	    
+		  b_bits_source,b_bits_address,b_bits_opcode,b_bits_param);	    
 	 end
       end
    end // always @ (posedge clock)
@@ -625,4 +625,4 @@ module tl_master_beh
    endtask // for
    
    
-endmodule // auto_control_xing_in__beh
+endmodule //_beh

@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX License Identifier: MIT
 #//
 #// File Name:      Makefile     
@@ -19,8 +19,6 @@
 #
 # Name one of the supported cores to run: <aes|md5|des3|sha256|gps|dft|idft|fir|iir>
 #
-LLKI_EN     = 1
-
 CORE        = aes
 #
 # Turn on read/write messages during simulation. Default is ON
@@ -84,21 +82,24 @@ CORE_VFILES = 	-y ../../hdl_cores/aes \
 		-v ../../hdl_cores/aes/table.v	\
 		-v ../../hdl_cores/aes/round.v
 
+LLKI_STUFFS = ../../hdl_cores/llki/*.sv          \
+	-y ../../hdl_cores/llki 			\
+	-y ../../opentitan/hw/ip/tlul/rtl 		\
+	-y ../../opentitan/hw/ip/prim/rtl  		\
+	-y ../../opentitan/hw/ip/prim_generic/rtl  	\
+	+incdir+../../opentitan/hw/ip/prim/rtl  	\
+
+
 #
 # Where to look for files
 #
 VLOG_DIR    =   ./supports
 
-ifeq (${LLKI_EN},1)
-OTHERS_FILES = -v ./supports/VCShell_llki.v ../llki_supports/llki_tl.sv ../llki_supports/llki_discrete.sv
-DUT_NAME     = TL${UPPER_NAME}_mock
-CORE_VFILES  += ../${CORE}_sim/*mock_tss.sv
-VLOG_DIR     += ../llki_supports
-DEFINE_LIST  += +define+USE_MOCK_LLKI +define+CORE_STRUCT_NAME=${UPPER_NAME}_LLKI_STRUCT
-else
-DUT_NAME     = TL${UPPER_NAME}
 OTHERS_FILES = -v ./supports/VCShell.v
-endif
+OTHERS_FILES += 
+DUT_NAME     = ${CORE}TLModule
+#CORE_VFILES  += 
+#
 OTHERS_FILES += ${CEP_PLUSARG_READER}
 
 #
@@ -125,21 +126,15 @@ DEFINE_LIST += +define+RANDOMIZE_MEM_INIT
 # compile/optimize and simulate the selected core
 # ------------------------------------------
 #
-all: ./supports/VCShell_llki.v ./supports/VCShell_llki.v
-ifeq (${CADENCE},1)
-	rm -rf xcelium.d
-	xrun -64 -sv +acc ../llki_supports/llki_discrete.sv  ${DEFINE_LIST} ./supports/tl_unit_tb.sv ${CORE_VFILES} ${OTHERS_FILES} ${SEARCH_DIR} ${INC_DIR} +libext+.v +libext+.sv  -xlm_bq1
-else
+all: ./supports/VCShell.v
 	rm -rf work
-	vlog -64 -sv +acc ${DEFINE_LIST} ./supports/tl_unit_tb.sv ${CORE_VFILES} ${OTHERS_FILES} ${SEARCH_DIR} ${INC_DIR} +libext+.v +libext+.sv 
+	vlog -64 -sv +acc ${DEFINE_LIST} ./supports/tl_unit_tb.sv ${CORE_VFILES} ${OTHERS_FILES} ${LLKI_STUFFS} ${SEARCH_DIR} ${INC_DIR} +libext+.v +libext+.sv 
 	vopt -64 +nolibcell +nospecify +notimingchecks ${TB_NAME} -o ${TB_NAME}_opt
 	vsim -64 ${TB_NAME}_opt -batch -do vsim.do -logfile ${CORE}.log -wlf ${CORE}.wlf
-endif
 
 #
 # No LLKI
 #
-
 #./supports/VCShell.v: ./supports/VCShell.v.gz
 #	gunzip -c $< > $@
 
@@ -152,8 +147,8 @@ endif
 # While we dont have the real VCShell with LLKI included
 # Modify the netlist to insert LLKI-TL and LLKI-discrete to the TL wrappers
 #
-./supports/VCShell_llki.v: ./supports/VCShell.v
-	./supports/insertLLKI.pl $< $@
+#./supports/VCShell_llki.v: ./supports/VCShell.v
+#	./supports/insertLLKI.pl $< $@
 
 #
 # ------------------------------------------

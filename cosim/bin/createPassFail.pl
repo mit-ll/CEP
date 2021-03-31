@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #//
 #// File Name:      insertLLKI.pl
 #// Program:        Common Evaluation Platform (CEP)
@@ -31,7 +31,17 @@ open(FP,$in_file) || die "Can't find file $in_file";
 open(OF,">$out_file") || die "Can't find file $out_file";
 while (<FP>) {
     chop($_);
-    if (/^([0-9,a-f,A-F]+) <pass>\:/) {
+    if (/^([0-9,a-f,A-F]+) <test_pass>\:/) {
+	printf("Found $1 from : $_\n") if $debug;
+	print(OF "\@0 $1 // $_\n");
+	$foundPass = 1;
+    }
+    elsif (/^([0-9,a-f,A-F]+) <test_fail>\:/) {
+	printf("Found $1 from : $_\n") if $debug;
+	print(OF "\@1 $1 // $_\n");
+	$foundFail = 1;
+    }
+    elsif (/^([0-9,a-f,A-F]+) <pass>\:/) {
 	printf("Found $1 from : $_\n") if $debug;
 	print(OF "\@0 $1 // $_\n");
 	$foundPass = 1;
@@ -46,6 +56,9 @@ while (<FP>) {
     } elsif (/^([0-9,a-f,A-F]+) <write_tohost>\:/) {
 	printf("Found $1 from : $_\n") if $debug;
 	print(OF "\@3 $1 // $_\n");
+    } elsif (/^([0-9,a-f,A-F]+) <hangMe>\:/) {
+	printf("Found $1 from : $_\n") if $debug;
+	print(OF "\@4 $1 // $_\n");
     } elsif (/^\s+([0-9,a-f,A-F]+):\s+([0-9,a-f,A-F]+)\s+ecall/) {
 	printf("Found $1 from : $_\n") if $debug;
 	$foundEcall = $1;

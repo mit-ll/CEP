@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -16,26 +16,30 @@
 `endif
 //
 reg CaptureMD5_vector=0;
-`define MD5_DATA_WIDTH   ((4*2)+512+(4*2)+128)
-`define MD5_OUTPUT_WIDTH (1+1+128)
+`define MD5_DATA_WIDTH   (72+(4*2)+512+(4*2)+128)
+`define MD5_OUTPUT_WIDTH (3+1+1+128)
 int MD5_sampleNum = 0;
 int MD5_fd;
 //
-always @(posedge c2c_capture_enable[`DVTF_MD5_CAPTURE_EN_BIT]) begin
+always @(posedge srot_start_capture) begin
    $display("Enable cycle-by-cycle capturing of MD5 stimulus");	    
    // wait until it gets out of reset
-   if (cep_tb.fpga.topDesign.topMod.md5.blackbox.rst)
-     @(negedge cep_tb.fpga.topDesign.topMod.md5.blackbox.rst);
+   if (cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.rst)
+     @(negedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.rst);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.md5.blackbox.clk);
-   CaptureMD5_vector=1;
+   @(posedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
    MD5_fd=$fopen("../../drivers/vectors/md5_stimulus.txt","w");
    captureMD5_Stimulus();   
 end	
+
+always @(posedge c2c_capture_enable[`DVTF_MD5_CAPTURE_EN_BIT]) begin
+   CaptureMD5_vector=1;
+end
+//
 always @(negedge c2c_capture_enable[`DVTF_MD5_CAPTURE_EN_BIT]) begin
    if (CaptureMD5_vector) begin
       CaptureMD5_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.md5.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
       $display("Stop Capturing MD5 stimulus");
       $fwrite(MD5_fd,"};\n");
       $fwrite(MD5_fd,"`define MD5_SAMPLE_COUNT %d\n",MD5_sampleNum);      
@@ -52,7 +56,7 @@ end
 	 MD5_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(MD5_fd,"//************************************************************************\n");
-	 $fwrite(MD5_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(MD5_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(MD5_fd,"//\n");		
 	 $fwrite(MD5_fd,"// File Name:      MD5_stimulus.txt\n");
 	 $fwrite(MD5_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -60,6 +64,10 @@ end
 	 $fwrite(MD5_fd,"// Notes:\n");        
 	 $fwrite(MD5_fd,"//\n");
 	 $fwrite(MD5_fd,"//************************************************************************\n");
+	 $fwrite(MD5_fd,"// column#L1 : LLKI OUT  llkid_key_ready,llkid_key_complete,llkid_clear_key_ack\n");
+	 $fwrite(MD5_fd,"// column#L2 : LLKI IN  llkid_key_valid, llkid_clear_key\n");
+	 $fwrite(MD5_fd,"// column#L3 : LLKI IN  llkid_key_data\n");
+
 	 $fwrite(MD5_fd,"// column#1  : IN  init\n");	 
 	 $fwrite(MD5_fd,"// column#2  : IN  msg_in_valid\n");
 	 $fwrite(MD5_fd,"// column#3  : IN  msg_padded[511:0]\n");	 
@@ -72,8 +80,9 @@ end
 	 $fwrite(MD5_fd,"reg [`MD5_DATA_WIDTH-1:0] MD5_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-	 while (CaptureMD5_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.md5.blackbox.clk);
+	 while (srot_start_capture) begin
+	    @(negedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
+	    if (CaptureMD5_vector || !srot_stop_capture) begin
 	    // MUST align to HEX number if _ is used!!!
 	    if (MD5_sampleNum>0) begin
 	       $fwrite(MD5_fd,"   ,");
@@ -81,16 +90,25 @@ end
 	       $fwrite(MD5_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
-	    $fwrite(MD5_fd,"'h%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.md5.blackbox.init},	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.md5.blackbox.msg_in_valid},
-		    cep_tb.fpga.topDesign.topMod.md5.blackbox.msg_padded[511:0],	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.md5.blackbox.ready},	 
-		    {3'b0,cep_tb.fpga.topDesign.topMod.md5.blackbox.msg_out_valid},
-		    cep_tb.fpga.topDesign.topMod.md5.blackbox.msg_output[127:0]
+	    $fwrite(MD5_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
+	    	    {1'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_ready,
+		     cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_complete,
+		     cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_clear_key_ack},
+		    {2'b0, cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_valid,
+		     cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_clear_key},
+		    cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_data[63:0],
+		    //
+
+		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.init},	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_in_valid},
+		    cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_padded[511:0],	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.ready},	 
+		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_out_valid},
+		    cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_output[127:0]
 		    );
 
 	    MD5_sampleNum++;
+	    end
 	 end // while (1)
       end
    endtask //

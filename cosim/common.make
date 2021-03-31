@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      common.make
@@ -24,6 +24,7 @@ DUT_VENDOR 	= XILINX
 # (no quote)
 #
 DUT_SIM_MODE	= BFM
+DUT_IN_VIRTUAL  = 0
 #
 # Some control flags
 #
@@ -179,7 +180,8 @@ UPDATE_INFO   = 1
 TEST_INFO     = testHistory.txt
 USE_GDB       = 0
 
-VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -sv_lib ${DLL_DIR}/libvpp -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log"
+# add +myplus=0 for stupid plus_arg
+VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -sv_lib ${DLL_DIR}/libvpp -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log +myplus=0"
 
 .vrun_flag: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
 ifeq (${COVERAGE},1)
@@ -291,7 +293,7 @@ SIMDIAG_DRIVER_OBJECTS      := $(foreach t,${notdir ${DRIVER_OBJECTS_LIST}}, ${D
 
 COMMON_CFLAGS	+= -I ${PLI_DIR} -I ${INC_DIR} -I ${SHARE_DIR}  \
 		-I ${SIMDIAG_DIR} $(DRIVER_INC_LIST)		\
-		-g  \
+		-g  -std=gnu++11 \
 		-Wno-format -Wno-narrowing 
 
 COMMON_CFLAGS	+= -DBIG_ENDIAN 

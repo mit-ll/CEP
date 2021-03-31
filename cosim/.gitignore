@@ -19,3 +19,10 @@ vsim.do
 **/transcript
 **/*.wlf
 **/*.dump
+dvt/behav_models/1024Mb_ddr3_parameters.vh
+dvt/behav_models/VCShell_bfm.v
+dvt/behav_models/ddr3.v
+include/cep_adrMap.h
+include/v2c_cmds.h
+lib/dll/libvpp.so
+

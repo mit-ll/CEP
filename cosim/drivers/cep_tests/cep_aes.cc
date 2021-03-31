@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      cep_aes.cc/h
@@ -24,7 +24,6 @@
 
 #include <string.h>
 #include "cep_aes.h"
-#include "cepSrotTest.h"
 #include "simdiag_global.h"
 #include "portable_io.h"
 #include "CEP.h"
@@ -186,73 +185,10 @@ int cep_aes::RunAes192Test(int maxLoop) {
   uint8_t pt0[]  = {0x32,0x43,0xf6,0xa8,0x88,0x5a,0x30,0x8d, 0x31,0x31,0x98,0xa2,0xe0,0x37,0x07,0x34};
   */
   int     outLen=mBlockSize;
-  uint8_t response_status;
   //
-    // ----------------------------------------------------------------------------
-    //   Initialize the LLKI before conducting a test, otherwise AES will fail
-    // ----------------------------------------------------------------------------
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("cep_aes::RunAes192Test: Initializing the Key Index RAM...                      \n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    for (int i = 0; i < SROT_KEYINDEXRAM_SIZE; i++) {
-      cep_write(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + (i*8), 0x0000000000000000);
-    }
 
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("cep_aes::RunAes192Test: Loading a key into the Key RAM...                      \n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 0, AES_MOCK_TSS_KEY_0);
-    cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 8, AES_MOCK_TSS_KEY_1);
-
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("cep_aes::RunAes192Test: Loading a valid key index...                        \n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    cep_write(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + 0, key_index_pack( 0x0000,                 // low pointer
-                                                                      0x0001,                 // high pointer
-                                                                      LLKI_AES_CORE_INDEX,    // core index
-                                                                      0x1));                  // Valid
-
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("cep_aes::RunAes192Test: Switching the LLKI from DEBUG to OPERATIONAL mode...\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-  cep_write(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_MODEBIT0_MASK | SROT_CTRLSTS_MODEBIT1_MASK);
-
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("cep_aes::RunAes192Test: Issuing a Load Key Request to the SRoT and waiting  \n");
-      LOGI("cep_aes::RunAes192Test: for the response...                                 \n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    response_status = send_srot_message(GetVerbose(), llkic2_pack(  LLKI_MID_C2LOADKEYREQ,    // Message ID
-                                                                    0x00,                     // Status (unused)
-                                                                    0x01,                     // Message Length
-                                                                    0x00,                     // Key Index
-                                                                    0xDEADBEEF));             // Reserved Field
-    // Parse the message status
-    if (parse_message_status(response_status, GetVerbose())) {
-      return 1;
-    }
-
-    // Run the main test loop
-    for (int i=0;i<maxLoop;i++) {
+  // Run the main test loop
+  for (int i=0;i<maxLoop;i++) {
     if (GetVerbose()) {
       LOGI("%s: Loop %d\n",__FUNCTION__,i);
     }
@@ -272,14 +208,14 @@ int cep_aes::RunAes192Test(int maxLoop) {
       RandomGen(mKEY, GetKeySize());
       RandomGen(mHwPt, GetBlockSize());      
     }
-
+    
     /* quick test to compare a known source
        strncpy((char *)mKEY,(char *)key0,24);
        strncpy((char *)mHwPt,(char *)pt0,16);
     */
- 
+    
     // ----------------------------------------------------------------------------
-
+    
     //
     // create expected cipherTet
     mErrCnt += cep_aes::openssl_aes192_ecb_encryption

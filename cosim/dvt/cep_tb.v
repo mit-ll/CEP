@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: MIT
 //
 // File Name:      
@@ -332,6 +332,14 @@ module cep_tb;
       release fpga.topDesign.topMod.pbus_reset;      
       `DVT_FLAG[`DVTF_TOGGLE_CHIP_RESET_BIT] = 0;
    end
+
+    always @(posedge `DVT_FLAG[`DVTF_TOGGLE_DMI_RESET_BIT]) begin
+      `logI("Forcing topMod_debug_ndreset");
+       force fpga.topDesign.topMod_debug_ndreset = 1;
+       repeat (10) @(negedge fpga.topDesign.topMod.pbus_clock);
+       release fpga.topDesign.topMod_debug_ndreset;
+       `DVT_FLAG[`DVTF_TOGGLE_DMI_RESET_BIT] = 0;
+   end
    
    assign sys_rst = RST_ACT_LOW ? sys_rst_n : ~sys_rst_n;
 
@@ -473,6 +481,7 @@ module cep_tb;
    assign jtag_jtag_TCK = JTCK;
    assign jtag_jtag_TMS = JTMS;
    assign jtag_jtag_TDI = JTDI;
+   /*
    initial begin
       forever #20 JTCK = !JTCK;
    end
@@ -485,14 +494,25 @@ module cep_tb;
       repeat (10) @(posedge JTCK);
       JTMS = 0;
    end
+    */
    //
    wire uart_rxd;   pullup (weak1) (uart_rxd);
    wire uart_ctsn;  pullup (weak1) (uart_ctsn);
    wire uart_txd; 
    wire uart_rtsn; pullup (weak1) (uart_rtsn);
-   assign uart_rxd = uart_txd;
 
-   // For now, we do NOT have a flash model
+   // add noise to uart_rxd;
+   reg 	noise = 0;
+   
+   always @(uart_txd) begin
+      for (int i=0;i<3;i++) begin
+	 repeat (2) @(posedge sys_clk_i);
+	 noise = 1;
+	 repeat (2) @(posedge sys_clk_i);
+	 noise = 0;
+      end
+   end
+   assign uart_rxd = uart_txd ^ noise;
    // no flow control support
    //
    wire sdio_sdio_clk; 
@@ -501,10 +521,35 @@ module cep_tb;
    wire sdio_sdio_dat_1; pullup (weak1) (sdio_sdio_dat_1);
    wire sdio_sdio_dat_2; pullup (weak1) (sdio_sdio_dat_2);   
    wire sdio_sdio_dat_3; pullup (weak1) (sdio_sdio_dat_3);
-   
 
-
-
+   reg 	spiResetL = 0;
+   initial begin
+      spiResetL = 1;
+      repeat (2) @(posedge sys_clk_i);
+      spiResetL = 0;
+      repeat (2) @(posedge sys_clk_i);
+      spiResetL = 1;
+   end
+   // 512Mbit
+   /*
+   s25fl512s spiFlash
+     (
+      .SCK    (sdio_sdio_clk  ), // topDesign_auto_topMod_spi_source_out_sck
+      .CSNeg  (sdio_sdio_dat_3), // topDesign_auto_topMod_spi_source_out_cs_0
+      .SI     (sdio_sdio_cmd  ), // topDesign_auto_topMod_spi_source_out_dq_0_o
+      .SO     (sdio_sdio_dat_0), // topDesign_auto_topMod_spi_source_out_dq_1_i
+      .WPNeg  (1'b1), // sdio_sdio_dat_1), // not used!!!
+      .HOLDNeg(1'b1), // sdio_sdio_dat_2), // not used
+      .RSTNeg (spiResetL      ) // 
+      );
+   */
+   spi_loopback spiFlash
+     (
+      .SCK    (sdio_sdio_clk  ), // topDesign_auto_topMod_spi_source_out_sck
+      .CS_n   (sdio_sdio_dat_3), // topDesign_auto_topMod_spi_source_out_cs_0
+      .MOSI   (sdio_sdio_cmd  ), // topDesign_auto_topMod_spi_source_out_dq_0_o
+      .MISO   (sdio_sdio_dat_0)  // topDesign_auto_topMod_spi_source_out_dq_1_i
+      );
    
    //
    // ############################################
@@ -551,7 +596,6 @@ module cep_tb;
    // Load the bare_boot.hex into boot rom
    //===========================================================================      
    //
-   `ifdef BARE_MODE
    reg [256*8 - 1:0] path;
    initial begin
       repeat (100) @(posedge sys_clk_i);
@@ -560,8 +604,10 @@ module cep_tb;
       path = "../../drivers/bootbare/bootbare.hex";      
       `logI("=== Overriding bootROm with file %s ==",path);      
       $readmemh(path, `BOOTROM_PATH.rom);
+      // also add 0x600DBABE_12345678 at end of the ROM for testing
+      `BOOTROM_PATH.rom[`bootrom_base_test_offs]   = `bootrom_known_pat1; //'h600DBABE; // LSW
+      `BOOTROM_PATH.rom[`bootrom_base_test_offs+1] = `bootrom_known_pat0; //'h12345678; // MSW
    end
-   `endif
    
   //===========================================================================
   //  FPGA
@@ -574,6 +620,7 @@ module cep_tb;
        .jtag_jtag_TMS 		(jtag_jtag_TMS),
        .jtag_jtag_TDI 		(jtag_jtag_TDI),
        .jtag_jtag_TDO 		(jtag_jtag_TDO),
+       .jtag_srst_n       (1'b1),
        .uart_txd 		(uart_txd),
        .uart_rxd 		(uart_rxd),
        .uart_rtsn 		(uart_rtsn),
@@ -650,7 +697,19 @@ module cep_tb;
    always @(posedge `DVT_FLAG[`DVTF_ENABLE_MAIN_MEMRD_LOGGING]) begin
       enableRdTrace = 1;            
       `DVT_FLAG[`DVTF_ENABLE_MAIN_MEMRD_LOGGING] = 0;
-   end   
+   end
+   //
+   reg migRdTrace = 0;
+   reg migWrTrace = 0;
+   //
+   always @(posedge `DVT_FLAG[`DVTF_ENABLE_MIG_MEMRD_LOGGING]) begin
+      migRdTrace = 1;            
+      `DVT_FLAG[`DVTF_ENABLE_MIG_MEMRD_LOGGING] = 0;
+   end
+   always @(posedge `DVT_FLAG[`DVTF_ENABLE_MIG_MEMWR_LOGGING]) begin
+      migWrTrace = 1;            
+      `DVT_FLAG[`DVTF_ENABLE_MIG_MEMWR_LOGGING] = 0;
+   end         
 
    reg program_loaded = 0;
    int save_memory_used = 0;
@@ -672,7 +731,15 @@ module cep_tb;
       save_memory_used = mem_rnk[0].gen_mem[0].ddr3.memory_used;
       //`DVT_FLAG[`DVTF_PROGRAM_LOADED] = 0;
    end
-
+   wire memRdEdge = migRdTrace && `DDR_PATH.auto_buffer_in_a_valid && (`DDR_PATH.auto_buffer_in_a_bits_opcode == 4);
+   wire memWrEdge = migWrTrace && `DDR_PATH.auto_buffer_in_a_valid && (`DDR_PATH.auto_buffer_in_a_bits_opcode == 0);   
+   
+   always @(posedge memRdEdge) begin
+      `logI("memRead  @0x%08x",`DDR_PATH.auto_buffer_in_a_bits_address);
+   end
+   always @(posedge memWrEdge) begin
+      `logI("memWrite \t@0x%08x",`DDR_PATH.auto_buffer_in_a_bits_address);
+   end   
    //
    //
    `define den1024Mb
@@ -879,7 +946,7 @@ module cep_tb;
    end
    genvar c;
    generate
-      for (c=0;c<4;c=c+1) begin
+      for (c=0;c<4;c=c+1) begin : driverX
 	 cep_driver #(.MY_SLOT_ID(0),.MY_LOCAL_ID(c))
 	 driver(
 		.clk 		(sys_clk_i), // clk100),	 
@@ -895,14 +962,18 @@ module cep_tb;
    //
    initial begin
       // no secure mode
-      @(posedge fpga.topDesign.topMod.rsa.blackbox.reset_n);
-      @(posedge fpga.topDesign.topMod.rsa.blackbox.clk);
-      fpga.topDesign.topMod.rsa.blackbox.exponation_mode_reg = 1;
+      @(posedge fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.reset_n);
+      @(posedge fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
+      fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponation_mode_reg = 1;
    end
    //
    //
    //
    reg [`DVTF_FIR_CAPTURE_EN_BIT:`DVTF_AES_CAPTURE_EN_BIT] c2c_capture_enable=0;
+   reg 							   srot_start_capture = 0;
+   reg 							   srot_stop_capture = 0;
+   reg 							   srot_capture_done = 0;   
+   
    //
    `include "aes_capture.incl"
    `include "sha256_capture.incl"
@@ -915,4 +986,6 @@ module cep_tb;
    `include "iir_capture.incl"
    `include "fir_capture.incl"                     
    //
+   `include "srot_capture.incl"
+   
 endmodule

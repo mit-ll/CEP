@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -12,6 +12,7 @@
 #include "simdiag_global.h"
 #include "cep_adrMap.h"
 #include "cepRegTest.h"
+#include "CEP.h"
 
 #include "cep_apis.h"
 #include "portable_io.h"
@@ -74,6 +75,7 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_pt1_addr,(uint64_t)(-1));
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch0_reg,(uint64_t)(-1));
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch4_reg,(uint64_t)(-1));
+
 #ifdef SIM_ENV_ONLY    
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_core0_status,(uint64_t)(-1));            
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_core1_status,(uint64_t)(-1));            
@@ -87,6 +89,9 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_key0_addr,(uint64_t)(-1));
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch1_reg,(uint64_t)(-1));                
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch5_reg,(uint64_t)(-1));            
+
+    (*regp->AddAReg_p)(regp, srot_base_addr  + SROT_LLKIC2_SCRATCHPAD0_ADDR, (uint64_t)(-1));
+    (*regp->AddAReg_p)(regp, srot_base_addr  + SROT_LLKIC2_SCRATCHPAD1_ADDR, (uint64_t)(-1));
     break;
   }    
   case 2: {
@@ -99,9 +104,21 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
     (*regp->AddAReg_p)(regp, aes_base_addr + aes_key2_addr,(uint64_t)(-1));
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch3_reg,(uint64_t)(-1));                
     (*regp->AddAReg_p)(regp, reg_base_addr + cep_scratch7_reg,(uint64_t)(-1));            
+    
     break;
   }    
   }
+  // add some holes to punch for coverage
+  /*
+  for (int i=0;i<CEP_TOTAL_CORES-1;i++) { // no SRot Yet
+    (*regp->AddAHole_p)(regp, cep_core_info[i].base_address  + 0xFFF8,(uint64_t)(-1));
+  }
+  */
+  // from 0x700x_xxxx - 0x7FFx_xxxx
+  (*regp->AddAHole_p)(regp, interrupt_controller_base_addr + 0xFF8,(uint64_t)(-1));
+
+  //(*regp->AddAHole_p)(regp, 0x7FFFFFF8,(uint64_t)(-1));
+  //
   // now do it
   errCnt = (*regp->doRegTest_p)(regp);
   //

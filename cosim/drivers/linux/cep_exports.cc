@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
 // File Name:      
@@ -427,7 +427,7 @@ void ddr3Test_thr(int id) {
   if (VERBOSE1()) {
     LOGI("mem_base=0x%016lx\n",mem_base)
   }
-  errCnt += cepMemTest_runTest(id,mem_base, adrWidth,
+  errCnt += cepMemTest_runTest(id,mem_base, adrWidth, 64,
 			       GET_VAR_VALUE(seed),
 			       GET_VAR_VALUE(verbose),
 			       GET_VAR_VALUE(longRun));

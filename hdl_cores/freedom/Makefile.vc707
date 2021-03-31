@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      Makefile.vc707
@@ -38,14 +38,20 @@ VSRCS := \
 	$(base_dir)/src/main/resources/vsrc/UIntToAnalog.v \
 	$(base_dir)/../llki/top_pkg.sv \
 	$(base_dir)/../llki/llki_pkg.sv \
+	$(base_dir)/../llki/mock_tss_fsm.sv \
 	$(base_dir)/../aes/aes_192_mock_tss.sv \
 	$(base_dir)/../aes/aes_192.v \
 	$(base_dir)/../aes/round.v \
 	$(base_dir)/../aes/table.v \
+	$(base_dir)/../dsp/FIR_filter_mock_tss.sv \
 	$(base_dir)/../dsp/FIR_filter.v \
+	$(base_dir)/../dsp/IIR_filter_mock_tss.sv \
 	$(base_dir)/../dsp/IIR_filter.v \
+	$(base_dir)/../dsp/dft_top_mock_tss.sv \
 	$(base_dir)/../../generated_dsp_code/dft_top.v \
+	$(base_dir)/../dsp/idft_top_mock_tss.sv \
 	$(base_dir)/../../generated_dsp_code/idft_top.v \
+	$(base_dir)/../des3/des3_mock_tss.sv \
 	$(base_dir)/../des3/des3.v \
 	$(base_dir)/../des3/key_sel3.v \
 	$(base_dir)/../des3/crp.v \
@@ -57,14 +63,16 @@ VSRCS := \
 	$(base_dir)/../des3/sbox6.v \
 	$(base_dir)/../des3/sbox7.v \
 	$(base_dir)/../des3/sbox8.v \
+	$(base_dir)/../md5/md5_mock_tss.sv \
 	$(base_dir)/../md5/md5.v \
 	$(base_dir)/../md5/pancham.v \
 	$(base_dir)/../md5/pancham_round.v \
 	$(base_dir)/../md5/pancham_round.v \
+	$(base_dir)/../gps/gps_mock_tss.sv \
 	$(base_dir)/../gps/gps.v \
-	$(base_dir)/../gps/gps_clkgen.v \
 	$(base_dir)/../gps/cacode.v \
 	$(base_dir)/../gps/pcode.v \
+	$(base_dir)/../rsa/rtl/modexp_core_mock_tss.sv \
 	$(base_dir)/../rsa/rtl/modexp_core.v \
 	$(base_dir)/../rsa/rtl/montprod.v \
 	$(base_dir)/../rsa/rtl/residue.v \
@@ -76,19 +84,21 @@ VSRCS := \
 	$(base_dir)/../rsa/rtl/shr.v \
 	$(base_dir)/../rsa/rtl/shl.v \
 	$(base_dir)/../rsa/rtl/adder.v \
+	$(base_dir)/../sha256/sha256_mock_tss.sv \
 	$(base_dir)/../sha256/sha256.v \
 	$(base_dir)/../sha256/sha256_k_constants.v \
 	$(base_dir)/../sha256/sha256_w_mem.v \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_assert.sv \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_util_pkg.sv \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_fifo_sync.sv \
-	$(base_dir)/../../opentitan/hw/ip/prim_generic/rtl/prim_generic_ram_2p.sv \
+	$(base_dir)/../../opentitan/hw/ip/prim_generic/rtl/prim_generic_ram_1p.sv \
 	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_pkg.sv \
-	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_adapter_reg.sv \
 	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_adapter_host.sv \
 	$(base_dir)/../llki/llki_pp_wrapper.sv \
 	$(base_dir)/../llki/srot_wrapper.sv \
-	$(base_dir)/../llki/tlul_err.sv
+	$(base_dir)/../llki/tlul_err.sv \
+	$(base_dir)/../llki/tlul_adapter_reg.sv
+
 
 # Freedom U500 TCL scripts have been expanded to support passing of 
 # include directories to synthesis (which is important for SystemVerilog packages)

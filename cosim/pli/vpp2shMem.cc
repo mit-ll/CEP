@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -300,7 +300,7 @@ void get_v2c_mail(const int slotId, const int cpuId, mailBox *inBox)  {
 	inBox->mAdrHi     = ptr->GetAdrHi();   
 	inBox->mAdr       = ptr->GetAdr();     
 	//
-	memcpy(&(inBox->mPar[0]),ptr->GetArgPtr(), 8 * sizeof(u_int64_t));	
+	memcpy(&(inBox->mPar[0]),ptr->GetArgPtr(), 32 * sizeof(u_int64_t));	
 	// print it
 	if (ptr->GetVerbose()) {
 	  // print the verbose string before execute the command
@@ -336,7 +336,7 @@ void send_v2c_mail(const int slotId, const int cpuId, const mailBox *inBox) {
     int remoteOffset = ptr->GetRemoteOffset();
     ptr = GlobalShMemory.getIpcPtr(remoteOffset);
   }
-  memcpy(ptr->GetArgPtr(),&(inBox->mPar[0]), 8 * sizeof(u_int64_t));
+  memcpy(ptr->GetArgPtr(),&(inBox->mPar[0]), 32 * sizeof(u_int64_t));
   
   if (__shIpc_remoteReq) { 
     // clear remote 

@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -74,18 +74,26 @@
 //
 // 64bits address
 //
-`define SHIPC_WRITE32_32     32'h00000100
-`define SHIPC_WRITE64_32     32'h00000101
-`define SHIPC_WRITE64_64     32'h00000102
-`define SHIPC_WRITE32_64     32'h00000103
-`define SHIPC_READ32_32      32'h00000110
-`define SHIPC_READ64_32      32'h00000111
-`define SHIPC_READ64_64      32'h00000112
-`define SHIPC_READ32_64      32'h00000113
+`define SHIPC_WRITE32_8      32'h00000100
+`define SHIPC_WRITE32_16     32'h00000101
+`define SHIPC_WRITE32_32     32'h00000102
+`define SHIPC_WRITE64_32     32'h00000103
+`define SHIPC_WRITE64_64     32'h00000104
+`define SHIPC_WRITE32_64     32'h00000105
+`define SHIPC_READ32_8       32'h00000110
+`define SHIPC_READ32_16      32'h00000111
+`define SHIPC_READ32_32      32'h00000112
+`define SHIPC_READ64_32      32'h00000113
+`define SHIPC_READ64_64      32'h00000114
+`define SHIPC_READ32_64      32'h00000115
+
+`define SHIPC_WRITE64_BURST  32'h00000118
+`define SHIPC_READ64_BURST   32'h00000119
+`define SHIPC_ATOMIC_RDW64   32'h0000011A
 
 // Showtime
-`define SHIPC_FRAMER_RDWR    32'h00000113
-`define SHIPC_SAMPLE_RDWR    32'h00000114
+`define SHIPC_FRAMER_RDWR    32'h00000116
+`define SHIPC_SAMPLE_RDWR    32'h00000117
 
 //
 // Mail Box Command (result from SHIPC_WRITE_STATUS)
@@ -152,6 +160,7 @@
 `define DVTF_IDFT_CAPTURE_EN_BIT                    97
 `define DVTF_IIR_CAPTURE_EN_BIT                     98
 `define DVTF_FIR_CAPTURE_EN_BIT                     99
+
 //
 `define DVTF_TOGGLE_CHIP_RESET_BIT                  100
 `define DVTF_GET_CORE_RESET_STATUS                  101
@@ -160,6 +169,15 @@
 `define DVTF_FORCE_SINGLE_THREAD                    104
 `define DVTF_SET_VIRTUAL_MODE                       105
 `define DVTF_PASS_IS_TO_HOST                        106
+`define DVTF_TOGGLE_DMI_RESET_BIT                   107
+//
+`define DVTF_ENABLE_MIG_MEMRD_LOGGING               108
+`define DVTF_ENABLE_MIG_MEMWR_LOGGING               109
+
+// SRoT TL capture 
+`define DVTF_SROT_START_CAPTURE_BIT                 111
+`define DVTF_SROT_STOP_CAPTURE_BIT                  112
+
 //
 // ===============================================
 // System Sim Status

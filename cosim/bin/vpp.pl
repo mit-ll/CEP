@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #//
 #// File Name:      
 #// Program:        Common Evaluation Platform (CEP)
@@ -232,7 +232,7 @@ sub run_caller_cmds {
     #
     # Check test.log for "ERROR" message
     #
-    open (TL,"egrep '(ERROR|FATAL)' $logFile |");
+    open (TL,"egrep -i '(\s+ERROR|FATAL)' $logFile |");
     while (<TL>) {
       if ($doFilter) {
         $ignoreFlag = 0;

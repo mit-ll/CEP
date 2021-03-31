@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -16,26 +16,30 @@
 `endif
 //
 reg CaptureIIR_vector=0;
-`define IIR_DATA_WIDTH   (4+(2*32))
-`define IIR_OUTPUT_WIDTH (32)
+`define IIR_DATA_WIDTH   (72+4+(2*32))
+`define IIR_OUTPUT_WIDTH (3+32)
 int IIR_sampleNum = 0;
 int IIR_fd;
 //
-always @(posedge c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT]) begin
+always @(posedge srot_start_capture) begin
    $display("Enable cycle-by-cycle capturing of IIR stimulus");	    
-   // wait until it gets out of reset
-   //if (!cep_tb.fpga.topDesign.topMod.iir.blackbox.reset)
-     @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.reset);
+   // wait until it gets out of rst
+   if (cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.rst)
+     @(negedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.rst);
    // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
-   CaptureIIR_vector=1;
+   @(posedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.clk);
    IIR_fd=$fopen("../../drivers/vectors/iir_stimulus.txt","w");
    captureIIR_Stimulus();   
 end	
+
+always @(posedge c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT]) begin
+   CaptureIIR_vector=1;
+end
+//
 always @(negedge c2c_capture_enable[`DVTF_IIR_CAPTURE_EN_BIT]) begin
    if (CaptureIIR_vector) begin
       CaptureIIR_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
+      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.clk);
       $display("Stop Capturing IIR stimulus");
       $fwrite(IIR_fd,"};\n");
       $fwrite(IIR_fd,"`define IIR_SAMPLE_COUNT %d\n",IIR_sampleNum);      
@@ -52,7 +56,7 @@ end
 	 IIR_sampleNum = 0;
 	 $display("Capturing stimulus");	 
 	 $fwrite(IIR_fd,"//************************************************************************\n");
-	 $fwrite(IIR_fd,"// Copyright (C) 2020 Massachusetts Institute of Technology\n");
+	 $fwrite(IIR_fd,"// Copyright 2021 Massachusetts Institute of Technology\n");
 	 $fwrite(IIR_fd,"//\n");		
 	 $fwrite(IIR_fd,"// File Name:      IIR_stimulus.txt\n");
 	 $fwrite(IIR_fd,"// Program:        Common Evaluation Platform (CEP)\n");
@@ -60,7 +64,11 @@ end
 	 $fwrite(IIR_fd,"// Notes:\n");        
 	 $fwrite(IIR_fd,"//\n");
 	 $fwrite(IIR_fd,"//************************************************************************\n");
-	 $fwrite(IIR_fd,"// column#1  : IN  reset (active low)\n");	 
+	 $fwrite(IIR_fd,"// column#L1 : LLKI OUT  llkid_key_ready,llkid_key_complete,llkid_clear_key_ack\n");
+	 $fwrite(IIR_fd,"// column#L2 : LLKI IN  llkid_key_valid, llkid_clear_key\n");
+	 $fwrite(IIR_fd,"// column#L3 : LLKI IN  llkid_key_data\n");
+
+	 $fwrite(IIR_fd,"// column#1  : IN  rst_dut (active Hi)\n");	 
 	 $fwrite(IIR_fd,"// column#2  : IN  inData[31:0]\n");
 	 $fwrite(IIR_fd,"// column#3  : OUT outData[31:0]\n");	 
 	 //	 
@@ -69,8 +77,9 @@ end
 	 $fwrite(IIR_fd,"reg [`IIR_DATA_WIDTH-1:0] IIR_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-	 while (CaptureIIR_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.iir.blackbox.clk);
+	 while (srot_start_capture) begin
+	    @(negedge cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.clk);
+	    if (CaptureIIR_vector || !srot_stop_capture) begin
 	    // MUST align to HEX number if _ is used!!!
 	    if (IIR_sampleNum>0) begin
 	       $fwrite(IIR_fd,"   ,");
@@ -78,11 +87,19 @@ end
 	       $fwrite(IIR_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
-	    $fwrite(IIR_fd,"'h%x_%x_%x\n",
-		{3'b0,cep_tb.fpga.topDesign.topMod.iir.blackbox.reset},
-		    cep_tb.fpga.topDesign.topMod.iir.blackbox.inData[31:0],
-		    cep_tb.fpga.topDesign.topMod.iir.blackbox.outData[31:0]);
+	    $fwrite(IIR_fd,"'h%x_%x_%x_%x_%x_%x\n",
+	    	    {1'b0,cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_key_ready,
+		     cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_key_complete,
+		     cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_clear_key_ack},
+		    {2'b0, cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_key_valid,
+		     cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_clear_key},
+		    cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.llkid_key_data[63:0],
+		    //
+		{3'b0,cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.rst_dut},
+		    cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.inData[31:0],
+		    cep_tb.fpga.topDesign.topMod.iirmodule.IIR_filter_mock_tss_inst.IIR_filter_inst.outData[31:0]);
 	    IIR_sampleNum++;
+	    end
 	 end // while (1)
       end
    endtask //

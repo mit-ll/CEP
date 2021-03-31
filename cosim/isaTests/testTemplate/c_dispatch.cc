@@ -1,5 +1,5 @@
 //************************************************************************
-// Copyright (C) 2020 Massachusetts Institute of Technology
+// Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
@@ -121,6 +121,9 @@ int main(int argc, char *argv[])
     Done = thr.AllThreadDone();
     sleep(2);
   }
+  //
+  toggleDmiReset();
+  //
   /* ===================================== */
   /*   END-OF-TEST CHECKING                */
   /* ===================================== */

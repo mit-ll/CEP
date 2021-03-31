@@ -1,5 +1,8 @@
-[//]: # (Copyright 2020 Massachusetts Institute of Technology)
+[//]: # (Copyright 2021 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
+
+[![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
+[![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
 
 # README for CEP co-simulation environment
 
@@ -50,6 +53,7 @@ Assuming you already have the CEP-master (version 2.0 or later) sandbox pulled f
     isaTests/rv64mi-p-access 
 	  isaTests/rv64ud-p-ldst
 ```
+   NOTE: All tests (including the above failed tests) are now passing with version 2.8 or later under Linux machine..
 
 ## Verify environment settings and tools: ##
 
@@ -59,7 +63,7 @@ For CEP, the path to tools required are as listed below (see **common.make**)
     SIMULATOR_PATH  ?= /opt/questa-2019.1/questasim/bin
     RISCV           ?= /opt/riscv
 
-**NOTE**: If they are not matched your setup, dont need to edit the common.make file, use enviroment variables to ovlerride as such (assuming bash shell is used). 
+**NOTE**: If they are not matched your setup, dont need to edit the common.make file, use enviroment variables to override as such (assuming bash shell is used). 
 ```
 export VIVADO_PATH=<Your_path_to_Vivado_tool>
 export SIMULATOR_PATH=<Your_path_to_questa_tool>

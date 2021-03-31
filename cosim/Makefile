@@ -1,5 +1,5 @@
 #//************************************************************************
-#// Copyright (C) 2020 Massachusetts Institute of Technology
+#// Copyright 2021 Massachusetts Institute of Technology
 #// SPDX short identifier: BSD-2-Clause
 #//
 #// File Name:      Makefile
@@ -31,9 +31,10 @@ SIM_DIR     = ${DUT_TOP_DIR}/${COSIM_NAME}
 # Either run one at a time or batch the whole thing if supported (TBA)
 #
 
-TEST_GROUP  =  	bfmTests	\
-		bareMetalTests	\
-		isaTests
+TEST_GROUP  =  	bareMetalTests	\
+		bfmTests	\
+		isaTests	\
+
 
 runAll: 
 	make cleanAll

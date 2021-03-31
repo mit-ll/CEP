@@ -181,9 +181,13 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   reg                           write_error;
   reg                           read_error;
  
+<<<<<<< HEAD
   // Defined earlier in the file so it can be used as a selector input for
   // the KeyIndexRAM and KeyRAM address inputs
   SROT_STATE_TYPE               srot_current_state;
+=======
+
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
   //------------------------------------------------------------------------
   // Instantitate a tlul_adapter_reg to adapt the TL Slave Interface
@@ -439,6 +443,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       srot_ctrlstatus_register    <= '0;
       srot_scratchpad0_register   <= '0;
       srot_scratchpad1_register   <= '0;
+<<<<<<< HEAD
       write_error                 <= '0;
       keyindexram_write_i         <= '0;
       keyram_write_i              <= '0;
@@ -447,6 +452,17 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       llkic2_reqfifo_wvalid_i     <= '0;
       llkic2_reqfifo_wdata_i      <= '0;
       rdata_valid_i_d1            <= '0;
+=======
+      write_error                 <= 1'b0;
+      keyindexram_a_write_i       <= 1'b0;
+      keyram_a_write_i            <= 1'b0;
+      keyindexram_a_addr_i        <= '0;
+      keyindexram_a_wdata_i       <= '0;
+      keyram_a_addr_i             <= '0;
+      keyram_a_wdata_i            <= '0;
+      llkic2_reqfifo_wvalid_i     <= 1'b0;
+      llkic2_reqfifo_wdata_i      <= 1'b0;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     end else begin
       
       // Default signal assignments

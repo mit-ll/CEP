@@ -71,6 +71,7 @@ void *c_module(void *arg) {
     errCnt += cepFragmentorTest_baseTest(cpuId, plic_base_addr + 0x8000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, debug_controller_base_addr+ 0x100,  16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     //
+<<<<<<< HEAD
     errCnt += cepFragmentorTest_baseTest(cpuId, rsa_base_addr  + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, dft_base_addr  + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, idft_base_addr + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!    
@@ -78,14 +79,30 @@ void *c_module(void *arg) {
     errCnt += cepFragmentorTest_baseTest(cpuId, iir_base_addr  + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, gps_base_addr  + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     //   errCnt += cepFragmentorTest_baseTest(cpuId, srot_base_addr + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+=======
+    errCnt += cepFragmentorTest_baseTest(cpuId, rsa_base_addr  + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, dft_base_addr  + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, idft_base_addr + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!    
+    errCnt += cepFragmentorTest_baseTest(cpuId, fir_base_addr  + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, iir_base_addr  + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, gps_base_addr  + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    //   errCnt += cepFragmentorTest_baseTest(cpuId, srot_base_addr + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     break;
 
   case 1 : 
     // AES
+<<<<<<< HEAD
     errCnt += cepFragmentorTest_baseTest(cpuId, aes_base_addr + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, aes_base_addr + aes_key1_addr,  2, 2, (uint64_t)-1, seed, verbose); 
     // SHA256 msg input word 0  is not aligned
     errCnt += cepFragmentorTest_baseTest(cpuId, sha256_base_addr + 0x0100,     16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+=======
+    errCnt += cepFragmentorTest_baseTest(cpuId, aes_base_addr + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, aes_base_addr + aes_key1_addr,  2, 2, (uint64_t)-1, seed, verbose); 
+    // SHA256 msg input word 0  is not aligned
+    errCnt += cepFragmentorTest_baseTest(cpuId, sha256_base_addr + 0x1000,     16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     errCnt += cepFragmentorTest_baseTest(cpuId, sha256_base_addr + 0x10,        2, 2, (uint64_t)-1, seed, verbose); 
     errCnt += cepFragmentorTest_baseTest(cpuId, sha256_base_addr + 0x20,        4, 4, (uint64_t)-1, seed, verbose); 
     break;
@@ -94,13 +111,21 @@ void *c_module(void *arg) {
     // MaskRom
     errCnt += cepFragmentorTest_verifyMaskRom(cpuId, bootrom_base_addr, "../../drivers/bootbare/bootbare.bin", 8, seed,verbose);
     // MD5
+<<<<<<< HEAD
     errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+=======
+    errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x1000,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x10,           2, 2, (uint64_t)-1, seed, verbose); 
     errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x20,           4, 4, (uint64_t)-1, seed, verbose); 
     //
     // CEP regs
     //
+<<<<<<< HEAD
     errCnt += cepFragmentorTest_baseTest(cpuId, reg_base_addr + 0x0100,          16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+=======
+    errCnt += cepFragmentorTest_baseTest(cpuId, reg_base_addr + 0x1000,          16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     errCnt += cepFragmentorTest_baseTest(cpuId, reg_base_addr + cep_scratch0_reg, 8, 8, (uint64_t)-1, seed, verbose);
     break;
     //
@@ -108,11 +133,19 @@ void *c_module(void *arg) {
     //
   case 3 : 
     // DES3 Plaintext Word 1
+<<<<<<< HEAD
     errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x0100,       16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x10,          2, 2, ((uint64_t)1 << 56)-1, seed, verbose); 
     errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x20,          4, 4, ((uint64_t)1 << 56)-1, seed, verbose); 
     // CLINT
     errCnt += cepFragmentorTest_baseTest(cpuId, clint_base_addr + 0x0100,               16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+=======
+    errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x1000,       16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+    errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x10,          2, 2, ((uint64_t)1 << 56)-1, seed, verbose); 
+    errCnt += cepFragmentorTest_baseTest(cpuId, des3_base_addr + 0x20,          4, 4, ((uint64_t)1 << 56)-1, seed, verbose); 
+    // CLINT
+    errCnt += cepFragmentorTest_baseTest(cpuId, clint_base_addr + 0x1000,               16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     errCnt += cepFragmentorTest_baseTest(cpuId, clint_base_addr + clint_mtimecmp_offset, 8, 8, (uint64_t)-1, seed, verbose);
     break;
 

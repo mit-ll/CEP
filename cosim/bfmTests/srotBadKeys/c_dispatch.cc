@@ -1,6 +1,10 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
+<<<<<<< HEAD:cosim/bfmTests/srotBadKeys/c_dispatch.cc
 // SPDX License Identifier: MIT
+=======
+// SPDX short identifier: BSD-2-Clause
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bfmTests/clintTest/c_dispatch.cc
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -13,9 +17,8 @@
 #include "access.h"
 #include "c_dispatch.h"
 #include "c_module.h"
-#include "cep_apis.h"
 #include "cep_adrMap.h"
-#include "cepregression.h"
+#include "cep_apis.h"
 #include "simPio.h"
 /*
  * main 
@@ -57,7 +60,6 @@ int main(int argc, char *argv[])
   //
   // c_module is the threead to run
   //
-  initConfig();
   for (int i=0;i<maxHost;i++) {
     if ((long unsigned int)(1 << i) & mask) {
       thr.ForkAThread(activeSlot,i,verbose, mask, c_module);
@@ -67,13 +69,6 @@ int main(int argc, char *argv[])
   // lastly: Added system thread always
   //
   thr.AddSysThread(SYSTEM_SLOT_ID,SYSTEM_CPU_ID);
-  //
-#ifdef C2C_CAPTURE
-  Set_C2C_Capture(C2C_CAPTURE);
-#endif
-  //
-  DUT_WRITE_DVT(DVTF_TOGGLE_CHIP_RESET_BIT,DVTF_TOGGLE_CHIP_RESET_BIT, 1);
-    
   //
   // ============================
   // Turn on the wave here
@@ -85,6 +80,10 @@ int main(int argc, char *argv[])
   #ifndef NOWAVE
   dump_wave(cycle2start, cycle2capture, wave_enable);
   #endif
+  //
+  // Enable main memory logging
+  //
+  //DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEM_LOGGING, DVTF_ENABLE_MAIN_MEM_LOGGING, 1);
   //
   // ============================  
   // wait until all the threads are done

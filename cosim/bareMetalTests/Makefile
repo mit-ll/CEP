@@ -65,7 +65,10 @@ BARE_TEST_LIST = 		\
 	plicTest		\
 	fragmemter		\
 	csrTest			\
+<<<<<<< HEAD
 	srotMemTest		\
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 
 TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.txt))

@@ -1,6 +1,15 @@
 //************************************************************************
+<<<<<<< HEAD
 // Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: MIT
+=======
+<<<<<<< HEAD:cosim/bareMetalTests/csrTest/riscv_wrapper.cc
+// Copyright (C) 2020 Massachusetts Institute of Technology
+=======
+// Copyright 2021 Massachusetts Institute of Technology
+// SPDX short identifier: MIT
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/riscv_wrapper.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -15,7 +24,15 @@
 #include "cep_adrMap.h"
 #include "cep_apis.h"
 
+<<<<<<< HEAD
 #include "cepClintTest.h"
+=======
+<<<<<<< HEAD:cosim/bareMetalTests/csrTest/riscv_wrapper.cc
+#include "cepCsrTest.h"
+=======
+#include "cepClintTest.h"
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/riscv_wrapper.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 
 //#define printf(...) { return 0; }
@@ -38,7 +55,15 @@ void thread_entry(int cid, int nc)
   //
   //
   set_cur_status(CEP_RUNNING_STATUS);
+<<<<<<< HEAD
   if (!errCnt) { errCnt = cepClintTest_runTest(coreId, coreId*(0x100), 0); }
+=======
+<<<<<<< HEAD:cosim/bareMetalTests/csrTest/riscv_wrapper.cc
+  if (!errCnt) { errCnt = cepCsrTest_runTest(coreId,64, revCheck, coreId*(0x100), 0); }
+=======
+  if (!errCnt) { errCnt = cepClintTest_runTest(coreId, coreId*(0x100), 0); }
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/riscv_wrapper.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   //
   // Done

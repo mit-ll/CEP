@@ -153,6 +153,79 @@ class gpsTLModuleImp(coreparams: COREParams, outer: gpsTLModule) extends LazyMod
       val slave_d_corrupt     = Output(Bool())
       val slave_d_valid       = Output(Bool())
       val slave_d_ready       = Input(Bool())
+<<<<<<< HEAD
+=======
+
+      // LLKI discrete interface
+      val llkid_key_data      = Output(UInt(64.W))
+      val llkid_key_valid     = Output(Bool())
+      val llkid_key_ready     = Input(Bool())
+      val llkid_key_complete  = Input(Bool())
+      val llkid_clear_key     = Output(Bool())
+      val llkid_clear_key_ack = Input(Bool())
+
+    })
+  } // end class llki_pp_wrapper
+
+  // Instantiate the LLKI Protocol Processing Block with CORE SPECIFIC decode constants
+  val llki_pp_inst = Module(new llki_pp_wrapper(coreparams.llki_ctrlsts_addr, 
+                                                coreparams.llki_sendrecv_addr))
+
+  // The following "requires" are included to avoid size mismatches between the
+  // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
+  // from the cep_addresses package and must match those in "top_pkg.sv", borrowed from OpenTitan
+  //
+  // Exceptions:
+  //  - llkiEdge address gets optimized down to 31-bits during chisel generation
+  //  - llkiEdge sink bits are 1, but masterEdge sink bits are 2 
+  //  - llkiEdge size bits are 3, but masterEdge size bits are 4
+  //
+  require(llkiEdge.bundle.addressBits  == LLKITilelinkParameters.AddressBits - 1, s"SROT: llkiEdge addressBits exp/act ${LLKITilelinkParameters.AddressBits - 1}/${llkiEdge.bundle.addressBits}")
+  require(llkiEdge.bundle.dataBits     == LLKITilelinkParameters.BeatBytes * 8, s"SROT: llkiEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${llkiEdge.bundle.dataBits}")
+  require(llkiEdge.bundle.sourceBits   == LLKITilelinkParameters.SourceBits, s"SROT: llkiEdge sourceBits exp/act ${LLKITilelinkParameters.SourceBits}/${llkiEdge.bundle.sourceBits}")
+  require(llkiEdge.bundle.sinkBits     == LLKITilelinkParameters.SinkBits - 1, s"SROT: llkiEdge sinkBits exp/act ${LLKITilelinkParameters.SinkBits - 1}/${llkiEdge.bundle.sinkBits}")
+  require(llkiEdge.bundle.sizeBits     == LLKITilelinkParameters.SizeBits, s"SROT: llkiEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits}/${llkiEdge.bundle.sizeBits}")
+
+  // Connect the Clock and Reset
+  llki_pp_inst.io.clk                 := clock
+  llki_pp_inst.io.rst                 := reset
+
+  // Connect the Slave A Channel to the Black box IO
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_size        := llki.a.bits.size
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
+
+  // Connect the Slave D Channel to the Black Box IO    
+  llki.d.bits.opcode                  := llki_pp_inst.io.slave_d_opcode
+  llki.d.bits.param                   := llki_pp_inst.io.slave_d_param
+  llki.d.bits.size                    := llki_pp_inst.io.slave_d_size
+  llki.d.bits.source                  := llki_pp_inst.io.slave_d_source
+  llki.d.bits.sink                    := llki_pp_inst.io.slave_d_sink(0)
+  llki.d.bits.denied                  := llki_pp_inst.io.slave_d_denied
+  llki.d.bits.data                    := llki_pp_inst.io.slave_d_data
+  llki.d.bits.corrupt                 := llki_pp_inst.io.slave_d_corrupt
+  llki.d.valid                        := llki_pp_inst.io.slave_d_valid
+  llki_pp_inst.io.slave_d_ready       := llki.d.ready
+
+  // Define blackbox and its associated IO
+  class gps_mock_tss () extends BlackBox {
+
+    val io = IO(new Bundle {
+      // Clock and Reset
+      val sys_clk_50          = Input(Clock())
+      val sync_rst_in         = Input(Reset())
+
+      // Inputs
+      val startRound          = Input(Bool())
+      val sv_num              = Input(UInt(6.W))
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
       // LLKI discrete interface
       val llkid_key_data      = Output(UInt(64.W))
@@ -241,6 +314,72 @@ class gpsTLModuleImp(coreparams: COREParams, outer: gpsTLModule) extends LazyMod
       val llkid_key_complete  = Output(Bool())
       val llkid_clear_key     = Input(Bool())
       val llkid_clear_key_ack = Output(Bool())
+<<<<<<< HEAD
+=======
+
+    })
+  }
+ 
+  // Instantiate the blackbox
+  val gps_mock_tss_inst   = Module(new gps_mock_tss())
+
+    // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
+  gps_mock_tss_inst.io.llkid_key_data       := llki_pp_inst.io.llkid_key_data
+  gps_mock_tss_inst.io.llkid_key_valid      := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready           := gps_mock_tss_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete        := gps_mock_tss_inst.io.llkid_key_complete
+  gps_mock_tss_inst.io.llkid_clear_key      := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack       := gps_mock_tss_inst.io.llkid_clear_key_ack
+
+  // Instantiate registers for the blackbox inputs
+  val startRound                   = RegInit(0.U(1.W))
+  val sv_num                       = RegInit(0.U(6.W))
+  val gps_reset                    = RegInit(false.B)
+
+  // Instantiate wires for the blackbox outputs
+  val ca_code                      = Wire(UInt(13.W))
+  val p_code0_u                    = Wire(UInt(32.W))
+  val p_code0_l                    = Wire(UInt(32.W))
+  val p_code1_u                    = Wire(UInt(32.W))
+  val p_code1_l                    = Wire(UInt(32.W))
+  val l_code0_u                    = Wire(UInt(32.W))
+  val l_code0_l                    = Wire(UInt(32.W))
+  val l_code1_u                    = Wire(UInt(32.W))
+  val l_code1_l                    = Wire(UInt(32.W))
+  val l_code_valid                 = Wire(Bool())
+
+  // Map the blackbox I/O 
+  gps_mock_tss_inst.io.sys_clk_50       := clock                                // Implicit module clock
+  gps_mock_tss_inst.io.sync_rst_in      := (reset.asBool || gps_reset).asAsyncReset 
+                                                                                // Implicit module reset
+  gps_mock_tss_inst.io.startRound       := startRound                           // Start bit
+  gps_mock_tss_inst.io.sv_num           := sv_num                               // GPS space vehicle number written by cepregression.cpp
+  ca_code                               := gps_mock_tss_inst.io.ca_code         // Output GPS CA code
+  p_code0_u                             := gps_mock_tss_inst.io.p_code(127,96)  // Output P Code bits 
+  p_code0_l                             := gps_mock_tss_inst.io.p_code(95,64)   // Output P Code bits      
+  p_code1_u                             := gps_mock_tss_inst.io.p_code(63,32)   // Output P Code bits          
+  p_code1_l                             := gps_mock_tss_inst.io.p_code(31,0)    // Output P Code bits
+  l_code0_u                             := gps_mock_tss_inst.io.l_code(127,96)  // Output L Code bits                        
+  l_code0_l                             := gps_mock_tss_inst.io.l_code(95,64)   // Output L Code bits
+  l_code1_u                             := gps_mock_tss_inst.io.l_code(63,32)   // Output L Code bits      
+  l_code1_l                             := gps_mock_tss_inst.io.l_code(31,0)    // Output L Code bits
+  l_code_valid                          := gps_mock_tss_inst.io.l_code_valid    // Out is valid until start is again asserted
+
+  // Define the register map
+  // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
+  outer.slave_node.regmap (
+    GPSAddresses.gps_ctrlstatus_addr -> RegFieldGroup("gps_ctrlstatus", Some("GPS Control/Status Register"),Seq(
+                    RegField    (1, startRound,      RegFieldDesc("start", "")),
+                    RegField.r  (1, l_code_valid,  RegFieldDesc ("l_code_valid", "", volatile=true)))),
+    GPSAddresses.gps_sv_num_addr    -> RegFieldGroup("sv_num",     Some("GPS Set SV sv_num"),       Seq(RegField  (6,  sv_num))),
+    GPSAddresses.gps_ca_code_addr   -> RegFieldGroup("gps_cacode", Some("GPS CA code"),             Seq(RegField.r(64, ca_code))),
+    GPSAddresses.gps_reset_addr     -> RegFieldGroup("gps_reset",  Some("GPS addressable reset"),   Seq(RegField  (1,  gps_reset))),            
+    GPSAddresses.gps_p_code_addr_w0 -> RegFieldGroup("gps_pcode1", Some("GPS pcode upper bits"), Seq(RegField.r(64, Cat(p_code0_u,p_code0_l)))),
+    GPSAddresses.gps_p_code_addr_w1 -> RegFieldGroup("gps_pcode1", Some("GPS pcode lower 64 bits"), Seq(RegField.r(64, Cat(p_code1_u,p_code1_l)))),
+    GPSAddresses.gps_l_code_addr_w0 -> RegFieldGroup("gps_lcode1", Some("GPS lcode upper 64 bits"), Seq(RegField.r(64, Cat(l_code0_u,l_code0_l)))),
+    GPSAddresses.gps_l_code_addr_w1 -> RegFieldGroup("gps_lcode1", Some("GPS lcode lower 64 bits"), Seq(RegField.r(64, Cat(l_code1_u,l_code1_l))))
+  )  // regmap
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
     })
   }

@@ -64,17 +64,27 @@ module mock_tss_fsm import llki_pkg::*; #(
         ST_MOCKTSS_IDLE         : begin
           // Default signal assignments
           llkid_key_ready         <= '1;
+<<<<<<< HEAD
+=======
+          llkid_key_complete      <= '0;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
           llkid_clear_key_ack     <= '0;
           llkid_key_word_counter  <= 0;
           wait_state_counter      <= MOCKTSS_WAIT_STATE_COUNTER_INIT;
           current_state           <= ST_MOCKTSS_IDLE;
 
           // If a clear key is requested while in the IDLE state, the STM
+<<<<<<< HEAD
           // will immediately acknowledge the clearing AND clear the key
           if (llkid_clear_key) begin
             llkid_clear_key_ack     <= '1;
             llkid_key_complete      <= '0;
             llkid_key_register      <= '0;
+=======
+          // will immediately acknowledge the clearing
+          if (llkid_clear_key) begin
+            llkid_clear_key_ack   <= '1;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
           // Load the first key word into the appropriate register based on the current
           // state of the llkid_key_word_counter
           // Words coming from the SRoT are Little Endian
@@ -105,12 +115,20 @@ module mock_tss_fsm import llki_pkg::*; #(
           if (wait_state_counter == 0) begin
 
             // No more words exist
+<<<<<<< HEAD
             if (llkid_key_word_counter == KEY_WORDS - 1) begin 
               llkid_key_complete      <= '1;
               current_state           <= ST_MOCKTSS_IDLE;
             end else begin
               // Increment the word counter
               llkid_key_word_counter  <= llkid_key_word_counter + 1;
+=======
+            if (llkid_key_word_counter == KEY_WORDS - 1)
+              current_state           <= ST_MOCKTSS_IDLE;
+            else begin
+              // Decrement the word counter
+              llkid_key_word_counter++;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
               // Jump to the next state
               current_state           <= ST_MOCKTSS_WAIT_FOR_NEXT_KEY_WORD;
@@ -153,7 +171,11 @@ module mock_tss_fsm import llki_pkg::*; #(
           llkid_key_ready         <= '0;
           llkid_key_complete      <= '0;
           llkid_clear_key_ack     <= '0;
+<<<<<<< HEAD
           llkid_key_register      <= '0;
+=======
+          llkid_key_register       <= '0;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
           wait_state_counter      <= MOCKTSS_WAIT_STATE_COUNTER_INIT;
           current_state           <= ST_MOCKTSS_WAIT_STATE1;
         end
@@ -185,7 +207,11 @@ module mock_tss_fsm import llki_pkg::*; #(
           llkid_key_ready         <= '1;
           llkid_key_complete      <= '0;
           llkid_clear_key_ack     <= '0;
+<<<<<<< HEAD
           llkid_key_register      <= '0;
+=======
+          llkid_key_register       <= '0;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
           llkid_key_word_counter  <= 0;
           wait_state_counter      <= MOCKTSS_WAIT_STATE_COUNTER_INIT;
           current_state           <= ST_MOCKTSS_IDLE;

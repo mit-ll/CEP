@@ -83,7 +83,10 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
   //
   cep_srot srot(verbose);
   srot.SetCpuActiveMask(mask);
+<<<<<<< HEAD
   srot.SetSrotFlag(captureOn);
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   errCnt += srot.LLKI_Setup(cpuId);
   if (errCnt) return errCnt;
   //
@@ -136,6 +139,22 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     
   case 1 : 
     //
+<<<<<<< HEAD
+=======
+    // SHA256
+    //
+    sha256.init();
+    sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
+    //
+    maxLoop = 32;
+    init_sha256();
+    errCnt += sha256.RunSha256Test(maxLoop);
+    //
+    sha256.freeMe();
+    if (errCnt) return errCnt;
+  
+    //
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     // FIR
     //
     fir.init();      
@@ -159,7 +178,9 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     errCnt += iir.RunIirTest(maxLoop);
     //
     iir.freeMe();
+
     if (errCnt) return errCnt;
+<<<<<<< HEAD
 
     //
     // SHA256
@@ -175,6 +196,8 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     if (errCnt) return errCnt;
   
 
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     break;
 
   case 2:
@@ -232,7 +255,10 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     break;
 
   } // switch (cpuId)
+<<<<<<< HEAD
   srot.freeMe();  
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 // else do nothing
 #endif

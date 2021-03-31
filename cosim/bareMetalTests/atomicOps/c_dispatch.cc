@@ -13,8 +13,13 @@
 #include "access.h"
 #include "c_dispatch.h"
 #include "c_module.h"
+<<<<<<< HEAD
 #include "cep_apis.h"
 #include "cep_adrMap.h"
+=======
+#include "cep_adrMap.h"
+#include "cep_apis.h"
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 #include "simPio.h"
 /*
  * main 
@@ -48,7 +53,15 @@ int main(int argc, char *argv[])
   //
   // each bit is to turn on the given core (bit0 = core0, bit1=core1, etc..)
   //
+<<<<<<< HEAD
   long unsigned int mask = 0xf;
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotMemTest/c_dispatch.cc
+  long unsigned int mask = 1 << (seed&0x3);
+=======
+  long unsigned int mask = 0xf;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/atomicOps/c_dispatch.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   // Set the active CPU mask before spawn the threads...
   //
@@ -80,6 +93,11 @@ int main(int argc, char *argv[])
   // Enable main memory logging
   //
   //DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEM_LOGGING, DVTF_ENABLE_MAIN_MEM_LOGGING, 1);
+<<<<<<< HEAD
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotMemTest/c_dispatch.cc
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   // wait for calibration??
   //
@@ -94,6 +112,10 @@ int main(int argc, char *argv[])
   DUT_WRITE_DVT(DVTF_DISABLE_MAIN_MEM_LOGGING, DVTF_DISABLE_MAIN_MEM_LOGGING, 1);
   //
   // log the write only
+<<<<<<< HEAD
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/atomicOps/c_dispatch.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEMWR_LOGGING, DVTF_ENABLE_MAIN_MEMWR_LOGGING, 1);
   //
   // ============================  
@@ -105,9 +127,18 @@ int main(int argc, char *argv[])
     Done = thr.AllThreadDone();
     sleep(2);
   }
+<<<<<<< HEAD
   //
   toggleDmiReset();
   //
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotMemTest/c_dispatch.cc
+=======
+  //
+  toggleDmiReset();
+  //
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/atomicOps/c_dispatch.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   /* ===================================== */
   /*   END-OF-TEST CHECKING                */
   /* ===================================== */

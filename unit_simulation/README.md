@@ -1,8 +1,17 @@
 [//]: # (Copyright 2021 Massachusetts Institute of Technology)
+<<<<<<< HEAD
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 [![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
+=======
+
+<p align="center">
+   Copyright 2021 Massachusetts Institute of Technology
+</p>
+
+## Unit Simulation README
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology

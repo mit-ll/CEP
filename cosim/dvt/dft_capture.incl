@@ -29,6 +29,10 @@ always @(posedge srot_start_capture) begin
      @(negedge cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.reset);
    // next clock
    @(posedge cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.clk);
+<<<<<<< HEAD
+=======
+   CaptureDFT_vector=1;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
    DFT_fd=$fopen("../../drivers/vectors/dft_stimulus.txt","w");
    captureDFT_Stimulus();   
 end	
@@ -86,9 +90,14 @@ end
 	 $fwrite(DFT_fd,"reg [`DFT_DATA_WIDTH-1:0] DFT_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
+<<<<<<< HEAD
 	 while (srot_start_capture) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.clk);
 	    if (CaptureDFT_vector || !srot_stop_capture) begin
+=======
+	 while (CaptureDFT_vector) begin
+	    @(negedge cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.clk);
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	    // MUST align to HEX number if _ is used!!!
 	    if (DFT_sampleNum>0) begin
 	       $fwrite(DFT_fd,"   ,");
@@ -96,6 +105,7 @@ end
 	       $fwrite(DFT_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
+<<<<<<< HEAD
 	    $fwrite(DFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 	    	    {1'b0,cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.llkid_key_ready,
 		     cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.llkid_key_complete,
@@ -105,6 +115,9 @@ end
 		    cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.llkid_key_data[63:0],
 		    //
 
+=======
+	    $fwrite(DFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 		    {3'b0,cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.next},
 		    cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.X0[15:0],
 		    cep_tb.fpga.topDesign.topMod.dftmodule.dft_top_mock_tss_inst.dft_top_inst.X1[15:0],

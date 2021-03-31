@@ -228,6 +228,13 @@ int cep_gps::GetCA_code(int svNum)
   //
 #if defined(BARE_MODE)
 #else
+<<<<<<< HEAD
+=======
+  for (int i=0;i<11;i++) {
+    g1[i] = 1;
+    g2[i] = 1;
+  }
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   if (GetVerbose()) {
     LOGI("G1=0x%04x G2=0x%04x\n",
@@ -353,6 +360,7 @@ int cep_gps::RunSingle() {
   waitTilDone(500);
   mErrCnt += ReadNCheck_CA_Code(0x1FFF);
   //
+<<<<<<< HEAD
   Read_PCode();
   Read_LCode();
   // get expected L-code
@@ -362,6 +370,15 @@ int cep_gps::RunSingle() {
       1,   // int padding_enable,
       mBlockSize, // int length,
       &outLen, GetVerbose());
+=======
+  g1[0] = g1[3] ^ g1[10];
+  g2[0] = g2[2] ^ g2[3] ^ g2[6] ^ g2[8] ^ g2[9] ^ g2[10];    
+  for (int j=10;j>0;j--) {
+    g1[j] = g1[j-1]; // shift
+    g2[j] = g2[j-1];
+  }
+#endif
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   mErrCnt += CheckCipherText();
   //

@@ -1,6 +1,14 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
+<<<<<<< HEAD
 // SPDX short identifier: BSD-2-Clause
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotKeyTest/c_module.cc
+// SPDX License Identifier: MIT
+=======
+// SPDX short identifier: BSD-2-Clause
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/c_module.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -19,8 +27,17 @@
 #include "cep_adrMap.h"
 #include "cep_apis.h"
 #include "simdiag_global.h"
+<<<<<<< HEAD
 #include "cepregression.h"
 #include "simPio.h"
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotKeyTest/c_module.cc
+#include "cepSrotTest.h"
+=======
+#include "cepregression.h"
+#include "simPio.h"
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/c_module.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 //
 void *c_module(void *arg) {
@@ -62,7 +79,16 @@ void *c_module(void *arg) {
   int calibDone = is_program_loaded(50);
 
   //
+<<<<<<< HEAD
   errCnt += check_bare_status(cpuId,500);
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotKeyTest/c_module.cc
+  int mask = seed; // seed is used as cpuActiveMask from c_displatch
+  if (!errCnt) { errCnt = cepSrotTest_maxKeyTest(cpuId, verbose); }
+=======
+  errCnt += check_bare_status(cpuId,500);
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/clintTest/c_module.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   pio.RunClk(100);  
   //

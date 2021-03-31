@@ -48,7 +48,15 @@ int main(int argc, char *argv[])
   //
   // each bit is to turn on the given core (bit0 = core0, bit1=core1, etc..)
   //
+<<<<<<< HEAD
   long unsigned int mask = 0xF;
+=======
+<<<<<<< HEAD:cosim/bareMetalTests/csrTest/c_dispatch.cc
+  long unsigned int mask = 0xf;
+=======
+  long unsigned int mask = 0xF;
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bareMetalTests/accessTest/c_dispatch.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   // Set the active CPU mask before spawn the threads...
   //

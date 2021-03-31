@@ -10,8 +10,12 @@
 //************************************************************************
 
 /* as reported from Chisel
+<<<<<<< HEAD
 Generated Address Map for CEP 3.1 and later
 
+=======
+Generated Address Map
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	       0 -     1000 ARWX  debug-controller@0
 	    3000 -     4000 ARWX  error-device@3000
 	   10000 -    14000  R X  rom@10000
@@ -20,6 +24,7 @@ Generated Address Map for CEP 3.1 and later
 	64000000 - 64001000 ARW   serial@64000000
 	64001000 - 64002000 ARW   spi@64001000
 	64002000 - 64003000 ARW   gpio@64002000
+<<<<<<< HEAD
 	70000000 - 70000100 ARW   aes-slave@70000000
 	70008000 - 70008040 ARW   aes-llki-slave@70008000
 	70010000 - 70010100 ARW   md5-slave@70010000
@@ -42,6 +47,19 @@ Generated Address Map for CEP 3.1 and later
 	70098000 - 70098100 ARW   gps-llki-slave@70098000
 	700f0000 - 70100000 ARW   cepregs-slave@700f0000
 	70200000 - 70201000 ARW   srot-slave@70200000
+=======
+	70000000 - 70010000 ARW   aes@70000000
+	70010000 - 70020000 ARW   md5@70010000
+	70020000 - 70030000 ARW   sha256@70020000
+	70030000 - 70040000 ARW   rsa@70030000
+	70040000 - 70050000 ARW   des3@70040000
+	70050000 - 70060000 ARW   dft@70050000
+	70060000 - 70070000 ARW   idft@70060000
+	70070000 - 70080000 ARW   fir@70070000
+	70080000 - 70090000 ARW   iir@70080000
+	70090000 - 700a0000 ARW   gps@70090000
+	700f0000 - 70100000 ARW   cepregs@700f0000
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	80000000 - c0000000  RWXC memory@80000000
 
 */
@@ -278,7 +296,11 @@ Generated Address Map for CEP 3.1 and later
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG	'h700F_0000
+<<<<<<< HEAD
 `define CEP_EXPECTED_VERSION 	'h11030000_00000000
+=======
+`define CEP_EXPECTED_VERSION 	'h10030000_00000000
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
 //
 // Test and Set

@@ -1,6 +1,14 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
+<<<<<<< HEAD
 // SPDX short identifier: BSD-2-Clause
+=======
+<<<<<<< HEAD:cosim/bfmTests/srotBadKeys/c_dispatch.cc
+// SPDX License Identifier: MIT
+=======
+// SPDX short identifier: BSD-2-Clause
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bfmTests/clintTest/c_dispatch.cc
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -58,7 +66,11 @@ int main(int argc, char *argv[])
   //
   for (int i=0;i<maxHost;i++) {
     if ((long unsigned int)(1 << i) & mask) {
+<<<<<<< HEAD
       thr.ForkAThread(activeSlot,i,verbose, seed * (1+i), c_module);
+=======
+      thr.ForkAThread(activeSlot,i,verbose, mask, c_module);
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     }
   }
   //

@@ -173,11 +173,14 @@
 //
 `define DVTF_ENABLE_MIG_MEMRD_LOGGING               108
 `define DVTF_ENABLE_MIG_MEMWR_LOGGING               109
+<<<<<<< HEAD
 
 // SRoT TL capture 
 `define DVTF_SROT_START_CAPTURE_BIT                 111
 `define DVTF_SROT_STOP_CAPTURE_BIT                  112
 
+=======
+>>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 //
 // ===============================================
 // System Sim Status

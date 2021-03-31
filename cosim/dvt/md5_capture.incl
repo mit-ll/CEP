@@ -28,10 +28,6 @@ always @(posedge srot_start_capture) begin
      @(negedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.rst);
    // next clock
    @(posedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
-<<<<<<< HEAD
-=======
-   CaptureMD5_vector=1;
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
    MD5_fd=$fopen("../../drivers/vectors/md5_stimulus.txt","w");
    captureMD5_Stimulus();   
 end	
@@ -84,14 +80,9 @@ end
 	 $fwrite(MD5_fd,"reg [`MD5_DATA_WIDTH-1:0] MD5_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-<<<<<<< HEAD
 	 while (srot_start_capture) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
 	    if (CaptureMD5_vector || !srot_stop_capture) begin
-=======
-	 while (CaptureMD5_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	    // MUST align to HEX number if _ is used!!!
 	    if (MD5_sampleNum>0) begin
 	       $fwrite(MD5_fd,"   ,");
@@ -99,7 +90,6 @@ end
 	       $fwrite(MD5_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
-<<<<<<< HEAD
 	    $fwrite(MD5_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 	    	    {1'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_ready,
 		     cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_complete,
@@ -109,9 +99,6 @@ end
 		    cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.llkid_key_data[63:0],
 		    //
 
-=======
-	    $fwrite(MD5_fd,"'h%x_%x_%x_%x_%x_%x\n",
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.init},	 
 		    {3'b0,cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_in_valid},
 		    cep_tb.fpga.topDesign.topMod.md5module.md5_mock_tss_inst.msg_padded[511:0],	 

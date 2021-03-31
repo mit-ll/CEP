@@ -1,10 +1,10 @@
 //************************************************************************
-// Copyright 2021 Massachusetts Institute of Technology
+// Copyright (C) 2020 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
-// File Name:      cep_dft.cc/h
+// File Name:      cep_dft/idft.cc/h
 // Program:        Common Evaluation Platform (CEP)
-// Description:    dft test for CEP
+// Description:    dft/idft test for CEP
 // Notes:          
 //************************************************************************
 #ifndef cep_dft_H
@@ -36,12 +36,19 @@ public: //
   void adjust_float(double *rl, double *img, int length);
   void adjust_fixp(fixp16 *rl, fixp16 *img, int length);
   void do_dft(const double *rIn, const double *iIn, double *rOut, double *iOut, int len);
+  void do_idft(const double *rIn, const double *iIn, double *rOut, double *iOut, int len);
   //
   void dft_setX(double *rbuf, double *ibuf, int len) ;
   void dft_getY(double *rbuf, double *ibuf, int len) ;
   void dft_Start(void) ;
   int dft_waitTilDone(int maxTO);
   int dft_CheckSamples(int startIdx,int samCnt) ;
+  //
+  void idft_setX(double *rbuf, double *ibuf, int len) ;
+  void idft_getY(double *rbuf, double *ibuf, int len) ;
+  void idft_Start(void) ;
+  int idft_waitTilDone(int maxTO);
+  int idft_CheckSamples(int startIdx,int samCnt) ;  
   //
   double mRin[MAX_DFT_SAMPLES];
   double mIin[MAX_DFT_SAMPLES];

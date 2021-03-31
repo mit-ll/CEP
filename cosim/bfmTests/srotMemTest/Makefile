@@ -1,10 +1,6 @@
 #//************************************************************************
 #// Copyright 2021 Massachusetts Institute of Technology
-<<<<<<< HEAD:cosim/bfmTests/srotMemTest/Makefile
 #// SPDX License Identifier: MIT
-=======
-#// SPDX short identifier: BSD-2-Clause
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0:cosim/bfmTests/miscTests/Makefile
 #//
 #// File Name:      
 #// Program:        Common Evaluation Platform (CEP)

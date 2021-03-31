@@ -8,17 +8,16 @@
 // Notes:          
 //
 //************************************************************************
+#ifndef __C_DISPATCH_H
+#define __C_DISPATCH_H
 
-#ifndef cepMaskromTest_H
-#define cepMaskromTest_H
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <stdint.h>
-
-//
-// The test itself
-//
-int cepMaskromTest_runTest(int cpuId, int seed, int verbose);
+// Dispatch setup
+#ifdef LONGTEST
+#define MAX_LOOP 50
+#else
+#define MAX_LOOP 5
+#endif
 
 #endif
+

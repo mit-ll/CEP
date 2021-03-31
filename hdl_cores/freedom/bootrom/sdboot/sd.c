@@ -224,13 +224,8 @@ void print_greeting()
     kputs("       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-                   "); 
     kputs("       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.                      "); 
     kputs("                                                                             ");
-<<<<<<< HEAD
     kputs("                     Common Evaluation Platform v3.11                        ");
     kputs("         Copyright 2021 Massachusetts Institute of Technology                ");
-=======
-    kputs("                     Common Evaluation Platform v3.1                         ");
-    kputs("         Copyright 2021 Massachusetts Institute of Technology            ");
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     kputs("                                                                             ");
     kputs("            Built upon the SiFive Freedom U500 Platform using                ");
     kputs("             the UCB Rocket Chip targeting the Xilinx VC-707                 ");

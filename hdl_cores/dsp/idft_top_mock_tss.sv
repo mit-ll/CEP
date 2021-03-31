@@ -94,17 +94,10 @@ module idft_top_mock_tss import llki_pkg::*; (
     .reset          (rst),
     .next           (next),
     .next_out       (next_out),
-<<<<<<< HEAD
     .X0             (mock_tss_X0),
     .X1             (mock_tss_X1),
     .X2             (mock_tss_X2),
     .X3             (mock_tss_X3),
-=======
-    .X0             (X0),
-    .X1             (X1),
-    .X2             (X2),
-    .X3             (X3),
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     .Y0             (Y0),
     .Y1             (Y1),
     .Y2             (Y2),

@@ -54,8 +54,4 @@ This can be accomplished by running the following command:
 ```
 sudo cpan install Verilog-Perl
 ```
-<<<<<<< HEAD
-=======
-
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 #### Return to the root CEP [README](../../README.md)

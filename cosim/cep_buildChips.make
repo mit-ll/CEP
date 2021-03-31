@@ -176,12 +176,8 @@ endif
 DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/aes/round.v			\
 	${DUT_TOP_DIR}/hdl_cores/aes/aes_192.v 			\
-<<<<<<< HEAD
 	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv \
 	${DUT_TOP_DIR}/hdl_cores/llki/tlul_adapter_reg.sv \
-=======
-	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv 		\
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	$(wildcard ${DUT_TOP_DIR}/generated_dsp_code/*.v)	\
 	${BHV_DIR}/ddr3.v					\
 

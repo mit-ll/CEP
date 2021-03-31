@@ -832,21 +832,10 @@ endtask // READ32_64_TASK
 	       force `CORE0_PATH.core.reset =1;
 	    end
 	 end
-<<<<<<< HEAD
 	 assign curPc       = `CORE0_PC;
 	 assign curValid    = `CORE0_VALID;
 	 assign coreInReset = `CORE0_PATH.core.reset;
 	 assign pcValid     = `CORE0_PATH.core.csr_io_trace_0_valid && `CORE0_PATH.core._T_1481;	 
-=======
-	 assign pcPass = `CORE0_VALID &&
-			 ((`CORE0_PC[29:0] === passFail[0][29:0]) ||
-			  ((`CORE0_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||		 
-			  ((`CORE0_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
-	 
-	 assign pcFail = `CORE0_VALID &&
-			 (((`CORE0_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
-			  (`CORE0_PC[29:0] === passFail[1][29:0]));
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       end
       else if (MY_LOCAL_ID == 1) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -858,20 +847,10 @@ endtask // READ32_64_TASK
 	       force `CORE1_PATH.core.reset =1;
 	    end
 	 end
-<<<<<<< HEAD
 	 assign curPc       = `CORE1_PC;
 	 assign curValid    = `CORE1_VALID;
 	 assign coreInReset = `CORE1_PATH.core.reset;
 	 assign pcValid     = `CORE1_PATH.core.csr_io_trace_0_valid && `CORE1_PATH.core._T_1481;	 	 
-=======
-	 assign pcPass = `CORE1_VALID &&
-			 ((`CORE1_PC[29:0] === passFail[0][29:0]) ||
-			  ((`CORE1_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||
-			  ((`CORE1_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
-	 assign pcFail = `CORE1_VALID &&
-			 (((`CORE1_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
-			  (`CORE1_PC[29:0] === passFail[1][29:0]));
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       end
       else if (MY_LOCAL_ID == 2) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -883,20 +862,10 @@ endtask // READ32_64_TASK
 	       force `CORE2_PATH.core.reset =1;
 	    end
 	 end
-<<<<<<< HEAD
 	 assign curPc       = `CORE2_PC;
 	 assign curValid    = `CORE2_VALID;
 	 assign coreInReset = `CORE2_PATH.core.reset;
 	 assign pcValid     = `CORE2_PATH.core.csr_io_trace_0_valid && `CORE2_PATH.core._T_1481;	 	 
-=======
-	 assign pcPass = `CORE2_VALID && 
-			 ((`CORE2_PC[29:0] === passFail[0][29:0]) || 
-			  ((`CORE2_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0)) ||
-			  ((`CORE2_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0) && checkToHost));
-	 assign pcFail = `CORE2_VALID &&
-			 (((`CORE2_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
-			  (`CORE2_PC[29:0] === passFail[1][29:0]));	 
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       end
       else if (MY_LOCAL_ID == 3) begin
 	 always @(posedge pcPass or posedge  pcFail) begin
@@ -908,20 +877,10 @@ endtask // READ32_64_TASK
 	       force `CORE3_PATH.core.reset =1;
 	    end
 	 end
-<<<<<<< HEAD
 	 assign curPc       = `CORE3_PC;
 	 assign curValid    = `CORE3_VALID;
 	 assign coreInReset = `CORE3_PATH.core.reset;
 	 assign pcValid     = `CORE3_PATH.core.csr_io_trace_0_valid && `CORE3_PATH.core._T_1481;	 	 
-=======
-	 assign pcPass = `CORE3_VALID && 
-			 ((`CORE3_PC[29:0] === passFail[0][29:0]) || 
-			  ((`CORE3_PC[29:0] == passFail[3][29:0]) && (passFail[3][29:0] != 0)) |
-			  ((`CORE3_PC[29:0] == passFail[2][29:0]) && (passFail[2][29:0] != 0) && checkToHost));
-	 assign pcFail = `CORE3_VALID &&
-			 (((`CORE3_PC[29:0] == passFail[4][29:0]) && (passFail[4][29:0] != 0)) ||
-			  (`CORE3_PC[29:0] === passFail[1][29:0]));	 
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       end
    endgenerate
 `endif //  `ifdef RISCV_TESTS

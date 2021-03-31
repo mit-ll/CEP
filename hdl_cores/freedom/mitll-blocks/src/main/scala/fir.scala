@@ -262,13 +262,9 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
 
   // Define registers / wires for interfacing to the FIR blackbox
   val start                   = RegInit(false.B)      // Start bit
-<<<<<<< HEAD
 //  val fir_reset               = RegInit(false.B)      // Addressable reset
 // tony duong 2/23/21: need the core in reset while LLKI is running
   val fir_reset               = RegInit(true.B)      // Addressable reset
-=======
-  val fir_reset               = RegInit(false.B)      // Addressable reset
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   val fir_reset_re            = RegInit(false.B)      // Rising edge detection for addressable reset   
   val datain_we               = RegInit(false.B)      // Controlled via register mappings
   val datain_write_idx        = RegInit(0.U(6.W))     // Controlled via register mappings
@@ -333,13 +329,9 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
   // has been added in order to allow for the LLKI keys to persist
   FIR_filter_mock_tss_inst.io.clk       := clock                            
   FIR_filter_mock_tss_inst.io.rst       := reset.asBool
-<<<<<<< HEAD
 //  FIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || fir_reset_re).asAsyncReset 
   FIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || fir_reset).asAsyncReset 
                                                                      
-=======
-  FIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || fir_reset_re).asAsyncReset                                                                      
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   FIR_filter_mock_tss_inst.io.inData    := Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
   dataout_write_data                    := FIR_filter_mock_tss_inst.io.outData
 

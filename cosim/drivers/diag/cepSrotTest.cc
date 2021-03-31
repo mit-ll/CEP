@@ -202,52 +202,8 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
   //
   LOGI("%s : Initializing Key RAM to all Ones\n",__FUNCTION__);
 
-<<<<<<< HEAD
   for (int i = 0; i < MAX_LLKI_KEY_SIZE; i++) {
     cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + (i*8), (uint64_t)-1);
-=======
-  LOGI("\n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("cepSrotTest_runTest: Loading a key into the Key RAM...                      \n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("\n");
-  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 0, AES_MOCK_TSS_KEY[0]);
-  cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + 8, AES_MOCK_TSS_KEY[1]);
-
-  LOGI("\n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("cepSrotTest_runTest: Loading a valid key index...                           \n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("\n");
-  cep_write(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + 0, key_index_pack( 0x0000,                 // low pointer
-                                                                    0x0001,                 // high pointer
-                                                                    LLKI_AES_CORE_INDEX,    // core index
-                                                                    0x1));                  // Valid
-
-  LOGI("\n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("cepSrotTest_runTest: Switching the LLKI from DEBUG to OPERATIONAL mode...   \n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("\n");
-  cep_write(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_MODEBIT0_MASK | SROT_CTRLSTS_MODEBIT1_MASK);
-
-  // Set the desired message values
-  LOGI("\n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("cepSrotTest_runTest: Issuing a Load Key Request to the SRoT and waiting     \n");
-  LOGI("cepSrotTest_runTest: for the response...                                    \n");
-  LOGI("----------------------------------------------------------------------------\n");
-  LOGI("\n");
-  response_status = send_srot_message(verbose, llkic2_pack( LLKI_MID_C2LOADKEYREQ,    // Message ID
-                                                            0x00,                     // Status (unused)
-                                                            0x01,                     // Message Length
-                                                            0x00,                     // Key Index
-                                                            0xDEADBEEF));             // Reserved Field
-
-  // Parse the message status
-  if (parse_message_status(response_status, verbose)) {
-    return 1;
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   }
 
   //

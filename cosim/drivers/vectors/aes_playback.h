@@ -3,11 +3,7 @@
 //
 // This file is auto-generated for test: aes. Do not modify!!!
 //
-<<<<<<< HEAD
 // Generated on: Mar 25 2021 11:06:20
-=======
-// Generated on: Feb 16 2021 18:53:57
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 //************************************************************************
 #ifndef aes_playback_H
 #define aes_playback_H

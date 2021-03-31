@@ -24,7 +24,6 @@ int RSA_fd;
 always @(posedge srot_start_capture) begin
    $display("Enable cycle-by-cycle capturing of RSA stimulus");	    
    // wait until it gets out of reset
-<<<<<<< HEAD
    if (cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.rst)
      @(negedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.rst);
    // next clock
@@ -41,20 +40,6 @@ always @(negedge c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT]) begin
    if (CaptureRSA_vector) begin
       CaptureRSA_vector=0;
       repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.clk);
-=======
-   if (!cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.reset_n)
-     @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.reset_n);
-   // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
-   CaptureRSA_vector=1;
-   RSA_fd=$fopen("../../drivers/vectors/rsa_stimulus.txt","w");
-   captureRSA_Stimulus();   
-end	
-always @(negedge c2c_capture_enable[`DVTF_RSA_CAPTURE_EN_BIT]) begin 
-   if (CaptureRSA_vector) begin
-      CaptureRSA_vector=0;
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       $display("Stop Capturing RSA stimulus");
       $fwrite(RSA_fd,"};\n");
       $fwrite(RSA_fd,"`define RSA_SAMPLE_COUNT %d\n",RSA_sampleNum);      
@@ -114,21 +99,15 @@ end
 	 $fwrite(RSA_fd,"reg [`RSA_DATA_WIDTH-1:0] RSA_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-<<<<<<< HEAD
 	 while (srot_start_capture) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
 	    if (CaptureRSA_vector || !srot_stop_capture) begin
-=======
-	 while (CaptureRSA_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	    // MUST align to HEX number if _ is used!!!
 	    if (RSA_sampleNum>0) begin
 	       $fwrite(RSA_fd,"   ,");
             end else begin
 	       $fwrite(RSA_fd,"    ");		 
             end
-<<<<<<< HEAD
 	    $fwrite(RSA_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 	    	    {1'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.llkid_key_ready,
 		     cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.llkid_key_complete,
@@ -138,9 +117,6 @@ end
 		    cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.llkid_key_data[63:0],
 		    //
 
-=======
-	    $fwrite(RSA_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_cs},
 		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_rst},
 		    {3'b0,cep_tb.fpga.topDesign.topMod.rsamodule.modexp_core_mock_tss_inst.modexp_core_inst.exponent_mem_api_wr},

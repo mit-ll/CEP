@@ -8,11 +8,7 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-<<<<<<< HEAD
     <img src="./doc/version3.11.jpg" width="98" height="60">
-=======
-    <img src="./doc/version3.1.jpg" width="98" height="60">
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 </p>
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology
@@ -26,13 +22,10 @@ The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip
 The Logic Locking Key Interface (LLKI) has been provided as a representative means of distributing key / configuration material to LLKI-enabled cores.  
 
 For CEP v3.1+, the full LLKI has been added.  This includes the Surrogate Root of Trust (SRoT) and mock Technique Specific Shims (TSS) for all accelerator cores.
-<<<<<<< HEAD
 
 ### Please check the [Release Notes](./RELEASE_NOTES.md) to understand what has changed and a list of known issues.
 
 <br/><br/>
-=======
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 <p align="center">
     <img src="./doc/cep_v3.1_architecture.jpg">
@@ -56,11 +49,7 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 
 ## Pre-requisites (validated test/build configuration):
 The following items describe the configuration of the system that CEP has been developed and tested on:
-<<<<<<< HEAD
 * Ubuntu 16.04 LTS x86_64 / Ubuntu 18.04 LTS x86_64 [RECOMMENDED]
-=======
-* Ubuntu 16.04 LTS x86_64 / Ubuntu 18.04 LTS x86_64
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 * Modelsim Questa Sim-64 v2019.1 (for co-simulation and unit simulation)
 * Xilinx Vivado 2018.3 (Design or System Edition)
   - Plus Digilent Adept Drivers for programming the VC-707, https://reference.digilentinc.com/reference/software/adept/start?redirect=1#software_downloads)
@@ -117,14 +106,10 @@ Ensure you have write permissions to the directory pointed to by $RISCV and that
 
 #### Ubuntu 18.04 LTS instructions
 
-<<<<<<< HEAD
 Default openssl version is 18.04 is different than 16.04.  Install the following additional package.
 `sudo apt install libssl1.0-dev`
 
 You'll also need to force the compilation of the riscv-toolchain with GCC-5, which is not installed by default.
-=======
-If you are using Ubuntu 18.04 LTS, you need to force the compilation of the riscv-toolchain with GCC-5, which is not installed by default.
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 First, install gcc-5
 ```
@@ -167,7 +152,6 @@ Next, you need to install Scala which is required by Chisel.
 Install the required dependencies by running the following command:
 `sudo apt install build-essential git texinfo bison flex libgmp-dev libmpfr-dev libmpc-dev gawk libz-dev libssl-dev python unzip libncurses5-dev libglib2.0-dev libpixman-1-dev device-tree-compiler`
 
-<<<<<<< HEAD
 ## Repository Directory Structure (highlight)
 ```
 <CEP_ROOT> 
@@ -205,47 +189,6 @@ Install the required dependencies by running the following command:
         |
         |-- riscv-gnu-toolchain/  - RISC-V GNU toolchain
         |-- riscv-tests           - RISC-V tests (used for importing into the cosimulation environment)
-=======
-If running on Ubuntu 18.04, you'll need to to the following:
-`sudo apt install libssl1.0-dev`
-
-## Repository Directory Structure (highlight)
-```
-<CEP ROOT> ---|-- cosim/ - Defines the CEP co-simulation evironment for performing "chip" level 
-              |            simulations of the CEP in either bare metal or bus functional model 
-              |            (BFM) mode.  Dependent on the building of the CEP hardware (described
-              |            below).  Refer to the README.md file in this directory for more information.
-              |
-              |-- unit_simulation/ - Unit-level testbenches for the CEP cores
-              |
-              |-- get_external_dependencies.sh - Script used to fetch external CEP dependencies.
-              |
-              |-- hdl_cores/ - Source for all the components within the CEP.  All the blocks that 
-              |     |          implement algorithms also have corresponding test vectors.
-              |     |
-              |     |-- freedom - CEP-modified variant of the Freedom U500 platform
-              |     |     |
-              |     |     |-- mitllBlocks - Chisel code for the CEP cores
-              |     |
-              |     |-- llki - LLKI SystemVerilog files
-              |
-              |-- generated_dsp_code/  - Placeholder for the generated DSP code that cannot be
-              |                          directly included in the CEP repository due to licensing
-              |                          restrictions.
-              |
-              |-- opentitan/	         - Copy of the OpenTitan repository, some components are used by the LLKI.
-              |
-              |-- software/        
-                    |
-                    |-- freedom-u-sdk/ - Directory containing an export of the https://github.com/
-                    |                    mcd500/freedom-u-sdk directory, which is a fork of the 
-                    |                    main SiFive repo.  Variant specifically chosen because it 
-                    |                    has been modified to boot without PCIe support (which for 
-                    |                    the VC-707 requires a HiTech Global HTG-FMC-PCIE module).
-                    |
-                    |-- riscv-gnu-toolchain/  - RISC-V GNU toolchain
-                    |-- riscv-tests           - RISC-V tests (used for importing into the cosimulation environment)
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 ```
 
@@ -254,11 +197,7 @@ The SRoT is a SINGLE THREADED DEVICE.
 
 As such, care should be taken when using the SRoT in a multi-core environment.  Multiple cores should NOT access the SRoT at the same time.
 
-<<<<<<< HEAD
 As of CEP v3.1+, all cores have been LLKI-enabled.  Thus, they must be initialized with the appropriate mock keys.
-=======
-As of CEP v3.1+, all cores have been LLKI-enabled.  Thus, they must ne initialized with the appropriate mock keys.
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 See ./cosim/drivers/diag/cepMacroMix.cc for example code. 
 
@@ -388,11 +327,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-<<<<<<< HEAD
                       Common Evaluation Platform v3.11
-=======
-                      Common Evaluation Platform v3.1
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
          Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -415,11 +350,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-<<<<<<< HEAD
 *** CEP Tag=CEPTest CEP HW VERSION = v3.11 was built on Feb 14 2021 12:01:26 ***
-=======
-*** CEP Tag=CEPTest CEP HW VERSION = v3.10 was built on Feb 14 2021 12:01:26 ***
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
  CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
 gSkipInit=0/0
 gverbose=0/0
@@ -495,111 +426,6 @@ More information about the unit simulations can be found [./unit_simulation/READ
 Feedback on the CEP is welcomed by the authors.  They are best contacted by opening a Github issue.
 
 
-<<<<<<< HEAD
-=======
-## Release Notes
-
-v1.0 - Initial release
-
-v1.1 - (19 July 2018)
-* Directory structure has been reorganized (details below)
-* Upgraded to the non-deprecated mor1kx (added as a subnodule)
-* Verified with both the pre-built and build-your-own version of the Newlib toolchain as described on [http://openrisc.io](http://openrisc.io)
-* In addition to test vectors for each of the cores, some additional test_software, such as "hello world", have been added for reference
-* Expanded testbench (details below)
-* Bug fixes and general code cleanup [Additional details in the git commit history]
-
-v1.1.1 - (27 September 2018)
-* Added CEP\_utilization\_placed.rpt in implSummaries directory.  This summarizes utlization of the CEP v1.1 targetted to the VC707 using Vivado 2018.1.
-
-v1.2 - (15 November 2018)
-* Major Update: The underlying bus has been converted from Wishbone-B4 to AXI4-Lite.  All cores as well as the MOR1KX has been wrapped with translation modules.  All the wrapping logic and interconnect are now in SystemVerilog.
-* Regression Suite: In additon to each core's unit tests, a regression test suite has been included.  When compiled by the or1k toolchain, it be loaded/synthesized into the CEP RAM block and run at boot time.
-* Modelsim Testing: Unit-level and system-level modelsim-based testbenches added
-* GPS clkgen: The GPS clock gen component has been moved to the top level of the CEP, simplifying its replacement when targetting an ASIC.
-* Misc. bug fixes
-
-v2.0 - (16 August 2019)
-* Major Update: mor1k proceesor core replaced with the UCB Rocket-Chip within the SiFive Freedom U500 Platform.  All modules have been updated to support TileLink natively.  Currently only the AES and FIR cores have been integrated, but v2.1 will include the re-release of all the CEP cores.   
-
-v2.1 - (31 October 2019)
-* Integrated DES3, GPS, MD5, RSA, SHA256, DFT, IDFT, and IIR cores.
-
-v2.2 - (31 January 2020)
-* Added co-simulation environment that supports both Bus Functional Model (BFM) and Baremetal simulation modes.  Additional diagnostic capabilities within Linux.
-
-v2.3 - (17 April 2020)
-* Added unit-level testbenches for all CEP cores.  Co-simulation modified to generate unit-level test stimulus.  
-
-v2.4 - (5 June 2020)
-* CEP core test coverage expanded
-* Unit testbenches transactional-level support added
-* AES-derived and FIR-derived generated cores added
-* Misc. bug fixes
-
-v2.5 - (31 July 2020)
-* All Unit-level testbenches have been expanded to optional support the Logic Locking Keying Interface (LLKI)
-  for both cycle-level and transactional-level modes
-
-v2.51 - (7 August 2020)
-* Legacy unused core wrapper files (axi4lite and wb) removed
-
-v2.52 - (2 September 2020)
-* Added ./doc/CEP_TestDescriptions.pdf
-
-v2.6 - (18 September 2020)
-* Rocket-Chip and Freedom repositories updated.  Source responsitory list:
-    https://github.com/sifive/freedom/tree/8622a684e7e54d0a20df90659285b9c587772629              - Aug 19, 2020
-    https://github.com/chipsalliance/rocket-chip/tree/d2210f9545903fad40c9860389cdcf9c28515dba   - Apr  2, 2020
-    https://github.com/sifive/fpga-shells/tree/19d0818deda5d295154992bd4e2c490b7c905df9          - Jan 28, 2020
-    https://github.com/sifive/sifive-blocks/tree/12bdbe50636b6c57c8dc997e483787fdb5ee540b        - Dec 17, 2019
-    https://github.com/mcd500/freedom-u-sdk/tree/29fe529f8dd8e1974fe1743184b3e13ebb2a21dc        - Apr 12, 2019
-* riscv-tools (formerly under rocket-chip) now located in ./software/riscv-gnu-toolchain
-* KNOWN ISSUES:
-	- The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
-	  the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
-	  the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
-
-	  Functionally, this should only cause an issue when dealing with self-modifying code, which is an atypical coding practice.
-
-v2.61 - (2 October 2020)
-  - Added initial simulation support for Cadence XCellium
-  - Cosim: Expanded DDR3 memory size to support "larger" bare-metal executables created by the new RISCV toolchain released with v2.6
-
-v2.7 - (28 October 2020)
-* Added support for RISC-V ISA tests (under ./cosim/isaTests)
-* Updated license statements to BSD-2-Clause
-* KNOWN ISSUES:
-  - The iCacheCoherency passes when running bare-metal simulation, but fails when running on the VC-707.  There is an issue with
-    the iCache protocol that the tight-looped iCache coherency test results in one or more of the Rocket Cores (there are 4 in 
-    the CEP) L1 iCache not getting the value associated with the most recent write to instruction memory.
-
-    Functionally, this should only cause an issue when dealing with self-modifying code, which is an atypical coding practice.
-
-  - The following cosim tests fail when run under RHEL using the "new" RISC-V toolchain:
-    - bareMetalTests/cacheCoherence
-    - isaTests/rv64mi-p-access 
-    - isaTests/rv64ud-p-ldst
-
-v2.71 - (2 November 2020)
-* Corrected README.md issue
-
-v3.0 - (18 December 2020)
-* Initial LLKI release with Surrogate Root of Trust
-* AES core replaced with LLKI-enabled AES core, all other cores remain unchanged
-
-v3.01 - (19 December 2020)
-* Removed used flash model reference in cep_tb.v
-
-v3.1 - (22 February 2021) 
-* Full LLKI support (All CEP cores are now LLKI enabled)
-* Known Issues:
-  - cep_diag (on Linux) has NOT been updated to work with the LLKI.  Thus, running the tests that use
-    the CEP cores (e.g., cep_aes, cep_des3, etc.) will result in failure
-  - rv64si-p-dirty ISA test fails
-  - unit_simulations need to be updated to be compatible with the LLKI
-
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 ## Licensing
 The CEP been developed with a goal of using components with non-viral, open source licensing whenever possible.  When not feasible (such as Linux), pointers to reference repositories are given using the [get_external_dependencies.sh](./get_external_dependencies.sh) script.  
 

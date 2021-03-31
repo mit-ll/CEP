@@ -23,20 +23,11 @@ int FIR_fd;
 //
 always @(posedge srot_start_capture) begin
    $display("Enable cycle-by-cycle capturing of FIR stimulus");	    
-<<<<<<< HEAD
    // wait until it gets out of rst
    if (cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.rst)
      @(negedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.rst);
    // next clock
    @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.clk);
-=======
-   // wait until it gets out of reset
-   if (!cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.reset)
-     @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.reset);
-   // next clock
-   @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
-   CaptureFIR_vector=1;
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
    FIR_fd=$fopen("../../drivers/vectors/fir_stimulus.txt","w");
    captureFIR_Stimulus();   
 end	
@@ -48,11 +39,7 @@ end
 always @(negedge c2c_capture_enable[`DVTF_FIR_CAPTURE_EN_BIT]) begin
    if (CaptureFIR_vector) begin
       CaptureFIR_vector=0;
-<<<<<<< HEAD
       repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.clk);
-=======
-      repeat (2) @(posedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
       $display("Stop Capturing FIR stimulus");
       $fwrite(FIR_fd,"};\n");
       $fwrite(FIR_fd,"`define FIR_SAMPLE_COUNT %d\n",FIR_sampleNum);      
@@ -90,14 +77,9 @@ end
 	 $fwrite(FIR_fd,"reg [`FIR_DATA_WIDTH-1:0] FIR_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-<<<<<<< HEAD
 	 while (srot_start_capture) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.clk);
 	    if (CaptureFIR_vector || !srot_stop_capture) begin
-=======
-	 while (CaptureFIR_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	    // MUST align to HEX number if _ is used!!!
 	    if (FIR_sampleNum>0) begin
 	       $fwrite(FIR_fd,"   ,");
@@ -105,7 +87,6 @@ end
 	       $fwrite(FIR_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
-<<<<<<< HEAD
 	    $fwrite(FIR_fd,"'h%x_%x_%x_%x_%x_%x\n",
 	    	    {1'b0,cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.llkid_key_ready,
 		     cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.llkid_key_complete,
@@ -116,10 +97,6 @@ end
 		    //
 		{3'b0,cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.rst_dut},
 		    cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.inData[31:0],
-=======
-	    $fwrite(FIR_fd,"'h%x_%x\n",
-	    	    cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.inData[31:0],
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 		    cep_tb.fpga.topDesign.topMod.firmodule.FIR_filter_mock_tss_inst.FIR_filter_inst.outData[31:0]);
 	    FIR_sampleNum++;
 	    end

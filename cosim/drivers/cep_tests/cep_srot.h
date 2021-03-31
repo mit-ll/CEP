@@ -14,12 +14,9 @@
 #include "stdint.h"
 #include "cep_crypto.h"
 
-<<<<<<< HEAD
 #define INVERT_ALL_BITS  1
 #define INVERT_ALTERNATE 2
 
-=======
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 #define MAX_LLKI_KEY_SIZE   256   // Maximize size of an LLKI Key in units
                                   // of 64-bit words
 
@@ -55,10 +52,7 @@ const uint8_t   LLKI_STATUS_KL_REQ_BAD_MSG_LEN    = 0x27;
 const uint8_t   LLKI_STATUS_KL_RESP_BAD_MSG_ID    = 0x28;
 const uint8_t   LLKI_STATUS_KL_TILELINK_ERROR     = 0x29;
 const uint8_t   LLKI_STATUS_KL_LOSS_OF_SYNC       = 0x30;
-<<<<<<< HEAD
 const uint8_t   LLKI_STATUS_KL_BAD_KEY_LEN        = 0x31;
-=======
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 const uint8_t   LLKI_STATUS_UNKNOWN_ERROR         = 0xFF;
 
@@ -165,7 +159,6 @@ class cep_srot : public cep_crypto {
     ~cep_srot() {}; 
 
     //
-<<<<<<< HEAD
     int SetOperationalMode (void);
     int EnableLLKI (uint8_t KeyIndex);
     int DisableLLKI (uint8_t KeyIndex);
@@ -175,11 +168,6 @@ class cep_srot : public cep_crypto {
     int  GetCpuActiveMask(void) { return mCpuActiveMask; }
     // for negative testing
     void LLKI_invertKey(int enable) { mInvertKey = enable; }
-=======
-    int LLKI_Setup(int cpuId);
-    void SetCpuActiveMask(int mask) {  mCpuActiveMask = mask; }
-    int  GetCpuActiveMask(void) { return mCpuActiveMask; }
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
   //
   // Private methods
   //
@@ -189,25 +177,15 @@ class cep_srot : public cep_crypto {
     // Move them to protected
     // ------------------------------------------------------
     int InitKeyIndexRAM (void);
-<<<<<<< HEAD
     int LoadLLKIKey (uint8_t KeyIndex, uint8_t CoreIndex, uint16_t LowPointer, uint16_t HighPointer, const uint64_t *Key, int invertType);
-=======
-    int LoadLLKIKey (uint8_t KeyIndex, uint8_t CoreIndex, uint16_t LowPointer, uint16_t HighPointer, const uint64_t *Key);
-    int SetOperationalMode (void);
-    int EnableLLKI (uint8_t KeyIndex);
-    int DisableLLKI (uint8_t KeyIndex);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
     int LLKIInitComplete (int cpuId);
     int LLKIClearComplete (int cpuId);
 
     int mCpuActiveMask;
     int maxTO;  
-<<<<<<< HEAD
     //
     int mInvertKey;
     uint64_t mInvertMask;
-=======
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 };
 
 #endif

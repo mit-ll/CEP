@@ -29,10 +29,6 @@ always @(posedge srot_start_capture) begin
      @(negedge cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.reset);
    // next clock
    @(posedge cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.clk);
-<<<<<<< HEAD
-=======
-   CaptureIDFT_vector=1;
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
    IDFT_fd=$fopen("../../drivers/vectors/idft_stimulus.txt","w");
    captureIDFT_Stimulus();   
 end	
@@ -90,14 +86,9 @@ end
 	 $fwrite(IDFT_fd,"reg [`IDFT_DATA_WIDTH-1:0] IDFT_buffer[] = {\n");
 	 //
 	 // wait until valid in to interleaver
-<<<<<<< HEAD
 	 while (srot_start_capture) begin
 	    @(negedge cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.clk);
 	    if (CaptureIDFT_vector || !srot_stop_capture) begin
-=======
-	 while (CaptureIDFT_vector) begin
-	    @(negedge cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.clk);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	    // MUST align to HEX number if _ is used!!!
 	    if (IDFT_sampleNum>0) begin
 	       $fwrite(IDFT_fd,"   ,");
@@ -105,7 +96,6 @@ end
 	       $fwrite(IDFT_fd,"    ");		 
             end
 	    // MUST align to HEX number if _ is used!!!
-<<<<<<< HEAD
 	    $fwrite(IDFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
 	    	    {1'b0,cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.llkid_key_ready,
 		     cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.llkid_key_complete,
@@ -114,19 +104,6 @@ end
 		     cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.llkid_clear_key},
 		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.llkid_key_data[63:0],
 		    //
-=======
-	    $fwrite(IDFT_fd,"'h%x_%x_%x_%x_%x_%x_%x_%x_%x_%x\n",
-		    {3'b0,cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.next},
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.X0[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.X1[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.X2[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.X3[15:0],
-		    {3'b0,cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.next_out},
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.Y0[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.Y1[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.Y2[15:0],
-		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.Y3[15:0]);
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 
 		    {3'b0,cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.next},
 		    cep_tb.fpga.topDesign.topMod.idftmodule.idft_top_mock_tss_inst.idft_top_inst.X0[15:0],

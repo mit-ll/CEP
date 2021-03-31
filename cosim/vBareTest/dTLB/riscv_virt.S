@@ -37,11 +37,7 @@ RVTEST_RV64U
 RVTEST_CODE_BEGIN
 
 user_code_here:
-<<<<<<< HEAD
 	# try to restrict to 128 bytes per page to cut down on memcpy per page
-=======
-	# try to restrict to 128 bytes per page due to cut down on memcpy per page
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 	# preload
 	//csrr t6,scounteren	; # t6=hartID
 	addi  t6,x0,0x3f	; # bottom of page

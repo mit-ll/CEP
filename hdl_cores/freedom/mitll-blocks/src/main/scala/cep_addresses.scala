@@ -34,11 +34,7 @@ import freechips.rocketchip.tilelink._
 
 object CEPVersion {
   val CEP_MAJOR_VERSION             = 0x03
-<<<<<<< HEAD
   val CEP_MINOR_VERSION             = 0x11
-=======
-  val CEP_MINOR_VERSION             = 0x10
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 }
 
 object CEPBaseAddresses {
@@ -205,14 +201,11 @@ object GPSAddresses{
     val gps_l_code_addr_w1          = 0x0028    
     val gps_sv_num_addr             = 0x0030
     val gps_reset_addr              = 0x0038
-<<<<<<< HEAD
     val gps_aes_key_addr_w0         = 0x0040
     val gps_aes_key_addr_w1         = 0x0048
     val gps_aes_key_addr_w2         = 0x0050
     val gps_pcode_speed_addr        = 0x0058
     val gps_pcode_xini_addr         = 0x0060
-=======
->>>>>>> 6494113db2448733228b0f6659bfa0a7fedc93c0
 }
 
 object DFTAddresses{

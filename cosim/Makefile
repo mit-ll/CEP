@@ -50,15 +50,11 @@ summary: .force
 		(cd $${i}; make -s STAND_ALONE=0 summary | sort | tee -a ${TOP_DIR}/regressionSummary);	\
 	done
 
-# use "coverage open <file>.ucdb" under vsim to open and view
-merge: .force
-	@for i in ${TEST_GROUP}; do	\
-		(cd $${i}; make merge);	\
-	done
-
 #
 # override anything here before calling the common file
 #
 include ./common.make
+
+
 
 

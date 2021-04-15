@@ -11,10 +11,13 @@
 
 #ifndef cepLockfreeAtomic_H
 #define cepLockfreeAtomic_H
+#include <stddef.h>
+#include <stdlib.h>
+#include <stdint.h>
 
 //
 // The test itself
 //
-int cepLockfreeAtomic_runTest(int cpuId, int seed, int verbose);
+int cepLockfreeAtomic_runTest(int cpuId, uint64_t mem_base, uint64_t reg_base, int seed, int verbose);
 
 #endif

@@ -8,7 +8,7 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-    <img src="./doc/version3.11.jpg" width="98" height="60">
+    <img src="./doc/version3.2.jpg" width="98" height="60">
 </p>
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology
@@ -45,7 +45,7 @@ Currently, the test platform for the CEP is the Xilinx VC-707 FPGA Development B
 * UCB Rocket Chip                                        - https://github.com/chipsalliance/rocket-chip
 * Freedom U500 Repository                                - https://github.com/sifive/freedom
 * Freedom Unleased Software Development Kit              - https://github.com/sifive/freedom-u-sdk
-* Chipyard Documentation                                 - https://chipyard.readthedocs.io/
+* Chipyard Documentation                                 - https://readthedocs.org/projects/chipyard/
 
 ## Pre-requisites (validated test/build configuration):
 The following items describe the configuration of the system that CEP has been developed and tested on:
@@ -284,6 +284,18 @@ Following the build process and assuming the [Digilent Adept 2 drivers](https://
 ./program_card.sh
 ```
 
+### A Few Notes about the Generated Address Map ###
+
+- Each address space has a series of permissions associated with it.
+  They are defined as follows (from [[freechips.rocketchip.diplomacy.ResourcePermissions]]):
+
+```
+    A - Supports all Atomic Operations
+    R - Readable
+    W - Writable
+    X - Executable
+    C - Cacheable
+```
 
 ### Bulding CEP Diagnostics Software ###
 
@@ -299,6 +311,8 @@ make install append
 If subsequent changes are made to the source code in <CEP_ROOT>/cosim/drivers/linux, simply copy the changes over to the Linux build by running `make install`.
 
 Next, one needs to build linux.  First, change to the `<CEP ROOT>/software/freedom-u-sdk` directory.  Ensure that the linux variant of the RISC-V toolset is used by executing `unset RISCV`
+
+For Ubuntu 18.04 LTS, the default PERL installation may cause a conflict with the build process.  You may need to execute `unset PERL_MM_OPT` if set.
 
 Begin the build by running `make -jN BOARD=vc707devkit_nopci all` where N is the numbers of cores you can dedicate to the build.  Ensure that you have NOT sourced the Xilinx Vivado environment setup script before running this step.
 
@@ -327,7 +341,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v3.11
+                      Common Evaluation Platform v3.20
          Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -350,35 +364,47 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v3.11 was built on Feb 14 2021 12:01:26 ***
- CEP FPGA Physical=0x70000000 -> Virtual=0x00000020004fa000
+*** CEP Tag=CEPTest CEP HW VERSION = v3.20 was built on Apr 15 2021 09:22:15 ***
+ CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x0000000700000000, 0x0000000800000000, 0x0000000600000000, 0x0000000c00000000 ScratchPad=0x0000002000800000
 gSkipInit=0/0
 gverbose=0/0
 Setting terminal to VT102 with erase=^H
 EnterCmd> menu
-        ============== TEST MENU ==============
+  ============== TEST MENU ==============
     0 : runAll               : Run all available tests
-    1 : cepLockTest          : Run CEP single lock test on all cores
-    2 : cepMultiLock         : Run CEP multi-lock test on all cores
-    3 : cepRegTest           : Run CEP register tests on all cores
-    4 : cep_AES              : CEP AES test
-    5 : cep_DES3             : CEP DES3 test
-    6 : cep_DFT              : CEP DFT test
-    7 : cep_FIR              : CEP FIR test
-    8 : cep_GPS              : CEP GPS test
-    9 : cep_IDFT             : CEP IDFT test
-   10 : cep_IIR              : CEP IIR test
-   11 : cep_MD5              : CEP MD5 test
-   12 : cep_RSA              : CEP RSA test
-   13 : cep_SHA256           : CEP SHA256 test
-   14 : ddr3Test             : main Memory Test on all cores
-   15 : cepAllMacros         : CEP all macros test (single thread)
-   16 : cepMacroMix          : CEP Macro tests (aes/des3/md5/sha)
-   17 : cepThrTest           : Run multi-thread tests on all cores
-   18 : cacheFlush           : I+D-caches flush all cores (via self-mod-code)
-   19 : dcacheCoherency      : D-cache coherency Test on all cores
-   20 : icacheCoherency      : I-cache coherency Test on all cores
-<...>
+    1 : cacheFlush           : I+D-caches flush all cores (via self-mod-code)
+    2 : cepThrTest           : Multi-thread tests (all cores)
+    3 : dcacheCoherency      : D-cache coherency Test (all cores)
+    4 : icacheCoherency      : I-cache coherency Test (all cores)
+    5 : cepMaskromTest       : CEP Maskrom Read-Only Test (all cores)
+    6 : cepSrotMemTest       : CEP SRoT memory test (single core) 
+    7 : ddr3Test             : Main Memory Test (all cores)
+    8 : smemTest             : Scratchpad Memory Test (all cores)
+    9 : cepGpioTest          : CEP GPIO test (single core) 
+   10 : cepSpiTest           : CEP SPI test (single core) 
+   11 : cepSrotErrTest       : CEP SRoT Error Test (single core) 
+   12 : cepAccessTest        : CEP various bus/size access test (all cores)
+   13 : cepAtomicTest        : CEP atomic intructions test (all cores)
+   14 : cepClintTest         : CEP CLINT register test (all cores)
+   15 : cepLockTest          : CEP single lock test (all cores)
+   16 : cepLockfreeAtomic    : CEP lock-free instructions test (all cores) 
+   17 : cepLrscOps           : CEP Load-Reserve/Store-Conditional test (all cores)
+   18 : cepMultiLock         : CEP multi-lock test (all cores)
+   19 : cepPlicTest          : CEP PLIC register test (all cores)
+   20 : cepRegTest           : CEP register tests on all cores
+   21 : cepMacroBadKey       : CEP Macro tests with badKey (all cores)
+   22 : cepMacroMix          : CEP Macro tests (all cores)
+   23 : cepSrotMaxKeyTest    : CEP Macro tests with maxKey (single core)
+   24 : cep_AES              : CEP AES test (single core)
+   25 : cep_DES3             : CEP DES3 test (single core)
+   26 : cep_DFT              : CEP DFT and IDFT test (single core)
+   27 : cep_FIR              : CEP FIR test (single core)
+   28 : cep_GPS              : CEP GPS test (single core)
+   29 : cep_IIR              : CEP IIR test (single core)
+   30 : cep_MD5              : CEP MD5 test (single core)
+   31 : cep_RSA              : CEP RSA test (single core)
+   32 : cep_SHA256           : CEP SHA256 test (single core)
+EnterCmd> 
 ```
 
 You should now have a functioning CEP!

@@ -56,6 +56,7 @@ cepMemTest_WriteEntry(memBaseTest_t *me, uint64_t adr)
     break;
   case 64: 
     DDR3_WRITE(me->mBAR + (adr*8),dat64); 
+    //DUT_WRITE32_64(me->mBAR + adr*4,dat64); 
     break;
   }
   //
@@ -86,7 +87,8 @@ cepMemTest_ReadEntry(memBaseTest_t *me, uint64_t adr)
     me->rdPat[0] = dat32 ;
     break;
   case 64: 
-    DDR3_READ(me->mBAR + (adr*8),dat64); 
+    DDR3_READ(me->mBAR + (adr*8),dat64);
+    //DUT_READ32_64(me->mBAR + adr*4,dat64);  
     me->rdPat[0] = dat64 ;
     break;
   }

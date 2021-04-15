@@ -36,7 +36,9 @@ void thread_entry(int cid, int nc)
   //
   set_cur_status(CEP_RUNNING_STATUS);  
   //
-  errCnt += cepLockfreeAtomic_runTest(cpuId, 0, 0);
+  uint64_t mem_base = 0x90000000;
+  uint64_t reg_base = (uint64_t)reg_base_addr;
+  errCnt += cepLockfreeAtomic_runTest(cpuId, mem_base, reg_base, 0,0);
   //
   // Done
   //

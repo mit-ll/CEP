@@ -173,18 +173,26 @@ endif
 #
 # vendor independent, strickly synthesizable RTL codes
 #
+# NOTE: dft_top.v and idft_top.v have duplicate modules such as memMod, memMod_dist, etc.. use -v for one of them
 DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/aes/round.v			\
 	${DUT_TOP_DIR}/hdl_cores/aes/aes_192.v 			\
-	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv \
-	${DUT_TOP_DIR}/hdl_cores/llki/tlul_adapter_reg.sv \
-	$(wildcard ${DUT_TOP_DIR}/generated_dsp_code/*.v)	\
+	${DUT_TOP_DIR}/hdl_cores/llki/llki_pkg.sv 		\
+	${DUT_TOP_DIR}/hdl_cores/llki/top_pkg.sv 		\
+	$(DUT_TOP_DIR)/opentitan/hw/ip/tlul/rtl/tlul_pkg.sv	\
+	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv 		\
+	${DUT_TOP_DIR}/hdl_cores/llki/tlul_adapter_reg.sv 	\
+	$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl/prim_util_pkg.sv	\
+	${DUT_TOP_DIR}/generated_dsp_code/dft_top.v		\
+	-v ${DUT_TOP_DIR}/generated_dsp_code/idft_top.v		\
 	${BHV_DIR}/ddr3.v					\
 
 #
 # created from chisel
 #
-RISCV_FILES	= ${ROCKET_DIR}/resources/vsrc/AsyncResetReg.v  \
+#RISCV_FILES	= ${ROCKET_DIR}/resources/vsrc/AsyncResetReg.v  \
+
+RISCV_FILES	= \
 		  ${ROCKET_DIR}/resources/vsrc/plusarg_reader.v	\
 		  ${ROCKET_DIR}/resources/vsrc/EICG_wrapper.v
 
@@ -210,8 +218,7 @@ DUT_XILINX_TOP_TB 	= ${DVT_DIR}/${DUT_XILINX_TOP_MODULE}.v
 XILINX_MODELSIM_INI     = ${SIM_DIR}/xil_lib/modelsim.ini
 XILINX_LIBRARY_LIST     = -L unisims_ver -L unimacro_ver -L unifast_ver -L secureip -L xpm
 DUT_XILINX_VOPT_ARGS	= +acc -64 +nolibcell +nospecify +notimingchecks -modelsimini ${XILINX_MODELSIM_INI} ${WORK_DIR}.glbl ${XILINX_LIBRARY_LIST}
-DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOMIZE_MEM_INIT+RANDOMIZE_REG_INIT+RANDOM="1'b0"
-#DUT_XILINX_VLOG_ARGS	= +acc -sv -64 -incr +define+MODELSIM +define+RANDOM="1'b0"+RANDOMIZE_MEM_INIT
+DUT_XILINX_VLOG_ARGS	= +acc -64 -sv +define+RANDOMIZE_MEM_INIT+RANDOMIZE_REG_INIT+RANDOM="1'b0"
 DUT_XILINX_VCOM_ARGS	= -64 -93 -modelsimini ${XILINX_MODELSIM_INI}
 DUT_XILINX_VSIM_ARGS	= -64 -modelsimini ${XILINX_MODELSIM_INI} ${XILINX_LIBRARY_LIST} -warning 3363 -warning 3053 -warning 8630
 
@@ -346,7 +353,7 @@ ${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}
 	@for i in ${INCDIR_LIST}; do                            			\
 		echo "+incdir+"$${i} >> ${BLD_DIR}/searchPaths_build;    		\
 	done
-	${VLOG_CMD} -work ${WORK_DIR} -f ${BLD_DIR}/searchPaths_build +libext+.v +libext+.sv ${BLD_DIR}/config.v ${DUT_VLOG_ARGS} ${DUT_VERILOG_FLIST} ${DUT_XILINX_TOP_TB}
+	${VLOG_CMD} -work ${WORK_DIR} -f ${BLD_DIR}/searchPaths_build +libext+.v +libext+.sv ${BLD_DIR}/config.v ${DUT_VLOG_ARGS} +define+MODELSIM -incr ${DUT_VERILOG_FLIST} ${DUT_XILINX_TOP_TB}
 	touch $@
 
 #
@@ -354,10 +361,15 @@ ${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}
 # make sure vlog is done first!!
 # after that auto-generate the dependencies if there is any change
 #
-${WORK_DIR}/_info: ${BLD_DIR}/.is_checked ${BLD_DIR}/.buildVlog ${BLD_DIR}/.buildVcom ${RICSV_BARE_BOOT_DIR}/${RISCV_BARE_BOOT_ROM}
+ifeq (${CADENCE},0)
+${BLD_DIR}/_info: ${BLD_DIR}/.is_checked ${BLD_DIR}/.buildVlog ${BLD_DIR}/.buildVcom ${RICSV_BARE_BOOT_DIR}/${RISCV_BARE_BOOT_ROM}
 	${VOPT_CMD} -work ${WORK_DIR} ${DUT_VOPT_ARGS} ${WORK_DIR}.${DUT_MODULE} -o ${DUT_OPT_MODULE}
 	(cd ${BLD_DIR}; ${VMAKE_CMD} ${WORK_NAME} > ${BLD_DIR}/.vmake_out; ${MKDEPEND} ${BLD_DIR}/.vmake_out ${BLD_DIR} ${SIM_DEPEND_TARGET} )
 	touch $@
+else
+${BLD_DIR}/_info: ${BLD_DIR}/.is_checked ${BLD_DIR}/.cadenceBuild ${RICSV_BARE_BOOT_DIR}/${RISCV_BARE_BOOT_ROM}
+	touch $@
+endif
 
 
-buildSim: .force ${WORK_DIR}/_info 
+buildSim: .force ${BLD_DIR}/_info 

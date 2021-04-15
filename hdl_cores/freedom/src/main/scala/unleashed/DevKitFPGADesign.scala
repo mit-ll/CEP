@@ -118,13 +118,20 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode, corePLL: PLLNode)(implici
     }
   } }
 
+  // Instantiate the Scratchpad memory (64k) and attach it to the Memory Bus
+  val scratchpadRAM = LazyModule(new TLRAM(address   = AddressSet(
+                                    BigInt(CEPBaseAddresses.scratchpad_base_addr),
+                                    BigInt(CEPBaseAddresses.scratchpad_depth)),
+                                    beatBytes = mbus.beatBytes,
+									devName = Some(s"scratchpad")))
+
+  mbus.coupleTo(s"scratchpad") { scratchpadRAM.node := TLFragmenter(mbus) := _ }
 
   // TODO: currently, only hook up one memory channel
   val fourgbdimm = p(ExtMem).get.master.size == 0x100000000L
   val ddr = p(DDROverlayKey).headOption.map(_.place(DDRDesignInput(p(ExtMem).get.master.base, wranglerNode, corePLL, fourgbdimm)))
   ddr.foreach {_.overlayOutput.ddr := mbus.toDRAMController(Some("xilinxmig"))()}
   val mparams = p(ExtMem).get.master
-
 
   // Work-around for a kernel bug (command-line ignored if /chosen missing)
   val chosen = new DeviceSnippet {
@@ -172,11 +179,15 @@ class U500VC707DevKitSystemModule[+L <: DevKitFPGADesign](_outer: L)
   gpio_pins.pins.foreach { _.i.ival := Bool(false) }
   val gpio_cat = Cat(Seq.tabulate(gpio_pins.pins.length) { i => gpio_pins.pins(i).o.oval })
   
-
-   _outer.ledsOut.foreach {
-     _ := gpio_cat
-   }
-     
+  // make the LED to GPIO connections
+     _outer.ledsOut(0) := gpio_cat(0)
+     _outer.ledsOut(1) := gpio_cat(1)
+     _outer.ledsOut(2) := gpio_cat(2)
+     _outer.ledsOut(3) := gpio_cat(3)
+     _outer.ledsOut(4) := gpio_cat(4)
+     _outer.ledsOut(5) := gpio_cat(5)
+     _outer.ledsOut(6) := gpio_cat(6)
+     _outer.ledsOut(7) := gpio_cat(7)
 }
 
 // Allow frequency of the design to be controlled by the Makefile

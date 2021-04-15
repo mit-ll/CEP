@@ -592,3 +592,4 @@ void toggleDmiReset(void) {
 #endif
 
 }
+

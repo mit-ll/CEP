@@ -68,9 +68,11 @@ int cepClintTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   // start adding register to test
   //
   (*regp->AddAReg_p)(regp, clint_base_addr + clint_mtimecmp_offset + (cpuId*8), (uint64_t)-1);
+#ifdef SIM_ENV_ONLY
   if (cpuId < 2) { // 0-1 will cover for 2 and 3 since this register is 32 bit only and only 1 bits
     (*regp->AddAReg_p)(regp, clint_base_addr + clint_msip_offset     + (cpuId*8), (uint64_t)0x0000000100000001LL);
   }
+#endif
   //
   // add a hole in 4K
   //

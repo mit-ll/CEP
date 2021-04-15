@@ -44,11 +44,26 @@ extern "C" {
   int run_ddr3Test(void);
   int run_cepAllMacros(void);
   int run_cepMacroMix(void);
+  // misc
+  int run_cepGpioTest(void);
+  int run_cepSrotMemTest(void);
+  int run_cepSrotMaxKeyTest(void);
+  int run_cepMacroBadKey(void);
+  int run_smemTest(void);
+  int run_cepLockfreeAtomic(void);
+  int run_cepLrscOps(void);
+  int run_cepClintTest(void);
+  int run_cepPlicTest(void);
+  int run_cepAccessTest(void);
+  int run_cepAtomicTest(void);
+  int run_cepSpiTest(void);
+  int run_cepMaskromTest(void);
+  //  int run_cepCsrTest(void);
+  int run_cepSrotErrTest(void);
   //
   int run_cep_AES      (void);  
   int run_cep_DES3     (void);  
   int run_cep_DFT      (void);  
-  int run_cep_IDFT     (void);  
   int run_cep_FIR      (void);  
   int run_cep_IIR      (void);  
   int run_cep_GPS      (void);  

@@ -111,10 +111,10 @@ int cep_exchAtomicTest(int coreId, uint64_t *ptr, uint64_t mySig, uint64_t partS
   //
   //
   int errCnt = 0;
-  int timeOut = 20;
+  int timeOut = 2000;
   int i=1;
   uint64_t myCurSig = mySig;
-  uint64_t regAdr = reg_base_addr + cep_scratch0_reg + (coreId * 16);
+  uint32_t regAdr = reg_base_addr + cep_scratch0_reg + (coreId * 16);
   //
   while (i <= loop) {
     // strong compare
@@ -122,7 +122,7 @@ int cep_exchAtomicTest(int coreId, uint64_t *ptr, uint64_t mySig, uint64_t partS
     if (__atomic_compare_exchange_n(ptr,&myCurSig,partSig,0,__ATOMIC_ACQ_REL,__ATOMIC_ACQ_REL)) { // next    
       DUT_WRITE32_64(regAdr,mySig);
       DUT_WRITE32_64(regAdr+8,partSig);
-      timeOut = 20;
+      timeOut = 2000;
       mySig   += incVal;
       partSig += incVal;
       i++;
@@ -131,6 +131,7 @@ int cep_exchAtomicTest(int coreId, uint64_t *ptr, uint64_t mySig, uint64_t partS
       DUT_WRITE32_64(regAdr,myCurSig); // what I got when false!!!
       DUT_WRITE32_64(regAdr+8,(i << 16) | timeOut);
       timeOut--;
+      USEC_SLEEP(10);
       if (timeOut <= 0) {
 	errCnt = i;
 	return errCnt;

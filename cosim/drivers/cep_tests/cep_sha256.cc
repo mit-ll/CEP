@@ -214,13 +214,14 @@ int cep_sha256::RunSha256Test(int maxLoop) {
 	mErrCnt += CheckHashText(mSwCp);
       }
     }
-    if (mErrCnt) {
+    
+    if (mErrCnt && !GetExpErr()) {
       LOGE("%s: Loop %d len=%d with %d error\n",__FUNCTION__,i,GetMsgSize(),mErrCnt);      
     }
     //
     // Print
     //
-    if (mErrCnt || GetVerbose()) {
+    if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       PrintMe("Key",       &(mKEY[0]),mKeySize);          
       PrintMe("InText     ",&(mHwPt[0]),totalLen);
       PrintMe("ExpOutText",&(mSwCp[0]),mBlockSize/2);

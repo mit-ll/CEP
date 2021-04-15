@@ -18,6 +18,20 @@
 # (no quote)
 #
 DUT_VENDOR 	= XILINX
+#
+# Only pick 1!!!
+#
+MODELSIM        = 1
+CADENCE 	= 0
+VERILATOR 	= 0
+
+#
+# Only ONE
+#
+ifeq (${CADENCE},1)
+MODELSIM        = 0
+VERILATOR 	= 0
+endif
 
 #
 # BFM, BARE_METAL or LINUX
@@ -134,6 +148,22 @@ RISCV_BARE_CFLAG        += -DUSE_DPI
 endif
 
 #
+# Auto-extract the MAJOR/MINOR version from scala
+#
+CEP_ADR_SCALA_FILE = ${DUT_TOP_DIR}/hdl_cores/freedom/mitll-blocks/src/main/scala/cep_addresses.scala
+CEP_VER_H_FILE     = ${SIM_DIR}/drivers/cep_tests/cep_version.h
+
+${CEP_VER_H_FILE} : ${CEP_ADR_SCALA_FILE}
+	@echo "// auto-extracted from ${CEP_ADR_SCALA_FILE}" > ${CEP_VER_H_FILE}
+	@echo "// Do not modify" >> ${CEP_VER_H_FILE}
+	@echo "#ifndef CEP_VERSION_H" >> ${CEP_VER_H_FILE}
+	@echo "#define CEP_VERSION_H" >> ${CEP_VER_H_FILE}
+	@grep CEP_MAJOR_VERSION ${CEP_ADR_SCALA_FILE} | sed -e 's/val/#define/' -e 's/=//' >> ${CEP_VER_H_FILE}
+	@grep CEP_MINOR_VERSION ${CEP_ADR_SCALA_FILE} | sed -e 's/val/#define/' -e 's/=//' >> ${CEP_VER_H_FILE}
+	@echo "#endif" >> ${CEP_VER_H_FILE}
+	touch $@
+
+#
 #
 #
 COMMON_CFLAGS	        += -DCAPTURE_CMD_SEQUENCE=${TL_CAPTURE}
@@ -165,13 +195,19 @@ DUT_VSIM_ARGS	  += -cpppath ${GCC}
 # -------------------------------------------
 #
 include ${SIM_DIR}/cep_buildChips.make
-
+#
+ifeq (${CADENCE},1)
+include ${SIM_DIR}/cadence.make
+endif
+ifeq (${VERILATOR},1)
+include ${SIM_DIR}/verilator.make
+endif
 #
 COMMON_CFLAGS	        += -DRISCV_WRAPPER=\"${RISCV_WRAPPER}\"
 #
 # run the simulation
 #
-vsimOnly: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE}
+vsimOnly: ${BLD_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE}
 	${VSIM_CMD} -work ${WORK_DIR} -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log
 
 PLUSARGS      = " "
@@ -183,7 +219,10 @@ USE_GDB       = 0
 # add +myplus=0 for stupid plus_arg
 VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -sv_lib ${DLL_DIR}/libvpp -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log +myplus=0"
 
-.vrun_flag: ${WORK_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
+
+# depend list
+
+.vrun_flag: ${BLD_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
 ifeq (${COVERAGE},1)
 	@if test ! -d ${DUT_COVERAGE_PATH}; then	\
 		mkdir  ${DUT_COVERAGE_PATH};		\
@@ -259,6 +298,8 @@ V2C_FILE_LIST       := 	v2c_cmds.h 	\
 
 VERILOG_DEFINE_LIST := $(foreach t,${V2C_FILE_LIST}, ${INC_DIR}/${t})
 VERILOG_DEFINE_LIST += ${PERSUITE_CHECK}
+VERILOG_DEFINE_LIST += ${CEP_VER_H_FILE}
+
 
 build_v2c: ${VERILOG_DEFINE_LIST}
 
@@ -479,6 +520,35 @@ endif
 
 #
 # -------------------------------------------
+# coverage for modelsim
+# -------------------------------------------
+# NOTE: double ::
+#
+merge::
+ifeq (${MODELSIM},1)
+	@if test -d ${DUT_COVERAGE_PATH}; then	\
+		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;) \
+	fi
+endif
+
+# use "coverage open <file>.ucdb" under vsim to open and view
+MODELSIM_TOP_COVERAGE  = ${SIM_DIR}/coverage
+MODELSIM_COV_DO_SCRIPT = ${SIM_DIR}/modelsim_coverage.do
+
+mergeAll:: .force
+ifeq (${MODELSIM},1)
+	@if test ! -d ${MODELSIM_TOP_COVERAGE}; then	\
+	   mkdir  ${MODELSIM_TOP_COVERAGE};		\
+	fi
+	@rm -rf ${MODELSIM_TOP_COVERAGE}/*
+	@for i in ${TEST_GROUP}; do	\
+	   (cd $${i}; make merge; cp coverage/$${i}.ucdb ${MODELSIM_TOP_COVERAGE}/.);	\
+	done
+	@(cd ${MODELSIM_TOP_COVERAGE};  ${VSIM_CMD} -64 -do ${MODELSIM_COV_DO_SCRIPT})
+endif
+
+#
+# -------------------------------------------
 # clean
 # -------------------------------------------
 #
@@ -495,9 +565,15 @@ cleanAll:
 	-rm -rf ${SIM_DIR}/*/.*_dependList* ${SIM_DIR}/*/.is_checked
 	-rm -rf ${SIM_DIR}/*/*/C2V*
 	-rm -rf ${BHV_DIR}/VCShell*.v
+	-rm -rf ${SIM_DIR}/*/xcelium.d ${SIM_DIR}/*/.cadenceBuild ${SIM_DIR}/*/*/cov_work ${SIM_DIR}/*/*/xrun.log
 ifeq (${COVERAGE},1)
+ifeq (${CADENCE},1)
+	-rm -rf ${SIM_DIR}/*/cad_coverage
+endif
+ifeq (${MODELSIM},1)
 	-rm -rf ${SIM_DIR}/*/coverage
 	-rm -f ${SIM_DIR}/*/*/vsim.do
+endif
 endif
 #
 #

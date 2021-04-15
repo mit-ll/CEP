@@ -37,24 +37,30 @@ int cepMaskromTest_runTest(int cpuId, int seed, int verbose) {
   uint32_t dat32, edat32;
   uint16_t dat16, edat16;
   uint8_t dat8, edat8;
-  
+
+  // from bootbare.hex
+  uint32_t known_pat1 = 0x00800913; // location 0
+  uint32_t known_pat0 = 0x30491073; // location 4
+
   //
   // Read ONLY
   //
-  offs = bootrom_base_addr + ((1<<13)-8);
+  offs = bootrom_base_addr; //  + ((1<<13)-8);
+  
   // 64-bit
   DUT_READ32_64(offs, dat64);
-  edat64 = ((uint64_t)bootrom_known_pat0 << 32) | bootrom_known_pat1;
+
+  edat64 = ((uint64_t)known_pat0 << 32) | known_pat1;
   if (dat64 != edat64) {
     LOGE("ERROR: mismatch offs=0x%08x act=0x%016lx exp=0x%016lx\n",offs,dat64,edat64);
     errCnt++;
   } else if (verbose) {
-    LOGI("OK: read64 mismatch offs=0x%08x act=0x%016lx exp=0x%016lx\n",offs,dat64,edat64);    
+    LOGI("OK: read64 offs=0x%08x act=0x%016lx exp=0x%016lx\n",offs,dat64,edat64);    
   }
   // 32-bit
   offs += 4;
   DUT_READ32_32(offs, dat32);
-  edat32 = (uint32_t)bootrom_known_pat0;
+  edat32 = (uint32_t)known_pat0;
   if (dat32 != edat32) {
     LOGE("ERROR: mismatch offs=0x%08x act=0x%08x exp=0x%08x\n",offs,dat32,edat32);
     errCnt++;
@@ -64,22 +70,22 @@ int cepMaskromTest_runTest(int cpuId, int seed, int verbose) {
   // 16-bit
   offs += 2;
   DUT_READ32_16(offs, dat16);
-  edat16 = (uint16_t)(bootrom_known_pat0>>16);
+  edat16 = (uint16_t)(known_pat0>>16);
   if (dat16 != edat16) {
     LOGE("ERROR: mismatch offs=0x%08x act=0x%04x exp=0x%04x\n",offs,dat16,edat16);
     errCnt++;
   } else if (verbose) {
-    LOGI("OK: read16 mismatch offs=0x%08x act=0x%04x exp=0x%04x\n",offs,dat16,edat16);    
+    LOGI("OK: read16 offs=0x%08x act=0x%04x exp=0x%04x\n",offs,dat16,edat16);    
   }
   // 8-bit
   offs += 1;
   DUT_READ32_8(offs, dat8);
-  edat8 = (uint8_t)(bootrom_known_pat0>>24);
+  edat8 = (uint8_t)(known_pat0>>24);
   if (dat8 != edat8) {
     LOGE("ERROR: mismatch offs=0x%08x act=0x%02x exp=0x%02x\n",offs,dat8,edat8);
     errCnt++;
   } else if (verbose) {
-    LOGI("OK: read8 mismatch offs=0x%08x act=0x%02x exp=0x%02x\n",offs,dat8,edat8);    
+    LOGI("OK: read8 offs=0x%08x act=0x%02x exp=0x%02x\n",offs,dat8,edat8);    
   }
 
   return errCnt;

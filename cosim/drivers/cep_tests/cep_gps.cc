@@ -27,9 +27,10 @@
 //
 cep_gps::cep_gps(int seed, int verbose) : cep_aes(seed,verbose) {
   init();  
-  SetSvNum(0);
-  ResetCA_code();
-
+  //
+  //SetSvNum(0);
+  // can't call this!!! since we dont know which core is running it yet!!!
+  //ResetCA_code(); 
 }
 //
 
@@ -121,22 +122,26 @@ void cep_gps::BusReset(void) {
 
 int cep_gps::ReadNCheck_CA_Code(int mask)
 {
+  int errCnt = 0;
   int expCACode= GetCA_code(GetSvNum());
   int actCACode = cep_readNcapture(GPS_BASE_K, GPS_CA_BASE);
-  mErrCnt += ((expCACode ^ actCACode) & mask);
+  errCnt += ((expCACode ^ actCACode) & mask);
   //
-  if (mErrCnt) {
-    LOGE("ERROR: CA_Code mismatch svNum=%d exp=0x%04x act=0x%04x\n",GetSvNum(),expCACode,actCACode);
-  } else if (GetVerbose()) {
+  
+  if (errCnt) {
+    if (GetExpErr()==0) {
+      LOGE("ERROR: CA_Code mismatch svNum=%d exp=0x%04x act=0x%04x\n",GetSvNum(),expCACode,actCACode);
+    }
+  } else if (GetVerbose(2)) {
     LOGI("CA_Code is OK svNum=%d exp=0x%04x act=0x%04x\n",GetSvNum(),expCACode,actCACode);
   }
-  return mErrCnt;
+  return errCnt;
 
 }
 
 int cep_gps::waitTilDone(int maxTO) {
 #if 1
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
   return cep_readNspin(GPS_BASE_K, GPS_GEN_DONE, 2, 2, maxTO);  
 #else
   while (maxTO > 0) {
@@ -229,7 +234,7 @@ int cep_gps::GetCA_code(int svNum)
 #if defined(BARE_MODE)
 #else
   //
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("G1=0x%04x G2=0x%04x\n",
 	 (((g1[10] & 0x1) << 9) |
 	  ((g1[9] & 0x1) << 8) |	  
@@ -348,43 +353,45 @@ int cep_gps::GetCA_code(int svNum)
 
 int cep_gps::RunSingle() {
   int outLen=mBlockSize;
-
+  int errCnt = 0;
   Start();
   waitTilDone(500);
-  mErrCnt += ReadNCheck_CA_Code(0x1FFF);
+  errCnt += ReadNCheck_CA_Code(0x1FFF);
   //
   Read_PCode();
   Read_LCode();
   // get expected L-code
-  mErrCnt += openssl_aes192_ecb_encryption
+  errCnt += openssl_aes192_ecb_encryption
     (mHwPt, // uint8_t *input,           // input text packet
       mSwCp, // uint8_t *output,          // output cipher packet
       1,   // int padding_enable,
       mBlockSize, // int length,
       &outLen, GetVerbose());
   //
-  mErrCnt += CheckCipherText();
+  errCnt += CheckCipherText();
   //
   //
   // Print
   //
-  if (mErrCnt || GetVerbose()) {
+  if ((errCnt && !GetExpErr()) || GetVerbose(2)) {
     PrintMe("Key",       &(mKEY[0]),mKeySize);
     PrintMe("P-code"    ,&(mHwPt[0]),mBlockSize);
     PrintMe("Exp L-Code",&(mSwCp[0]),mBlockSize);
     PrintMe("Act L-Code",&(mHwCp[0]),mBlockSize);
   }
-  return mErrCnt;
+  return errCnt;
 }
 
 int cep_gps::RunGpsTest(int maxLoop) {
 
-  int outLen=mBlockSize;
+  //  int outLen=mBlockSize;
   //
   // Need to take it out of reset to support unit sim due to LLKI!!!
   //
+  mErrCnt = 0;
   BusReset();
-  
+  SetSvNum(0);   // so GPS can detect a change
+
   //Initialize mKEY with 0xAAAA... for first iteration
   for (int i=0;i<192/8;i++) {
     mKEY[i] = 0xAA;
@@ -392,8 +399,8 @@ int cep_gps::RunGpsTest(int maxLoop) {
   LoadKey();
   SetSvNum(1);
   ResetCA_code();
-  RunSingle();
-  MarkSingle(0);
+  mErrCnt += RunSingle();
+  //MarkSingle(0);
   //
 
   //Check first 128 bits of all SAT numbers
@@ -406,7 +413,7 @@ int cep_gps::RunGpsTest(int maxLoop) {
     LoadKey();
     SetSvNum(i);
 
-    RunSingle();
+    mErrCnt += RunSingle();
 
     if (i==1) { //Initialize mKEY with 0x555... for second iteration (to force coverage), randomize afterward
       for (int i=0;i<192/8;i++) {
@@ -421,30 +428,28 @@ int cep_gps::RunGpsTest(int maxLoop) {
     if (mErrCnt) break;
   }
 
-
-
-  //HW Coverage test:
-  SetSvNum(0);   // so GPS can detect a change
-  RandomGen(mKEY, GetKeySize());
-  LoadKey();
-
-  SetPcodeXnInit(120, 3666, 766, 1474); //_A loops over 10 values, _B loops over 9 values.
-  SetPcodeSpeed(163, 174763); //Xn: XnA epoch = 24 loops, XnB reaches end in only 23.
-                              //int(z_max/174763)=3, so "week" is now 3x X1 epochs. This value selected to allow all bits to flip twice per loop
-  ResetCA_code();
-  SetSvNum(1);
-
-  //Need to record a total of 3*24*10 = 720 bits total. This requires 6 loops.
-  for (int i=0;i<=6;i++) {
-    if (GetVerbose()) {
-      LOGI("%s: Coverage Loop %d\n",__FUNCTION__,i);
+  if (!mErrCnt) {
+    //HW Coverage test:
+    SetSvNum(0);   // so GPS can detect a change
+    RandomGen(mKEY, GetKeySize());
+    LoadKey();
+    
+    SetPcodeXnInit(120, 3666, 766, 1474); //_A loops over 10 values, _B loops over 9 values.
+    SetPcodeSpeed(163, 174763); //Xn: XnA epoch = 24 loops, XnB reaches end in only 23.
+    //int(z_max/174763)=3, so "week" is now 3x X1 epochs. This value selected to allow all bits to flip twice per loop
+    ResetCA_code();
+    SetSvNum(1);
+    
+    //Need to record a total of 3*24*10 = 720 bits total. This requires 6 loops.
+    for (int i=0;i<=6;i++) {
+      if (GetVerbose()) {
+	LOGI("%s: Coverage Loop %d\n",__FUNCTION__,i);
+      }
+      mErrCnt += RunSingle();
+      //MarkSingle(i+maxLoop+1);
+      if (mErrCnt) break;
     }
-
-    RunSingle();
-
-    MarkSingle(i+maxLoop+1);
-    if (mErrCnt) break;
   }
-
+  //
   return mErrCnt;
 }

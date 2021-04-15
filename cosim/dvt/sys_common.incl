@@ -223,13 +223,17 @@ endtask // RUNCLK
 //
 // Task to kill the sim job
 //
+`ifdef MODELSIM
 import mti_fli::*;
+`endif
 always @(posedge __shIpc_Time2Shutdown) begin
    //  `DVT_PATH.done = 1;	
   `logI("Running for 1 more NS before terminate the simv process");
   `ifdef COVERAGE
     `logI("Dumping coverage data");
-    mti_Command("dump_coverage");    
+`ifdef MODELSIM
+       mti_Command("dump_coverage");    
+`endif
   `endif
   #10 $finish;
 end

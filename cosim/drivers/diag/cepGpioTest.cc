@@ -68,26 +68,30 @@ int cepGpioTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   // start adding register to test
   //
   // only 4 bits
-  //
-  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_pin		, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_input_en	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_output_en	, 0xF);
-  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_port_output	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_pue		, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_ds		, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_rise_ie	, 0xF);
-  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_rise_ip	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_fall_ie	, 0xF);
-  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_fall_ip	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_high_ie	, 0xF);
-  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_high_ip	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_low_ie		, 0xF);
-  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_low_ip		, 0xF);
-  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_en		, 0xF);
-  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_sel	, 0xF);
-  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_out_xor	, 0xF);
+  // as of 03/31/21 = 8 bits, true GPIO
+  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_pin		, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_input_en	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_output_en	, 0xFF);
+  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_port_output	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_pue		, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_ds		, 0xFF);
+  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_low_ip		, 0xFF);
+  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_en		, 0xFF);
+  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_sel	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_out_xor	, 0xFF);
   //
   (*regp->AddAHole_p)(regp, gpio_base_addr + 0xFFC	, 0xFFFFFFFF);
+  //
+#ifdef SIM_ENV_ONLY
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_rise_ie	, 0xFF);
+  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_rise_ip	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_fall_ie	, 0xFF);
+  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_fall_ip	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_high_ie	, 0xFF);
+  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_high_ip	, 0xFF);
+  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_low_ie		, 0xFF);
+#endif
+
   // now do it
   errCnt = (*regp->doRegTest_p)(regp);
   //

@@ -50,6 +50,7 @@ OTHER_FILES = $(wildcard ../diag/*.cc ../diag/*.h) 				\
 	$(wildcard ../../simDiag/*.cc ../../simDiag/*.h) 			\
 	../cep_tests/*.cc ../cep_tests/*.h        				\
 	../../share/portable_io.h ../../share/access.cc ../../share/access.h	\
+	../bare/encoding.h \
 
 
 .PHONY: clean install append

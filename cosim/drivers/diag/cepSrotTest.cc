@@ -60,120 +60,6 @@ uint8_t send_srot_message(int verbose, uint64_t message) {
 } // end send_srot_message
 
 
-// Helper function for parsing LLKIC2 message statu
-int parse_message_status(uint8_t message_status, int verbose) {
-
-  // Parse the status field to see if any error occured
-  switch (message_status) {
-    case LLKI_STATUS_GOOD                 :
-      if (verbose) {
-        LOGI("\n");
-        LOGI("parse_message_status: Good message received!\n");
-        LOGI("\n");
-      }
-      break;
-    case LLKI_STATUS_KEY_PRESENT            :
-      LOGI("\n");
-      LOGI("parse_message_status: LLKI-KL Key Present\n");
-      LOGI("\n");
-      break;
-    case LLKI_STATUS_KEY_NOT_PRESENT        :
-      LOGI("\n");
-      LOGI("parse_message_status: LLKI-KL Key Not Present\n");
-      LOGI("\n");
-      return 0;
-      break;
-    case LLKI_STATUS_BAD_MSG_ID             :
-      LOGE("\n");
-      LOGE("parse_message_status: Bad message ID\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_BAD_MSG_LEN            :
-      LOGE("\n");
-      LOGE("parse_message_status: Bad message length\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KEY_INDEX_EXCEED   :
-      LOGE("\n");
-      LOGE("parse_message_status: Key Index exceeds allowable bounds\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KEY_INDEX_INVALID  :
-      LOGE("\n");
-      LOGE("parse_message_status: Referenced Key Index is not valid\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_BAD_POINTER_PAIR       :
-      LOGE("\n");
-      LOGE("parse_message_status: Referenced Key Index pointer pair is not valid\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_BAD_CORE_INDEX         :
-      LOGE("\n");
-      LOGE("parse_message_status: Referenced Key Index specifies an out of bounds core index\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KL_REQ_BAD_MSG_ID     :
-      LOGE("\n");
-      LOGE("parse_message_status: LLKI-KL Request Bad Message ID\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KL_REQ_BAD_MSG_LEN     :
-      LOGE("\n");
-      LOGE("parse_message_status: LLKI-KL Request Bad Message Length\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KL_RESP_BAD_MSG_ID     :
-      LOGE("\n");
-      LOGE("parse_message_status: LLKI-KL Response Bad Message ID\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_KL_TILELINK_ERROR      :
-      LOGE("\n");
-      LOGE("parse_message_status: LLKI-KL Tilelink Error\n");
-      LOGE("\n");
-      return 1;
-      break;
-    case LLKI_STATUS_UNKNOWN_ERROR            :
-      LOGE("\n");
-      LOGE("parse_message_status: Unknown Error\n");
-      LOGE("\n");
-      return 1;
-      break;
-    default                                 :
-      LOGE("\n");
-      LOGE("parse_message_status: Unknown message error\n");
-      LOGE("\n");
-      return 1;
-      break;
-  } // end switch (my_message)
-
-  // Status is good
-  return 0;
-
-} // end parse_message_status
-
-//
-// Max size key test: to make sure  no hang (not much to test :-( )
-//
-#define CHECK_RESPONSE(exp,act) do {       \
-    if (exp != act) {           \
-      LOGE("ERROR: response_status=0x%x != %s (0x%x)\n",act,#exp,exp); \
-      errCnt++;             \
-    } else if (verbose) {         \
-      LOGI("OK: response_status=0x%x == %s\n",act,#exp);    \
-    }               \
-  } while (0)
-
 //
 // Macro to selective assign MOCK_TSS_KEY and its size based on the selected core
 //
@@ -188,14 +74,14 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
   int errCnt=0;
 
 #ifndef BARE_MODE
-  uint64_t  response_message;
+  //  uint64_t  response_message;
   uint8_t   response_status;
   int core_index=0;
   int key_index=0;
   uint64_t *kPtr;
   int kSize;
   int maxKeySize = 128; // enough
-  int expStatus ;
+  //  int expStatus ;
 
   //
   // fill the key ram with all 1s
@@ -290,10 +176,10 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
         case 0 :
         case 1 :
         case 3 :  
-          CHECK_RESPONSE(LLKI_STATUS_GOOD, response_status);
+          CHECK_RESPONSE(response_status, LLKI_STATUS_GOOD,  verbose);
           break;      
         case 2 :
-          CHECK_RESPONSE(LLKI_STATUS_KL_BAD_KEY_LEN, response_status);
+          CHECK_RESPONSE(response_status, LLKI_STATUS_KL_BAD_KEY_LEN,  verbose);
       } // switch
       if (errCnt) return 1;
 
@@ -310,10 +196,10 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
         case 0 :
         case 1 :
         case 3 :  
-          CHECK_RESPONSE(LLKI_STATUS_KEY_PRESENT, response_status);       
+          CHECK_RESPONSE(response_status, LLKI_STATUS_KEY_PRESENT, verbose);       
           break;      
         case 2 :
-          CHECK_RESPONSE(LLKI_STATUS_KEY_NOT_PRESENT, response_status);
+          CHECK_RESPONSE(response_status, LLKI_STATUS_KEY_NOT_PRESENT, verbose);
       } // switch
       if (errCnt) return 1;
 
@@ -326,7 +212,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
                 0xDEADBEEF));             // Reserved Field
       
       // Check expected response
-      CHECK_RESPONSE(LLKI_STATUS_GOOD, response_status);
+      CHECK_RESPONSE(response_status, LLKI_STATUS_GOOD, verbose);
       if (errCnt) return 1;
       
       // Issue a Key Status Request to the select core
@@ -338,7 +224,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
                 0xDEADBEEF));             // Reserved Field
 
       // Check expected response
-      CHECK_RESPONSE(LLKI_STATUS_KEY_NOT_PRESENT, response_status);       
+      CHECK_RESPONSE(response_status, LLKI_STATUS_KEY_NOT_PRESENT, verbose);       
       if (errCnt) return 1;
 
     } // for (int l = 0; l < 4; l++)

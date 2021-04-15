@@ -95,9 +95,6 @@ summary:
 		cat ${BLD_DIR}/$${i}/status | tee -a regressionSummary;	\
 	done
 
-merge:
-	@if test -d ${DUT_COVERAGE_PATH}; then	\
-		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;) \
-	fi
+
 
 

@@ -10,6 +10,7 @@
 //************************************************************************
 
 #include "simdiag_global.h"
+#include "cep_version.h"
 #include "cep_adrMap.h"
 #include "cepRegTest.h"
 #include "CEP.h"
@@ -65,9 +66,12 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
     
   //
   // start adding register to test
-  //
+  // LittleEndian
+  uint64_t expectedVersion = (((uint64_t)(CEP_MAJOR_VERSION & 0xFF) << 48) |
+			      ((uint64_t)(CEP_MINOR_VERSION & 0xFF) << 56));
+    
   if (revCheck) {
-    (*regp->AddROReg_p)(regp, CEP_VERSION_REG, CEP_EXPECTED_VERSION,CEP_VERSION_MASK);
+    (*regp->AddROReg_p)(regp, CEP_VERSION_REG, expectedVersion,CEP_VERSION_MASK);
   }
   switch (cpuId) {
   case 0: {

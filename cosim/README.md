@@ -41,7 +41,7 @@ Several environments are supported:
 
 ## Pre-requisites ##
 
-- Vivado and Modelsim have been installed (tested versions are listed in [../README.md](../README.md))
+- Vivado and Modelsim (or xcelium) have been installed (tested versions are listed in [../README.md](../README.md))
 - CEP hardware has be built as described in "Building the Hardware" in [../README.md](../README.md)
 
 Assuming you already have the CEP-master (version 2.0 or later) sandbox pulled from git and went thru the vivado build successfully. In other words, all the design files (Verilog/VHDL files) are all created.
@@ -68,6 +68,8 @@ For CEP, the path to tools required are as listed below (see **common.make**)
 export VIVADO_PATH=<Your_path_to_Vivado_tool>
 export SIMULATOR_PATH=<Your_path_to_questa_tool>
 ```
+
+As of release 3.2 or later, Cadence tool set (xcelium and vmanager) is also supported, all setup related to Cadence tool set can be found in `cadence.make`. See more details in the Cadence Supports section below:
 
 
 ## Directory structure: ##
@@ -104,7 +106,8 @@ You should see something like this under *cosim* directory:
     share
     simDiag
     src
-    xil_lib                 <-- xilinx generated library files (~1Gbytes) (see note below)
+    xil_lib                 <-- xilinx generated library files for questa (~1Gbytes) (see note below)
+    cad_xil_lib             <-- xilinx generated library files for xcelium (~1Gbytes)
 ```
 
 
@@ -123,9 +126,38 @@ You should see something like this under *cosim* directory:
 
 At the Vivado's tcl console (bottom), type/cut/paste and execute the below command:
   
-`compile_simlib -simulator questa -simulator_exec_path {/opt/questa-2019.1/questasim/bin} -family all -language all -library all -dir {./xil_lib} -force -verbose`
+```
+compile_simlib -simulator questa -simulator_exec_path {/opt/questa-2019.1/questasim/bin} -family all -language all -library all -dir {./xil_lib} -force -verbose
+
+or/and if xcelium is also used...
+
+compile_simlib -simulator xcelium -simulator_exec_path {$XCELIUM_INSTALL/tools/bin} -family all -language all -library all -dir {./cad_xil_lib} -force -verbose
+```
  
-Replace /opt/questa-2019.1/questasim/bin and ./cosim/xil_lib above with appropriate paths of your setup
+Replace /opt/questa-2019.1/questasim/bin (or xcelium) and ./cosim/xil_lib above with appropriate paths of your setup
+
+# Cadence Tool Supports: #
+
+If you decide to also use Cadence's xcelium for simulation, modify `cadence.make` or override with environment variabbles to match the below variables:
+
+```
+export VMGR_VERSION	?= VMANAGERAGILE20.06.001
+export XCELIUM_VERSION	?= XCELIUMAGILE20.09.001
+
+export VMGR_PATH	?= /brewhouse/cad4/x86_64/Cadence/${VMGR_VERSION}
+export XCELIUM_INSTALL  ?= /brewhouse/cad4/x86_64/Cadence/${XCELIUM_VERSION}
+```
+
+After that, just by adding a switch CADENCE=1 to the make command line, the simulation (and all related commands) will use xcelium as simulator.
+
+For example, to run full regression with coverage enable via xcelium, just follow the below simple steps:
+
+```
+cd <...>/cosim		    <-- top of cosim directory
+make CADENCE=1 COVERAGE=1   <- run full regression with coverage enable using xcelium (takes about 1 day)
+make CADENCE=1 summary	    <- get the pass/fail results from full regression
+make CADENCE=1 mergeAll	    <- merge all the coverage data and generate report in HTML format (all files under cosim/cad_coverage)
+```
 
 # How to run test(s): #
 
@@ -136,6 +168,8 @@ NOTE: type "make usage" for help.
 ```
 cd .../cosim/bfmTests/regTest 
 make
+   or
+make CADENCE=1 to use Cadence's xcelium
 ```
 
 * Run full regression:
@@ -448,9 +482,13 @@ make NOWAVE=1       <-- run simulation without wave capturing. Default is ON dur
 
 make PROFILE=1      <-- run simulation with profile capturing. This helps identify which module consumes most CPU cycles
 
-make COVERAGE=1     <-- run simulation with coverage turned on. Coverage data are saved in ../coverage directory where they can 
+make COVERAGE=1	    	<-- run simulation with coverage turned on. Coverage data are saved in ../coverage directory where they can 
                 be merged together for analysis (via make merge)
-make CADENCE=1      <-- run simulation targetting Cadence XCellium on RHEL7
+make CADENCE=1      	  <-- run simulation targetting Cadence XCellium on RHEL7
+
+make mergeAll	    	  <-- merge all coverage data and report in HTLM format for modelsim
+
+make CADENCE=1 mergeAll	  <-- merge all coverage data and report in HTLM format for xcelium
 ```
 
 * By default, under each test directory, one file will be created **if and only if** it is not yet there: **vsim.do**. It is used when **vsim** command is called to control the wave capturing.. If there is a need to override, users are free to modify and change it to anyway to fit the needs. Makefile will not overwrite it as long as it is there. 

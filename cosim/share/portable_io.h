@@ -80,6 +80,7 @@
 #define DUT_SetInActiveStatus      sim_SetInActiveStatus
 
 #define DUT_RUNCLK(x)              sim_RunClk(x)
+#define USEC_SLEEP(x)             
 
 // framer
 #define DUT_FRAMER_RDWR(a,wd,rd) sim_Framer_RdWr(a,wd,rd)
@@ -102,6 +103,9 @@
 #define DUT_WRITE32_64(a,d) lnx_cep_write(a,d)
 #define DUT_READ32_64(a,d)  { d = lnx_cep_read(a); }
 
+#define DDR3_WRITE(a,d) lnx_cep_write(a,d)
+#define DDR3_READ(a,d)   { d = lnx_cep_read(a); }
+
 #define DUT_WRITE32_32(a,d) lnx_cep_write32(a,(int)d)
 #define DUT_READ32_32(a,d)  { d = (int)lnx_cep_read32(a); }
 
@@ -111,8 +115,13 @@
 #define DUT_WRITE32_8(a,d) lnx_cep_write8(a,(uint8_t)d)
 #define DUT_READ32_8(a,d)  { d = (uint8_t)lnx_cep_read8(a); }
 
+extern void cep_usleep(int x);
+#define USEC_SLEEP(x)              cep_usleep(x)
+
+/*
 #define DDR3_WRITE(a,d) *(volatile uint64_t *)((intptr_t)a)=d
 #define DDR3_READ(a,d)  d=*(volatile uint64_t *)((intptr_t)a)
+*/
 
 #define DUT_RUNCLK(x)              
 //
@@ -122,6 +131,7 @@
 #else
 
 #define DUT_RUNCLK(x)
+#define USEC_SLEEP(x)
 
 #define LOGI   printf
 #define LOGW   printf
@@ -144,6 +154,8 @@
 
 #define DUT_WRITE32_32(a,d) *reinterpret_cast<volatile uint32_t *>(a)=d
 #define DUT_READ32_32(a,d)  d=*reinterpret_cast<volatile uint32_t *>(a)
+
+#define USEC_SLEEP(x)              
 
 #else
 #define DUT_WRITE32_64(a,d) *reinterpret_cast<volatile uint64_t *>(a)=d

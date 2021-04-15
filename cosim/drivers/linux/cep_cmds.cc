@@ -311,7 +311,7 @@ static int cep_delay(void)
 {
   int errCnt = 0;
   if (get_token(1)->isNum) {
-    time_delay_us(get_token(1)->value);
+    time_delay_us((int)get_token(1)->value);
   }
   return errCnt;
 }

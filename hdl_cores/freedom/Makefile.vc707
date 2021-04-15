@@ -9,7 +9,6 @@
 #//
 #//************************************************************************
 
-# See LICENSE for license details.
 base_dir := $(patsubst %/,%,$(dir $(abspath $(lastword $(MAKEFILE_LIST)))))
 BUILD_DIR := $(base_dir)/builds/vc707-u500devkit
 FPGA_DIR := $(base_dir)/fpga-shells/xilinx

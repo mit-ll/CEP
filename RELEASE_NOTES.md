@@ -114,4 +114,11 @@ v3.11 - (29 March 2021)
   - cep_diag (on Linux) has NOT been updated to work with the LLKI.  Thus, running the tests that use
     the CEP cores (e.g., cep_aes, cep_des3, etc.) will result in failure
 
+v3.2 - (16 April 2021)
+* LLKI bug fixes 
+* Scratchpad RAM added
+* Cadenece xcelium simulator and coverage support added
+* Linux tests updated and expanded
+* New tests added to cosim focused on LLKI and Scratchpad RAM
+
 #### Return to the root CEP [README](./README.md)

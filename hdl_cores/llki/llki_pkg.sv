@@ -218,7 +218,7 @@ package llki_pkg;
     localparam  LLKI_STATUS_BAD_MSG_ID          = 8'h20;    // A message ID received via the LLKI-C2 interface is not valid
     localparam  LLKI_STATUS_BAD_MSG_LEN         = 8'h21;    // All messages received via the LLKI-C2 interface have an expected
                                                             // message length of 1
-    localparam  LLKI_STATUS_KEY_INDX_EXCEED     = 8'h22;    // Specified key index in the LLKI-KL message exceeds the size of the Key Index
+    localparam  LLKI_STATUS_KEY_INDEX_EXCEED    = 8'h22;    // Specified key index in the LLKI-KL message exceeds the size of the Key Index
                                                             // RAM and thus cannot be valid
     localparam  LLKI_STATUS_KEY_INDEX_INVALID   = 8'h23;    // The key index referenced by the LLKI-KL message does not have a valid bit set and
                                                             // thus is invalid
@@ -233,6 +233,7 @@ package llki_pkg;
     localparam  LLKI_STATUS_KL_LOSS_OF_SYNC     = 8'h30;    // There has been a synchronization error between the selected LLKI PP and TSS
     localparam  LLKI_STATUS_KL_BAD_KEY_LEN      = 8'h31;    // A key has been loaded into the specificed LLKI-PP whose length does not match
                                                             // the expected length
+    localparam  LLKI_STATUS_KL_KEY_OVERWRITE    = 8'h32;    // A key load has been attempted on a core that already has one
     localparam  LLKI_STATUS_UNKNOWN_ERROR       = 8'hFF;    // An unknown LLKI error has been detected
 
     // Value is used to initalize the SRoT STM wait state

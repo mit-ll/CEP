@@ -9,6 +9,32 @@
 //
 //************************************************************************
 //
+// Cadence
+//
+`ifdef CADENCE
+`define DVAR_FILE $recordfile("cep_wave")
+`define DVARON    $recordon
+`define DVAROFF   $recordoff
+`define DVAR      $recordvars
+`define DVAR_CLOSE #0
+`define LEVEL0    "depth=0"
+`define LEVEL1    "depth=1"
+`define SEL_LEVEL (dLevel)?`LEVEL1:`LEVEL0
+
+initial begin
+  //
+`ifdef NO_WAVE
+`else  
+  `DVAR_FILE;
+  `DVAR(`LEVEL0,cep_tb);
+  `DVARON;	
+`endif
+end
+
+`endif
+
+
+//
 // Modelsim ONLY
 //
 `ifdef MODELSIM
@@ -35,7 +61,9 @@ always @(posedge dvtFlags[`DVTF_WAVE_ON]) begin
    dvtFlags[`DVTF_WAVE_ON] = 0;
 end
 
+`ifdef MODELSIM
 import mti_fli::*;
+`endif
 
 always @(posedge waveDumpFlag) begin
    while (1) begin
@@ -44,7 +72,12 @@ always @(posedge waveDumpFlag) begin
 	 `logI("==== Issuing wave_on to enable wave ON simTime=%d waveonCycleDump=%d waveonCycleDump=%d",
 	       __simTime,waveOnStartCycle,waveonCycleDump);
 	 //$stop;
+`ifdef MODELSIM
 	 mti_Command("wave_on");
+`endif
+`ifdef CADENCE
+       `DVARON;
+`endif
 	 waveDumpFlag = 0;
 	 dumpInProgress = 1;
       end
@@ -53,7 +86,12 @@ always @(posedge waveDumpFlag) begin
 	 `logI("==== Issuing wave_off to disable wave ON simTime=%d waveonCycleDump=%d waveonCycleDump=%d",
 	       __simTime,waveOnStartCycle,waveonCycleDump);
 	 // $stop;
+`ifdef MODELSIM
 	 mti_Command("wave_off");	 
+`endif
+`ifdef CADENCE
+       `DVAROFF;
+`endif
 	 waveDumpFlag = 0;
 	 dumpInProgress = 0;
       end

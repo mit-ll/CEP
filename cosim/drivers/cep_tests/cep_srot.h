@@ -53,6 +53,7 @@ const uint8_t   LLKI_STATUS_KL_RESP_BAD_MSG_ID    = 0x28;
 const uint8_t   LLKI_STATUS_KL_TILELINK_ERROR     = 0x29;
 const uint8_t   LLKI_STATUS_KL_LOSS_OF_SYNC       = 0x30;
 const uint8_t   LLKI_STATUS_KL_BAD_KEY_LEN        = 0x31;
+const uint8_t   LLKI_STATUS_KL_KEY_OVERWRITE      = 0x32;
 
 const uint8_t   LLKI_STATUS_UNKNOWN_ERROR         = 0xFF;
 
@@ -62,29 +63,34 @@ const uint8_t   LLKI_INVALID_CORE_INDEX           = 0xFF;
 const uint8_t   LLKI_KEYINDEX_VALID               = 0x80;
 
 // Packing macro for creating an LLKIC2 message to send to the SRoT 
-#define llkic2_pack(msg_id, status, msg_len, key_index, rsvd1) { \
+#define llkic2_pack(msg_id, status, msg_len, key_index, rsvd1) \
   (((uint64_t)msg_id << 0)            & 0x00000000000000FF) | \
   (((uint64_t)status << 8)            & 0x000000000000FF00) | \
   (((uint64_t)msg_len << 16)          & 0x0000000000FF0000) | \
   (((uint64_t)key_index << 24)        & 0x00000000FF000000) | \
-  (((uint64_t)rsvd1 << 32)            & 0xFFFFFFFF00000000) \
-}
+  (((uint64_t)rsvd1 << 32)            & 0xFFFFFFFF00000000) 
 
 // Packing macro for creating a Key Index entry
-#define key_index_pack(low_pointer, high_pointer, core_index, valid) { \
+#define key_index_pack(low_pointer, high_pointer, core_index, valid) \
   (((uint64_t)low_pointer << 0)       & 0x000000000000FFFF) | \
   (((uint64_t)high_pointer << 16)     & 0x00000000FFFF0000) | \
   (((uint64_t)core_index << 32)       & 0x000000FF00000000) | \
-  (((uint64_t)valid << 63)            & 0x8000000000000000) \
-}
+  (((uint64_t)valid << 63)            & 0x8000000000000000) 
 
 // Helper macros for response message processing
-#define llkic2_extract_status(message) { \
-  (uint8_t)(((uint64_t)message >> 8)  & 0x00000000000000FF) \
-}
+#define llkic2_extract_status(message) \
+  (uint8_t)(((uint64_t)message >> 8)  & 0x00000000000000FF)
 
-// LLKI helper functions
-int parse_message_status(uint8_t message_status, int verbose);
+// Helper macro for comparing the response to an expected value
+#define CHECK_RESPONSE(act, exp, verbose) \
+  do { \
+    if (exp != act) {           \
+      LOGE("ERROR: response_status = 0x%x != %s (0x%x)\n",act,#exp,exp); \
+      errCnt++; \
+    } else if (verbose) { \
+      LOGI("OK: response_status = 0x%x == %s\n",act,#exp); \
+    } \
+  } while (0)
 
 // Mock TSS Keys
 const uint64_t  AES_MOCK_TSS_KEY[]      = {
@@ -164,6 +170,8 @@ class cep_srot : public cep_crypto {
     int DisableLLKI (uint8_t KeyIndex);
     //
     int LLKI_Setup(int cpuId);
+    int LLKI_ErrorTest(int cpuId);
+
     void SetCpuActiveMask(int mask) {  mCpuActiveMask = mask; }
     int  GetCpuActiveMask(void) { return mCpuActiveMask; }
     // for negative testing

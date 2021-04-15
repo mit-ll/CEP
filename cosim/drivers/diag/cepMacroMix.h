@@ -15,7 +15,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-  int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose);
+  int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask,  int seed, int verbose);
   int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose);
 
   #ifdef __cplusplus

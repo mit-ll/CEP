@@ -56,20 +56,25 @@
 // The test itself
 // =============================
 //
-int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
+// 04/07/21 : added cryptoMask to allow running indiviual crypto core
+//
+#define IS_ON(c) (1 << c ## _BASE_K) & cryptoMask
+
+int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbose) {
   //
   int errCnt = 0;
 
 #ifndef BARE_MODE
-  cep_aes aes(seed,verbose);
-  cep_des3 des3(seed,verbose);
-  cep_md5 md5(seed,verbose);
-  cep_sha256 sha256(seed,verbose);
-  cep_fir fir(seed,verbose);
-  cep_iir iir(seed,verbose);
-  cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
-  cep_dft dft(seed,verbose);
-  cep_rsa rsa(seed,verbose);
+  //
+  // ONly if in the cryptoMask
+  //
+
+
+
+
+
+
+
 
   //
   int captureOn = 0;
@@ -77,6 +82,9 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
   captureOn = CAPTURE_CMD_SEQUENCE;
 #endif
   int maxLoop;
+  if (VERBOSE1()) {
+    LOGI("%s: mask=0x%x cryptoMask=0x%08x\n",__FUNCTION__,mask,cryptoMask);
+  }
   //
   //
   // do the LLKI unlock here
@@ -93,41 +101,47 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     // AES
     //    
-    aes.init();
-    aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");      
-    //
-    maxLoop =  200;
-    init_aes();
-    errCnt += aes.RunAes192Test(maxLoop);
-    //
-    aes.freeMe();
-    if (errCnt) return errCnt;
-
+    if (IS_ON(AES)) {
+      cep_aes aes(seed,verbose);
+      aes.init();
+      aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");      
+      //
+      maxLoop =  200;
+      init_aes();
+      errCnt += aes.RunAes192Test(maxLoop);
+      //
+      aes.freeMe();
+      if (errCnt) return errCnt;
+    } 
     //
     // DES3
     //
-    des3.init();      
-    des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");      
-    //
-    maxLoop = 150;
-    init_des3();
-    errCnt += des3.RunDes3Test(maxLoop);
-    //
-    des3.freeMe();
-    if (errCnt) return errCnt;
-    
+    if (IS_ON(DES3)) {
+      cep_des3 des3(seed,verbose);
+      des3.init();      
+      des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");      
+      //
+      maxLoop = 150;
+      init_des3();
+      errCnt += des3.RunDes3Test(maxLoop);
+      //
+      des3.freeMe();
+      if (errCnt) return errCnt;
+    } 
     //
     // MD5
     //
-    md5.init();
-    md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");          
-    //
-    maxLoop = 32;
-    init_md5();
-    errCnt += md5.RunMd5Test(maxLoop);
-    //
-    md5.freeMe();
-
+    if (IS_ON(MD5)) {
+      cep_md5 md5(seed,verbose);
+      md5.init();
+      md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");          
+      //
+      maxLoop = 32;
+      init_md5();
+      errCnt += md5.RunMd5Test(maxLoop);
+      //
+      md5.freeMe();
+    } 
     // Free the srot object at the end of thread 0 (freeing it too soon will result
     // problems with the other threads who use the object)
 
@@ -138,42 +152,48 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     // FIR
     //
-    fir.init();      
-    fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");      
-    //
-    maxLoop = 10;
-    init_fir();
-    errCnt += fir.RunFirTest(maxLoop);
-    //
-    fir.freeMe();
-    if (errCnt) return errCnt;
-    
+    if (IS_ON(FIR)) {
+      cep_fir fir(seed,verbose);
+      fir.init();      
+      fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");      
+      //
+      maxLoop = 10;
+      init_fir();
+      errCnt += fir.RunFirTest(maxLoop);
+      //
+      fir.freeMe();
+      if (errCnt) return errCnt;
+    } 
     //
     // IIR
-    //    
-    iir.init();
-    iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");          
     //
-    maxLoop = 10;
-    init_iir();
-    errCnt += iir.RunIirTest(maxLoop);
-    //
-    iir.freeMe();
-    if (errCnt) return errCnt;
-
+    if (IS_ON(IIR)) {    
+      cep_iir iir(seed,verbose);
+      iir.init();
+      iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");          
+      //
+      maxLoop = 10;
+      init_iir();
+      errCnt += iir.RunIirTest(maxLoop);
+      //
+      iir.freeMe();
+      if (errCnt) return errCnt;
+    } 
     //
     // SHA256
     //
-    sha256.init();
-    sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
-    //
-    maxLoop = 32;
-    init_sha256();
-    errCnt += sha256.RunSha256Test(maxLoop);
-    //
-    sha256.freeMe();
-    if (errCnt) return errCnt;
-  
+    if (IS_ON(SHA256)) {
+      cep_sha256 sha256(seed,verbose);
+      sha256.init();
+      sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
+      //
+      maxLoop = 32;
+      init_sha256();
+      errCnt += sha256.RunSha256Test(maxLoop);
+      //
+      sha256.freeMe();
+      if (errCnt) return errCnt;
+    } 
 
     break;
 
@@ -181,27 +201,32 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     // GPS
     //
-    gps.init();  
-    gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
-    //
-    maxLoop  = 38;
-    init_gps();
-    errCnt += gps.RunGpsTest(maxLoop);
-    //
-    gps.freeMe();
-    if (errCnt) return errCnt;    
+    if (IS_ON(GPS)) {
+      cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
+      gps.init();  
+      gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
+      //
+      maxLoop  = 38;
+      init_gps();
+      errCnt += gps.RunGpsTest(maxLoop);
+      //
+      gps.freeMe();
+      if (errCnt) return errCnt;    
+    } 
     //
     // DFT & IDFT
     //
-    dft.init();
-    dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");          
-    //
-    maxLoop = 10;
-    init_dft();
-    errCnt += dft.RunDftTest(maxLoop);
-    //
-    dft.freeMe();
-
+    if (IS_ON(DFT)) {
+      cep_dft dft(seed,verbose);
+      dft.init();
+      dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");          
+      //
+      maxLoop = 10;
+      init_dft();
+      errCnt += dft.RunDftTest(maxLoop);
+      //
+      dft.freeMe();
+    } 
     if (errCnt) return errCnt;    
     break;
   
@@ -209,25 +234,27 @@ int cepMacroMix_runTest(int cpuId, int mask, int seed, int verbose) {
     //
     // RSA
     //
-    rsa.init();
-    rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
-    //
-    maxLoop = 4;
-    int maxBytes=8;
-    //
-    init_rsa();
-    if (!errCnt)  {
-      errCnt += rsa.RunRsaTest2(maxLoop,256/8);
-    }    
-    if (!errCnt)  {    
-      errCnt += rsa.RunRsaMemTest(0xf, 1024); // 8K bits
-    }
-    if (!errCnt)  {    
-      errCnt += rsa.RunRsaTest(maxLoop,maxBytes);
-    }
-    //
-    rsa.freeMe();
-
+    if (IS_ON(RSA)) {
+      cep_rsa rsa(seed,verbose);
+      rsa.init();
+      rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
+      //
+      maxLoop = 4;
+      int maxBytes=8;
+      //
+      init_rsa();
+      if (!errCnt)  {
+	errCnt += rsa.RunRsaTest2(maxLoop,256/8);
+      }    
+      if (!errCnt)  {    
+	errCnt += rsa.RunRsaMemTest(0xf, 1024); // 8K bits
+      }
+      if (!errCnt)  {    
+	errCnt += rsa.RunRsaTest(maxLoop,maxBytes);
+      }
+      //
+      rsa.freeMe();
+    } 
     if (errCnt) return errCnt;    
     break;
 
@@ -249,17 +276,6 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
   int errCnt = 0;
 
 #ifndef BARE_MODE
-  cep_aes aes(seed,verbose);
-  cep_des3 des3(seed,verbose);
-  cep_md5 md5(seed,verbose);
-  cep_sha256 sha256(seed,verbose);
-  cep_fir fir(seed,verbose);
-  cep_iir iir(seed,verbose);
-  cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
-  cep_dft dft(seed,verbose);
-  cep_rsa rsa(seed,verbose);
-
-  //
   //
   //
   int captureOn = 0; //  no capturing!!!
@@ -277,12 +293,14 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
   //
   //
   switch (cpuId) {
-  case 0 :
+  case 0 : {
     //
     // AES
     //    
+    cep_aes aes(seed,verbose);
     aes.init();
     aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");      
+    aes.SetExpErr(1);
     //
     maxLoop =  2;
     init_aes();
@@ -295,8 +313,10 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     //
     // DES3
     //
+    cep_des3 des3(seed,verbose);
     des3.init();      
     des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");      
+    des3.SetExpErr(1);
     //
     maxLoop = 2;
     init_des3();
@@ -308,8 +328,10 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     //
     // MD5
     //
+    cep_md5 md5(seed,verbose);
     md5.init();
     md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");          
+    md5.SetExpErr(1);
     //
     maxLoop = 2;
     init_md5();
@@ -321,13 +343,16 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     // problems with the other threads who use the object)
     CHECK4ERR(errCnt,"md5");
     break;
+  }
     
-  case 1 : 
+  case 1 : {
     //
     // IIR
     //    
+    cep_iir iir(seed,verbose);
     iir.init();
     iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");          
+    iir.SetExpErr(1);
     //
     maxLoop = 2;
     init_iir();
@@ -339,8 +364,10 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     //
     // FIR
     //
+    cep_fir fir(seed,verbose);
     fir.init();      
     fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");      
+    fir.SetExpErr(1);
     //
     maxLoop = 2;
     init_fir();
@@ -353,8 +380,10 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     //
     // SHA256
     //
+    cep_sha256 sha256(seed,verbose);
     sha256.init();
     sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
+    sha256.SetExpErr(1);
     //
     maxLoop = 2;
     init_sha256();
@@ -365,13 +394,16 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     CHECK4ERR(errCnt,"sha256");
 
     break;
+  }
 
-  case 2:
+  case 2: {
     //
     // GPS
     //
+    cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
     gps.init();  
     gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
+    gps.SetExpErr(1);
     //
     maxLoop  = 2;
     init_gps();
@@ -383,8 +415,10 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     //
     // DFT & IDFT
     //
+    cep_dft dft(seed,verbose);
     dft.init();
     dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");          
+    dft.SetExpErr(1);
     //
     maxLoop = 2;
     init_dft();
@@ -395,13 +429,16 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     srot.DisableLLKI(IDFT_BASE_K); // use as KeyIndex
     CHECK4ERR(errCnt,"dft");
     break;
+  }
   
-  case 3:
+  case 3: {
     //
     // RSA
     //
+    cep_rsa rsa(seed,verbose);
     rsa.init();
     rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
+    rsa.SetExpErr(1);
     //
     maxLoop = 2;
     int maxBytes=8;
@@ -415,6 +452,7 @@ int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
     srot.DisableLLKI(RSA_BASE_K); // use as KeyIndex
     CHECK4ERR(errCnt,"rsa");
     break;
+  }
 
   } // switch (cpuId)
   srot.freeMe();    

@@ -243,11 +243,11 @@ void vpp_shMemDestroy() {
 // =========================================
 // DPI : faster ???
 // =========================================
-//
 // Replacement for vpp_getShIpcCmd()
 void get_v2c_mail(const int slotId, const int cpuId, mailBox *inBox)  {
   shIpc *ptr = GlobalShMemory.getIpcPtr(slotId,cpuId);
   shIpc *localPtr = ptr;
+  //
   if (ptr->SlotCheckOK(slotId,cpuId)) {
     int localCmdValid = ptr->IsCmdValid();
     int __shIpc_remoteReq = ptr->GetRemoteReq();

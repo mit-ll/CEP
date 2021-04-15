@@ -62,6 +62,8 @@ BFM_TEST_LIST = \
 	srotBadKeys	\
 	srotMemTest	\
 	srotKeyTest	\
+	scratchpadTest	\
+	srotErrorTest	\
 
 
 
@@ -94,10 +96,7 @@ summary:
 
 FPGA_INST_NAME     ?= /cep_tb/fpga
 
-merge:
-	@if test -d ${DUT_COVERAGE_PATH}; then	\
-		(cd ${DUT_COVERAGE_PATH}; ${VCOVER_CMD} merge -out ${TEST_SUITE}.ucdb ${DUT_COVERAGE_PATH}/*.ucdb;) \
-	fi
+
 
 # fixme !!! These need to be in a do file
 cov_report:

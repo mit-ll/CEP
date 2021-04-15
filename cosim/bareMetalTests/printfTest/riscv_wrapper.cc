@@ -33,8 +33,10 @@ void thread_entry(int cid, int nc)
   set_printf(1);
   set_cur_status(CEP_RUNNING_STATUS);  
   //
+  uint64_t expectedVersion = (((uint64_t)(CEP_MAJOR_VERSION & 0xFF) << 48) |
+			      ((uint64_t)(CEP_MINOR_VERSION & 0xFF) << 56));
   rd64 = *(unsigned long long*)adr;
-  if ((rd64  ^ CEP_EXPECTED_VERSION) & CEP_VERSION_MASK) {
+  if ((rd64  ^ expectedVersion) & CEP_VERSION_MASK) {
     errCnt++;
     *(unsigned long long*)scratch = 0xBADBAD00BEEFBEEFULL;
   } else {

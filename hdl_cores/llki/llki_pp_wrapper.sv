@@ -116,7 +116,9 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   reg                           reg_error_i;
 
   // Misc. signals
-  reg [top_pkg::TL_DW-1:0]      llkipp_ctrlstatus_register; // Bit definition can be found in llki_pkg.sv
+  reg [1:0]                     llkipp_ctrlstatus_register;   // Bit definition can be found in llki_pkg.sv
+                                                              // Register width explicitly minimized to only
+                                                              // the required bits (to increaase coverage)
   reg                           write_error;
   reg                           read_error;
 
@@ -217,8 +219,9 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
     if (reg_re_o) begin
       case (reg_addr_o)
         // Currently, no Ctrl/Status bits are writeable via TileLink
+        // CTRLSTS_ADDR explicitly mapped (see llkipp_ctrlstatus_register decleration above)
         CTRLSTS_ADDR    : begin
-          reg_rdata_i       = llkipp_ctrlstatus_register;
+          reg_rdata_i[1:0]  = llkipp_ctrlstatus_register;
         end
         // Write to Send/Recv Address - Data "capture" occurs within the
         // LLKI PP State Machine block, thus we have a null action here
@@ -306,6 +309,12 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               if (msg_len <= 1) begin
                 msg_id                  <= LLKI_MID_KLERRORRESP;
                 status                  <= LLKI_STATUS_KL_REQ_BAD_MSG_LEN;
+                llkipp_current_state    <= ST_LLKIPP_RESPONSE;
+              // If a key load attempt occurs when there is already a key, then
+              // generate an error
+              end else if (llkid_key_complete) begin
+                msg_id                  <= LLKI_MID_KLERRORRESP;
+                status                  <= LLKI_STATUS_KL_KEY_OVERWRITE;
                 llkipp_current_state    <= ST_LLKIPP_RESPONSE;
               // A load key request has been issued, jump to the
               // load key words and wait for the next word (which

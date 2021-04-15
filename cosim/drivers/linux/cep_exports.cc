@@ -17,6 +17,7 @@
 #include <mutex>
 #include <sys/mman.h>
 #include <malloc.h>
+//#include <asm/io.h>
 //
 #include "simdiag_global.h"
 #include "cep_adrMap.h"
@@ -29,6 +30,8 @@
 #include "cep_diag.h"
 #include "cep_exports.h"
 #include "cep_riscv.h"
+#include "CEP.h"
+#include "cep_srot.h"
 //
 // ********************
 // Simple multi-threaded tests to verify threads are locxked to each core and never moved
@@ -71,21 +74,68 @@ int cep_aWrite(void)
 {
   u_int32_t offset = (u_int32_t)get_token(1)->value;
   u_int64_t dat    = (u_int64_t)get_token(2)->value;
-  lnx_cep_write(offset,dat);
-  LOGI("CEP_Write: offset=0x%08x data=0x%016lx\n",offset, dat);
+  int accType      = (int)cep_get_value_if_any(4,64);
+  switch (accType) {
+  case 64: 
+    lnx_cep_write(offset,dat);
+    LOGI("CEP_Write64: offset=0x%08x data=0x%016lx\n",offset, dat);
+    break;
+  case 32: 
+    lnx_cep_write32(offset,(uint32_t)dat);
+    LOGI("CEP_Write32: offset=0x%08x data=0x%08x\n",offset, (uint32_t)dat);
+    break;
+  case 16: 
+    lnx_cep_write16(offset,(uint16_t)dat);
+    LOGI("CEP_Write16: offset=0x%08x data=0x%04x\n",offset, (uint16_t)dat);
+    break;
+  case 8: 
+    lnx_cep_write8(offset,(uint8_t)dat);
+    LOGI("CEP_Write8: offset=0x%08x data=0x%02x\n",offset, (uint8_t)dat);
+    break;
+  }
   return 0;
 }
 
 int cep_aRead(void)
 {
   u_int32_t offset = (u_int32_t)get_token(1)->value;
-  u_int64_t dat    = lnx_cep_read(offset);
-  LOGI("CEP_Read : offset=0x%08x data=0x%016lx\n",offset, dat);  
-  // save for later
-  cep_set_data(0,(u_int64_t)dat);
+  u_int64_t dat64;
+  u_int32_t dat32;
+  u_int16_t dat16;
+  u_int8_t dat8;
+  int accType      = (int)cep_get_value_if_any(3,64);
+  //
+  switch (accType) {
+  case 64: 
+    dat64 = lnx_cep_read(offset);
+    cep_set_data(0,(u_int64_t)dat64);
+    LOGI("CEP_Read64: offset=0x%08x data=0x%016lx\n",offset, dat64);
+    break;
+
+  case 32: 
+    dat32 = lnx_cep_read32(offset);
+    cep_set_data(0,(u_int64_t)dat32);
+    LOGI("CEP_Read32: offset=0x%08x data=0x%08x\n",offset, (uint32_t)dat32);
+    break;
+  case 16: 
+    dat16 = lnx_cep_read16(offset);
+    cep_set_data(0,(u_int64_t)dat16);
+    LOGI("CEP_Read16: offset=0x%08x data=0x%04x\n",offset, (uint16_t)dat16);
+    break;
+  case 8: 
+    dat8 = lnx_cep_read8(offset);
+    cep_set_data(0,(u_int64_t)dat8);
+    LOGI("CEP_Read8: offset=0x%08x data=0x%02x\n",offset, (uint8_t)dat8);
+    break;
+  }
   return 0;
 }
-// the test
+
+//
+// ********************
+// cepRegTest (4 cores)
+// ********************
+//
 #include "cepRegTest.h"
 static void cepRegTest_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);  
@@ -101,8 +151,11 @@ int run_cepRegTest(void) {
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
   return errCnt;
 }
-
+//
+// ********************
 // lock
+// ********************
+//
 #include "cepLockTest.h"
 static void cepLockTest_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);  
@@ -118,7 +171,11 @@ int run_cepLockTest(void) {
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
   return errCnt;
 }
+//
+// ********************
 // 4-lock
+// ********************
+//
 static void cepMultiLock_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);  
   //
@@ -131,6 +188,121 @@ int run_cepMultiLock(void) {
   int errCnt = 0;
   cep_set_thr_function(cepMultiLock_thr);
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  return errCnt;
+}
+//
+// ********************
+// GPIO
+// ********************
+//
+#include "cepGpioTest.h"
+int run_cepGpioTest(void) {
+  int errCnt = 0;
+  // single thread
+  int id = GET_VAR_VALUE(seed) & 0x3; // 
+  errCnt += cepGpioTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  return errCnt;
+}
+//
+// ********************
+// SPI
+// ********************
+//
+#include "cepSpiTest.h"
+int run_cepSpiTest(void) {
+  int errCnt = 0;
+  // single thread
+  int id = GET_VAR_VALUE(seed) & 0x3; // 
+  errCnt += cepSpiTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  return errCnt;
+}
+
+//
+// ********************
+// MASKROM
+// ********************
+//
+#include "cepMaskromTest.h"
+
+static void cepMaskromTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepMaskromTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_cepMaskromTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepMaskromTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
+
+//
+// ********************
+// CLINT
+// ********************
+//
+#include "cepClintTest.h"
+
+static void cepClintTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepClintTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_cepClintTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepClintTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
+
+//
+// ********************
+// PLIC
+// ********************
+//
+#include "cepPlicTest.h"
+static void cepPlicTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepPlicTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_cepPlicTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepPlicTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
+
+//
+// ********************
+// cepSrotMemTest (single)
+// ********************
+//
+#include "cepSrotMemTest.h"
+int run_cepSrotMemTest(void) {
+  int errCnt = 0;
+  // single thread
+  int id = GET_VAR_VALUE(seed) & 0x3; // 
+  errCnt += cepSrotMemTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  return errCnt;
+}
+//
+// ********************
+// cepSrotTest maxKeyTest (single)
+// ********************
+//
+#include "cepSrotTest.h"
+int run_cepSrotMaxKeyTest(void) {
+  int errCnt = 0;
+  // single thread
+  int id = GET_VAR_VALUE(seed) & 0x3; // 
+  errCnt += cepSrotTest_maxKeyTest(id, GET_VAR_VALUE(verbose));
   return errCnt;
 }
 
@@ -174,15 +346,13 @@ std::mutex test_mutex;
   }
 
 volatile int dcache_gCnt = 0;
-u_int64_t *scratch_ptr;
-int scratch_blocks = 1;
-void dcacheCoherency_thr(int id) {
+static void dcacheCoherency_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
   int i,to;
   int lastId = (MAX_CORES + id -1) % MAX_CORES; // last
   int nextId = (id + 1) % MAX_CORES; // next
   
-  u_int64_t *my_ptr = scratch_ptr;  // make local copy
+  u_int64_t *my_ptr = getScratchPtr();  // make local copy
   u_int64_t my_base = (u_int64_t)my_ptr + (id*8);
   u_int64_t lt_base = (u_int64_t)my_ptr + (lastId*8);
   u_int64_t nt_base = (u_int64_t)my_ptr + (nextId*8);  
@@ -300,7 +470,7 @@ void dcacheCoherency_thr(int id) {
   if (VERBOSE1()) {  
     u_int64_t xxx[MAX_CORES];
     for (int i=0;i<MAX_CORES;i++) {
-      DC_READ_64((u_int64_t)scratch_ptr + (i*8), xxx[i]);
+      DC_READ_64((u_int64_t)getScratchPtr() + (i*8), xxx[i]);
 #if 0
       if (pattern[i] != xxx[i]) {
 	LOGE("DCHK: i=%d exp=0x%016lx act=%016lx\n",i,pattern[i],xxx[i]);
@@ -317,22 +487,11 @@ void dcacheCoherency_thr(int id) {
 }
 int run_dcacheCoherency(void) {
   int errCnt = 0;
-  // allocate memory
-  //scratch_ptr = (u_int64_t *)malloc(cep_cache_size*scratch_blocks);
-  scratch_ptr = (u_int64_t *)memalign(cep_cache_size,cep_cache_size*scratch_blocks);
-  bzero(scratch_ptr,cep_cache_size*scratch_blocks);
-  if (VERBOSE1()) {
-    LOGI("scrtch_prt=0x%016lx\n",(u_int64_t)scratch_ptr);
-  }
-  if (scratch_ptr == NULL) {
-    LOGE("Can't malloc scratch_mem\n");
-    return 1;
-  }
+  clearScratchPtr();
   //
   dcache_gCnt = 0;  
   cep_set_thr_function(dcacheCoherency_thr);
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
-  free(scratch_ptr);
   return errCnt;  
 }
 
@@ -345,7 +504,7 @@ int run_dcacheCoherency(void) {
 // to test I-cahce coherency, play with a little self-modifying-code!!!
 //
 
-void icacheCoherency_thr(int id) {
+static void icacheCoherency_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
   char expByte = id;
   char newByte = get_selfModCodeValue() ;
@@ -419,36 +578,63 @@ int run_icacheCoherency(void) {
 // ********************
 //
 #include "cepMemTest.h"
-void ddr3Test_thr(int id) {
+#include "cepDdr3MemTest.h"
+static void ddr3Test_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
   // each core will test 1MBytes => 128Kx8bytes
-  u_int64_t mem_base = (u_int64_t)scratch_ptr + ((1 << 20)*id);
   int adrWidth = 20; // 1M
+  //
+  // adjust to physical space...
+  //
+  u_int64_t mem_base = (u_int64_t)(ddr3_base_adr) + ((u_int64_t)getScratchPtr() & (u_int64_t)(ddr3_base_size-1)) + (u_int64_t)((1 << adrWidth)*id);
   if (VERBOSE1()) {
     LOGI("mem_base=0x%016lx\n",mem_base)
   }
-  errCnt += cepMemTest_runTest(id,mem_base, adrWidth, 64,
-			       GET_VAR_VALUE(seed),
-			       GET_VAR_VALUE(verbose),
-			       GET_VAR_VALUE(longRun));
+  errCnt += cepDdr3MemTest_runTest(id, mem_base, adrWidth, GET_VAR_VALUE(seed), GET_VAR_VALUE(longRun), GET_VAR_VALUE(verbose));
+  //
   cep_set_thr_errCnt(errCnt);     
 }
  
 int run_ddr3Test(void) {
   int errCnt = 0;
-  // allocate memory
-  scratch_ptr = (u_int64_t *)memalign(4*(1<<20),4*(1<<20)); // 4M bytes
-  if (scratch_ptr == NULL) {
-    LOGE("Can't malloc scratch_mem\n");
-    return 1;
-  }
-  if (VERBOSE1()) {
-    LOGI("scrtch_prt=0x%016lx\n",(u_int64_t)scratch_ptr);
-  }
   //
   cep_set_thr_function(ddr3Test_thr);
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
-  free(scratch_ptr);
+  //free(scratch_ptr);
+  return errCnt;  
+ }
+
+//
+// ********************
+// Scratch Pad Test
+// ********************
+//
+static void smemTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  // each core will test 1MBytes => 128Kx8bytes
+  int adrWidth = 16 -2; // 64K / 2
+  u_int64_t mem_base = (u_int64_t)scratchpad_base_addr + ((1 << adrWidth)*id);
+  if (VERBOSE1()) {
+    LOGI("mem_base=0x%016lx\n",mem_base)
+  }
+#if 0
+  errCnt += cepMemTest_runTest(id,mem_base, adrWidth, 64,
+			       GET_VAR_VALUE(seed),
+			       GET_VAR_VALUE(verbose),
+			       GET_VAR_VALUE(longRun));
+#else
+  errCnt += cepDdr3MemTest_runTest(id, mem_base, adrWidth, GET_VAR_VALUE(seed), GET_VAR_VALUE(longRun), GET_VAR_VALUE(verbose));
+#endif
+
+  //
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_smemTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(smemTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
   return errCnt;  
  }
 
@@ -457,11 +643,11 @@ int run_ddr3Test(void) {
 // cepMacroMix Test (4 per test)
 // ********************
 //
-#include "cepregression.h"
+//#include "cepregression.h"
 #include "cepMacroMix.h"
-void cepMacroMix_thr(int id) {
+static void cepMacroMix_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
-  errCnt += cepMacroMix_runTest(id,GET_VAR_VALUE(testMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  errCnt += cepMacroMix_runTest(id,GET_VAR_VALUE(coreMask),GET_VAR_VALUE(testMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
   cep_set_thr_errCnt(errCnt);     
 }
  
@@ -470,125 +656,64 @@ int run_cepMacroMix(void) {
   //
   cep_set_thr_function(cepMacroMix_thr);
   initConfig();
+  // clear the signature
+  DUT_WRITE32_64(reg_base_addr + cep_core0_status, 0);
+  //
   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
   return errCnt;  
  }
 
-int run_cepAllMacros(void) {
-  int errCnt =0;
-  errCnt += cepregression_test(GET_VAR_VALUE(testMask));
-  return errCnt;
+//
+// ********************
+// cepMacroMix badKey
+// ********************
+//
+static void cepMacroBadKey_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepMacroMix_runBadKeysTest(id,GET_VAR_VALUE(coreMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
 }
+ 
+int run_cepMacroBadKey(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepMacroBadKey_thr);
+  initConfig();
+  DUT_WRITE32_64(reg_base_addr + cep_core0_status, 0);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
 
-#include "cep_aes.h"
-int run_cep_AES      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_AES_test();
-  cep_aes aes(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
-  //
-  int maxLoop = 300;
-  errCnt += aes.RunAes192Test(maxLoop);
-  //
-  return errCnt;
-}
+//
+// ********************
+// Single Macros
+// ********************
+//
+#define RUN_SINGLE(c)				\
+  int run_cep_ ## c (void) {			\
+    int saveTestMask = GET_VAR_VALUE(testMask); \
+    SET_VAR_VALUE(testMask, 1 << c ## _BASE_K);	\
+    int errCnt = run_cepMacroMix();	    	\
+    SET_VAR_VALUE(testMask, saveTestMask);	\
+    return errCnt;	  		    	\
+  }
 
-#include "cep_des3.h"
-int run_cep_DES3      (void) {
-  int errCnt = 0;
-  initConfig();
-  
-  //errCnt += cep_DES3_test();
-  cep_des3 des3(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 300;
-  errCnt += des3.RunDes3Test(maxLoop);
-  return errCnt;
-}
+RUN_SINGLE(AES)
+RUN_SINGLE(DES3)
+RUN_SINGLE(DFT)
+RUN_SINGLE(FIR)
+RUN_SINGLE(IIR)
+RUN_SINGLE(GPS)
+RUN_SINGLE(MD5)
+RUN_SINGLE(RSA)
+RUN_SINGLE(SHA256)
 
-#include "cep_dft.h"
-int run_cep_DFT      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_DFT_test();
-  cep_dft dft(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 10;
-  errCnt += dft.RunDftTest(maxLoop);
-  //
-  return errCnt;
-}
-int run_cep_IDFT      (void) {
-  int errCnt = 0;
-  initConfig();
-  errCnt += cep_IDFT_test();
-  return errCnt;
-}
-#include "cep_fir.h"
-int run_cep_FIR      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_FIR_test();
-  cep_fir fir(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 20;
-  errCnt += fir.RunFirTest(maxLoop);
-  
-  return errCnt;
-}
-#include "cep_iir.h"
-int run_cep_IIR      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_IIR_test();
-  cep_iir iir(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 20;
-  errCnt += iir.RunIirTest(maxLoop);
-  //
-  return errCnt;
-}
-#include "cep_gps.h"
-int run_cep_GPS      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_GPS_test();
-  cep_gps gps(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 37;
-  errCnt += gps.RunGpsTest(maxLoop);
-  return errCnt;
-}
-#include "cep_md5.h"
-int run_cep_MD5      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_MD5_test();
-  cep_md5 md5(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 32;
-  errCnt += md5.RunMd5Test(maxLoop);
-  return errCnt;
-}
-int run_cep_RSA      (void) {
-  int errCnt = 0;
-  initConfig();
-  errCnt += cep_RSA_test();
-  return errCnt;
-}
-
-#include "cep_sha256.h"
-int run_cep_SHA256      (void) {
-  int errCnt = 0;
-  initConfig();
-  //errCnt += cep_SHA256_test();
-  cep_sha256 sha256(GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));  
-  int maxLoop = 32;
-  errCnt += sha256.RunSha256Test(maxLoop);
-  //
-  
-  return errCnt;
-}
 //
 // ********************
 // I/D-cache flush
 // ********************
 //
- void cacheFlush_thr(int id) {
+static void cacheFlush_thr(int id) {
    int errCnt = 0;
    // 32Kbytes = size of Icache
    int expVal = GET_VAR_VALUE(seed) + id;
@@ -620,3 +745,216 @@ int run_cep_SHA256      (void) {
    errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
    return errCnt;  
   }
+
+//
+// ********************
+// lockfreeAtomic
+// ********************
+//
+#include "cepLockfreeAtomic.h"
+
+static void cepLockfreeAtomic_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (!errCnt) {
+    u_int64_t mem_base = (u_int64_t)getScratchPtr();
+    //u_int64_t reg_base = phys_to_virt(reg_base_addr);
+    u_int64_t reg_base = getCepRegVirtAdr() + (reg_base_addr & ~cep_adr_mask);
+    errCnt += cepLockfreeAtomic_runTest(id, mem_base, reg_base, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+
+int run_cepLockfreeAtomic(void) {
+  int errCnt = 0;
+  //
+  clearScratchPtr();
+  //bzero(scratch_ptr,cep_cache_size*scratch_blocks);
+  cep_set_thr_function(cepLockfreeAtomic_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  //free(scratch_ptr);
+  return errCnt;
+}
+
+//
+// ********************
+// LrscOps
+// ********************
+//
+uint64_t playUnit;
+static void cepLrscOps_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (VERBOSE1()) {
+    LOGI("scratch_prt=0x%016lx\n",(u_int64_t)getScratchPtr());
+  }  
+  if (!errCnt) {
+    u_int64_t *ptr;
+    u_int64_t mySig,partSig,incVal;
+    u_int64_t fixSig[4] = {0x12345678ABCD0000ULL,
+			  0x1122334455660000ULL,
+			  0x778899aabbcc0000ULL,
+			  0xddeeff0011220000ULL};
+    int loop = 16;
+    //
+    // ALl core touch this same register
+    //
+    // back to physical address.
+    //
+    //u_int32_t mem_base = ddr3_base_adr + (u_int32_t)((u_int64_t)scratch_ptr & (u_int64_t)(ddr3_base_size-1));
+    ptr = &playUnit;
+    incVal = 4;
+    switch (id) {
+    case 0:
+      mySig   = fixSig[0] + 0x0;
+      partSig = fixSig[1] + 0x1; // next coreId
+      *ptr = mySig; // DUT_WRITE32_64(ptr, mySig); // start for core 0: need physical adr
+      break;
+    case 1:
+      mySig   = fixSig[1] + 0x1;
+      partSig = fixSig[2] + 0x2; // next coreId
+      break;
+    case 2:
+      mySig   = fixSig[2] + 0x2;
+      partSig = fixSig[3] + 0x3; // next coreId
+      break;
+    case 3:
+      mySig   = fixSig[3] + 0x3;
+      partSig = fixSig[0] + 0x4; // next coreId
+      break;
+    }
+    errCnt += cep_exchAtomicTest(id,ptr, mySig, partSig, incVal, loop);
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+
+int run_cepLrscOps(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepLrscOps_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  //free(scratch_ptr);
+  return errCnt;
+}
+
+//
+// ********************
+// accessTest
+// ********************
+//
+#include "cepAccessTest.h"
+
+static void cepAccessTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (!errCnt) {
+    errCnt += cepAccessTest_runTest(id, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+
+int run_cepAccessTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepAccessTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  return errCnt;
+}
+
+//
+// ********************
+// atomicTest
+// ********************
+//
+static void cepAtomicTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);  
+  //
+  if (!errCnt) {
+    uint64_t *ptr;
+    uint64_t expVal;
+    uint64_t atomicOps_playUnit[4];
+    u_int64_t reg_base   = getCepRegVirtAdr() + (reg_base_addr & ~cep_adr_mask);
+    u_int64_t clint_base = getCepSysVirtAdr() + clint_base_addr;
+    int coreId = id;
+    //
+    //
+    //
+    for (int l=1;l<3;l++) { // skip clint for now
+      switch (l) {
+      case 0 : 
+	// cbus via CLINT
+	ptr = (uint64_t *)(clint_base + clint_mtimecmp_offset + (coreId*8));      
+	expVal = ~(clint_base_addr + clint_mtimecmp_offset * (coreId*8));
+	break;
+	
+      case 1 : 
+	// mbus: cacheable memory
+	ptr = &atomicOps_playUnit[coreId];
+	expVal = (reg_base + cep_scratch0_reg * (coreId*8));      
+	break;
+	
+      case 2 :  
+	// pbus
+	ptr = (uint64_t *)(reg_base + cep_scratch0_reg + (coreId*8));      
+	expVal = ~(reg_base + cep_scratch0_reg * (coreId*8));
+	break;
+	
+      }
+      //
+      //
+      if (!errCnt) { errCnt = cep_runAtomicTest(ptr,expVal); }
+    }
+  }
+  cep_set_thr_errCnt(errCnt);   
+}
+
+int run_cepAtomicTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepAtomicTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  return errCnt;
+}
+
+//
+// ********************
+// CSR
+// ********************
+//
+#if 0
+#include "cepCsrTest.h"
+
+static void cepCsrTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepCsrTest_runTest(id, 64, GET_VAR_VALUE(revCheck), GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_cepCsrTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepCsrTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
+#endif
+
+//
+// ********************
+// sortErrorTest
+// ********************
+//
+int run_cepSrotErrTest(void) {
+  int errCnt = 0;
+  //
+  int id = GET_VAR_VALUE(seed) & 0x3; // 
+  cep_srot srot(GET_VAR_VALUE(verbose));
+  
+  // Set the mask... from the seed (which we passed the parent's mask for this test)
+  srot.SetCpuActiveMask(1 << id);
+  // Call the Error Test
+  errCnt = srot.LLKI_ErrorTest(id);
+  //
+  return errCnt;
+}
+

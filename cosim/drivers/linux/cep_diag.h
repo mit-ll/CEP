@@ -51,6 +51,17 @@ extern "C" {
   u_int64_t lnx_mem_read(u_int32_t offs);
   void lnx_mem_write(u_int32_t offs,u_int64_t pData);  
 
+  u_int64_t getCepRegVirtAdr(void);
+  u_int64_t getCepMemVirtAdr(void);
+  u_int64_t getCepMiscVirtAdr(void);
+  u_int64_t getCepSysVirtAdr(void);
+
+  void cep_usleep(int x);
+
+  //
+  u_int64_t *getScratchPtr(void);
+  void clearScratchPtr(void);
+
 #ifdef __cplusplus
 }
 #endif

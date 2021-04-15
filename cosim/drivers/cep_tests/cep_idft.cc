@@ -202,9 +202,11 @@ int cep_idft::idft_CheckSamples(int startIdx,int samCnt) {
     //    if ((rdiff > repsilon) || (idiff > iepsilon)) {
     // FIXME: dont know why only the real part are good
     if (rdiff > repsilon) {
-      LOGE("%s: i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,i,
-	   mRexp[i],mIexp[i],  mRact[i],mIact[i],
-	   rdiff,idiff,repsilon,iepsilon);
+      if (!GetExpErr()) {
+	LOGE("%s: i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,i,
+	     mRexp[i],mIexp[i],  mRact[i],mIact[i],
+	     rdiff,idiff,repsilon,iepsilon);
+      }
       mErrCnt++;
     } else if (GetVerbose()) {
       LOGI("%s: i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,i,

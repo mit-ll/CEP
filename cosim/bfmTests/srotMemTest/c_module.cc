@@ -19,7 +19,7 @@
 #include "cep_adrMap.h"
 #include "cep_apis.h"
 #include "simdiag_global.h"
-#include "cepMemTest.h"
+#include "cepSrotMemTest.h"
 #include "CEP.h"
 
 //
@@ -61,6 +61,8 @@ void *c_module(void *arg) {
   //  int calibDone = calibrate_ddr3(50);
   pio.RunClk(500);
 
+  errCnt += cepSrotMemTest_runTest(cpuId, seed, verbose);
+#if 0
   int full = 1;
   u_int32_t mem_base;
   int adrWidth ;
@@ -81,6 +83,8 @@ void *c_module(void *arg) {
     }
     if (!errCnt) { errCnt = cepMemTest_runTest(cpuId,mem_base,adrWidth,dataWidth ,seed, verbose, full); }
   }
+#endif
+
   //
   //
   //

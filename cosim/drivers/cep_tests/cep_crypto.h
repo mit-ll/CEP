@@ -30,11 +30,16 @@ public: //
   ~cep_crypto() {};  
   
   //
-  void   SetVerbose (int seed) { mVerbose=seed; }  
-  int    GetVerbose ( ) { return mVerbose; }    
+  void   SetVerbose      (int val) { mVerbose=val; }  
+  int    GetVerbose (void) { return mVerbose; }    
+  int    GetVerbose (int maskLevel) { return mVerbose & maskLevel; }    
+  
   //
   void   SetSeed (int seed);
   int    GetSeed ( ) { return mSeed; }  
+
+  void   SetExpErr (int val) { mExpErr = val; }
+  int    GetExpErr ( ) { return mExpErr; }  
   // Access
   // in bytes 16,24,32 of 128/192/256bits
   void   SetKeySize (int kSize) { mKeySize=kSize; }  
@@ -96,6 +101,7 @@ public: //
   int mSingle;
   int mWordCnt;
   int mErrCnt;
+  int mExpErr; // expect error
   //
   uint64_t mAdrBase;
   uint64_t mAdrSize;

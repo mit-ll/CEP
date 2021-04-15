@@ -73,13 +73,12 @@ int access::Atomic_Rdw64(u_int64_t address, int param, int mask, u_int64_t *data
 		      mSlotId,mLocalId,address,data);
   }
   ptr->Atomic_Rdw64(address,param,mask,data);
-  return 0;
 #endif
 #else
   // Not supported for now!!
   //*reinterpret_cast<volatile Int32U *>(address) = data;
 #endif
-
+  return 0;
 }
 
 int access::Write64_BURST(u_int64_t address, int wordCnt, u_int64_t *data) {
@@ -91,13 +90,12 @@ int access::Write64_BURST(u_int64_t address, int wordCnt, u_int64_t *data) {
 		      mSlotId,mLocalId,address,data[0]);
   }
   ptr->Write64_BURST(address,wordCnt,data);
-  return 0;
 #endif
 #else
   // Not supported for now!!
   //*reinterpret_cast<volatile Int32U *>(address) = data;
 #endif
-
+  return 0;
 }
 
 int access::Read64_BURST(u_int64_t address, int wordCnt, u_int64_t *data) {

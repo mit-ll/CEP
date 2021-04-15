@@ -10,9 +10,14 @@
 //************************************************************************
 
 
+#include "cep_version.h"
+
     // CEP Verion String
+/* Tony D. 04/10/21
+   these are auot-extracted from scala file in cep_version.h" above
     const uint8_t CEP_MAJOR_VERSION = 0x03;
-    const uint8_t CEP_MINOR_VERSION = 0x10;
+    const uint8_t CEP_MINOR_VERSION = 0x20;
+*/
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;

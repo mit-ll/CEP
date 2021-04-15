@@ -787,7 +787,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // The Key Index must >= 0 and < SROT_KEYINDEXRAM_SIZE
           if (key_index >= SROT_KEYINDEXRAM_SIZE) begin
             llkic2_reqfifo_clr_i      <= 1'b1;
-            status                    <= LLKI_STATUS_KEY_INDX_EXCEED;
+            status                    <= LLKI_STATUS_KEY_INDEX_EXCEED;
             srot_current_state        <= ST_SROT_C2_RESPONSE;
           end // end if (key_index >= SROT_KEYINDEXRAM_SIZE)
 
@@ -1297,8 +1297,9 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           host_addr_i               <= '0;
           host_we_i                 <= '0;
           host_wdata_i              <= '0;
-          keyindexram_stm_addr_i      <= '0;
-          keyram_stm_addr_i           <= '0;
+          keyindexram_stm_addr_i    <= '0;
+          keyram_stm_addr_i         <= '0;
+          llkic2_reqfifo_clr_i      <= '0;
           llkic2_reqfifo_rready_i   <= 1'b0;
           llkic2_respfifo_wdata_i   <= '0;
           llkic2_respfifo_wvalid_i  <= 1'b0;
@@ -1339,11 +1340,11 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               endcase
             end
             //------------------------------------------------------------------
-            // An expected error has occurred
+            // An error has occurred
             //------------------------------------------------------------------
             LLKI_STATUS_BAD_MSG_ID,
             LLKI_STATUS_BAD_MSG_LEN,
-            LLKI_STATUS_KEY_INDX_EXCEED,
+            LLKI_STATUS_KEY_INDEX_EXCEED,
             LLKI_STATUS_KEY_INDEX_INVALID,
             LLKI_STATUS_BAD_POINTER_PAIR,
             LLKI_STATUS_BAD_CORE_INDEX,
@@ -1352,7 +1353,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_STATUS_KL_RESP_BAD_MSG_ID,            
             LLKI_STATUS_KL_TILELINK_ERROR,
             LLKI_STATUS_KL_LOSS_OF_SYNC,
-            LLKI_STATUS_KL_BAD_KEY_LEN     	: begin
+            LLKI_STATUS_KL_BAD_KEY_LEN,
+            LLKI_STATUS_KL_KEY_OVERWRITE     	: begin
               llkic2_respfifo_wdata_i[7:0]    <= LLKI_MID_C2ERRORRESP;
               llkic2_respfifo_wdata_i[15:8]   <= status;
               llkic2_respfifo_wdata_i[23:16]  <= 8'h01;

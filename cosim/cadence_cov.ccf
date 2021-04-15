@@ -1,0 +1,18 @@
+select_functional  -imm_asrt_class_package
+set_covergroup -new_instance_reporting
+set_expr_coverable_statements -procassign -contassign
+set_expr_coverable_operators -relational -conditional -logical_not
+set_refinement_resilience
+#
+# need to see all nets in toggle, tony D.
+#set_toggle_portsonly
+#
+set_libcell_scoring
+#
+# From Amit 04/12/2021
+#
+set_glitch_strobe 166 ps
+set_toggle_strobe 166 ps
+set_toggle_scoring -regeot
+#
+select_coverage -block -expr -toggle -fsm -instance cep_tb.fpga.topDesign.topMod...

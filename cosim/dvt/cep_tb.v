@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX short identifier: MIT
+// SPDX short identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -400,6 +400,8 @@ module cep_tb;
   assign ddr3_odt_sdram =  ddr3_odt_sdram_tmp;
     
 
+   wire pullHi = 1'b1;
+   
 // Controlling the bi-directional BUS
 
   genvar dqwd;
@@ -620,7 +622,7 @@ module cep_tb;
        .jtag_jtag_TMS 		(jtag_jtag_TMS),
        .jtag_jtag_TDI 		(jtag_jtag_TDI),
        .jtag_jtag_TDO 		(jtag_jtag_TDO),
-       .jtag_srst_n       (1'b1),
+       .jtag_srst_n       (pullHi),
        .uart_txd 		(uart_txd),
        .uart_rxd 		(uart_rxd),
        .uart_rtsn 		(uart_rtsn),
@@ -741,8 +743,8 @@ module cep_tb;
       `logI("memWrite \t@0x%08x",`DDR_PATH.auto_buffer_in_a_bits_address);
    end   
    //
-   //
-   `define den1024Mb
+   // always at the command line
+//   `define den1024Mb
    wire [CS_WIDTH*NUM_COMP-1:0] ddr3MemWr;
    reg [CS_WIDTH*NUM_COMP-1:0] 	dq_in_valid_del=0;
    //

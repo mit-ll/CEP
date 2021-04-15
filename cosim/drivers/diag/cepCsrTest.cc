@@ -20,7 +20,7 @@
 #include "simPio.h"
 #endif
 
-#ifdef BARE_MODE
+#if (BARE_MODE || LINUX_MODE)
 #include "encoding.h"
 #else
 #include "simPio.h"
@@ -44,8 +44,8 @@ extern void regBaseTest_Construct(regBaseTest_t *me,
 int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verbose) {
 
   int errCnt = 0;
-#ifdef BARE_MODE
-  uint64_t dat64;
+#if (BARE_MODE || LINUX_MODE)
+  //
   //
   regBaseTest_t *regp; //
   //
@@ -74,7 +74,6 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   // Some holes
   //
 
-#if 1
   // Read Only
   (*regp->SetNoWr2ROreg_p)(regp, 1);
   //
@@ -83,6 +82,9 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   (*regp->AddROReg_p)(regp, CSR_MARCHID,  0x0000000000000001, (uint64_t)(-1));
   (*regp->AddROReg_p)(regp, CSR_MIMPID,   0x0000000020181004, (uint64_t)(-1));
   (*regp->AddROReg_p)(regp, CSR_MHARTID,  cpuId,              (uint64_t)(-1));
+#ifdef SIM_ENV_ONLY
+  uint64_t dat64;
+
   //
   // working
   //
@@ -130,6 +132,7 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   // [2] = X
   // [1] = W
   // [0] = R
+#ifdef SIM_ENV_ONLY
   //regWr(`CSR_PMPCFG0, {8{8'b0_00_11_1_1_1}});
   errCnt += cepCsrTest_WriteEntry(regp, CSR_PMPCFG0,0x7F7F7F7F7F7F7F7F);
   errCnt += cepCsrTest_WriteEntry(regp, CSR_PMPADDR0,(1 << 29)-1); // 'b0_<29bits Of1 = mask = all 1s
@@ -167,45 +170,45 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   dat64 += cepCsrTest_ReadEntry(regp,CSR_HPMCOUNTER31 	);
   dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPCFG2 	);
   dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR9 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR10 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR11 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR12 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER3 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER4 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER5 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER6 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER7 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER8 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER13 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER15 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER17 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER18 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER19 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER27 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER29 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER30 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER31 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT4 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT5 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT6 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT13 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT14 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT15 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT17 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT18 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT19 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT20 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT21 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT28 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT29 	);
- dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT30 	);
-
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR10 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR11 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_PMPADDR12 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER3 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER4 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER5 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER6 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER7 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER8 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER13 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER15 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER17 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER18 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER19 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER27 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER29 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER30 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMCOUNTER31 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT4 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT5 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT6 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT13 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT14 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT15 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT17 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT18 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT19 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT20 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT21 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT28 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT29 	);
+  dat64 += cepCsrTest_ReadEntry(regp,CSR_MHPMEVENT30 	);
+#endif
   //
   // Destructors
   //
   cepCsrTest_DELETE(regp);
 #endif
-
+  //
   return errCnt;
 }
 
@@ -215,7 +218,7 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
 int 
 cepCsrTest_WriteEntry(regBaseTest_t *me, uint32_t adr, uint64_t dat)
 {
-#ifdef BARE_MODE
+#if (BARE_MODE || LINUX_MODE)
   switch (adr) {
 #undef RISCV_ENCODING_H
 #undef DECLARE_CSR
@@ -229,7 +232,7 @@ cepCsrTest_WriteEntry(regBaseTest_t *me, uint32_t adr, uint64_t dat)
 }
 
 uint64_t  cepCsrTest_ReadEntry(regBaseTest_t *me, uint32_t adr) {
-#ifdef BARE_MODE
+#if (BARE_MODE || LINUX_MODE)
   uint64_t dat;
   switch (adr) {
 #undef RISCV_ENCODING_H

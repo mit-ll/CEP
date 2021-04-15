@@ -35,6 +35,7 @@ void cep_crypto::init(void) {
   mWordCnt = 0;
   mAdrBase = 0;
   mAdrSize  = 0x10000; // default
+  SetExpErr(0);
 }
 
 void cep_crypto::freeMe(void) {
@@ -299,7 +300,6 @@ int cep_crypto::cep_readNspin(int device, uint32_t pAddress, uint64_t pData,int 
 }
 
 int cep_crypto::cep_readNspin(int device, uint32_t pAddress,uint64_t pData,uint64_t mask, int timeOut) {
-  if (GetVerbose()) {  LOGI("%s: expData=0x%016lx mask=0x%016lx\n",__FUNCTION__,pData,mask); }
   uint64_t rdDat;
   //
 #ifndef  BARE_MODE  
@@ -320,8 +320,10 @@ int cep_crypto::cep_readNspin(int device, uint32_t pAddress,uint64_t pData,uint6
     if (((rdDat ^ pData) & mask) == 0) {
       break;
     }
+    USEC_SLEEP(100);
     timeOut--;
   };
+  if (GetVerbose(2)) {  LOGI("%s: expData=0x%016lx rdDat=0x%016lx\n",__FUNCTION__,pData,rdDat); }
   return (timeOut <= 0) ? 1 : 0;
 }
 void cep_crypto::MarkSingle(int loop) {

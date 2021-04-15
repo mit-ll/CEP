@@ -10,8 +10,8 @@
 //************************************************************************
 
 /* as reported from Chisel
-Generated Address Map for CEP 3.1 and later
 
+Generated Address Map
 	       0 -     1000 ARWX  debug-controller@0
 	    3000 -     4000 ARWX  error-device@3000
 	   10000 -    14000  R X  rom@10000
@@ -20,6 +20,7 @@ Generated Address Map for CEP 3.1 and later
 	64000000 - 64001000 ARW   serial@64000000
 	64001000 - 64002000 ARW   spi@64001000
 	64002000 - 64003000 ARW   gpio@64002000
+	64800000 - 64810000  RWXC memory@64800000
 	70000000 - 70000100 ARW   aes-slave@70000000
 	70008000 - 70008040 ARW   aes-llki-slave@70008000
 	70010000 - 70010100 ARW   md5-slave@70010000
@@ -55,10 +56,26 @@ Generated Address Map for CEP 3.1 and later
 `define LOGIC_AND   2
 `define LOGIC_SWAP  3
 
+`define sys_adr_mask            'hF000_0000
+`define sys_base_addr           'h0000_0000
+`define sys_base_size           'h1000_0000
+
+`define cep_adr_mask            'hF000_0000
+`define cep_fpga_base_adr       'h7000_0000
+`define cep_fpga_base_size      'h0800_0000
 
 // for SPI/UART/GPIO
+`define other_adr_mask          'hFF00_0000
 `define other_base_addr         'h6400_0000
-`define other_base_size         'h3000
+`define other_base_size         'h0100_0000
+
+`define ddr3_adr_mask           'h8000_0000
+`define ddr3_base_adr           'h8000_0000
+`define ddr3_base_size          'h4000_0000
+
+`define scratchpad_base_addr    'h6480_0000
+`define scratchpad_base_size    'h0001_0000
+
 
 // bootrom as 4kx32 = 16Kbytes
 `define bootrom_base_addr     'h0001_0000
@@ -157,7 +174,7 @@ Generated Address Map for CEP 3.1 and later
 `define uart_ip      			'h14
 `define uart_div        		'h18
 //
-// byte offset but access as 32-bit ONLY
+// byte offset b7ut access as 32-bit ONLY
 //
 `define spi_base_addr            'h6400_1000
   `define spi_sckdiv    		'h00
@@ -207,12 +224,6 @@ Generated Address Map for CEP 3.1 and later
 
 //
 `define MAX_CORES                4
-
-`define ddr3_base_adr           'h8000_0000
-`define ddr3_base_size          'h4000_0000
-
-`define cep_fpga_base_adr       'h7000_0000
-`define cep_fpga_base_size      'h0100_0000
 
 `define	aes_base_addr           'h7000_0000
 `define	md5_base_addr           'h7001_0000
@@ -275,11 +286,16 @@ Generated Address Map for CEP 3.1 and later
 `define   CEP_BAD_STATUS            'hBAD0_DADE
 `define   CEP_RUNNING_STATUS        'h1234_5678
 `define   CEP_NEXT_TEST             'hBEEF_0000
+`define   CEP_OK2RUN_SIGNATURE      'hAAAA_5555
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG	'h700F_0000
-`define CEP_EXPECTED_VERSION 	'h11030000_00000000
+/*
+ 04/10/21 removed, use from auto-extract from scala
+`define CEP_EXPECTED_VERSION 	'h20030000_00000000
+*/
 `define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
+
 //
 // Test and Set
 //

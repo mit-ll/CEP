@@ -60,7 +60,8 @@ void *c_module(void *arg) {
   pio.RunClk(1000);
   //
   int mask = seed; // seed is used as cpuActiveMask from c_displatch
-  if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, seed, verbose); }
+  int cryptoMask = 0xFFFFFFFF; // all cores
+  if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, cryptoMask, seed, verbose); }
   //
   pio.RunClk(100);  
   //

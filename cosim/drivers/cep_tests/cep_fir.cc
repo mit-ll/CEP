@@ -96,13 +96,13 @@ cep_fir::~cep_fir()  {
 //
 void cep_fir::adjust_float(double *inout, int length)
 {
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s: len=%d\n",__FUNCTION__,length);
   }
   for (int i=0;i<length;i++) {
     fixp32_8 newFix = float_to_fixed(inout[i]);
     double newFloat = fixed_to_float(newFix);
-    if (GetVerbose()) {
+    if (GetVerbose(2)) {
       LOGI("i=%d old=%.10f -> 0x%08x -> %.10f\n",i,inout[i],newFix,newFloat);
     }
     inout[i] = newFloat;    
@@ -114,13 +114,13 @@ void cep_fir::adjust_float(double *inout, int length)
 //
 void cep_fir::adjust_fixp(fixp32_8 *inout, int length)
 {
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s: len=%d\n",__FUNCTION__,length);
   }
   for (int i=0;i<length;i++) {
     double newFloat = fixed_to_float(inout[i]);        
     fixp32_8 newFix = float_to_fixed(newFloat);
-    if (GetVerbose()) {
+    if (GetVerbose(2)) {
       LOGI("i=%d old=0x%08x -> %.10f -> 0x%08x\n",i,inout[i],newFloat,newFix);
     }
     inout[i] = newFix;
@@ -181,7 +181,7 @@ void cep_fir::Reset(void) {
 
 int cep_fir::waitTilDone(int maxTO) {
 #if 1
-   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
    return cep_readNspin(FIR_BASE_K, FIR_DONE, 0x4, maxTO);  
 #else
   while (maxTO > 0) {
@@ -215,9 +215,11 @@ int cep_fir::CheckSamples(int samCnt) {
     //
     diff = fabs(fabs(mAct[i]) - fabs(mExp[i]));
     if (diff > epsilon) {
-      LOGE("%s: fir i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);
+      if (GetExpErr() ==0) {
+	LOGE("%s: fir i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);
+      }
       mErrCnt++;
-    } else if (GetVerbose()) {
+    } else if (GetVerbose(2)) {
       LOGI("%s: fir i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);      
     }
   }

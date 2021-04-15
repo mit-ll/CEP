@@ -347,7 +347,7 @@ int regBaseTest_checkerBoardTest(regBaseTest_t *me) {
     wrDat   = 0xCCCCCCCCCCCCCCCCULL; if (i & 0x1) wrDat = ~wrDat;
     errCnt += (*me->ReadRegNCompare_p)(me,curAdr,wrDat,curMask);
     // and write back
-    wrDat   = 0x0; if (i & 0x1) wrDat = ~wrDat;
+    wrDat   = 0x0; // and clean at the same time... if (i & 0x1) wrDat = ~wrDat;
     errCnt += (*me->WriteReg_p)(me,curAdr,wrDat);
   }
   return errCnt;
@@ -389,24 +389,29 @@ int regBaseTest_doRegTest(regBaseTest_t *me) {
 
   // RO Test
   errCnt += (*me->doRORegTest_p)(me);
-  //
-  // Walking 1 & 0 tests (Write Only)
-  //
-  errCnt += (*me->uniquifyTest_p)(me,1,0);
-  // punch some holes here firs
-  errCnt += (*me->punchSomeHoles_p)(me);
-  //
-  errCnt += (*me->uniquifyTest_p)(me,0,1);
-  
-  errCnt += (*me->walk_1_thruDatTest_p)(me,1,0);
-  errCnt += (*me->walk_1_thruDatTest_p)(me,0,1);
 
-  errCnt += (*me->walk_0_thruDatTest_p)(me,1,0);
-  errCnt += (*me->walk_0_thruDatTest_p)(me,0,1);
-  //
-  // Finally checker board test
-  //
-  errCnt += (*me->checkerBoardTest_p)(me);
+  if (me->mRegCnt > 0) { //
+    //
+    // Walking 1 & 0 tests (Write Only)
+    //
+    errCnt += (*me->uniquifyTest_p)(me,1,0);
+    // punch some holes here firs
+    errCnt += (*me->punchSomeHoles_p)(me);
+    //
+    errCnt += (*me->uniquifyTest_p)(me,0,1);
+    
+    if (me->mRegCnt > 1) { // can't do if only single
+      errCnt += (*me->walk_1_thruDatTest_p)(me,1,0);
+      errCnt += (*me->walk_1_thruDatTest_p)(me,0,1);
+      
+      errCnt += (*me->walk_0_thruDatTest_p)(me,1,0);
+      errCnt += (*me->walk_0_thruDatTest_p)(me,0,1);
+    }
+    //
+    // Finally checker board test
+    //
+    errCnt += (*me->checkerBoardTest_p)(me);
+  }
   if (VERBOSE1()) {  
     LOGI("== Done regBaseTest_doRegTest errCnt=%d\n",errCnt);
   }

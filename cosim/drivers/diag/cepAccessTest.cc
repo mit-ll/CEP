@@ -156,10 +156,12 @@ int cepAccessTest_runTest(int cpuId, int seed, int verbose) {
   //
   // Clint
   //
+#ifdef SIM_ENV_ONLY
   adr = clint_base_addr + clint_mtimecmp_offset + (cpuId*8);
   pat = (uint64_t)0xCC33C3C333CC3C3CLL;
   modeSupportMask = 0xFF;
   if (!errCnt) { errCnt += cepAccessTest_runSingle(cpuId, adr, pat, modeSupportMask, verbose); }
+#endif
   //
   // DDR3
   // 

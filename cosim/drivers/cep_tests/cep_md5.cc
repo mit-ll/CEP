@@ -64,7 +64,7 @@ int cep_md5::prepare_md5_key_N_text
 // State[1:0] (64-bits/unit) = mHwPt[0....23]
 void cep_md5::LoadInText(uint8_t *buf) {
   uint64_t word;
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
 #ifdef BIG_ENDIAN
   // 
   for(int i = 0; i < GetBlockSize()/8; i++) { //  8-bytes/word
@@ -88,21 +88,21 @@ void cep_md5::LoadInText(uint8_t *buf) {
 }
 
 void cep_md5::Clear(void) {
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
   cep_writeNcapture(MD5_BASE_K, MD5_RST, 0x2); // bit[1]=init , bit[0]=rst
   cep_writeNcapture(MD5_BASE_K, MD5_RST, 0x0);
   waitTilReady(100);    
 }
 
 void cep_md5::Start(void) {
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
   cep_writeNcapture(MD5_BASE_K, MD5_MSG_IN_VALID, 0x1);
   cep_writeNcapture(MD5_BASE_K, MD5_MSG_IN_VALID, 0x0);
 }
 
 int cep_md5::waitTilReady(int maxTO) {
 #if 1
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
   return cep_readNspin(MD5_BASE_K, MD5_READY, 1, maxTO);
 #else  
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
@@ -116,7 +116,7 @@ int cep_md5::waitTilReady(int maxTO) {
 
 int cep_md5::waitTilDone(int maxTO) {
 #if 1
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
   return cep_readNspin(MD5_BASE_K, MD5_MSG_OUT_VALID, 1, maxTO);
 #else
   while (maxTO > 0) {
@@ -129,7 +129,7 @@ int cep_md5::waitTilDone(int maxTO) {
 
 void cep_md5::ReadOutText(void) {
   uint64_t word;
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
 #ifdef BIG_ENDIAN
   for(int i = 0; i < 2; i++) { //  128bits
     word = cep_readNcapture(MD5_BASE_K, MD5_HASH_BASE + (i*8));
@@ -197,7 +197,7 @@ int cep_md5::RunMd5Test(int maxLoop) {
       //      mHwPt[x++] = lenInBits >> ((7-j)*8);
       mHwPt[x++] = lenInBits >> ((j)*8);      
     }
-    if (GetVerbose()) {
+    if (GetVerbose(2)) {
       LOGI("msgSize=%d padded=%d total=%d\n",GetMsgSize(),padded,totalLen);
     }
     //
@@ -227,13 +227,14 @@ int cep_md5::RunMd5Test(int maxLoop) {
 	mErrCnt += CheckHashText(mSwCp);
       }
     }
-    if (mErrCnt) {
+    
+    if (mErrCnt && !GetExpErr()) {
       LOGE("%s: Loop %d len=%d with %d error\n",__FUNCTION__,i,GetMsgSize(),mErrCnt);      
     }
     //
     // Print
     //
-    if (mErrCnt || GetVerbose()) {
+    if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       //PrintMe("Key",       &(mKEY[0]),mKeySize);          
       PrintMe("InText     ",&(mHwPt[0]),totalLen);
       PrintMe("ExpOutText",&(mSwCp[0]),mBlockSize/4);

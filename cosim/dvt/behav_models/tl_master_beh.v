@@ -489,7 +489,9 @@ module tl_master_beh
       input [BUS_SIZE-1:0]  mask;      
       input [3:0] 	     bits_size;
       //
-      int 		     cnt,i, ackCnt;
+      int  	     i, ackCnt;
+      reg [7:0]      cnt;
+      
       begin
 	 //
 	 checkReset();
@@ -576,7 +578,7 @@ module tl_master_beh
       input [ADR_WIDTH-1:0] a;
       input [3:0] 	    bits_size;
       //
-      int 		     cnt,i,to;      
+      int  	    cnt,i,to;      
       //
       begin
 	 checkReset();
@@ -753,7 +755,7 @@ module tl_master_beh
 	 //
 	 adr = 'h700F_0000;
 	 `logI("=== TL-UL Checking FPGA version ===");	 
-	 wd64 = 'h0002_0000_0000_0000;
+	 wd64 = 64'h0002_0000_0000_0000;
 	 for (l=0;l<2;l=l+1) begin // RO
 	    tl_a_ul_read(CHIP_ID & 1, adr, rd64); // source=0 or 1 ONLY
 	    if (wd64 !== rd64) begin
@@ -832,7 +834,7 @@ module tl_master_beh
       end
    endtask
    //
-`define fir_base_addr           'h70070000
+`define fir_base_addr           32'h70070000
 `define fir_ctrlstatus_addr	'h0000
 `define fir_start_bit 0
 `define fir_datain_we_bit 1

@@ -67,6 +67,7 @@ int cepSpiTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   //
   // start adding register to test
   //
+#ifdef SIM_ENV_ONLY
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_sckdiv,    0x00000FFF);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_sckmode,   0x00000003);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_csid,      0x00000001);
@@ -74,12 +75,14 @@ int cepSpiTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_csmode,    0x00000003);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_dcssck,    0x00FF00FF);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_dintercs,  0x00FF00FF);
-  (*regp->AddAReg_p)(regp, spi_base_addr + spi_extradel,  0x000000FF);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_sampledel, 0x0000001F);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_fmt,       0x000F000F);
+  (*regp->AddAReg_p)(regp, spi_base_addr + spi_extradel,  0x000000FF);
+  (*regp->AddAReg_p)(regp, spi_base_addr + spi_ie,        0x00000003);
+#endif
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_txmark,    0x00000007);
   (*regp->AddAReg_p)(regp, spi_base_addr + spi_rxmark,    0x00000007);
-  (*regp->AddAReg_p)(regp, spi_base_addr + spi_ie,        0x00000003);
+
   //(*regp->AddAReg_p)(regp, spi_base_addr + spi_insnmode,  0x00000001);
   //(*regp->AddAReg_p)(regp, spi_base_addr + spi_insnfmt,   0xFFFF3FFF);
   // hole
@@ -110,7 +113,7 @@ int cepSpiTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
 int cep_setup_spi(int csId, int mode, int divisor, int En) 
 {
   int errCnt = 0;
-  u_int32_t dat;
+  //u_int32_t dat;
   /*
   DUT_WRITE32_32(spi_base_addr + spi_insnmode, 0); // FIFO mode
   DUT_WRITE32_32(spi_base_addr + spi_csid, 1 << csId);
@@ -131,7 +134,7 @@ int cep_setup_spi(int csId, int mode, int divisor, int En)
 // assuming SPI is loopback MOSI -> MISO
 int cepSpiRdWrTest(int csId, int seed, int verbose) {
   int errCnt = 0;
-  int dat, act;
+  int dat;
   if (verbose) {
     LOGI("%s\n",__FUNCTION__);
   }
@@ -154,7 +157,7 @@ int cepSpiRdWrTest(int csId, int seed, int verbose) {
     //
     int to = 300;
     int act = 0;
-    int bCnt = 0;
+    //int bCnt = 0;
     do {
       DUT_READ32_32(spi_base_addr + spi_rxfifo, act);
       if ((act & (1 << 31)) == 0) {
@@ -182,7 +185,11 @@ int cepSpiRdWrTest(int csId, int seed, int verbose) {
 int cepSpiTest_runTest(int cpuId, int seed, int verbose) {
   int errCnt = 0;
   //
-  if (!errCnt) { errCnt += cepSpiRdWrTest(0, seed, verbose); }
   if (!errCnt) { errCnt += cepSpiTest_runRegTest(cpuId,32, seed, verbose); }
+#ifdef SIM_ENV_ONLY
+  // 
+  if (!errCnt) { errCnt += cepSpiRdWrTest(0, seed, verbose); }
+#endif
+
   return errCnt;
 }

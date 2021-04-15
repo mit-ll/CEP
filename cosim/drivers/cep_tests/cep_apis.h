@@ -13,6 +13,7 @@
 #define CEP_APIS_H
 
 #include <stdint.h>
+#include "cep_version.h"
 #include "cep_adrMap.h"
 
 #ifndef PLAYBACK_CMD_H
@@ -64,7 +65,8 @@ extern "C" {
   int Get_C2C_Capture(void);
   void writeDvt(int msb, int lsb, int bits);
   void toggleDmiReset(void);
-  
+
+
 //
 // syscalls.c has printf
 //

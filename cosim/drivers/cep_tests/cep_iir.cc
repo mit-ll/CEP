@@ -97,13 +97,13 @@ cep_iir::~cep_iir()  {
 //
 void cep_iir::adjust_float(double *inout, int length)
 {
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s: len=%d\n",__FUNCTION__,length);
   }
   for (int i=0;i<length;i++) {
     fixp32_8 newFix = float_to_fixed(inout[i]);
     double newFloat = fixed_to_float(newFix);
-    if (GetVerbose()) {
+    if (GetVerbose(2)) {
       LOGI("i=%d old=%.10f -> 0x%08x -> %.10f\n",i,inout[i],newFix,newFloat);
     }
     inout[i] = newFloat;    
@@ -115,13 +115,13 @@ void cep_iir::adjust_float(double *inout, int length)
 //
 void cep_iir::adjust_fixp(fixp32_8 *inout, int length)
 {
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s: len=%d\n",__FUNCTION__,length);
   }
   for (int i=0;i<length;i++) {
     double newFloat = fixed_to_float(inout[i]);        
     fixp32_8 newFix = float_to_fixed(newFloat);
-    if (GetVerbose()) {
+    if (GetVerbose(2)) {
       LOGI("i=%d old=0x%08x -> %.10f -> 0x%08x\n",i,inout[i],newFloat,newFix);
     }
     inout[i] = newFix;
@@ -181,7 +181,7 @@ void cep_iir::Reset(void) {
 
 int cep_iir::waitTilDone(int maxTO) {
 #if 1
-   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
    return cep_readNspin(IIR_BASE_K, IIR_DONE, 0x4, maxTO);
 #else
   while (maxTO > 0) {
@@ -206,7 +206,7 @@ int cep_iir::CheckSamples(int samCnt) {
   for (int i=0;i<samCnt;i++) {
     epsilon = fabs(mExp[i])*(mTolerance)/100;
     // between 0.01 and 0.05 min/max
-    if (epsilon < 0.01) { epsilon = 0.02; }
+    if (epsilon < 0.01) { epsilon = 0.025; }
     // adjust epsilon if the expect != 0x8....... = negative -8million
     // only happen in FIR
     //
@@ -215,9 +215,11 @@ int cep_iir::CheckSamples(int samCnt) {
     //
     diff = fabs(fabs(mAct[i]) - fabs(mExp[i]));
     if (diff > epsilon) {
-      LOGE("%s: i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);
+      if (!GetExpErr()) {
+	LOGE("%s: iir i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);
+      }
       mErrCnt++;
-    } else if (GetVerbose()) {
+    } else if (GetVerbose(2)) {
       LOGI("%s: i=%d Exp=%.5f Act=%.5f : diff=%.5f > Epsilon=%.5f\n",__FUNCTION__,i,mExp[i],mAct[i],diff, epsilon);      
     }
   }

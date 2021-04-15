@@ -59,8 +59,8 @@ int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int 
   int errCnt = 0;
   int ti=0, ri=0, tmp;
   char rxDat;
-  int fr=0,ft=0; // first RX/TX to use 64-bits
-  uint64_t dat64;
+  //int fr=0,ft=0; // first RX/TX to use 64-bits
+  //uint64_t dat64;
   //
   // write divisor register
   //

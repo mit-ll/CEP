@@ -19,7 +19,7 @@
 #include "cep_adrMap.h"
 #include "cep_apis.h"
 #include "simdiag_global.h"
-#include "cepMemTest.h"
+#include "cepDdr3MemTest.h"
 
 //
 void *c_module(void *arg) {
@@ -59,9 +59,11 @@ void *c_module(void *arg) {
   // wait until Calibration is done..
   int calibDone = calibrate_ddr3(50);
 
-  int full = 0;
   int adrWidth = 30-2; // 1 Gbytes (30bits) for all 4 cores => each one will test 1/4 of that
   u_int32_t mem_base = ddr3_base_adr + ((cpuId&0x3) << adrWidth);  
+  int full = 0;
+  
+#if 0
   //
   int dataWidth = 0;
   for (int i=0;i<4;i++) {
@@ -73,6 +75,8 @@ void *c_module(void *arg) {
     }
     if (!errCnt) { errCnt = cepMemTest_runTest(cpuId,mem_base,adrWidth,dataWidth ,seed + ((cpuId+i)*0x10), verbose, full); }
   }
+#endif
+  errCnt = cepDdr3MemTest_runTest(cpuId, mem_base, adrWidth, seed, full, verbose);
   //
   //
   //

@@ -149,7 +149,7 @@ void cep_aes::StartEncrypt(void) {
 
 int cep_aes::waitTilDone(int maxTO) {
 #if 1
-  if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+  if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
   return cep_readNspin(AES_BASE_K, AES_DONE, 2, maxTO);
 #else
   while (maxTO > 0) {
@@ -235,13 +235,13 @@ int cep_aes::RunAes192Test(int maxLoop) {
       ReadCiphertext();
       mErrCnt += CheckCipherText();
     }
-    if (mErrCnt) {
+    if (mErrCnt && !GetExpErr()) {
       LOGE("%s: Loop %d with %d error\n",__FUNCTION__,i,mErrCnt);      
     }
     //
     // Print
     //
-    if (mErrCnt || GetVerbose()) {
+    if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       PrintMe("Key",       &(mKEY[0]),mKeySize);          
       PrintMe("PlainText",&(mHwPt[0]),mBlockSize);
       PrintMe("ExpCipher",&(mSwCp[0]),mBlockSize);

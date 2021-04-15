@@ -85,7 +85,7 @@ void cep_rsa::LoadMessage(uint8_t *msg, int msgBytes, int wrEn) {
   uint64_t word;
   int wCnt = msgBytes/4 + ((msgBytes & 0x3) ? 1 : 0);
   int j=0;
-  if (GetVerbose()) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }
+  if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }
   // 
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 1<<MESSAGE_MEM_API_RST);
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
@@ -126,7 +126,7 @@ void cep_rsa::LoadModulus(uint8_t *modulus, int modulusBytes, int wrEn) {
   uint64_t word;
   int wCnt = modulusBytes/4 + ((modulusBytes & 0x3) ? 1 : 0);
   int j=0;
-  if (GetVerbose()) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }  
+  if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }  
   // 
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 1<<MODULUS_MEM_API_RST);
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
@@ -165,7 +165,7 @@ void cep_rsa::LoadExponent(uint8_t *exponent, int exponentBytes, int wrEn) {
   uint64_t word;
   int wCnt = exponentBytes/4 + ((exponentBytes & 0x3) ? 1 : 0);
   int j=0;
-  if (GetVerbose()) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }    
+  if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }    
   // 
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 1<<EXPONENT_MEM_API_RST);
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
@@ -207,7 +207,7 @@ void cep_rsa::ReadResult(uint8_t *result, int resultBytes) {
   uint32_t word;
   int wCnt = resultBytes/4 + ((resultBytes & 0x3) ? 1 : 0);
   int j=0;
-  if (GetVerbose()) { LOGI("%s: wCnt=%d\n",__FUNCTION__,wCnt); }  
+  if (GetVerbose(2)) { LOGI("%s: wCnt=%d\n",__FUNCTION__,wCnt); }  
   // 
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , 1<<RESULT_MEM_API_RST);
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , 0x0000000000000000);
@@ -226,13 +226,13 @@ void cep_rsa::ReadResult(uint8_t *result, int resultBytes) {
 }
 
 void cep_rsa::Start(void) {
-  if (GetVerbose()) { LOGI("%s\n",__FUNCTION__); }  
+  if (GetVerbose(2)) { LOGI("%s\n",__FUNCTION__); }  
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000002);
   cep_writeNcapture(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000000);
 }
 
 int cep_rsa::waitTilDone(int maxTO) {
-  if (GetVerbose()) { LOGI("%s: to=%d\n",__FUNCTION__,maxTO); }
+  if (GetVerbose(2)) { LOGI("%s: to=%d\n",__FUNCTION__,maxTO); }
 #if 1
   return cep_readNspin(RSA_BASE_K, RSA_ADDR_STATUS, 1, maxTO);
 #else
@@ -254,7 +254,7 @@ int cep_rsa::compute_results(void) {
   BIGNUM *msgNum = BN_new();
   BIGNUM *resNum = BN_new();
   BN_CTX *bnCtx  = BN_CTX_new();
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s\n",__FUNCTION__);
   }
   if ((expNum == NULL) || (modNum == NULL) || (msgNum == NULL) || (resNum == NULL)) { LOGE("%s: can't make eNum\n",__FUNCTION__); return 1; }
@@ -295,7 +295,7 @@ int cep_rsa::generate_key(void) {
   BIGNUM *modNum;
   RSA *rsa;
   //
-  if (GetVerbose()) {
+  if (GetVerbose(2)) {
     LOGI("%s\n",__FUNCTION__);
   }
   rsa    = RSA_new();
@@ -328,7 +328,8 @@ int cep_rsa::generate_key(void) {
   //
   //
   mErrCnt += (RSA_public_encrypt(GetMsgSize(),MSGSTR, ERESSTR, rsa, RSA_NO_PADDING) == -1) ? 1 : 0; // no
-  if (mErrCnt) {
+  
+  if (mErrCnt && !GetExpErr()) {
     LOGE("%s: Problem with RSA_public_encrypt. (%s) \n",__FUNCTION__,
 	 ERR_error_string(ERR_get_error(),NULL));
     mErrCnt=0; // for now, ignore it
@@ -346,7 +347,9 @@ int cep_rsa::generate_key(void) {
   //
   if ((RSA_check_key(rsa) != 1) && !expIsOne()) {
     mErrCnt++;
-    LOGE("%s ERROR Key is not valid\n",__FUNCTION__);
+    if (!GetExpErr()) {
+      LOGE("%s ERROR Key is not valid\n",__FUNCTION__);
+    }
   }
   RSA_free(rsa);
   BN_free(eNum);
@@ -359,7 +362,7 @@ int cep_rsa::generate_key(void) {
 
 // clean memories
 void cep_rsa::CleamMem(int maxEntries) {
-  if (GetVerbose()) { LOGI("%s maxEntries=%d\n",__FUNCTION__,maxEntries); }    
+  if (GetVerbose(2)) { LOGI("%s maxEntries=%d\n",__FUNCTION__,maxEntries); }    
   SetModSize(maxEntries*4);   // Exponent
   SetMsgSize(maxEntries*4);     // modulus & message
   LoadMessage(mHwPt, GetMsgSize(),1);   
@@ -422,7 +425,7 @@ int cep_rsa::RunRsaTest(int maxLoop, int maxBytes) {
     mErrCnt += generate_key(); //
     if (mErrCnt) break;
     // print
-    if (mErrCnt || GetVerbose()) {
+    if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       PrintMe("Exponent" , EXPSTR, GetExpSize());
       PrintMe("Modulus " , MODSTR, GetModSize());
       PrintMe("Message " , MSGSTR, GetMsgSize());
@@ -446,7 +449,7 @@ int cep_rsa::RunRsaTest(int maxLoop, int maxBytes) {
     //
     // Print
     //
-    if (mErrCnt || GetVerbose()) {
+    if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       PrintMe("Exponent" , EXPSTR, GetExpSize());
       PrintMe("Modulus " , MODSTR, GetModSize());
       PrintMe("Message " , MSGSTR, GetMsgSize());
@@ -504,7 +507,7 @@ int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
     LoadModulus(mSwPt, GetBlockSize(), 1);
     LoadModulus(mHwPt, GetBlockSize(), 0);  
     mErrCnt += CheckPlainText();
-    if (mErrCnt) {
+    if (mErrCnt && !GetExpErr()) {
       LOGI("%s: Testing Modulus Memory bytes=%d error=%d\n",__FUNCTION__,sizeInBytes,mErrCnt);
       PrintMe("expMem "  ,mSwPt, GetBlockSize());
       PrintMe("actMem "  ,mHwPt, GetBlockSize());    
@@ -523,7 +526,7 @@ int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
     LoadExponent(mSwPt, GetBlockSize(), 1);
     LoadExponent(mHwPt, GetBlockSize(), 0);  
     mErrCnt += CheckPlainText();
-    if (mErrCnt) {
+    if (mErrCnt && !GetExpErr()) {
       LOGI("%s: Testing Exponent Memory bytes=%d error=%d\n",__FUNCTION__,sizeInBytes,mErrCnt);
       PrintMe("expMem "  ,mSwPt, GetBlockSize());
       PrintMe("actMem "  ,mHwPt, GetBlockSize());    
@@ -542,7 +545,7 @@ int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
     LoadMessage(mSwPt, GetBlockSize(), 1);
     LoadMessage(mHwPt, GetBlockSize(), 0);  
     mErrCnt += CheckPlainText();
-    if (mErrCnt) {
+    if (mErrCnt && !GetExpErr()) {
       LOGI("%s: Testing Message Memory bytes=%d error=%d\n",__FUNCTION__,sizeInBytes,mErrCnt);
       PrintMe("expMem "  ,mSwPt, GetBlockSize());
       PrintMe("actMem "  ,mHwPt, GetBlockSize());    
@@ -582,7 +585,7 @@ int cep_rsa::RunRsaTest2(int maxLoop, int maxBytes) {
   //1
   mErrCnt += generate_key(); //
   // print
-  if (mErrCnt || GetVerbose()) {
+  if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
     PrintMe("Exponent" , EXPSTR, GetExpSize());
     PrintMe("Modulus " , MODSTR, GetModSize());
     PrintMe("Message " , MSGSTR, GetMsgSize());
@@ -605,7 +608,7 @@ int cep_rsa::RunRsaTest2(int maxLoop, int maxBytes) {
   //
   // Print
   //
-  if (mErrCnt || GetVerbose()) {
+  if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
     PrintMe("Exponent" , EXPSTR, GetExpSize());
     PrintMe("Modulus " , MODSTR, GetModSize());
     PrintMe("Message " , MSGSTR, GetMsgSize());

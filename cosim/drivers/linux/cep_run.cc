@@ -552,85 +552,57 @@ int cep_init_run(void)
   // ============================================
   // This is where you add global test to CEP
   // ============================================
+  //  
+  //            Name                regress      run_func              preRun post  Test Description
+  CEP_ADD_RUN(0,runAll,             0xFFFFFFFF,  cep_runAll,           NULL , NULL, "Run all available tests");
   //
-  //            Name             regress      run_func              preRun post  Test Description
-  CEP_ADD_RUN(0,runAll,          0xFFFFFFFF,  cep_runAll,           NULL , NULL, "Run all available tests");
-  // CEP macro related
-  CEP_ADD_RUN(1,cepRegTest,      0xFFFFFFFF,  run_cepRegTest,       NULL,  NULL, "Run CEP register tests on all cores");
-  CEP_ADD_RUN(1,cepLockTest,     0xFFFFFFFF,  run_cepLockTest,      NULL,  NULL, "Run CEP single lock test on all cores");
-  CEP_ADD_RUN(1,cepMultiLock,    0xFFFFFFFF,  run_cepMultiLock,     NULL,  NULL, "Run CEP multi-lock test on all cores");    
-  // individual Macro
-  CEP_ADD_RUN(1,cep_AES     ,     0xFFFFFFFF,  run_cep_AES     ,      NULL,  NULL, "CEP AES test");  
-  CEP_ADD_RUN(1,cep_DES3    ,     0xFFFFFFFF,  run_cep_DES3    ,      NULL,  NULL, "CEP DES3 test");  
-  CEP_ADD_RUN(1,cep_DFT     ,     0xFFFFFFFF,  run_cep_DFT     ,      NULL,  NULL, "CEP DFT test");  
-  CEP_ADD_RUN(1,cep_IDFT    ,     0xFFFFFFFF,  run_cep_IDFT    ,      NULL,  NULL, "CEP IDFT test");  
-  CEP_ADD_RUN(1,cep_FIR     ,     0xFFFFFFFF,  run_cep_FIR     ,      NULL,  NULL, "CEP FIR test");  
-  CEP_ADD_RUN(1,cep_IIR     ,     0xFFFFFFFF,  run_cep_IIR     ,      NULL,  NULL, "CEP IIR test");  
-  CEP_ADD_RUN(1,cep_GPS     ,     0xFFFFFFFF,  run_cep_GPS     ,      NULL,  NULL, "CEP GPS test");  
-  CEP_ADD_RUN(1,cep_MD5     ,     0xFFFFFFFF,  run_cep_MD5     ,      NULL,  NULL, "CEP MD5 test");  
-  CEP_ADD_RUN(1,cep_RSA     ,     0xFFFFFFFF,  run_cep_RSA     ,      NULL,  NULL, "CEP RSA test");  
-  CEP_ADD_RUN(1,cep_SHA256  ,     0xFFFFFFFF,  run_cep_SHA256  ,      NULL,  NULL, "CEP SHA256 test");
-  //
-  CEP_ADD_RUN(2,cepThrTest,      0xFFFFFFFF,  run_threadTest,       NULL,  NULL, "Run multi-thread tests on all cores");    
-  CEP_ADD_RUN(2,cepAllMacros,    0xFFFFFFFF,  run_cepAllMacros,     NULL,  NULL, "CEP all macros test (single thread)");
-  CEP_ADD_RUN(2,cepMacroMix,     0xFFFFFFFF,  run_cepMacroMix,      NULL,  NULL, "CEP Macro tests (aes/des3/md5/sha)");
   // RISC-V related
-  CEP_ADD_RUN(3,dcacheCoherency, 0xFFFFFFFF,  run_dcacheCoherency,  NULL,  NULL, "D-cache coherency Test on all cores");
-  CEP_ADD_RUN(3,icacheCoherency, 0xFFFFFFFF,  run_icacheCoherency,  NULL,  NULL, "I-cache coherency Test on all cores");
-  CEP_ADD_RUN(3,cacheFlush,      0xFFFFFFFF,  run_cacheFlush,       NULL,  NULL, "I+D-caches flush all cores (via self-mod-code)");    
-#ifndef cep_exports__H_
-#define cep_exports__H_
+  //
+  CEP_ADD_RUN(1,cepThrTest,         0xFFFFFFFF,  run_threadTest,       NULL,  NULL, "Multi-thread tests (all cores)");    
+  CEP_ADD_RUN(1,dcacheCoherency,    0xFFFFFFFF,  run_dcacheCoherency,  NULL,  NULL, "D-cache coherency Test (all cores)");
+  CEP_ADD_RUN(1,icacheCoherency,    0xFFFFFFFF,  run_icacheCoherency,  NULL,  NULL, "I-cache coherency Test (all cores)");
+  CEP_ADD_RUN(1,cacheFlush,         0xFFFFFFFF,  run_cacheFlush,       NULL,  NULL, "I+D-caches flush all cores (via self-mod-code)");    
+  //
+  // Memory related
+  //
+  CEP_ADD_RUN(2,cepSrotMemTest,     0xFFFFFFFF,  run_cepSrotMemTest,   NULL,  NULL, "CEP SRoT memory test (single core) ");
+  CEP_ADD_RUN(2,ddr3Test,           0xFFFFFFFF,  run_ddr3Test,         NULL,  NULL, "Main Memory Test (all cores)");
+  CEP_ADD_RUN(2,smemTest,           0xFFFFFFFF,  run_smemTest,         NULL,  NULL, "Scratchpad Memory Test (all cores)");
+  CEP_ADD_RUN(2,cepMaskromTest,     0xFFFFFFFF,  run_cepMaskromTest,   NULL,  NULL, "CEP Maskrom Read-Only Test (all cores)");
+  //
+  // CEP misc. tests
+  //
+  CEP_ADD_RUN(3,cepGpioTest,        0xFFFFFFFF,  run_cepGpioTest,      NULL,  NULL, "CEP GPIO test (single core) ");
+  CEP_ADD_RUN(3,cepSpiTest,         0xFFFFFFFF,  run_cepSpiTest,       NULL,  NULL, "CEP SPI test (single core) ");
+  CEP_ADD_RUN(3,cepSrotErrTest,     0xFFFFFFFF,  run_cepSrotErrTest,   NULL,  NULL, "CEP SRoT Error Test (single core) ");
+//CEP_ADD_RUN(3,cepCsrTest,         0xFFFFFFFF,  run_cepCsrTest,       NULL,  NULL, "CEP SPI test (all cores) ");
 
-#include <mutex>
-#include "cep_run.h"
-#include "cepregression.h"
-//
-// ============================
-// Function prototypes
-// ============================
-
-//    printf("C%d", sched_getcpu(), format, ##__VA_ARGS__);		
-//#define eprintf(format, …) fprintf (stderr, format, ##__VA_ARGS__)
-
-/*
- Function protos
-*/
-#ifdef __cplusplus
-extern "C" {
-#endif
+  CEP_ADD_RUN(4,cepPlicTest,        0xFFFFFFFF,  run_cepPlicTest,      NULL,  NULL, "CEP PLIC register test (all cores)");    
+  CEP_ADD_RUN(4,cepClintTest,       0xFFFFFFFF,  run_cepClintTest,     NULL,  NULL, "CEP CLINT register test (all cores)");    
+  CEP_ADD_RUN(4,cepRegTest,         0xFFFFFFFF,  run_cepRegTest,       NULL,  NULL, "CEP register tests on all cores");
+  CEP_ADD_RUN(4,cepLockTest,        0xFFFFFFFF,  run_cepLockTest,      NULL,  NULL, "CEP single lock test (all cores)");
+  CEP_ADD_RUN(4,cepMultiLock,       0xFFFFFFFF,  run_cepMultiLock,     NULL,  NULL, "CEP multi-lock test (all cores)");    
+  CEP_ADD_RUN(4,cepLockfreeAtomic,  0xFFFFFFFF,  run_cepLockfreeAtomic,NULL,  NULL, "CEP lock-free instructions test (all cores) ");    
+  CEP_ADD_RUN(4,cepLrscOps,         0xFFFFFFFF,  run_cepLrscOps,       NULL,  NULL, "CEP Load-Reserve/Store-Conditional test (all cores)");    
+  CEP_ADD_RUN(4,cepAccessTest,      0xFFFFFFFF,  run_cepAccessTest,    NULL,  NULL, "CEP various bus/size access test (all cores)");    
+  CEP_ADD_RUN(4,cepAtomicTest,      0xFFFFFFFF,  run_cepAtomicTest,    NULL,  NULL, "CEP atomic intructions test (all cores)");    
   //
-  // Common/Utils
+  // CEP macro related 
   //
-  int run_threadTest(void);    
+  CEP_ADD_RUN(5,cepMacroMix,        0xFFFFFFFF,  run_cepMacroMix,      NULL,  NULL, "CEP Macro tests (all cores)");
+  CEP_ADD_RUN(5,cepMacroBadKey,     0xFFFFFFFF,  run_cepMacroBadKey,   NULL,  NULL, "CEP Macro tests with badKey (all cores)");
   //
-  // CEP
+  CEP_ADD_RUN(6,cepSrotMaxKeyTest,  0xFFFFFFFF,  run_cepMacroBadKey,   NULL,  NULL, "CEP Macro tests with maxKey (single core)");
+  CEP_ADD_RUN(6,cep_AES     ,       0xFFFFFFFF,  run_cep_AES     ,     NULL,  NULL, "CEP AES test (single core)");  
+  CEP_ADD_RUN(6,cep_DES3    ,       0xFFFFFFFF,  run_cep_DES3    ,     NULL,  NULL, "CEP DES3 test (single core)");  
+  CEP_ADD_RUN(6,cep_DFT     ,       0xFFFFFFFF,  run_cep_DFT     ,     NULL,  NULL, "CEP DFT and IDFT test (single core)");  
+  CEP_ADD_RUN(6,cep_FIR     ,       0xFFFFFFFF,  run_cep_FIR     ,     NULL,  NULL, "CEP FIR test (single core)");  
+  CEP_ADD_RUN(6,cep_IIR     ,       0xFFFFFFFF,  run_cep_IIR     ,     NULL,  NULL, "CEP IIR test (single core)");  
+  CEP_ADD_RUN(6,cep_GPS     ,       0xFFFFFFFF,  run_cep_GPS     ,     NULL,  NULL, "CEP GPS test (single core)");  
+  CEP_ADD_RUN(6,cep_MD5     ,       0xFFFFFFFF,  run_cep_MD5     ,     NULL,  NULL, "CEP MD5 test (single core)");  
+  CEP_ADD_RUN(6,cep_RSA     ,       0xFFFFFFFF,  run_cep_RSA     ,     NULL,  NULL, "CEP RSA test (single core)");  
+  CEP_ADD_RUN(6,cep_SHA256  ,       0xFFFFFFFF,  run_cep_SHA256  ,     NULL,  NULL, "CEP SHA256 test (single core)");
   //
-  int cep_aWrite(void);
-  int cep_aRead(void);
-  int run_cepRegTest(void);
-  int run_cepLockTest(void);  
-  
-  //
-  // DDR3
-  //
-  int ddr3_aWrite(void);
-  int ddr3_aRead(void);  
-
-  //
-  // cores
-  //
-  int run_dcacheCoherency(void);
-  int run_icacheCoherency(void);  
-  volatile char get_selfModCodeValue(void);
-  int set_selfModCodeValue(char newByte);
-#ifdef __cplusplus
-}
-#endif
-
-// ==================
-#endif
-
-  CEP_ADD_RUN(1,ddr3Test,        0xFFFFFFFF,  run_ddr3Test,         NULL,  NULL, "main Memory Test on all cores");
   //
   // must do this 
   //

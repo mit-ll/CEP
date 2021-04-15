@@ -139,7 +139,7 @@ void cep_des3::Start(void) {
 
 int cep_des3::waitTilDone(int maxTO) {
 #if 1
-    if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
+    if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
   return cep_readNspin(DES3_BASE_K, DES3_DONE, 1, maxTO);
 #else
   while (maxTO > 0) {
@@ -263,13 +263,13 @@ int cep_des3::RunDes3Test(int maxLoop) {
 	ReadOutText();
 	mErrCnt += CheckCipherText();
       }
-      if (mErrCnt) {
+      if (mErrCnt && !GetExpErr()) {
 	LOGE("%s: Loop %d l=%d with %d error\n",__FUNCTION__,i,l,mErrCnt);      
       }
       //
       // Print
       //
-      if (mErrCnt || GetVerbose()) {
+      if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
 	PrintMe("Key",       &(mKEY[0]),mKeySize);          
 	PrintMe("InText    ",&(mHwPt[0]),mBlockSize);
 	PrintMe("ExpOutText",&(mSwCp[0]),mBlockSize);

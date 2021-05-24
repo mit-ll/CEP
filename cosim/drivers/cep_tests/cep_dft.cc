@@ -193,7 +193,7 @@ int cep_dft::dft_waitTilDone(int maxTO) {
 #endif
 }
 
-int cep_dft::dft_CheckSamples(int startIdx,int samCnt) {
+int cep_dft::dft_CheckSamples(int lpCnt, int startIdx,int samCnt) {
   if (GetVerbose(2)) { LOGI("%s\n",__FUNCTION__); }  
   //
   double repsilon,rdiff;
@@ -212,7 +212,7 @@ int cep_dft::dft_CheckSamples(int startIdx,int samCnt) {
     
     if (rdiff > repsilon) { // || (idiff > iepsilon)) {
       if (GetExpErr()==0) {
-	LOGE("%s: dft i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,i,
+	LOGE("%s: dft lp=%d i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,lpCnt ,i,
 	     mRexp[i],mIexp[i],  mRact[i],mIact[i],
 	     rdiff,idiff,repsilon,iepsilon);
       }
@@ -287,7 +287,7 @@ int cep_dft::idft_waitTilDone(int maxTO) {
 #endif
 }
 
-int cep_dft::idft_CheckSamples(int startIdx,int samCnt) {
+int cep_dft::idft_CheckSamples(int lpCnt, int startIdx,int samCnt) {
   if (GetVerbose(2)) { LOGI("%s\n",__FUNCTION__); }  
   //
   double repsilon,rdiff;
@@ -307,7 +307,7 @@ int cep_dft::idft_CheckSamples(int startIdx,int samCnt) {
     // FIXME: dont know why only the real part are good
     if (rdiff > repsilon) {
       if (!GetExpErr()) {
-	LOGE("%s: idft i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,i,
+	LOGE("%s: idft lp=%d i=%d Exp=%.5f/%.5f Act=%.5f/%.5f : diff=%.5f/%.5f > Epsilon=%.5f/%.5f\n",__FUNCTION__,lpCnt, i,
 	     mRexp[i],mIexp[i],  mRact[i],mIact[i],
 	     rdiff,idiff,repsilon,iepsilon);
       }
@@ -341,7 +341,7 @@ int cep_dft::RunDftTest(int maxLoop) {
   //
   //
   int skipFirstSample = 0;
-  Random48_srand48(GetSeed());
+
   for (int i=0;i<maxLoop;i++) {
     if (GetVerbose()) {
       LOGI("%s: Loop %d\n",__FUNCTION__,i);
@@ -386,7 +386,10 @@ int cep_dft::RunDftTest(int maxLoop) {
       }
       break;
     default:
-      ranX = Random48_rand();
+      Random48_srand48(GetSeed());
+      //ranX = Random48_rand();
+      ranX = GetSeed();
+      SetSeed(ranX++); // multi-thread might destroy the semi-fixed randome of this test
       fixR = ranX & 0xFFFF;
       fixI = (ranX>>16) & 0xFFFF;      
       for (int j=0; j < MAX_DFT_SAMPLES; j++) {
@@ -420,7 +423,7 @@ int cep_dft::RunDftTest(int maxLoop) {
 	  PrintMe("DFT-act",mRact,mIact,MAX_DFT_SAMPLES);
 	}
 	//adjust_float(mRact, mIact, MAX_DFT_SAMPLES);
-	mErrCnt += dft_CheckSamples(skipFirstSample,MAX_DFT_SAMPLES);
+	mErrCnt += dft_CheckSamples(i,skipFirstSample,MAX_DFT_SAMPLES);
       }
 
     }
@@ -448,7 +451,7 @@ int cep_dft::RunDftTest(int maxLoop) {
 	  PrintMe("IDFT-act",mRact,mIact,MAX_DFT_SAMPLES);
 	}
 	//adjust_float(mRAin, mIAin, MAX_DFT_SAMPLES);	
-	mErrCnt += idft_CheckSamples(skipFirstSample,MAX_DFT_SAMPLES);
+	mErrCnt += idft_CheckSamples(i,skipFirstSample,MAX_DFT_SAMPLES);
       }
     }
 #endif

@@ -34,7 +34,7 @@ import freechips.rocketchip.tilelink._
 
 object CEPVersion {
   val CEP_MAJOR_VERSION             = 0x03
-  val CEP_MINOR_VERSION             = 0x20
+  val CEP_MINOR_VERSION             = 0x30
 }
 
 object CEPBaseAddresses {
@@ -117,7 +117,7 @@ object CEPBaseAddresses {
   val cepregs_base_depth            = 0x0000FFFFL
 
   val srot_base_addr                = 0x70200000L
-  val srot_base_depth               = 0x00000fffL
+  val srot_base_depth               = 0x0000FFFFL
 }
 
 object AESAddresses {

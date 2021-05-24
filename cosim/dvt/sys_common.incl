@@ -46,17 +46,22 @@ endtask // WRITE_DVT_FLAG_TASK;
 task   READ_DVT_FLAG_TASK;
 input [31:0] msb;
 input [31:0] lsb;
-output [31:0] r_data;
-integer s;
-reg [31:0] tmp;
+output [64:0] r_data;
+integer m,l,s;
+reg [63:0] tmp;
 
 begin
    tmp = 0;
 `ifdef USE_DPI
-   for (s=inBox.mPar[0];s>=inBox.mPar[1];s=s-1) begin
-      tmp = {tmp[30:0],dvtFlags[s]};
-   end
-   inBox.mPar[0] = tmp;
+      m=inBox.mPar[0];
+      l=inBox.mPar[1];
+      for (int s=m;s>=l;s--) begin       
+	 tmp = {tmp[62:0],dvtFlags[s]};
+	 //$display("LOOP s=%d %x\n",s,tmp);      
+      end
+      inBox.mPar[0] = tmp;
+      //$display("IN %d/%d %x\n",m,l,inBox.mPar[0]);
+
 `else   
    for (s =msb;s>=lsb;s=s-1) begin
       tmp = {tmp[30:0],dvtFlags[s]};

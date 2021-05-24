@@ -43,7 +43,7 @@ int cepSrotMemTest_runTest(int cpuId, int seed, int verbose) {
   //
   for (int i=0;i<2;i++) {
     if (i == 0) {
-      adrWidth = 8; // 256 locations
+      adrWidth = 11; // 2048 locations
       mem_base = srot_base_addr + SROT_KEYRAM_ADDR;
     } else {
       adrWidth = 6; // 32 locations

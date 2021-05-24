@@ -87,7 +87,7 @@ int cep_des3::prepare_des3_key_N_text
   }
   //
   if (verbose) {
-    printf("%s: INFO inLen=%d outlen=%d kL=%d bL=%d\n",__FUNCTION__,
+      LOGI("%s: inLen=%d outlen=%d kL=%d bL=%d\n",__FUNCTION__,
 	   length,*outlen,    
 	   EVP_CIPHER_CTX_key_length(&ctx),
 	   EVP_CIPHER_CTX_block_size(&ctx)

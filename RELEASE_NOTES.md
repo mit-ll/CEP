@@ -121,4 +121,14 @@ v3.2 - (16 April 2021)
 * Linux tests updated and expanded
 * New tests added to cosim focused on LLKI and Scratchpad RAM
 
+v3.3 - (19 May 2021)
+* Increased capacity for LLKI key size including larger KeyRAM (2048 64-bit words)
+* Added Cosim JTAG/OpenOCD 
+* Stability fixes for cep_diag under Linux 
+* Virtual Address TLB test suite is added to regression (not 100% complete)
+* Expanded cep_diag
+* New simulation ONLY interrupt tests for CLINT and PLIC modules (on going)
+* Re-capture vectors for unit sim due to changes in LLKI key size
+* Bootrom size is increased to 32K bytes (8kx32) to accomodate new built-in test (execute codes out of bootrom without main memory)
+
 #### Return to the root CEP [README](./README.md)

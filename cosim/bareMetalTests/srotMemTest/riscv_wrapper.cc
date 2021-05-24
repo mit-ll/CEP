@@ -50,13 +50,14 @@ void thread_entry(int cid, int nc)
   //
   //
   //
+  // each core use 1/4 
   for (int i=0;i<2;i++) {
     if (i == 0) {
-      adrWidth = 8; // 256 locations
-      mem_base = srot_base_addr + SROT_KEYRAM_ADDR;
+      adrWidth = 8-2; // 256 locations/4
+      mem_base = srot_base_addr + SROT_KEYRAM_ADDR + (coreId << 6) ;
     } else {
-      adrWidth = 6; // 32 locations
-      mem_base = srot_base_addr + SROT_KEYINDEXRAM_ADDR;
+      adrWidth = 6-2; // 64 locations/4
+      mem_base = srot_base_addr + SROT_KEYINDEXRAM_ADDR + (coreId << 4);
     }
     if (!errCnt) { errCnt = cepMemTest_runTest(coreId,mem_base,adrWidth,dataWidth ,seed, verbose, full); }
   }

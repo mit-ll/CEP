@@ -34,7 +34,7 @@ SIM_DIR     = ${DUT_TOP_DIR}/${COSIM_NAME}
 TEST_GROUP  =  	bareMetalTests	\
 		bfmTests	\
 		isaTests	\
-
+		vBareTest	\
 
 runAll: 
 	make cleanAll

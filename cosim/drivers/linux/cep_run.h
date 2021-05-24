@@ -106,6 +106,7 @@ typedef enum {
   RUN_cepMaskromTest,
   //  RUN_cepCsrTest,
   RUN_cepSrotErrTest,
+//  RUN_cepPlicPrioIntrTest,  
   //
   RUN_cepMacroMix  , // multi-threaded
   RUN_cep_AES ,
@@ -117,6 +118,7 @@ typedef enum {
   RUN_cep_MD5 ,
   RUN_cep_RSA ,
   RUN_cep_SHA256 ,
+  RUN_cepMultiThread,
   //
   RUN_ddr3Test     ,
   RUN_dcacheCoherency,
@@ -192,8 +194,10 @@ extern "C" {
   void cep_set_thr_function(cep_thread_funct_t funct);
   cep_thread_funct_t cep_get_thr_function(void);
   void cep_set_thr_errCnt(int value);
+    void cep_set_mthr_errCnt(int thrId,int value);    
   int cep_get_thr_errCnt(void);
   int run_multiThreads(int coreMask); // , cep_thread_funct_t funct);
+  int run_multiThreadFloats(int num_threads);
   int thr_waitTilLock(int id, int maxTO);
   
   // =============================

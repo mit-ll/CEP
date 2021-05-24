@@ -80,7 +80,7 @@
 #define DUT_SetInActiveStatus      sim_SetInActiveStatus
 
 #define DUT_RUNCLK(x)              sim_RunClk(x)
-#define USEC_SLEEP(x)             
+#define USEC_SLEEP(x)              
 
 // framer
 #define DUT_FRAMER_RDWR(a,wd,rd) sim_Framer_RdWr(a,wd,rd)

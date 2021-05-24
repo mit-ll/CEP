@@ -91,7 +91,8 @@ void *c_module(void *arg) {
 #endif
   //
   //
-  pio.RunClk(100);  
+  pio.RunClk(100);
+  
   //
   // ======================================
   // Exit

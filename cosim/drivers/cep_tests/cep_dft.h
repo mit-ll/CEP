@@ -42,13 +42,13 @@ public: //
   void dft_getY(double *rbuf, double *ibuf, int len) ;
   void dft_Start(void) ;
   int dft_waitTilDone(int maxTO);
-  int dft_CheckSamples(int startIdx,int samCnt) ;
+  int dft_CheckSamples(int lpCnt, int startIdx,int samCnt) ;
   //
   void idft_setX(double *rbuf, double *ibuf, int len) ;
   void idft_getY(double *rbuf, double *ibuf, int len) ;
   void idft_Start(void) ;
   int idft_waitTilDone(int maxTO);
-  int idft_CheckSamples(int startIdx,int samCnt) ;  
+  int idft_CheckSamples(int lpCnt, int startIdx,int samCnt) ;  
   //
   double mRin[MAX_DFT_SAMPLES];
   double mIin[MAX_DFT_SAMPLES];

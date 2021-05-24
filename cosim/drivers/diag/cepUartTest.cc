@@ -117,11 +117,14 @@ int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int 
 	rxDat = (char)(tmp & 0xff);
 	// check
 	if (rxDat != txStr[ri]) {
-	  LOGE("%s: mismatch char ri=%d act=0x%x exp=0x%x\n",__FUNCTION__,rxDat,txStr[ri]);
+	  LOGE("%s: mismatch char ri=%d act=0x%x exp=0x%x\n",__FUNCTION__,ri,rxDat,txStr[ri]);
 	  errCnt++;
+	  ri++;
 	  break;
-	} else if (verbose) {
-	  LOGI("%s: OK char ri=%d act=0x%x exp=0x%x\n",__FUNCTION__,ri,rxDat,txStr[ri]);
+	} else {
+	  if (verbose) {
+	    LOGI("%s: OK char ri=%d act=0x%x exp=0x%x\n",__FUNCTION__,ri,rxDat,txStr[ri]);
+	  }
 	  ri++;
 	}
       }
@@ -131,8 +134,8 @@ int cepUartTest_runTxRxTest(int cpuId, int divisor, char *txStr, int txLen, int 
   }
   // disable
   DUT_WRITE32_32(uart_base_addr + uart_txctrl,0);
-    DUT_WRITE32_32(uart_base_addr + uart_rxctrl,0);
-    DUT_WRITE32_32(uart_base_addr + uart_ie,0);
+  DUT_WRITE32_32(uart_base_addr + uart_rxctrl,0);
+  DUT_WRITE32_32(uart_base_addr + uart_ie,0);
   return errCnt;
 }
 

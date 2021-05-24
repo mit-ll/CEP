@@ -3,7 +3,7 @@
 //
 // This file is auto-generated for test: sha256. Do not modify!!!
 //
-// Generated on: Apr 13 2021 10:26:26
+// Generated on: May 19 2021 14:35:16
 //************************************************************************
 `ifndef sha256_playback_H
 `define sha256_playback_H
@@ -361,132 +361,132 @@ longint sha256_playback[] = {
 	, `RDnCMP_CMD, 'h70020060, 'hea840958c84266c1 // 335
 	, `RDnCMP_CMD, 'h70020068, 'h113a37486eec6fb4 // 336
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 337
-	, `WRITE__CMD, 'h70020008, 'hbfe0b3fc5532b9e2 // 338
-	, `WRITE__CMD, 'h70020010, 'hdac69bc733413e07 // 339
-	, `WRITE__CMD, 'h70020018, 'ha852dae45accd9cb // 340
-	, `WRITE__CMD, 'h70020020, 'hf359edf18106d612 // 341
-	, `WRITE__CMD, 'h70020028, 'h4ee286d38ed8bbd7 // 342
-	, `WRITE__CMD, 'h70020030, 'h806c2816a3247531 // 343
-	, `WRITE__CMD, 'h70020038, 'h68dc89c8e49410e4 // 344
-	, `WRITE__CMD, 'h70020040, 'hb4dacc335a0f3d01 // 345
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 338
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 339
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 340
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 341
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 342
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 343
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 344
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 345
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 346
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 347
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 348
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 349
-	, `WRITE__CMD, 'h70020008, 'h98159429a755c61a // 350
-	, `WRITE__CMD, 'h70020010, 'h3a0ce3bc087200e1 // 351
-	, `WRITE__CMD, 'h70020018, 'h4dcd2f24d1d7aaf2 // 352
-	, `WRITE__CMD, 'h70020020, 'h9a5e1e25338fa22a // 353
-	, `WRITE__CMD, 'h70020028, 'hcb182ad3d813ebff // 354
-	, `WRITE__CMD, 'h70020030, 'h081e153895610cf7 // 355
-	, `WRITE__CMD, 'h70020038, 'h8a49c6383828f7f5 // 356
-	, `WRITE__CMD, 'h70020040, 'hfff0ca076b568a04 // 357
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 350
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 351
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 352
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 353
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 354
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 355
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 356
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 357
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 358
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 359
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 360
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 361
-	, `WRITE__CMD, 'h70020008, 'hf548efc1ecb96f2f // 362
-	, `WRITE__CMD, 'h70020010, 'h34d9242d0c2f4ae8 // 363
-	, `WRITE__CMD, 'h70020018, 'h465d2fdd50b726f7 // 364
-	, `WRITE__CMD, 'h70020020, 'h2681711e92a171fd // 365
-	, `WRITE__CMD, 'h70020028, 'h49dd5226bbd8fde3 // 366
-	, `WRITE__CMD, 'h70020030, 'hb2a327e7546c8ddc // 367
-	, `WRITE__CMD, 'h70020038, 'h3367bf2f53c8e6dc // 368
-	, `WRITE__CMD, 'h70020040, 'h280f3901a4413337 // 369
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 362
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 363
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 364
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 365
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 366
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 367
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 368
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 369
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 370
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 371
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 372
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 373
-	, `WRITE__CMD, 'h70020008, 'h6cd4081ba6882037 // 374
-	, `WRITE__CMD, 'h70020010, 'h6ff6b8d0db4e7d0d // 375
-	, `WRITE__CMD, 'h70020018, 'hb35c1a3059ebffdb // 376
-	, `WRITE__CMD, 'h70020020, 'h2e06fcf57095831d // 377
-	, `WRITE__CMD, 'h70020028, 'h8a4d71bf7cb16dc6 // 378
-	, `WRITE__CMD, 'h70020030, 'hf447cf06d3d3d227 // 379
-	, `WRITE__CMD, 'h70020038, 'h06ea8533c0d5dcc0 // 380
-	, `WRITE__CMD, 'h70020040, 'hbd7186091acbd22e // 381
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 374
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 375
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 376
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 377
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 378
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 379
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 380
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 381
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 382
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 383
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 384
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 385
-	, `WRITE__CMD, 'h70020008, 'hff3819167ea324ff // 386
-	, `WRITE__CMD, 'h70020010, 'h9e42ba0e73bc2924 // 387
-	, `WRITE__CMD, 'h70020018, 'h0256e7fa1be4942b // 388
-	, `WRITE__CMD, 'h70020020, 'hc8e7e1d0ce7b9935 // 389
-	, `WRITE__CMD, 'h70020028, 'h8727dac8ab4f1508 // 390
-	, `WRITE__CMD, 'h70020030, 'hed80000000000000 // 391
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 386
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 387
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 388
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 389
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 390
+	, `WRITE__CMD, 'h70020030, 'hff80000000000000 // 391
 	, `WRITE__CMD, 'h70020038, 'h0000000000000000 // 392
 	, `WRITE__CMD, 'h70020040, 'h0000000000000948 // 393
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 394
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 395
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 396
-	, `RDnCMP_CMD, 'h70020050, 'h8bedb3de9b1d0dc0 // 397
-	, `RDnCMP_CMD, 'h70020058, 'hdf1223e504e8d008 // 398
-	, `RDnCMP_CMD, 'h70020060, 'h1121c0e74ae763a9 // 399
-	, `RDnCMP_CMD, 'h70020068, 'hf4d7da7741271f25 // 400
+	, `RDnCMP_CMD, 'h70020050, 'h448576f9e442936e // 397
+	, `RDnCMP_CMD, 'h70020058, 'h8712d9092e156fa1 // 398
+	, `RDnCMP_CMD, 'h70020060, 'h26258f4ba6b2f7b2 // 399
+	, `RDnCMP_CMD, 'h70020068, 'h82d12d432174d58c // 400
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 401
-	, `WRITE__CMD, 'h70020008, 'he929b5ea49ce2bc7 // 402
-	, `WRITE__CMD, 'h70020010, 'h8feb270e3b167cda // 403
-	, `WRITE__CMD, 'h70020018, 'h31f0d5cc7f441729 // 404
-	, `WRITE__CMD, 'h70020020, 'hf82b7f2b1b5886d1 // 405
-	, `WRITE__CMD, 'h70020028, 'h1e2ff1d35a818523 // 406
-	, `WRITE__CMD, 'h70020030, 'h19f6c30302426324 // 407
-	, `WRITE__CMD, 'h70020038, 'h38f51dd9804903e9 // 408
-	, `WRITE__CMD, 'h70020040, 'h225502341b3b05e5 // 409
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 402
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 403
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 404
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 405
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 406
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 407
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 408
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 409
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 410
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 411
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 412
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 413
-	, `WRITE__CMD, 'h70020008, 'hd61886e6824a57e0 // 414
-	, `WRITE__CMD, 'h70020010, 'h7a50ac0c51078dc0 // 415
-	, `WRITE__CMD, 'h70020018, 'h479d58c1dc0a3235 // 416
-	, `WRITE__CMD, 'h70020020, 'hc05720184a90b4db // 417
-	, `WRITE__CMD, 'h70020028, 'h5e2405f5d5b0c6c5 // 418
-	, `WRITE__CMD, 'h70020030, 'hb5450b05084caf39 // 419
-	, `WRITE__CMD, 'h70020038, 'hf115f41575c6a724 // 420
-	, `WRITE__CMD, 'h70020040, 'hda65a8d0881f0fda // 421
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 414
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 415
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 416
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 417
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 418
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 419
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 420
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 421
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 422
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 423
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 424
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 425
-	, `WRITE__CMD, 'h70020008, 'h93adcc0a8561fff8 // 426
-	, `WRITE__CMD, 'h70020010, 'h7a8377c379188215 // 427
-	, `WRITE__CMD, 'h70020018, 'hc50fd72e8b28e9ba // 428
-	, `WRITE__CMD, 'h70020020, 'h5ebc35c3744f8b22 // 429
-	, `WRITE__CMD, 'h70020028, 'h2f2d5dbba4c46c37 // 430
-	, `WRITE__CMD, 'h70020030, 'hc1015df79512701b // 431
-	, `WRITE__CMD, 'h70020038, 'h265e72c20c8d383c // 432
-	, `WRITE__CMD, 'h70020040, 'hea5a5ecc26bdaa14 // 433
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 426
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 427
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 428
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 429
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 430
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 431
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 432
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 433
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 434
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 435
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 436
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 437
-	, `WRITE__CMD, 'h70020008, 'h2b177a0f510469ef // 438
-	, `WRITE__CMD, 'h70020010, 'h4e3507fc37715e34 // 439
-	, `WRITE__CMD, 'h70020018, 'h5e5718bd72dbf321 // 440
-	, `WRITE__CMD, 'h70020020, 'h31e7912d00cc7abb // 441
-	, `WRITE__CMD, 'h70020028, 'h8ff799080cc20001 // 442
-	, `WRITE__CMD, 'h70020030, 'hae9e1fbf1f74631c // 443
-	, `WRITE__CMD, 'h70020038, 'ha2330706df4023c9 // 444
-	, `WRITE__CMD, 'h70020040, 'h3f1887dfda077733 // 445
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 438
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 439
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 440
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 441
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 442
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 443
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 444
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 445
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 446
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 447
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 448
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 449
-	, `WRITE__CMD, 'h70020008, 'h162f74cae88eac0a // 450
-	, `WRITE__CMD, 'h70020010, 'hd1ab88d05298b7fb // 451
-	, `WRITE__CMD, 'h70020018, 'hfeaf9c10da57f7f9 // 452
-	, `WRITE__CMD, 'h70020020, 'h628ae0e63b883ffe // 453
-	, `WRITE__CMD, 'h70020028, 'he0d2bace0b6b6ace // 454
-	, `WRITE__CMD, 'h70020030, 'h99fe3f15441beafe // 455
-	, `WRITE__CMD, 'h70020038, 'he291fdf11ac9f804 // 456
-	, `WRITE__CMD, 'h70020040, 'h58ddd91baed5712e // 457
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 450
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 451
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 452
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 453
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 454
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 455
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 456
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 457
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 458
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 459
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 460
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 461
-	, `WRITE__CMD, 'h70020008, 'h1cd1b42b8607c4d4 // 462
-	, `WRITE__CMD, 'h70020010, 'ha9c4800000000000 // 463
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 462
+	, `WRITE__CMD, 'h70020010, 'hffff800000000000 // 463
 	, `WRITE__CMD, 'h70020018, 'h0000000000000000 // 464
 	, `WRITE__CMD, 'h70020020, 'h0000000000000000 // 465
 	, `WRITE__CMD, 'h70020028, 'h0000000000000000 // 466
@@ -496,161 +496,161 @@ longint sha256_playback[] = {
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 470
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 471
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 472
-	, `RDnCMP_CMD, 'h70020050, 'h90eab4bb54c58d1a // 473
-	, `RDnCMP_CMD, 'h70020058, 'hca285ac9f6ba2b68 // 474
-	, `RDnCMP_CMD, 'h70020060, 'h79d82c1a53acc096 // 475
-	, `RDnCMP_CMD, 'h70020068, 'hafd9db8fa30c42be // 476
+	, `RDnCMP_CMD, 'h70020050, 'h01112e20e7c50847 // 473
+	, `RDnCMP_CMD, 'h70020058, 'hfd989afd0dcf66d5 // 474
+	, `RDnCMP_CMD, 'h70020060, 'h906bb8e455c451fc // 475
+	, `RDnCMP_CMD, 'h70020068, 'ha0f27bad453c589d // 476
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 477
-	, `WRITE__CMD, 'h70020008, 'h4dd1e5c3f98546d4 // 478
-	, `WRITE__CMD, 'h70020010, 'h2ddaf9fe2052fc0a // 479
-	, `WRITE__CMD, 'h70020018, 'h8ed873100ec0f0e4 // 480
-	, `WRITE__CMD, 'h70020020, 'h75d0b7d03380f534 // 481
-	, `WRITE__CMD, 'h70020028, 'h00c77a003492eb0f // 482
-	, `WRITE__CMD, 'h70020030, 'hff5a2705888801e9 // 483
-	, `WRITE__CMD, 'h70020038, 'h986a51e9fe71f4bf // 484
-	, `WRITE__CMD, 'h70020040, 'h093f74de1c096cc2 // 485
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 478
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 479
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 480
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 481
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 482
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 483
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 484
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 485
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 486
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 487
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 488
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 489
-	, `WRITE__CMD, 'h70020008, 'h6db43b123e580c29 // 490
-	, `WRITE__CMD, 'h70020010, 'h9977e51ff3c134f6 // 491
-	, `WRITE__CMD, 'h70020018, 'hcf2419e771d7452f // 492
-	, `WRITE__CMD, 'h70020020, 'h42026dd3b4e1bec8 // 493
-	, `WRITE__CMD, 'h70020028, 'ha65a92f1f8dd840c // 494
-	, `WRITE__CMD, 'h70020030, 'h78986c32cffdd30b // 495
-	, `WRITE__CMD, 'h70020038, 'h8d4401eb55203fd5 // 496
-	, `WRITE__CMD, 'h70020040, 'hffa4331b03ff36c0 // 497
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 490
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 491
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 492
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 493
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 494
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 495
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 496
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 497
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 498
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 499
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 500
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 501
-	, `WRITE__CMD, 'h70020008, 'h36b130e339e388cb // 502
-	, `WRITE__CMD, 'h70020010, 'h0de486d9151f0533 // 503
-	, `WRITE__CMD, 'h70020018, 'h637ce2e3626e0ec0 // 504
-	, `WRITE__CMD, 'h70020020, 'h0bab51020f0b6de6 // 505
-	, `WRITE__CMD, 'h70020028, 'h34743aec6b642f03 // 506
-	, `WRITE__CMD, 'h70020030, 'hf5186a368395caf0 // 507
-	, `WRITE__CMD, 'h70020038, 'h450a28e8eaad1a37 // 508
-	, `WRITE__CMD, 'h70020040, 'h62b7d10072d10319 // 509
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 502
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 503
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 504
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 505
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 506
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 507
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 508
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 509
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 510
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 511
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 512
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 513
-	, `WRITE__CMD, 'h70020008, 'h074424e8436969ef // 514
-	, `WRITE__CMD, 'h70020010, 'h7d5061c671d5a9e8 // 515
-	, `WRITE__CMD, 'h70020018, 'h3e7ccfd09d115624 // 516
-	, `WRITE__CMD, 'h70020020, 'hb9c035223b1ec136 // 517
-	, `WRITE__CMD, 'h70020028, 'h1df045095be2982b // 518
-	, `WRITE__CMD, 'h70020030, 'h8eedd3c13b070809 // 519
-	, `WRITE__CMD, 'h70020038, 'hc2d3fd115e447e15 // 520
-	, `WRITE__CMD, 'h70020040, 'habc0efdc5d689c1c // 521
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 514
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 515
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 516
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 517
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 518
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 519
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 520
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 521
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 522
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 523
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 524
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 525
-	, `WRITE__CMD, 'h70020008, 'h982a35f966c92ce1 // 526
-	, `WRITE__CMD, 'h70020010, 'h11a31dcd09b080f8 // 527
-	, `WRITE__CMD, 'h70020018, 'h7b4e5bf21b7fd50f // 528
-	, `WRITE__CMD, 'h70020020, 'he853ccc2ef4cf3fe // 529
-	, `WRITE__CMD, 'h70020028, 'h74e499373387ee33 // 530
-	, `WRITE__CMD, 'h70020030, 'h7daeb9cebc630ef7 // 531
-	, `WRITE__CMD, 'h70020038, 'h56217a335e7be612 // 532
-	, `WRITE__CMD, 'h70020040, 'hd9758af2e38415cb // 533
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 526
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 527
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 528
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 529
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 530
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 531
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 532
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 533
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 534
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 535
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 536
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 537
-	, `WRITE__CMD, 'h70020008, 'h5909cedfc9cd26f4 // 538
-	, `WRITE__CMD, 'h70020010, 'h52e6fe013e4bb9ef // 539
-	, `WRITE__CMD, 'h70020018, 'h27e0f41cf06c9822 // 540
-	, `WRITE__CMD, 'h70020020, 'h86b557e49b0d7f17 // 541
-	, `WRITE__CMD, 'h70020028, 'hb1f8280fb365b72f // 542
-	, `WRITE__CMD, 'h70020030, 'hc7f1538000000000 // 543
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 538
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 539
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 540
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 541
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 542
+	, `WRITE__CMD, 'h70020030, 'hffffff8000000000 // 543
 	, `WRITE__CMD, 'h70020038, 'h0000000000000000 // 544
 	, `WRITE__CMD, 'h70020040, 'h0000000000000b58 // 545
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 546
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 547
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 548
-	, `RDnCMP_CMD, 'h70020050, 'h684f687a87daf47d // 549
-	, `RDnCMP_CMD, 'h70020058, 'h236e24731088a098 // 550
-	, `RDnCMP_CMD, 'h70020060, 'he7c3f3d2801615b0 // 551
-	, `RDnCMP_CMD, 'h70020068, 'h08944ea74a4a37fb // 552
+	, `RDnCMP_CMD, 'h70020050, 'h7812782e0685104e // 549
+	, `RDnCMP_CMD, 'h70020058, 'he754a9f22e8c5e5f // 550
+	, `RDnCMP_CMD, 'h70020060, 'h3a5558df3c31a137 // 551
+	, `RDnCMP_CMD, 'h70020068, 'h94de5b1e97e150ca // 552
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 553
-	, `WRITE__CMD, 'h70020008, 'h2c884fc791759fde // 554
-	, `WRITE__CMD, 'h70020010, 'h535f9b162abdfddb // 555
-	, `WRITE__CMD, 'h70020018, 'heab5d9da7ca766c2 // 556
-	, `WRITE__CMD, 'h70020020, 'h05ac881bda53dee0 // 557
-	, `WRITE__CMD, 'h70020028, 'h6929f70285aaabcb // 558
-	, `WRITE__CMD, 'h70020030, 'hb40750f73fd98e0c // 559
-	, `WRITE__CMD, 'h70020038, 'h3019880cc5ccb713 // 560
-	, `WRITE__CMD, 'h70020040, 'h96933e1f502f8909 // 561
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 554
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 555
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 556
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 557
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 558
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 559
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 560
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 561
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 562
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 563
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 564
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 565
-	, `WRITE__CMD, 'h70020008, 'h3ba492336dc5b720 // 566
-	, `WRITE__CMD, 'h70020010, 'h95ecd5dcedc76e16 // 567
-	, `WRITE__CMD, 'h70020018, 'hee42e6033099f8e7 // 568
-	, `WRITE__CMD, 'h70020020, 'hea168fc51eb7f310 // 569
-	, `WRITE__CMD, 'h70020028, 'h3ad3cf13151b68d1 // 570
-	, `WRITE__CMD, 'h70020030, 'h97b03c0ed105c826 // 571
-	, `WRITE__CMD, 'h70020038, 'h5f5d332f189a7537 // 572
-	, `WRITE__CMD, 'h70020040, 'h9a6d0df949af2f1c // 573
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 566
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 567
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 568
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 569
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 570
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 571
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 572
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 573
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 574
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 575
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 576
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 577
-	, `WRITE__CMD, 'h70020008, 'hcc178fe4075b9ae2 // 578
-	, `WRITE__CMD, 'h70020010, 'h1a3a4410fc0cfad1 // 579
-	, `WRITE__CMD, 'h70020018, 'h7775680db97dcfd4 // 580
-	, `WRITE__CMD, 'h70020020, 'h373f6de12fefa4c7 // 581
-	, `WRITE__CMD, 'h70020028, 'hbc34fac50a98aff6 // 582
-	, `WRITE__CMD, 'h70020030, 'h5da0efe0b01ad1c0 // 583
-	, `WRITE__CMD, 'h70020038, 'hbc3399e59f37c4e3 // 584
-	, `WRITE__CMD, 'h70020040, 'hb914a6f41ec72fc1 // 585
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 578
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 579
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 580
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 581
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 582
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 583
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 584
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 585
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 586
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 587
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 588
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 589
-	, `WRITE__CMD, 'h70020008, 'hb94d1c219ddf15e9 // 590
-	, `WRITE__CMD, 'h70020010, 'h717ba1e44d300dee // 591
-	, `WRITE__CMD, 'h70020018, 'h12d508ca0e569af8 // 592
-	, `WRITE__CMD, 'h70020020, 'h6cb79ad6d8f05120 // 593
-	, `WRITE__CMD, 'h70020028, 'hc4c0d6dbb6d0b723 // 594
-	, `WRITE__CMD, 'h70020030, 'hc7da251264dc0111 // 595
-	, `WRITE__CMD, 'h70020038, 'h690d16ffce005dd0 // 596
-	, `WRITE__CMD, 'h70020040, 'h65ddbcd1c4fb47fc // 597
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 590
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 591
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 592
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 593
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 594
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 595
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 596
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 597
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 598
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 599
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 600
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 601
-	, `WRITE__CMD, 'h70020008, 'h81f54bea9627ebc9 // 602
-	, `WRITE__CMD, 'h70020010, 'h9e5d9f1cebe5f726 // 603
-	, `WRITE__CMD, 'h70020018, 'h2ca484f23759da01 // 604
-	, `WRITE__CMD, 'h70020020, 'hf3a4ae03a905e3f0 // 605
-	, `WRITE__CMD, 'h70020028, 'ha3972ae870ad5818 // 606
-	, `WRITE__CMD, 'h70020030, 'hedad19da0e6444d1 // 607
-	, `WRITE__CMD, 'h70020038, 'h7a4fe0bf2f07dc09 // 608
-	, `WRITE__CMD, 'h70020040, 'h46fe6038a72c1cda // 609
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 602
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 603
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 604
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 605
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 606
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 607
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 608
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 609
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 610
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 611
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 612
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 613
-	, `WRITE__CMD, 'h70020008, 'hf7c5b927fe9b59bf // 614
-	, `WRITE__CMD, 'h70020010, 'h25b4ced297f2f32e // 615
-	, `WRITE__CMD, 'h70020018, 'h03149e018ecc311f // 616
-	, `WRITE__CMD, 'h70020020, 'hc5213c20072196cb // 617
-	, `WRITE__CMD, 'h70020028, 'h32b24f1a30d193da // 618
-	, `WRITE__CMD, 'h70020030, 'h2f4b63c75b98dfec // 619
-	, `WRITE__CMD, 'h70020038, 'h273bfb253c4ff9d7 // 620
-	, `WRITE__CMD, 'h70020040, 'h0d80a5db3546aedc // 621
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 614
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 615
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 616
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 617
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 618
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 619
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 620
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 621
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 622
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 623
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 624
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 625
-	, `WRITE__CMD, 'h70020008, 'h13581ae2126397c6 // 626
-	, `WRITE__CMD, 'h70020010, 'hfba2833c80000000 // 627
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 626
+	, `WRITE__CMD, 'h70020010, 'hffffff7f80000000 // 627
 	, `WRITE__CMD, 'h70020018, 'h0000000000000000 // 628
 	, `WRITE__CMD, 'h70020020, 'h0000000000000000 // 629
 	, `WRITE__CMD, 'h70020028, 'h0000000000000000 // 630
@@ -660,185 +660,185 @@ longint sha256_playback[] = {
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 634
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 635
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 636
-	, `RDnCMP_CMD, 'h70020050, 'hcc124f023147c750 // 637
-	, `RDnCMP_CMD, 'h70020058, 'h1d0f06f5074926c3 // 638
-	, `RDnCMP_CMD, 'h70020060, 'h38fe93db0062a959 // 639
-	, `RDnCMP_CMD, 'h70020068, 'h94e4cf05e1b33835 // 640
+	, `RDnCMP_CMD, 'h70020050, 'haa7dbffe4c584b57 // 637
+	, `RDnCMP_CMD, 'h70020058, 'h340651189ff97c04 // 638
+	, `RDnCMP_CMD, 'h70020060, 'h7bb89bd4a9d1b381 // 639
+	, `RDnCMP_CMD, 'h70020068, 'h9fce9139038b8c97 // 640
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 641
-	, `WRITE__CMD, 'h70020008, 'hae2e4e05824b2602 // 642
-	, `WRITE__CMD, 'h70020010, 'h48110af419de82d7 // 643
-	, `WRITE__CMD, 'h70020018, 'hd198661e076ebbf4 // 644
-	, `WRITE__CMD, 'h70020020, 'hcff1b1fa50772cd8 // 645
-	, `WRITE__CMD, 'h70020028, 'h8493a70974cd2216 // 646
-	, `WRITE__CMD, 'h70020030, 'he77c840d72e5edf9 // 647
-	, `WRITE__CMD, 'h70020038, 'h3c4295f1c6623630 // 648
-	, `WRITE__CMD, 'h70020040, 'h1f441d00fb39922f // 649
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 642
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 643
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 644
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 645
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 646
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 647
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 648
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 649
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 650
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 651
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 652
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 653
-	, `WRITE__CMD, 'h70020008, 'hc86575164d4485e3 // 654
-	, `WRITE__CMD, 'h70020010, 'h8ef1cb1666c08222 // 655
-	, `WRITE__CMD, 'h70020018, 'h50fc86edf9fde3f0 // 656
-	, `WRITE__CMD, 'h70020020, 'h540c101f2e2937c4 // 657
-	, `WRITE__CMD, 'h70020028, 'h1fd93f3e84d04fca // 658
-	, `WRITE__CMD, 'h70020030, 'h2583e8c039796223 // 659
-	, `WRITE__CMD, 'h70020038, 'h762f3a364be38d26 // 660
-	, `WRITE__CMD, 'h70020040, 'h30ac5fdd4da4160c // 661
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 654
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 655
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 656
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 657
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 658
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 659
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 660
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 661
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 662
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 663
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 664
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 665
-	, `WRITE__CMD, 'h70020008, 'h51cd80026e98ec1d // 666
-	, `WRITE__CMD, 'h70020010, 'h06824c18a5956be3 // 667
-	, `WRITE__CMD, 'h70020018, 'h9001302c07492911 // 668
-	, `WRITE__CMD, 'h70020020, 'hb070e308e7a7ff1e // 669
-	, `WRITE__CMD, 'h70020028, 'h32044f3110c16a33 // 670
-	, `WRITE__CMD, 'h70020030, 'h2e4c9cbf575f72f1 // 671
-	, `WRITE__CMD, 'h70020038, 'ha87819fe8b2b08c6 // 672
-	, `WRITE__CMD, 'h70020040, 'hbf79bc3f140ce324 // 673
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 666
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 667
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 668
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 669
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 670
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 671
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 672
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 673
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 674
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 675
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 676
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 677
-	, `WRITE__CMD, 'h70020008, 'h020ee5f826a96edf // 678
-	, `WRITE__CMD, 'h70020010, 'hbf9c3a3421880cd9 // 679
-	, `WRITE__CMD, 'h70020018, 'h8d752a137eba3d04 // 680
-	, `WRITE__CMD, 'h70020020, 'h2123a2d40c0490f9 // 681
-	, `WRITE__CMD, 'h70020028, 'hb8719dcb1cc1a7fd // 682
-	, `WRITE__CMD, 'h70020030, 'hafd3b703ba305634 // 683
-	, `WRITE__CMD, 'h70020038, 'h7e85202977be65fc // 684
-	, `WRITE__CMD, 'h70020040, 'haa2be7d5726664e1 // 685
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 678
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 679
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 680
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 681
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 682
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 683
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 684
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 685
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 686
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 687
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 688
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 689
-	, `WRITE__CMD, 'h70020008, 'h172d83c33d23952c // 690
-	, `WRITE__CMD, 'h70020010, 'h3f25620ee18f5fbd // 691
-	, `WRITE__CMD, 'h70020018, 'h08a13c17325e5222 // 692
-	, `WRITE__CMD, 'h70020020, 'hfdf061cad682e11a // 693
-	, `WRITE__CMD, 'h70020028, 'ha3cd3fc11c9ed9ee // 694
-	, `WRITE__CMD, 'h70020030, 'he030dedcde01342d // 695
-	, `WRITE__CMD, 'h70020038, 'h18be9e125553781b // 696
-	, `WRITE__CMD, 'h70020040, 'h72899bd633aa033b // 697
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 690
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 691
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 692
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 693
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 694
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 695
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 696
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 697
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 698
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 699
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 700
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 701
-	, `WRITE__CMD, 'h70020008, 'hec453cc9a77636cd // 702
-	, `WRITE__CMD, 'h70020010, 'hf808c1c1552f9c1e // 703
-	, `WRITE__CMD, 'h70020018, 'h127233eddc3cb4e8 // 704
-	, `WRITE__CMD, 'h70020020, 'h12d591fa8d9d2131 // 705
-	, `WRITE__CMD, 'h70020028, 'ha33eadc236bff719 // 706
-	, `WRITE__CMD, 'h70020030, 'hea05021336aaabbb // 707
-	, `WRITE__CMD, 'h70020038, 'h01c015077e6f590f // 708
-	, `WRITE__CMD, 'h70020040, 'h7e4e08e2bc9c7afd // 709
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 702
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 703
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 704
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 705
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 706
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 707
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 708
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 709
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 710
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 711
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 712
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 713
-	, `WRITE__CMD, 'h70020008, 'hcd01cac3509d5bd8 // 714
-	, `WRITE__CMD, 'h70020010, 'hcacde5c3cc5bb0d1 // 715
-	, `WRITE__CMD, 'h70020018, 'h3b3b1fc6317d233c // 716
-	, `WRITE__CMD, 'h70020020, 'h76abf5c8558657cc // 717
-	, `WRITE__CMD, 'h70020028, 'he191bc0cf133a939 // 718
-	, `WRITE__CMD, 'h70020030, 'h0fbddb187f800000 // 719
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 714
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 715
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 716
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 717
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 718
+	, `WRITE__CMD, 'h70020030, 'hffffff7fff800000 // 719
 	, `WRITE__CMD, 'h70020038, 'h0000000000000000 // 720
 	, `WRITE__CMD, 'h70020040, 'h0000000000000d68 // 721
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 722
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 723
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 724
-	, `RDnCMP_CMD, 'h70020050, 'hd7989bd1864cb7fc // 725
-	, `RDnCMP_CMD, 'h70020058, 'h514faae5d3f0616f // 726
-	, `RDnCMP_CMD, 'h70020060, 'hc29bb0f9012a8a38 // 727
-	, `RDnCMP_CMD, 'h70020068, 'h317ddb279ddde652 // 728
+	, `RDnCMP_CMD, 'h70020050, 'h0b8c4027cf8a5fbf // 725
+	, `RDnCMP_CMD, 'h70020058, 'he5a3d882fb2f180a // 726
+	, `RDnCMP_CMD, 'h70020060, 'h466d0bceedd181a0 // 727
+	, `RDnCMP_CMD, 'h70020068, 'h74f63a40d5b6952a // 728
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 729
-	, `WRITE__CMD, 'h70020008, 'h4ea69028d3d12004 // 730
-	, `WRITE__CMD, 'h70020010, 'h71979e09ca0a00f8 // 731
-	, `WRITE__CMD, 'h70020018, 'h8cbb24311844720e // 732
-	, `WRITE__CMD, 'h70020020, 'h2f27081d85fa86d5 // 733
-	, `WRITE__CMD, 'h70020028, 'h39c691077d0932e9 // 734
-	, `WRITE__CMD, 'h70020030, 'hba5f1d2320ade7d0 // 735
-	, `WRITE__CMD, 'h70020038, 'hff57bff5d6c4b3eb // 736
-	, `WRITE__CMD, 'h70020040, 'h23662acf1ce2e2fc // 737
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 730
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 731
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 732
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 733
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 734
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 735
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 736
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 737
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 738
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 739
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 740
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 741
-	, `WRITE__CMD, 'h70020008, 'h8d41fb012e95afc0 // 742
-	, `WRITE__CMD, 'h70020010, 'hec27d434265306f1 // 743
-	, `WRITE__CMD, 'h70020018, 'haaaccae845913501 // 744
-	, `WRITE__CMD, 'h70020020, 'hd23bcd240441c5e7 // 745
-	, `WRITE__CMD, 'h70020028, 'h0a8620f4988ecce1 // 746
-	, `WRITE__CMD, 'h70020030, 'hea822dfb1b5ac2db // 747
-	, `WRITE__CMD, 'h70020038, 'h315cee1c7d0e0cd6 // 748
-	, `WRITE__CMD, 'h70020040, 'h850e920c4f4372e9 // 749
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 742
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 743
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 744
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 745
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 746
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 747
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 748
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 749
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 750
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 751
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 752
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 753
-	, `WRITE__CMD, 'h70020008, 'h67e473f19a8caa1c // 754
-	, `WRITE__CMD, 'h70020010, 'hc034b8e316b6d41b // 755
-	, `WRITE__CMD, 'h70020018, 'hc96fbce2aa4a8c2a // 756
-	, `WRITE__CMD, 'h70020020, 'h233465ec2b1f0400 // 757
-	, `WRITE__CMD, 'h70020028, 'h8a65632a07b749cd // 758
-	, `WRITE__CMD, 'h70020030, 'hb47ec8ef28473dcf // 759
-	, `WRITE__CMD, 'h70020038, 'h0340aee4ee358ad5 // 760
-	, `WRITE__CMD, 'h70020040, 'he51101e98a71ef11 // 761
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 754
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 755
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 756
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 757
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 758
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 759
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 760
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 761
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 762
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 763
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 764
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 765
-	, `WRITE__CMD, 'h70020008, 'h014754fd1fca6a07 // 766
-	, `WRITE__CMD, 'h70020010, 'hbd1e483224aa0e2e // 767
-	, `WRITE__CMD, 'h70020018, 'h74265620ee428ff5 // 768
-	, `WRITE__CMD, 'h70020020, 'h10845f0175ef880a // 769
-	, `WRITE__CMD, 'h70020028, 'h5f268a1359b88bff // 770
-	, `WRITE__CMD, 'h70020030, 'h8bbd9ffbb2569ffe // 771
-	, `WRITE__CMD, 'h70020038, 'he68bdedfa4463f1d // 772
-	, `WRITE__CMD, 'h70020040, 'h31796bef72fe3acb // 773
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 766
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 767
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 768
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 769
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 770
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 771
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 772
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 773
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 774
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 775
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 776
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 777
-	, `WRITE__CMD, 'h70020008, 'h71f401facae6cc37 // 778
-	, `WRITE__CMD, 'h70020010, 'h89fd23c6ca4e7d3d // 779
-	, `WRITE__CMD, 'h70020018, 'hea1d0e004af60c07 // 780
-	, `WRITE__CMD, 'h70020020, 'h385e4e16a34a2a24 // 781
-	, `WRITE__CMD, 'h70020028, 'hd302a2e393c6c4c2 // 782
-	, `WRITE__CMD, 'h70020030, 'h69eef0ee0598dc08 // 783
-	, `WRITE__CMD, 'h70020038, 'h580c0f14340babe2 // 784
-	, `WRITE__CMD, 'h70020040, 'h56aff7dafc4a50d6 // 785
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 778
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 779
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 780
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 781
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 782
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 783
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 784
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 785
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 786
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 787
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 788
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 789
-	, `WRITE__CMD, 'h70020008, 'hdb1d1dcfd0a16234 // 790
-	, `WRITE__CMD, 'h70020010, 'hdbd81fd3b91c3df3 // 791
-	, `WRITE__CMD, 'h70020018, 'h0a3d6de10cac0ac6 // 792
-	, `WRITE__CMD, 'h70020020, 'hd2fd80176d8ba6fc // 793
-	, `WRITE__CMD, 'h70020028, 'h73519e103774722d // 794
-	, `WRITE__CMD, 'h70020030, 'h2bfa791143d40cf8 // 795
-	, `WRITE__CMD, 'h70020038, 'h36223e1c44560709 // 796
-	, `WRITE__CMD, 'h70020040, 'hc895a50f440ab0f8 // 797
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 790
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 791
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 792
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 793
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 794
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 795
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 796
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 797
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 798
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 799
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 800
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 801
-	, `WRITE__CMD, 'h70020008, 'hb60912d3fa3a67c7 // 802
-	, `WRITE__CMD, 'h70020010, 'hc69e2bd30f3f291f // 803
-	, `WRITE__CMD, 'h70020018, 'hc8d38bd3bb53d4fb // 804
-	, `WRITE__CMD, 'h70020020, 'hcf7b4a3affeab9e3 // 805
-	, `WRITE__CMD, 'h70020028, 'h4ac79fdeabe1ccd2 // 806
-	, `WRITE__CMD, 'h70020030, 'h6fc85dd7a5a6c6cd // 807
-	, `WRITE__CMD, 'h70020038, 'hae608af549227ee8 // 808
-	, `WRITE__CMD, 'h70020040, 'ha508d52008998bea // 809
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 802
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 803
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 804
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 805
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 806
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 807
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 808
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 809
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 810
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 811
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 812
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 813
-	, `WRITE__CMD, 'h70020008, 'h5ca48e291b059418 // 814
-	, `WRITE__CMD, 'h70020010, 'hc93aa10fcdf18000 // 815
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 814
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffff8000 // 815
 	, `WRITE__CMD, 'h70020018, 'h0000000000000000 // 816
 	, `WRITE__CMD, 'h70020020, 'h0000000000000000 // 817
 	, `WRITE__CMD, 'h70020028, 'h0000000000000000 // 818
@@ -848,209 +848,209 @@ longint sha256_playback[] = {
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 822
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 823
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 824
-	, `RDnCMP_CMD, 'h70020050, 'haabc9180549d5f85 // 825
-	, `RDnCMP_CMD, 'h70020058, 'h84e68c28eed14bef // 826
-	, `RDnCMP_CMD, 'h70020060, 'h1eb4b19bcf756146 // 827
-	, `RDnCMP_CMD, 'h70020068, 'hf67052eb5e60c9b4 // 828
+	, `RDnCMP_CMD, 'h70020050, 'hb54af1e28f6999e3 // 825
+	, `RDnCMP_CMD, 'h70020058, 'h69836ec3a599647e // 826
+	, `RDnCMP_CMD, 'h70020060, 'h14ed557d7df58f63 // 827
+	, `RDnCMP_CMD, 'h70020068, 'h2d59a184b7379fc1 // 828
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 829
-	, `WRITE__CMD, 'h70020008, 'h72229feaaf3e620d // 830
-	, `WRITE__CMD, 'h70020010, 'hf8031cc16263c212 // 831
-	, `WRITE__CMD, 'h70020018, 'he0ffc3dcb8a296e2 // 832
-	, `WRITE__CMD, 'h70020020, 'hf441d6d2442d50bf // 833
-	, `WRITE__CMD, 'h70020028, 'h314239e00f2fcaed // 834
-	, `WRITE__CMD, 'h70020030, 'h0d9bb1efbd7845f3 // 835
-	, `WRITE__CMD, 'h70020038, 'h5293ab098cf93908 // 836
-	, `WRITE__CMD, 'h70020040, 'hd2a9d7cc713160ee // 837
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 830
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 831
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 832
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 833
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 834
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 835
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 836
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 837
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 838
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 839
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 840
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 841
-	, `WRITE__CMD, 'h70020008, 'ha8e83cedb4a213e1 // 842
-	, `WRITE__CMD, 'h70020010, 'h7e4da6c665e5ff38 // 843
-	, `WRITE__CMD, 'h70020018, 'he20b9ae461dbf8f3 // 844
-	, `WRITE__CMD, 'h70020020, 'hf61d502a3e0bf419 // 845
-	, `WRITE__CMD, 'h70020028, 'h5d5ec6d8aa304de5 // 846
-	, `WRITE__CMD, 'h70020030, 'h21480de72eca95f2 // 847
-	, `WRITE__CMD, 'h70020038, 'h6e0c582302568208 // 848
-	, `WRITE__CMD, 'h70020040, 'h26f82919cb12e001 // 849
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 842
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 843
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 844
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 845
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 846
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 847
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 848
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 849
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 850
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 851
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 852
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 853
-	, `WRITE__CMD, 'h70020008, 'ha7fe293bf0a2aa04 // 854
-	, `WRITE__CMD, 'h70020010, 'h6fb32b0c6e396105 // 855
-	, `WRITE__CMD, 'h70020018, 'hde4cae084b6d02fb // 856
-	, `WRITE__CMD, 'h70020020, 'h0a82d01ff3922a06 // 857
-	, `WRITE__CMD, 'h70020028, 'h52fbe4d6c0c6aad3 // 858
-	, `WRITE__CMD, 'h70020030, 'h712c8cc775e42109 // 859
-	, `WRITE__CMD, 'h70020038, 'h4effe61e977ab807 // 860
-	, `WRITE__CMD, 'h70020040, 'h38d245eb3fd793d3 // 861
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 854
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 855
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 856
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 857
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 858
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 859
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 860
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 861
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 862
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 863
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 864
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 865
-	, `WRITE__CMD, 'h70020008, 'h40a7d9e24eaa992f // 866
-	, `WRITE__CMD, 'h70020010, 'h30181a11814489d8 // 867
-	, `WRITE__CMD, 'h70020018, 'h6c2e2ee4d87d1501 // 868
-	, `WRITE__CMD, 'h70020020, 'hc0559e048d559dfc // 869
-	, `WRITE__CMD, 'h70020028, 'h46b9e8c7f8fb4034 // 870
-	, `WRITE__CMD, 'h70020030, 'h0195890a946f790d // 871
-	, `WRITE__CMD, 'h70020038, 'h0580f8d560590525 // 872
-	, `WRITE__CMD, 'h70020040, 'ha90bd2bcf0a416db // 873
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 866
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 867
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 868
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 869
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 870
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 871
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 872
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 873
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 874
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 875
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 876
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 877
-	, `WRITE__CMD, 'h70020008, 'h2f94f823bee7dfc5 // 878
-	, `WRITE__CMD, 'h70020010, 'h010e74179b194ff5 // 879
-	, `WRITE__CMD, 'h70020018, 'h557a2fbf80ca8dca // 880
-	, `WRITE__CMD, 'h70020020, 'h44371ce7d1128bf2 // 881
-	, `WRITE__CMD, 'h70020028, 'h6c53b3bea2f1a0d8 // 882
-	, `WRITE__CMD, 'h70020030, 'hfe1f8cd45f8ff6c2 // 883
-	, `WRITE__CMD, 'h70020038, 'ha6e8351ad66b29dc // 884
-	, `WRITE__CMD, 'h70020040, 'h3e98860737062f2d // 885
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 878
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 879
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 880
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 881
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 882
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 883
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 884
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 885
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 886
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 887
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 888
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 889
-	, `WRITE__CMD, 'h70020008, 'hc88707e76efc1d36 // 890
-	, `WRITE__CMD, 'h70020010, 'haa8153e1468110d2 // 891
-	, `WRITE__CMD, 'h70020018, 'heec25917d7357d17 // 892
-	, `WRITE__CMD, 'h70020020, 'h3282ad338e26bbea // 893
-	, `WRITE__CMD, 'h70020028, 'h7c1a0d308c8af717 // 894
-	, `WRITE__CMD, 'h70020030, 'h02c037ce48d857c3 // 895
-	, `WRITE__CMD, 'h70020038, 'h5dbf18c2413e8d39 // 896
-	, `WRITE__CMD, 'h70020040, 'h963fd0007c163804 // 897
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 890
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 891
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 892
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 893
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 894
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 895
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 896
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 897
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 898
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 899
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 900
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 901
-	, `WRITE__CMD, 'h70020008, 'hfa0d0a2d7e11142c // 902
-	, `WRITE__CMD, 'h70020010, 'hd0f640fda402bdcd // 903
-	, `WRITE__CMD, 'h70020018, 'h1108b7db8b305cc6 // 904
-	, `WRITE__CMD, 'h70020020, 'h3b4557220b9bc9e6 // 905
-	, `WRITE__CMD, 'h70020028, 'h80f2ab19d10355be // 906
-	, `WRITE__CMD, 'h70020030, 'h82a57ce12a275e1f // 907
-	, `WRITE__CMD, 'h70020038, 'h2b4f8dcb41e8441b // 908
-	, `WRITE__CMD, 'h70020040, 'hfa0840f742f78ec4 // 909
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 902
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 903
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 904
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 905
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 906
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 907
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 908
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 909
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 910
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 911
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 912
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 913
-	, `WRITE__CMD, 'h70020008, 'hcda6a2ea89018c24 // 914
-	, `WRITE__CMD, 'h70020010, 'hdd1588dcb3b644c1 // 915
-	, `WRITE__CMD, 'h70020018, 'h138ebf0ce4cb88ec // 916
-	, `WRITE__CMD, 'h70020020, 'h2ea05737b8fbc6e4 // 917
-	, `WRITE__CMD, 'h70020028, 'h2dfc330d15656d2e // 918
-	, `WRITE__CMD, 'h70020030, 'h9f8f89e6ce408280 // 919
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 914
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 915
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 916
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 917
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 918
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff80 // 919
 	, `WRITE__CMD, 'h70020038, 'h0000000000000000 // 920
 	, `WRITE__CMD, 'h70020040, 'h0000000000000f78 // 921
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 922
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 923
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 924
-	, `RDnCMP_CMD, 'h70020050, 'ha48e7f10591bf980 // 925
-	, `RDnCMP_CMD, 'h70020058, 'hf16698607438951a // 926
-	, `RDnCMP_CMD, 'h70020060, 'h0f51c044b4d6ef9c // 927
-	, `RDnCMP_CMD, 'h70020068, 'hb539f0161d99a4e4 // 928
+	, `RDnCMP_CMD, 'h70020050, 'h97067fa1e801b695 // 925
+	, `RDnCMP_CMD, 'h70020058, 'h0bc886221147e930 // 926
+	, `RDnCMP_CMD, 'h70020060, 'h040d547d40bb59c7 // 927
+	, `RDnCMP_CMD, 'h70020068, 'h6c3ea871ba71aa23 // 928
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 929
-	, `WRITE__CMD, 'h70020008, 'hf24c6d1d0747c2d5 // 930
-	, `WRITE__CMD, 'h70020010, 'h2efbe03417cd54e3 // 931
-	, `WRITE__CMD, 'h70020018, 'h1db22de4b6098625 // 932
-	, `WRITE__CMD, 'h70020020, 'h70b43306327c9610 // 933
-	, `WRITE__CMD, 'h70020028, 'hdd9876e846f5b313 // 934
-	, `WRITE__CMD, 'h70020030, 'ha0efd7ca9174ca03 // 935
-	, `WRITE__CMD, 'h70020038, 'h1407e4ec85f0c4e9 // 936
-	, `WRITE__CMD, 'h70020040, 'h0b4ed6d601d83704 // 937
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 930
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 931
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 932
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 933
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 934
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 935
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 936
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 937
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 938
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 939
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 940
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 941
-	, `WRITE__CMD, 'h70020008, 'h45d304ff98160b20 // 942
-	, `WRITE__CMD, 'h70020010, 'h9bd6fb2bdf5d7924 // 943
-	, `WRITE__CMD, 'h70020018, 'hcbd1ed21e0de1bbb // 944
-	, `WRITE__CMD, 'h70020020, 'h2302701d6a7955d4 // 945
-	, `WRITE__CMD, 'h70020028, 'h62d21a0257e8ad00 // 946
-	, `WRITE__CMD, 'h70020030, 'h1816f738d2b371e7 // 947
-	, `WRITE__CMD, 'h70020038, 'ha1eec3e9adcfe218 // 948
-	, `WRITE__CMD, 'h70020040, 'hcb9a6718d817bfd8 // 949
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 942
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 943
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 944
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 945
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 946
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 947
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 948
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 949
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 950
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 951
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 952
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 953
-	, `WRITE__CMD, 'h70020008, 'h5420730957353ff4 // 954
-	, `WRITE__CMD, 'h70020010, 'hc806adfbd90bd4c7 // 955
-	, `WRITE__CMD, 'h70020018, 'hf70f58f9aaad1c15 // 956
-	, `WRITE__CMD, 'h70020020, 'h8f61c0fb1ee54d09 // 957
-	, `WRITE__CMD, 'h70020028, 'hf679f707a63c00d2 // 958
-	, `WRITE__CMD, 'h70020030, 'h76eddd1b76de8c2c // 959
-	, `WRITE__CMD, 'h70020038, 'h0a9641f7348304e9 // 960
-	, `WRITE__CMD, 'h70020040, 'hb0c0111bb0729ec9 // 961
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 954
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 955
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 956
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 957
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 958
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 959
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 960
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 961
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 962
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 963
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 964
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 965
-	, `WRITE__CMD, 'h70020008, 'hb368ed1c1983b322 // 966
-	, `WRITE__CMD, 'h70020010, 'h9532bfd76eda240e // 967
-	, `WRITE__CMD, 'h70020018, 'hc74831184c572cd6 // 968
-	, `WRITE__CMD, 'h70020020, 'h56be12d4d4a171db // 969
-	, `WRITE__CMD, 'h70020028, 'h11488328ac61742b // 970
-	, `WRITE__CMD, 'h70020030, 'h9787efde23d99110 // 971
-	, `WRITE__CMD, 'h70020038, 'h757f20fe1884f3f2 // 972
-	, `WRITE__CMD, 'h70020040, 'haebe3a2cd9f40afa // 973
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 966
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 967
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 968
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 969
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 970
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 971
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 972
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 973
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 974
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 975
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 976
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 977
-	, `WRITE__CMD, 'h70020008, 'hf08020d94c750ac9 // 978
-	, `WRITE__CMD, 'h70020010, 'hfd6c2d1c553f9cba // 979
-	, `WRITE__CMD, 'h70020018, 'hc2cefb1c9089b1bd // 980
-	, `WRITE__CMD, 'h70020020, 'h429e63f8273c1009 // 981
-	, `WRITE__CMD, 'h70020028, 'ha2b3701d5ce311d7 // 982
-	, `WRITE__CMD, 'h70020030, 'h98bc27e7ce3ce4ee // 983
-	, `WRITE__CMD, 'h70020038, 'h5d8e572f3080a7df // 984
-	, `WRITE__CMD, 'h70020040, 'ha913e611449a2717 // 985
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 978
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 979
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 980
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 981
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 982
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 983
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 984
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 985
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 986
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 987
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 988
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 989
-	, `WRITE__CMD, 'h70020008, 'h97a69b253f927bf1 // 990
-	, `WRITE__CMD, 'h70020010, 'h4e489fc499bc44ef // 991
-	, `WRITE__CMD, 'h70020018, 'h510518c30583843f // 992
-	, `WRITE__CMD, 'h70020020, 'hdca16fec91456b2e // 993
-	, `WRITE__CMD, 'h70020028, 'he00435d60e646438 // 994
-	, `WRITE__CMD, 'h70020030, 'h64e7c0da7de2e0fc // 995
-	, `WRITE__CMD, 'h70020038, 'hb9b324094eb6ae30 // 996
-	, `WRITE__CMD, 'h70020040, 'hc8cdab20586b490c // 997
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 990
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 991
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 992
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 993
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 994
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 995
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 996
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 997
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 998
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 999
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1000
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1001
-	, `WRITE__CMD, 'h70020008, 'hc1100ae97b5e1f32 // 1002
-	, `WRITE__CMD, 'h70020010, 'h0acd1a2a1c87bed4 // 1003
-	, `WRITE__CMD, 'h70020018, 'h6b31d8e2516c401c // 1004
-	, `WRITE__CMD, 'h70020020, 'h5c8fba387560b0d2 // 1005
-	, `WRITE__CMD, 'h70020028, 'h1bf38dd879ce04d7 // 1006
-	, `WRITE__CMD, 'h70020030, 'hb85d82c4a48ad722 // 1007
-	, `WRITE__CMD, 'h70020038, 'h6f7d69e171d03c03 // 1008
-	, `WRITE__CMD, 'h70020040, 'h63d83d19fb20a725 // 1009
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1002
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1003
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1004
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1005
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1006
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1007
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1008
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1009
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1010
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1011
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1012
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1013
-	, `WRITE__CMD, 'h70020008, 'h2c60c6e5714aa229 // 1014
-	, `WRITE__CMD, 'h70020010, 'hf33685110ca8f6be // 1015
-	, `WRITE__CMD, 'h70020018, 'h65b762f0eaee04e7 // 1016
-	, `WRITE__CMD, 'h70020020, 'h699067cc25e318dd // 1017
-	, `WRITE__CMD, 'h70020028, 'hc042e8e8bb8ff4cb // 1018
-	, `WRITE__CMD, 'h70020030, 'h49b95b28babf8008 // 1019
-	, `WRITE__CMD, 'h70020038, 'hec25eaedafccd6fa // 1020
-	, `WRITE__CMD, 'h70020040, 'ha63a7ffd890f562a // 1021
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1014
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1015
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1016
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1017
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1018
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1019
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1020
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1021
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1022
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1023
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1024
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1025
-	, `WRITE__CMD, 'h70020008, 'h64f0adfa8518e5e4 // 1026
-	, `WRITE__CMD, 'h70020010, 'hdc9e2c3b8f0cc9f3 // 1027
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1026
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1027
 	, `WRITE__CMD, 'h70020018, 'h8000000000000000 // 1028
 	, `WRITE__CMD, 'h70020020, 'h0000000000000000 // 1029
 	, `WRITE__CMD, 'h70020028, 'h0000000000000000 // 1030
@@ -1060,122 +1060,122 @@ longint sha256_playback[] = {
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1034
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1035
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1036
-	, `RDnCMP_CMD, 'h70020050, 'h23ae219319ca778f // 1037
-	, `RDnCMP_CMD, 'h70020058, 'h0fd57f898e5d197f // 1038
-	, `RDnCMP_CMD, 'h70020060, 'h3541675dfd556ff8 // 1039
-	, `RDnCMP_CMD, 'h70020068, 'h69998addbe3b7348 // 1040
+	, `RDnCMP_CMD, 'h70020050, 'h8d6a4a37a6318625 // 1037
+	, `RDnCMP_CMD, 'h70020058, 'ha76c69947ef5bc21 // 1038
+	, `RDnCMP_CMD, 'h70020060, 'hbe46789a22a3d9b9 // 1039
+	, `RDnCMP_CMD, 'h70020068, 'hf8a7804a6df3261f // 1040
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1041
-	, `WRITE__CMD, 'h70020008, 'hc2fcb3b8d6a75afb // 1042
-	, `WRITE__CMD, 'h70020010, 'h314a171c40ffb0ec // 1043
-	, `WRITE__CMD, 'h70020018, 'hcee083d30902f420 // 1044
-	, `WRITE__CMD, 'h70020020, 'h1258febae66cf2dd // 1045
-	, `WRITE__CMD, 'h70020028, 'hcff295238c424520 // 1046
-	, `WRITE__CMD, 'h70020030, 'h3d94c104940931f2 // 1047
-	, `WRITE__CMD, 'h70020038, 'hd45d9fedd9661fe6 // 1048
-	, `WRITE__CMD, 'h70020040, 'h9711443ca07823c8 // 1049
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1042
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1043
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1044
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1045
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1046
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1047
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1048
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1049
 	, `WRITE__CMD, 'h70020000, 'h0000000000000002 // 1050
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1051
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1052
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1053
-	, `WRITE__CMD, 'h70020008, 'h95f797f94a17e726 // 1054
-	, `WRITE__CMD, 'h70020010, 'h24fc621138caa708 // 1055
-	, `WRITE__CMD, 'h70020018, 'h878a6d2fc6331e11 // 1056
-	, `WRITE__CMD, 'h70020020, 'h51d516df43dc9a03 // 1057
-	, `WRITE__CMD, 'h70020028, 'h3cab74de99ed1d12 // 1058
-	, `WRITE__CMD, 'h70020030, 'ha79766ba415cdf17 // 1059
-	, `WRITE__CMD, 'h70020038, 'hf9cfb6feb16e0b2a // 1060
-	, `WRITE__CMD, 'h70020040, 'h4e77df024d59a3d7 // 1061
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1054
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1055
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1056
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1057
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1058
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1059
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1060
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1061
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1062
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1063
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1064
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1065
-	, `WRITE__CMD, 'h70020008, 'h0d9b050bffa031e7 // 1066
-	, `WRITE__CMD, 'h70020010, 'h65762638a209a1bd // 1067
-	, `WRITE__CMD, 'h70020018, 'h386039d1df02e822 // 1068
-	, `WRITE__CMD, 'h70020020, 'h7cfae7020b68ba1c // 1069
-	, `WRITE__CMD, 'h70020028, 'hf6c4ba1107302b31 // 1070
-	, `WRITE__CMD, 'h70020030, 'hd7a897cf4955e7f6 // 1071
-	, `WRITE__CMD, 'h70020038, 'he09a0cefa752f9ea // 1072
-	, `WRITE__CMD, 'h70020040, 'hcf182afb0141eed7 // 1073
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1066
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1067
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1068
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1069
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1070
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1071
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1072
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1073
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1074
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1075
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1076
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1077
-	, `WRITE__CMD, 'h70020008, 'h0739053775b8fe32 // 1078
-	, `WRITE__CMD, 'h70020010, 'hf9a8f12ccbe94634 // 1079
-	, `WRITE__CMD, 'h70020018, 'he76180e8eb99cec8 // 1080
-	, `WRITE__CMD, 'h70020020, 'h76a5a205b6858f38 // 1081
-	, `WRITE__CMD, 'h70020028, 'h7b14901fb35bb811 // 1082
-	, `WRITE__CMD, 'h70020030, 'h972f85ea34c28af0 // 1083
-	, `WRITE__CMD, 'h70020038, 'hc6fc52e5cddb2e2c // 1084
-	, `WRITE__CMD, 'h70020040, 'h19fdc9b88fbce42f // 1085
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1078
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1079
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1080
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1081
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1082
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1083
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1084
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1085
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1086
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1087
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1088
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1089
-	, `WRITE__CMD, 'h70020008, 'hee0671dc10db6bc5 // 1090
-	, `WRITE__CMD, 'h70020010, 'h2430511dcbe7e620 // 1091
-	, `WRITE__CMD, 'h70020018, 'h5c276714f212b9c7 // 1092
-	, `WRITE__CMD, 'h70020020, 'hc6627d1b9825c610 // 1093
-	, `WRITE__CMD, 'h70020028, 'h1d217d03d63869f8 // 1094
-	, `WRITE__CMD, 'h70020030, 'hdb44b62947f093c8 // 1095
-	, `WRITE__CMD, 'h70020038, 'h847249d0f20952ea // 1096
-	, `WRITE__CMD, 'h70020040, 'hbe8e53c4b954b228 // 1097
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1090
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1091
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1092
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1093
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1094
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1095
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1096
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1097
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1098
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1099
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1100
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1101
-	, `WRITE__CMD, 'h70020008, 'hcad307d317cc19c2 // 1102
-	, `WRITE__CMD, 'h70020010, 'h29f27bffa4c844dd // 1103
-	, `WRITE__CMD, 'h70020018, 'hf1b8f63d660ed5ed // 1104
-	, `WRITE__CMD, 'h70020020, 'hb640c8f1382194bf // 1105
-	, `WRITE__CMD, 'h70020028, 'he1b755edaf3f1d27 // 1106
-	, `WRITE__CMD, 'h70020030, 'hdfb84df54e61603b // 1107
-	, `WRITE__CMD, 'h70020038, 'h89627e13be2b28d5 // 1108
-	, `WRITE__CMD, 'h70020040, 'h8420c23201cd830b // 1109
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1102
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1103
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1104
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1105
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1106
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1107
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1108
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1109
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1110
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1111
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1112
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1113
-	, `WRITE__CMD, 'h70020008, 'h05b95edadb36fb2b // 1114
-	, `WRITE__CMD, 'h70020010, 'h9e21cf2eb67c96e3 // 1115
-	, `WRITE__CMD, 'h70020018, 'h4f90d7c5f4b295f2 // 1116
-	, `WRITE__CMD, 'h70020020, 'h087b3c12d51c55bb // 1117
-	, `WRITE__CMD, 'h70020028, 'h538ae9c6c34c3b3f // 1118
-	, `WRITE__CMD, 'h70020030, 'h92dab1ff9ab70e12 // 1119
-	, `WRITE__CMD, 'h70020038, 'h1f2a400606bdf8bd // 1120
-	, `WRITE__CMD, 'h70020040, 'h9505f4e940d29a04 // 1121
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1114
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1115
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1116
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1117
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1118
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1119
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1120
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1121
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1122
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1123
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1124
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1125
-	, `WRITE__CMD, 'h70020008, 'h08e114e6c9d51dfc // 1126
-	, `WRITE__CMD, 'h70020010, 'h0e6adcde80bd33fc // 1127
-	, `WRITE__CMD, 'h70020018, 'h673d4301e45ad936 // 1128
-	, `WRITE__CMD, 'h70020020, 'ha8ee5be326eecf24 // 1129
-	, `WRITE__CMD, 'h70020028, 'hf48d3ce4e5ba4417 // 1130
-	, `WRITE__CMD, 'h70020030, 'hb11cd7196f916d09 // 1131
-	, `WRITE__CMD, 'h70020038, 'h643734dca0940afb // 1132
-	, `WRITE__CMD, 'h70020040, 'h91e640217be0c5dd // 1133
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1126
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1127
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1128
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1129
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1130
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1131
+	, `WRITE__CMD, 'h70020038, 'hffffff7fffffff7f // 1132
+	, `WRITE__CMD, 'h70020040, 'hffffff7fffffff7f // 1133
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1134
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1135
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1136
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1137
-	, `WRITE__CMD, 'h70020008, 'hc9ee94d35725bf30 // 1138
-	, `WRITE__CMD, 'h70020010, 'he86f64bb06e67a10 // 1139
-	, `WRITE__CMD, 'h70020018, 'h2066c516eb1576d0 // 1140
-	, `WRITE__CMD, 'h70020020, 'hbdf440cb5f9c35de // 1141
-	, `WRITE__CMD, 'h70020028, 'hc953fa1fe2008fd3 // 1142
-	, `WRITE__CMD, 'h70020030, 'h469db9d2e7676026 // 1143
-	, `WRITE__CMD, 'h70020038, 'h1180000000000000 // 1144
+	, `WRITE__CMD, 'h70020008, 'hffffff7fffffff7f // 1138
+	, `WRITE__CMD, 'h70020010, 'hffffff7fffffff7f // 1139
+	, `WRITE__CMD, 'h70020018, 'hffffff7fffffff7f // 1140
+	, `WRITE__CMD, 'h70020020, 'hffffff7fffffff7f // 1141
+	, `WRITE__CMD, 'h70020028, 'hffffff7fffffff7f // 1142
+	, `WRITE__CMD, 'h70020030, 'hffffff7fffffff7f // 1143
+	, `WRITE__CMD, 'h70020038, 'hff80000000000000 // 1144
 	, `WRITE__CMD, 'h70020040, 'h0000000000001188 // 1145
 	, `WRITE__CMD, 'h70020000, 'h0000000000000004 // 1146
 	, `WRITE__CMD, 'h70020000, 'h0000000000000000 // 1147
 	, `RDSPIN_CMD, 'h70020048, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1148
-	, `RDnCMP_CMD, 'h70020050, 'h69e4d785ca2592eb // 1149
-	, `RDnCMP_CMD, 'h70020058, 'h9bb5c4dc4c854d73 // 1150
-	, `RDnCMP_CMD, 'h70020060, 'h0e6a9cd533735110 // 1151
-	, `RDnCMP_CMD, 'h70020068, 'ha915f48776d19a0c // 1152
+	, `RDnCMP_CMD, 'h70020050, 'hfc67c4c6b17f6d92 // 1149
+	, `RDnCMP_CMD, 'h70020058, 'h65b383a882137d17 // 1150
+	, `RDnCMP_CMD, 'h70020060, 'h3a74d2d6fb87d710 // 1151
+	, `RDnCMP_CMD, 'h70020068, 'hfe08f1abf5bd1600 // 1152
 	, `RDSPIN_CMD, 'h70020000, 'h0000000000000001, 'hffffffffffffffff, 'h64 // 1153
 	, `WRITE__CMD, 'h70020008, 'h3f26432323d59802 // 1154
 	, `WRITE__CMD, 'h70020010, 'h60c6e42f2d967942 // 1155

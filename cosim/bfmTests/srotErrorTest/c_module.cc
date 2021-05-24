@@ -72,7 +72,7 @@ void *c_module(void *arg) {
   for (int i = 0; i < 4; i++) {
     if (errCnt) break;
       LOGI("======== LLKI_ErrorTest Loop #%d, ErrCnt= %d ========\n", i, errCnt);
-      errCnt += cepSpiTest_runTest(cpuId,seed, verbose);
+          //errCnt += cepSpiTest_runTest(cpuId,seed, verbose);
       errCnt += srot.LLKI_ErrorTest(cpuId);
   }
 

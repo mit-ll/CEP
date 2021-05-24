@@ -577,7 +577,8 @@ int cep_init_run(void)
   CEP_ADD_RUN(3,cepSrotErrTest,     0xFFFFFFFF,  run_cepSrotErrTest,   NULL,  NULL, "CEP SRoT Error Test (single core) ");
 //CEP_ADD_RUN(3,cepCsrTest,         0xFFFFFFFF,  run_cepCsrTest,       NULL,  NULL, "CEP SPI test (all cores) ");
 
-  CEP_ADD_RUN(4,cepPlicTest,        0xFFFFFFFF,  run_cepPlicTest,      NULL,  NULL, "CEP PLIC register test (all cores)");    
+  CEP_ADD_RUN(4,cepPlicTest,        0xFFFFFFFF,  run_cepPlicTest,      NULL,  NULL, "CEP PLIC register test (all cores)");
+//CEP_ADD_RUN(4,cepPlicPrioIntrTest,0xFFFFFFFF,  run_cepPlicPrioIntrTest,NULL,NULL, "CEP PLIC priority Interrupt test (all cores)");      
   CEP_ADD_RUN(4,cepClintTest,       0xFFFFFFFF,  run_cepClintTest,     NULL,  NULL, "CEP CLINT register test (all cores)");    
   CEP_ADD_RUN(4,cepRegTest,         0xFFFFFFFF,  run_cepRegTest,       NULL,  NULL, "CEP register tests on all cores");
   CEP_ADD_RUN(4,cepLockTest,        0xFFFFFFFF,  run_cepLockTest,      NULL,  NULL, "CEP single lock test (all cores)");
@@ -602,6 +603,7 @@ int cep_init_run(void)
   CEP_ADD_RUN(6,cep_MD5     ,       0xFFFFFFFF,  run_cep_MD5     ,     NULL,  NULL, "CEP MD5 test (single core)");  
   CEP_ADD_RUN(6,cep_RSA     ,       0xFFFFFFFF,  run_cep_RSA     ,     NULL,  NULL, "CEP RSA test (single core)");  
   CEP_ADD_RUN(6,cep_SHA256  ,       0xFFFFFFFF,  run_cep_SHA256  ,     NULL,  NULL, "CEP SHA256 test (single core)");
+  CEP_ADD_RUN(6,cepMultiThread  ,   0xFFFFFFFF,  run_cepMultiThread  , NULL,  NULL, "CEP multi-thread per core (all cores)");
   //
   //
   // must do this 
@@ -795,10 +797,14 @@ int cep_index2testId(int index) {
 //
 //
 //
-int _thr_errCnt[MAX_CORES];
+#define MAX_THREADS   128
+int _thr_errCnt[MAX_THREADS];
 void cep_set_thr_errCnt(int value) {
   int cpu=  sched_getcpu();
   _thr_errCnt[cpu] = value;
+}
+void cep_set_mthr_errCnt(int thrId,int value) {
+  _thr_errCnt[thrId] = value;
 }
 int cep_get_thr_errCnt(void) {
   int cpu=  sched_getcpu();
@@ -836,12 +842,13 @@ int run_multiThreads(int coreMask) { // , cep_thread_funct_t funct) {
   int errCnt = 0;
   constexpr unsigned num_threads = MAX_CORES;
   // A mutex ensures orderly access to std::cout from multiple threads.
-  //std::mutex iomutex;
+  std::mutex liomutex;
   std::vector<std::thread> threads(num_threads);
   for (unsigned i = 0; i < num_threads; ++i) {
     if ((1 << i) & coreMask) {
       _thr_errCnt[i] = 0; // clear the error
       threads[i] = std::thread(cep_get_thr_function(), i);
+      std::this_thread::sleep_for(std::chrono::milliseconds(20)); // ?? need to??
       //
       // Create a cpu_set_t object representing a set of CPUs. Clear it and mark
       // only CPU i as set.
@@ -851,8 +858,13 @@ int run_multiThreads(int coreMask) { // , cep_thread_funct_t funct) {
 	CPU_SET(i, &cpuset);
 	int rc = pthread_setaffinity_np(threads[i].native_handle(), sizeof(cpu_set_t), &cpuset);
 	if (rc != 0) {
+	  std::lock_guard<std::mutex> iolock(liomutex);
 	  std::cerr << "Error calling pthread_setaffinity_np: " << rc << "\n";
+#if 0
+	  // perhaps the htread already finish?? when use with strace
+	  _thr_errCnt[i]++;
 	  errCnt++;
+#endif
 	}
       }
     }
@@ -876,3 +888,23 @@ int run_multiThreads(int coreMask) { // , cep_thread_funct_t funct) {
   return errCnt;
 }
 
+int run_multiThreadFloats(int num_threads) { 
+  int errCnt = 0;
+  // A mutex ensures orderly access to std::cout from multiple threads.
+  //std::mutex iomutex;
+  std::vector<std::thread> threads(num_threads);
+  for (int i = 0; i < num_threads; ++i) {
+      _thr_errCnt[i] = 0; // clear the error
+      threads[i] = std::thread(cep_get_thr_function(), i); // thrId > 0
+      std::this_thread::sleep_for(std::chrono::milliseconds(20)); // ?? need to??
+  }
+  for (int i = 0; i < num_threads; ++i) {
+          //if (threads[i].joinable()) {
+	threads[i].join();
+            //}
+      // get error
+      if (_thr_errCnt[i]) { errCnt++; }
+
+  }
+  return errCnt;
+}

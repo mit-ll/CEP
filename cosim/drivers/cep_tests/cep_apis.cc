@@ -355,8 +355,8 @@ int check_bare_status(int coreId,int maxTimeOut) {
 //
 void set_cur_status(int status) {
 #ifdef BARE_MODE  
-  int i=0, coreId;
-  uint64_t d64, offS, myOffs;
+  int coreId;
+  uint64_t d64, offS;
   //
   // which core???
   //
@@ -381,7 +381,7 @@ void set_pass(void) {
 
 void set_fail(void) {
 #ifdef BARE_MODE    
-  uint64_t d64, offS, myOffs;
+  uint64_t d64, offS;
   d64 = CEP_BAD_STATUS;
   offS = reg_base_addr + cep_core0_status;
   *(volatile uint64_t *)(offS) = d64;
@@ -539,7 +539,7 @@ int cep_get_lock(int myId, int lockNum, int timeOut) {
       break;
     }
     timeOut--;
-    DUT_RUNCLK(100);
+    USEC_SLEEP(100);
   } while (timeOut > 0);
   if (timeOut <= 0) {
     LOGE("%s: ERROR: timeout\n",__FUNCTION__);

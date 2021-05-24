@@ -130,6 +130,7 @@ CHECK_FLAG      = ${BLD_DIR}/.is_checked
 CUR_CONFIG	= .CONFIG_${DUT_VENDOR}_${DUT_SIM_MODE}
 SIM_DEPEND_TARGET = .${WORK_NAME}_dependList
 
+
 #
 # -------------------------------------------
 # Some derived switches
@@ -184,6 +185,10 @@ ifeq (${COVERAGE},1)
 DUT_VSIM_ARGS     += -coverage 
 DUT_VLOG_ARGS     += +cover=sbceft +define+COVERAGE 
 DUT_VOPT_ARGS     += +cover=sbceft
+endif
+
+ifeq (${NOWAVE},1)
+DUT_VLOG_ARGS     += +define+NOWAVE
 endif
 
 # Use our gcc instead of builtin form questa

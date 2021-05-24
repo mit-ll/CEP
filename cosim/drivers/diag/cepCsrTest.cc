@@ -45,6 +45,29 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
 
   int errCnt = 0;
 #if (BARE_MODE || LINUX_MODE)
+  uint64_t dat64;
+
+#if 1
+  uint64_t saveCustom;
+  //
+  // testing custom CSR @0x7c1
+  // 
+  asm volatile ("csrr	%0,0x7c1" : "=r"(saveCustom));
+  DUT_WRITE32_64(reg_base_addr + cep_scratch0_reg,saveCustom); // to observe
+  if (saveCustom != 0x208) errCnt++;
+  if (errCnt) goto apiDone;
+  //
+  dat64 = 0; // (uint64_t)-1;
+  asm volatile ("csrw	0x7c1,%0" : : "r"(dat64));
+  //
+  asm volatile ("csrr	%0,0x7c1" : "=r"(dat64));
+  DUT_WRITE32_64(reg_base_addr + cep_scratch0_reg,dat64); // to observe
+  if (dat64 != 0) errCnt++;
+  if (errCnt) goto apiDone;
+  // put back
+  asm volatile ("csrw	0x7c1,%0" : : "r"(saveCustom));
+#endif
+  
   //
   //
   regBaseTest_t *regp; //
@@ -83,7 +106,6 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   (*regp->AddROReg_p)(regp, CSR_MIMPID,   0x0000000020181004, (uint64_t)(-1));
   (*regp->AddROReg_p)(regp, CSR_MHARTID,  cpuId,              (uint64_t)(-1));
 #ifdef SIM_ENV_ONLY
-  uint64_t dat64;
 
   //
   // working
@@ -115,9 +137,15 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   (*regp->AddAReg_p)(regp, CSR_SIE,(uint64_t)(-1));
   (*regp->AddAReg_p)(regp, CSR_SEPC,(uint64_t)(-1));
   */
+
   //
   // now do it
   errCnt = (*regp->doRegTest_p)(regp);
+
+  //
+  // custom
+  //
+  
   //
   // These to toggle PMP_mask all bit to 1
   //
@@ -209,6 +237,7 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   cepCsrTest_DELETE(regp);
 #endif
   //
+  apiDone:
   return errCnt;
 }
 

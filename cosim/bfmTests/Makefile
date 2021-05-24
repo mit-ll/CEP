@@ -64,6 +64,8 @@ BFM_TEST_LIST = \
 	srotKeyTest	\
 	scratchpadTest	\
 	srotErrorTest	\
+	multiThread	\
+	plicPrioIntr	\
 
 
 

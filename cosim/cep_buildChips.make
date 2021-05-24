@@ -92,9 +92,9 @@ RISCV_BARE_LDFLAG += -static -nostdlib -nostartfiles -lgcc -DBARE_MODE
 RISCV_BARE_LDFILE  = ${BARE_SRC_DIR}/link.ld
 RISCV_BARE_CRTFILE = ${BARE_SRC_DIR}/crt.S
 
-RISCV_BARE_SOURCE_LIST = ${SIM_DIR}/drivers/cep_tests
-RISC_BARE_OBJECTS_LIST := $(subst .cc,.bobj,${RISCV_BARE_SOURCE_LIST})
-RISC_BARE_OBJECTS      := $(foreach t,${RISC_BARE_OBJECTS_LIST}, ${BARE_OBJ_DIR}/${t})
+# .C-style ONLY
+RISC_BARE_SRC_LIST := $(subst .c,.bobj,$(notdir $(wildcard ${BARE_SRC_DIR}/*.c)))
+RISC_BARE_OBJECTS  := $(foreach t,${RISC_BARE_SRC_LIST}, ${BARE_OBJ_DIR}/${t})
 
 CEP_SRC_FILES            = $(wildcard ${SIM_DIR}/drivers/cep_tests/*.cc)
 CEP_BARE_OBJECTS       := $(subst .cc,.bobj,${CEP_SRC_FILES})
@@ -102,10 +102,14 @@ CEP_BARE_OBJECTS       := $(subst .cc,.bobj,${CEP_SRC_FILES})
 #
 # Bare metal booloader
 #
-RICSV_BARE_BOOT_DIR       := ${SIM_DIR}/drivers/bootbare
-RISCV_BARE_BOOT_ROM       := bootbare.hex
+#RICSV_BARE_BOOT_DIR       := ${SIM_DIR}/drivers/bootbare
+#RISCV_BARE_BOOT_ROM       := bootbare.hex
 
-%.hex: %.c
+# use the one build during verilog generation
+RICSV_BARE_BOOT_DIR       := ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit
+RISCV_BARE_BOOT_ROM       := sdboot_fpga_sim.hex
+
+%.hex: ${INC_DIR}/cep_adrMap.h %.c
 	(cd ${RICSV_BARE_BOOT_DIR}; make clean; make;)
 
 CEP_DIAG_FILES          = $(wildcard ${SIM_DIR}/drivers/diag/*.cc)
@@ -119,11 +123,9 @@ CEP_BARE_DIAG_OBJECTS   := $(subst .cc,.bobj,${CEP_DIAG_FILES})
 ${BARE_OBJ_DIR}/crt.bobj: ${RISCV_BARE_CRTFILE}
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
 
-${BARE_OBJ_DIR}/syscalls.bobj: ${BARE_OBJ_DIR}/syscalls.c
-	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@ 
-
-${BARE_OBJ_DIR}/bare_malloc.bobj: ${BARE_OBJ_DIR}/bare_malloc.c
+${BARE_OBJ_DIR}/%.bobj: ${BARE_OBJ_DIR}/%.c
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
+
 
 riscv_wrapper.bobj: riscv_wrapper.cc
 	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
@@ -148,7 +150,7 @@ riscv_wrapper.elf: riscv_virt.S riscv_wrapper.cc ${RISCV_VIRT_CFILES}
 	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex
 	${BIN_DIR}/createPassFail.pl riscv_wrapper.dump PassFail.hex
 else
-riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${BARE_OBJ_DIR}/syscalls.bobj ${BARE_OBJ_DIR}/bare_malloc.bobj ${CEP_BARE_OBJECTS} ${CEP_BARE_DIAG_OBJECTS}
+riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${RISC_BARE_OBJECTS} ${CEP_BARE_OBJECTS} ${CEP_BARE_DIAG_OBJECTS}
 	$(RISCV_GCC) -T ${RISCV_BARE_LDFILE} ${RISCV_BARE_LDFLAG} $^ -o $@
 	${RISCV_OBJDUMP} -S -C -d -l -x riscv_wrapper.elf > riscv_wrapper.dump
 	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex

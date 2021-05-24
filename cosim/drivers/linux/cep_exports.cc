@@ -279,6 +279,23 @@ int run_cepPlicTest(void) {
   return errCnt;  
  }
 
+#if 0
+// priority interrupt test
+static void cepPlicPrioIntrTest_thr(int id) {
+  int errCnt = 	thr_waitTilLock(id, 5);
+  errCnt += cepPlicTest_prioIntrTest(id, GET_VAR_VALUE(verbose));
+  cep_set_thr_errCnt(errCnt);     
+}
+ 
+int run_cepPlicPrioIntrTest(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepPlicPrioIntrTest_thr);
+  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  return errCnt;  
+ }
+#endif
+
 //
 // ********************
 // cepSrotMemTest (single)
@@ -957,4 +974,40 @@ int run_cepSrotErrTest(void) {
   //
   return errCnt;
 }
+
+//
+// ********************
+// CEP MultiThread
+// ********************
+//
+#include "cepMultiThread.h"
+u_int64_t testLockBuf=0;
+//
+static void cepMultiThread_thr(int id) {
+    int errCnt = 	0;
+    int maxTest = 10;
+        // RSA takes too long!!!
+    int cryptoMask = ((1 << maxTest) -1) & ~(1 << RSA_BASE_K) & GET_VAR_VALUE(testMask);
+    int maxLoop = 5;
+    errCnt += cepMultiThread_runThr(id, testLockBuf, cryptoMask, maxTest, maxLoop, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+    cep_set_mthr_errCnt(id,errCnt);     
+}
+ 
+int run_cepMultiThread(void) {
+  int errCnt = 0;
+  //
+  cep_set_thr_function(cepMultiThread_thr);
+  int maxTest = 10;
+#ifdef USE_ATOMIC  
+  testLockBuf = (u_int64_t)getScratchPtr(); // virtual
+  clearScratchPtr();
+#else  
+  testLockBuf = (u_int64_t)(ddr3_base_adr) + ((u_int64_t)getScratchPtr() & (u_int64_t)(ddr3_base_size-1)); // physical
+#endif  
+  errCnt += cepMultiThread_setup(0, testLockBuf, maxTest, 1, GET_VAR_VALUE(verbose)) ;
+  //
+  if (!errCnt) { errCnt = run_multiThreadFloats(GET_VAR_VALUE(maxThreads)); }
+  return errCnt;  
+ }
+
 

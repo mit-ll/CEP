@@ -6,7 +6,7 @@
 # Description:    Buildroot mk file for CEP Regression Suite
 #************************************************************************
 
-CEP_DIAG_VERSION = 2.0.0
+CEP_DIAG_VERSION = 3.3
 CEP_DIAG_SITE = ./package/cep_diag/src
 CEP_DIAG_SITE_METHOD = local
 

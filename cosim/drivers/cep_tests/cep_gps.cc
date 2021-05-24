@@ -229,10 +229,10 @@ void cep_gps::ResetCA_code()
 int cep_gps::GetCA_code(int svNum)
 {
   int CACode = 0;
-  int chip=0;
   //
 #if defined(BARE_MODE)
 #else
+  int chip=0;
   //
   if (GetVerbose(2)) {
     LOGI("G1=0x%04x G2=0x%04x\n",

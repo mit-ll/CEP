@@ -66,9 +66,28 @@ endif
 verilog: $(verilog)
 
 romgen := $(BUILD_DIR)/$(CONFIG_PROJECT).$(CONFIG).rom.v
+#
+# Modified by Tony D. 04/16/21
+# Calling the Makefile under bootrom 2 times: one for fpga to run on VC707, one for fpga in simulation.
+# For later ASIC versions, just add 2 more make.
+#
+# Must passed in 2 arguments: 
+# SDNAME & DEFINES
+# Possible defines = -D_USE_xSPI  and/or -D_NO_SD_DOWNLOAD
+# 
+# NOTE: the -D_USE_xExe is added (and xExeHacked.c) to both sdboot_fpga_hw/sim as test to verify that we can execute codes from bootrom
+# without main memory for stack point and private data.
+#
+#            (via xExeHacked.c version of xSPI)
+#
+#       They should be removed once the real xSPI controller is in for ASIC or replace xExeHacked.c with appropriate file...
+#
+# NOTE2: for simulation, we just need to make "hex" target instead of "romgen" when calling Make
+#
 $(romgen): $(verilog)
 ifneq ($(BOOTROM_DIR),"")
-	$(MAKE) -C $(BOOTROM_DIR) romgen
+	$(MAKE) -C $(BOOTROM_DIR) SDNAME=sdboot_fpga_sim EXTRA_CFLAGS="-g" DEFINES="-D_NO_SD_DOWNLOAD -D_USE_xEXE xExeHacked.c" hex
+	$(MAKE) -C $(BOOTROM_DIR) SDNAME=sdboot_fpga_hw  EXTRA_CFLAGS="-g" DEFINES="                  -D_USE_xEXE xExeHacked.c" romgen
 	mv $(BUILD_DIR)/rom.v $@
 endif
 

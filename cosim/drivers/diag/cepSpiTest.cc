@@ -132,7 +132,7 @@ int cep_setup_spi(int csId, int mode, int divisor, int En)
 // Run read/write test
 //
 // assuming SPI is loopback MOSI -> MISO
-int cepSpiRdWrTest(int csId, int seed, int verbose) {
+int cepSpiRdWrTest(int cpuId, int maxChar, int seed, int verbose) {
   int errCnt = 0;
   int dat;
   if (verbose) {
@@ -148,7 +148,7 @@ int cepSpiRdWrTest(int csId, int seed, int verbose) {
   //
   // write to txFIFO and should get back what we write via rxfifo
   //
-  for (int i=0;i<16;i++) {
+  for (int i=0;i<maxChar;i++) {
     dat = 1 << (i & 0x7);
     if (i > 7) dat = ~dat & 0xFF;
     DUT_WRITE32_32(spi_base_addr + spi_txfifo, dat);
@@ -178,6 +178,7 @@ int cepSpiRdWrTest(int csId, int seed, int verbose) {
     } while (to > 0);
     if (errCnt != 0) break;
   }
+  DUT_WRITE32_32(spi_base_addr + spi_ie, 0x0); // turn off interrupt  
   return errCnt;
 }
 
@@ -188,7 +189,7 @@ int cepSpiTest_runTest(int cpuId, int seed, int verbose) {
   if (!errCnt) { errCnt += cepSpiTest_runRegTest(cpuId,32, seed, verbose); }
 #ifdef SIM_ENV_ONLY
   // 
-  if (!errCnt) { errCnt += cepSpiRdWrTest(0, seed, verbose); }
+  if (!errCnt) { errCnt += cepSpiRdWrTest(cpuId, 16, seed, verbose); }
 #endif
 
   return errCnt;

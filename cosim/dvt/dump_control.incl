@@ -23,7 +23,7 @@
 
 initial begin
   //
-`ifdef NO_WAVE
+`ifdef NOWAVE
 `else  
   `DVAR_FILE;
   `DVAR(`LEVEL0,cep_tb);

@@ -112,6 +112,53 @@ int cepGpioTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   return errCnt;
 }
 
+//
+int cepGpioTest_intrTest(int cpuId, int seed, int verbose) {
+    int errCnt = 0;
+    uint32_t rdat32, wdat32, offs;
+        // setup
+    DUT_WRITE32_32(gpio_base_addr + gpio_iof_en         , 0x00); // no IOF
+    DUT_WRITE32_32(gpio_base_addr + gpio_pue            , 0x00); // no internal pull up           
+    DUT_WRITE32_32(gpio_base_addr + gpio_output_en	, 0xFF);
+    DUT_WRITE32_32(gpio_base_addr + gpio_input_en	, 0xFF);
+    DUT_WRITE32_32(gpio_base_addr + gpio_high_ie        , 0xFF);    
+        // 
+        // Each GPIO
+        //
+    for (int i=0;i<8;i++) {
+            // walking 1
+        wdat32 = 1 << i;
+        DUT_WRITE32_32(gpio_base_addr + gpio_port_output, wdat32);
+            // loop back
+        offs = gpio_base_addr + gpio_pin;
+            //
+        DUT_READ32_32 (offs, rdat32);
+        if (rdat32 != wdat32) {
+            LOGE("ERROR: Mismatch offs=0x%08x i=%d exp=0x%08x act=0x%08x\n",offs,i,wdat32,rdat32);
+            errCnt++;
+            break;
+        }
+        else if (verbose) {
+            LOGI("OK: offs=0x%08x i=%d exp=0x%08x act=0x%08x\n",offs,i,wdat32,rdat32);            
+        }
+            // check pending
+        offs = gpio_base_addr + gpio_high_ip;
+            //
+        DUT_READ32_32 (offs, rdat32);
+        if (rdat32 != wdat32) {
+            LOGE("ERROR: Mismatch offs=0x%08x i=%d exp=0x%08x act=0x%08x\n",offs,i,wdat32,rdat32);
+            errCnt++;
+            break;
+        }
+        else if (verbose) {
+            LOGI("OK: offs=0x%08x i=%d exp=0x%08x act=0x%08x\n",offs,i,wdat32,rdat32);            
+        }
+        
+    }
+    return errCnt;
+}
+
+
 int cepGpioTest_runTest(int cpuId, int seed, int verbose) {
   int errCnt = 0;
   if (!errCnt) { errCnt += cepGpioTest_runRegTest(cpuId,32, seed, verbose); }

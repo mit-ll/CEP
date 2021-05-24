@@ -13,7 +13,9 @@
 #include "simdiag_global.h"
 #include "cep_adrMap.h"
 #include "cepPlicTest.h"
-
+#include "cepUartTest.h"
+#include "cepSpiTest.h"
+//
 #include "cep_apis.h"
 #include "portable_io.h"
 
@@ -68,26 +70,19 @@ int cepPlicTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   // start adding register to test
   //
   // there are 127 of them , split into 4 regions one per core
-#if 1
   // pick one to run
   if (cpuId == 0) {
-    int maxReg = 7; // ONly ?? are implemented!!
-    for (int i=1;i<maxReg;i++) {
-      (*regp->AddAReg_p)(regp, plic_base_addr + (plic_source1_prio_offset-4) + (cpuId*maxReg*4) + (i*4), 0x7); // only 3 bits
-    }
+      int maxReg = 10; // uart,spi,gpio[7:0], no 0
+      for (int i=1;i<=maxReg;i++) {
+          (*regp->AddAReg_p)(regp, plic_base_addr + (plic_source0_prio_offset) + (i*4), 0x7); // only 3 bits
+      }
   }
-#else
-  int start = (cpuId == 0) ? 1 : 0;
-  int maxReg = 8; // 128/4 = 32 each except 0
-  uint32_t offs;
-  for (int i=start;i<maxReg;i++) {
-    offs = (plic_source1_prio_offset-4) + (cpuId*maxReg*4) + (i*4);
-    LOGI("i=%d offs=0x%x\n",i,offs);
-    (*regp->AddAReg_p)(regp, plic_base_addr + (plic_source1_prio_offset-4) + (cpuId*maxReg*4) + (i*4), 0x7); // only 3 bits
+  // each hart has 2 context
+  for (int c=0;c<2;c++) {
+      int ctx = (cpuId*2) + c;
+      (*regp->AddAReg_p)(regp, plic_base_addr + plic_hart0_m_mode_ien_start  + (plic_mode_ien_size_offset*ctx), 0x7FE); // only 10 sources, no 0
+      (*regp->AddAReg_p)(regp, plic_base_addr + plic_hart0_m_mode_prio_thresh  + (plic_prio_thresh_size_offset*ctx), 0x7); // only 3 bits
   }
-#endif
-  (*regp->AddAReg_p)(regp, plic_base_addr + plic_hart0_m_mode_ien_start  + (plic_mode_ien_size_offset*cpuId), 0x3E); // only 5 bits
-  (*regp->AddAReg_p)(regp, plic_base_addr + plic_hart0_m_mode_prio_thresh  + (plic_prio_thresh_size_offset*cpuId), 0x7); // only 3 bits
   //
   // add a hole in 4K
   //
@@ -110,3 +105,89 @@ int cepPlicTest_runTest(int cpuId, int seed, int verbose) {
   //
   return errCnt;
 }
+
+
+//
+// PLIC priority interrupt test
+//
+int cepPlicTest_prioIntrTest(int coreId, int verbose)
+{
+    int errCnt = 0;
+    uint32_t offS, dat32;
+    int startSrc = 1; // uart(1),spi(2),GPIO (3-10)
+    int endSrc   = 10;
+    char txStr[]  = "MITLL";
+    //
+    // setup
+    //
+    uint32_t enableMask = 0;
+    for (int i=startSrc;i<= endSrc;i++) {
+        enableMask |= (1 << i);
+    }
+    //
+    // set the threshold to 0,2,4,6
+    // each Hart will have 2 context? M-mode and S-mode
+    //
+    for (int ctx=0;ctx<2;ctx++) {
+        offS = plic_base_addr + plic_hart0_m_mode_prio_thresh + (plic_prio_thresh_size_offset*((coreId*2)+ctx));
+        dat32 = 0;
+        DUT_WRITE32_32(offS, dat32);
+    }
+    // prio from 0 to 7
+    // NOTE: if prio=0, there will be no interrupt but the internal pending bit is still set.. CHECKME!!!!
+    int prio = 7;
+    for (int i=startSrc;i<= endSrc;i++) {
+        DUT_WRITE32_32(plic_base_addr + plic_source0_prio_offset +  i*4, prio); // start with 1 for core0
+        prio--;
+        if (prio < 1) prio = 1; // min
+    }
+    //
+    // get the lock
+    //
+    int actSrc = 0;
+    if (cep_get_lock(coreId, 1, 5000)) { // use lock 1
+        for (int c=0;c<2;c++) {
+            int ctx = (coreId*2) + c;
+            //
+            // set enable
+            //
+            offS = plic_base_addr + plic_hart0_m_mode_ien_start + (plic_mode_ien_size_offset*ctx);        
+            DUT_WRITE32_32(offS, enableMask);
+            //
+            // pulse the interrupt
+            //
+            errCnt += cepUartTest_runTxRxTest(coreId,32-1, &txStr[coreId],  1, 0, verbose);
+            errCnt += cepSpiRdWrTest(coreId,1, 0, verbose);
+            //
+            DUT_WRITE32_32(gpio_base_addr + gpio_low_ie, 0xff); // gpio[7:0]
+            DUT_WRITE32_32(gpio_base_addr + gpio_low_ie, 0x0);        
+            //
+            // check claim
+            //
+            for (int expSrc=startSrc; expSrc <= endSrc;expSrc++) {
+                // read my claim
+                DUT_READ32_32(plic_base_addr + (plic_prio_thresh_size_offset*ctx) + plic_hart0_m_mode_claim_done,actSrc);
+                if (actSrc != expSrc) {
+                    LOGE("ERROR: ctx=%d mismatch expSrc=%d actSrc=%d\n",ctx,expSrc, actSrc);
+                    errCnt++;
+                    break;
+                }
+                else if (verbose) {
+                    LOGI("OK: ctx=%d expSrc=%d actSrc=%d\n",ctx,expSrc, actSrc);                
+                }
+                // I am done with my claim
+                DUT_WRITE32_32(plic_base_addr + (plic_prio_thresh_size_offset*ctx) + plic_hart0_m_mode_claim_done,actSrc);
+            }
+            // clear enable
+            offS = plic_base_addr + plic_hart0_m_mode_ien_start + (plic_mode_ien_size_offset*ctx);
+            DUT_WRITE32_32(offS, 0);
+            if (errCnt) break;
+        }
+        cep_release_lock(coreId, 1);
+    } else {
+        errCnt++;
+    }
+    //
+    return errCnt;
+}
+

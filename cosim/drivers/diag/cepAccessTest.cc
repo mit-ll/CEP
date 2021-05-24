@@ -43,7 +43,7 @@ int cepAccessTest_runSingle(int cpuId, uint32_t adr, uint64_t pat, int modeSuppo
   uint32_t wdat32, rdat32;
   uint16_t wdat16, rdat16;
   uint8_t wdat8, rdat8;
-  uint64_t act;
+  uint64_t act=0;
   //
   // 64 read/write -bits
   //

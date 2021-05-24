@@ -36,5 +36,6 @@ uint64_t  cepGpioTest_ReadEntry(regBaseTest_t *me, uint32_t adr);
 //
 int cepGpioTest_runTest(int cpuId, int seed, int verbose);
 int cepGpioTest_runRegTest(int cpuId, int accessSize,int seed, int verbose);
+int cepGpioTest_intrTest(int cpuId, int seed, int verbose);
 
 #endif

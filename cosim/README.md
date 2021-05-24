@@ -16,6 +16,7 @@ Several environments are supported:
 * Linux Mode (tests run on xilinx VC707 development card).  Build and installation instructions can be found in: [../README.md](../README.md)
 * Benchmarking on Linux (TBA)
 * Cycle-accurate and translation-level accurate unit level simulations.
+* JTAG support to inferace with Openocd tool (via bitbang adapter) for Open On-Chip debugger (version 3.3 or later)
 
 ## Benefits: ##
 
@@ -53,7 +54,7 @@ Assuming you already have the CEP-master (version 2.0 or later) sandbox pulled f
     isaTests/rv64mi-p-access 
 	  isaTests/rv64ud-p-ldst
 ```
-   NOTE: All tests (including the above failed tests) are now passing with version 2.8 or later under Linux machine..
+   **NOTE**: All tests (including the above failed tests) are now passing with version 2.8 or later under Linux machine..
 
 ## Verify environment settings and tools: ##
 
@@ -330,10 +331,11 @@ During simulation, you will notice each of the core will print out its PC (Progr
 
 Also, there are riscv_wrapper.dump (created from objdump to help track the PC), riscv_wrapper.elf (to preload to main memory) and riscv_wrapper.hex files are created by Make under each test directory.
 
+**Note**: for version 3.3 or later, directory **.../cosim/drivers/bootbare** is removed and the official bootrom generation Makefile is adjusted to also produce the bootrom image for simulation.
 
 ## Building ISA tests for simulation ##
 
-As of version 2.7 or later, ISA (Instruction-Set-Architecture) tests are added to simulation to improve overall chip coverages.
+For version 2.7 or later, ISA (Instruction-Set-Architecture) tests are added to simulation to improve overall chip coverages.
 
 **All ISA tests are re-used from https://github.com/riscv/riscv-tests.git repository**. 
 
@@ -401,7 +403,7 @@ And now you are ready to do the build as follows
   cd <CEP_ROOT>/software/riscv-tests
   autoconf
   ./configure	
-  make isa      <-- only need to make ISA, without argument benchmark tests will be included (benchmarks have NOT be ported)
+  make isa      <-- only need to make ISA, without argument benchmark tests will also be included (benchmarks have NOT been ported)
 ```
 
 The make command above will compile **mostly** assembly tests in the directory **isa** under it. These are the ones will be re-used to run in our simulation. **NOTE**: only RV64*-p/v-* tests are used since the cores are 64-bit cores. 
@@ -418,6 +420,43 @@ Next step is to port and prepare those ISA tests above for simulation.
 **Finally**: There are a lots of magic happen under-the-hood for this type of tests since they are originally written such that their output are used to compare against golden output (from Spike/Verilator). We dont do that here. Therefore, in simulation, hooks are put in place to check the **core's PC** (Program Counter) to see if they enter **pass** or **fail** section. In order to do this, during test preparation (**make isaTests**), a perl script is called to look into the deassembled code (<test>.dump file) for given test to find where the **pass/fail** locations are, respectively. These locations are needed by the testbench during runtime to determine if the given test is passing or failing.
 
 And we are now done for this ISA porting.
+
+## About JTAG/Debug port testing and Openocd ##
+
+To test JTAG port in simulation, openocd tool is needed. The Makefile will check for the present of such tool before any jtag related test is allowed to run.
+
+This JTAG port is connected to the CEP's DTM (DebugTransportModule). It is used to facilitate debugging via GDB. Openocd acts as transport layer between the internal DTM and GDB.
+
+A short description of what openocd is about:
+
+```
+OpenOCD provides on-chip programming and debugging support with a
+layered architecture of JTAG interface and TAP support including:
+
+- (X)SVF playback to facilitate automated boundary scan and FPGA/CPLD
+  programming;
+- debug target support (e.g. ARM, MIPS): single-stepping,
+  breakpoints/watchpoints, gprof profiling, etc;
+- flash chip drivers (e.g. CFI, NAND, internal flash);
+- embedded TCL interpreter for easy scripting.
+```
+
+To support simulation, DPI & remote-bitbang must be enable when building openocd tool.
+
+Download openocd via this link:  **https://github.com/riscv/riscv-openocd**
+
+And follow the README file in there to build the tool or for more details how to use the tool. Instructions are cut/paste below for quick reference:
+
+```
+To build OpenOCD, use the following sequence of commands:
+
+  ./bootstrap (when building from the git repository)
+  ./configure -enable-remote-bitbang --enable-jtag_dpi [options]
+  make
+  sudo make install
+```
+
+To see how this works, run this test: **<...>/cosim/isaTests/dtmTest**
 
 ## How to add your new test for regression ##
 
@@ -494,3 +533,11 @@ make CADENCE=1 mergeAll	  <-- merge all coverage data and report in HTLM format 
 * By default, under each test directory, one file will be created **if and only if** it is not yet there: **vsim.do**. It is used when **vsim** command is called to control the wave capturing.. If there is a need to override, users are free to modify and change it to anyway to fit the needs. Makefile will not overwrite it as long as it is there. 
 
 * Under bare metal mode, some of main memory locations are used as mailbox to help RISCV core tracking and printing. See .**../cosim/dvt/cep_adrMap.incl** file. **NOTE**: there is also a file under .../cosim/include/cep_adrMap.h This file is auto-generated from the cep_adrMap.incl mentioned. Therefore, any modification should be made to the cep_adrMap.incl file.
+
+* Below is the short-cut to quickly build cep_diag application for Linux:
+
+```
+cd <...>/cosim/drivers/linux
+make buildMe
+```
+

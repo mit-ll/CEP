@@ -80,7 +80,7 @@ int cep_aes::openssl_aes192_ecb_encryption
   //
   //
   if (verbose) {
-    LOGI("%s: INFO inLen=%d outlen=%d\n",__FUNCTION__,
+    LOGI("%s: inLen=%d outlen=%d\n",__FUNCTION__,
 	   length,*outlen);
     /*    
 	 EVP_CIPHER_CTX_key_length(&ctx),

@@ -66,9 +66,9 @@ const uint8_t   LLKI_KEYINDEX_VALID               = 0x80;
 #define llkic2_pack(msg_id, status, msg_len, key_index, rsvd1) \
   (((uint64_t)msg_id << 0)            & 0x00000000000000FF) | \
   (((uint64_t)status << 8)            & 0x000000000000FF00) | \
-  (((uint64_t)msg_len << 16)          & 0x0000000000FF0000) | \
-  (((uint64_t)key_index << 24)        & 0x00000000FF000000) | \
-  (((uint64_t)rsvd1 << 32)            & 0xFFFFFFFF00000000) 
+  (((uint64_t)msg_len << 16)          & 0x00000000FFFF0000) | \
+  (((uint64_t)key_index << 32)        & 0x000000FF00000000) | \
+  (((uint64_t)rsvd1 << 40)            & 0xFFFFFF0000000000) 
 
 // Packing macro for creating a Key Index entry
 #define key_index_pack(low_pointer, high_pointer, core_index, valid) \

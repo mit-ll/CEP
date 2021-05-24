@@ -134,6 +134,7 @@ int cep_init_vars(void)
   CEP_ADD_VAR(curErrCnt,       1, 0,          NULL,           "current error count");
   CEP_ADD_VAR(lockSeed,        1, 0,          NULL,           "1=seed is locked, 0=seed is random");
   CEP_ADD_VAR(maxErr,          1, 1,          NULL,           "max number of errors before stop test");
+  CEP_ADD_VAR(maxThreads,      1,32,          NULL,           "max number of threads");  
   CEP_ADD_VAR(regress,         1, 0,          NULL,           "1=regress mode on, 0=off");
   CEP_ADD_VAR(quit,    	       1, 0,          NULL,           "1=quit cep_test");
   CEP_ADD_VAR(seed,    	       1, 0,          NULL,           "random seed uses for every test");

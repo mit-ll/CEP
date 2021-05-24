@@ -100,7 +100,7 @@ int cep_crypto::CheckPlainText(void) {
 void cep_crypto::PrintMe(const char *name, uint8_t *buf, int size) {
   //if (GetVerbose()==0) return;
   //
-  char str[128];
+  char str[256];
   //printf("Printing packet\n");
   // print every 32 bytes??
   int bC = 0;

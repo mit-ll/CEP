@@ -37,6 +37,7 @@
 #include "cep_dbg.h"
 #include "cep_diag.h"
 #include "cep_exports.h"
+#include "cep_version.h"
 
 // Macro to properly format the version register
 #define MAJOR_VERSION(n) (int)((n >> 48) & 0xFF)
@@ -149,10 +150,11 @@ void lnx_mem_write(u_int32_t offs,u_int64_t pData) { do_write(offs,pData); }
 // =======================================
 //
 static void Print_CepBuildDate(void) {
-  printf("\n*** CEP Tag=%s CEP HW VERSION = v%x.%x was built on %s %s ***\n",
-   CEP_TAG, MAJOR_VERSION(lnx_cep_read(CEP_VERSION_REG)), MINOR_VERSION(lnx_cep_read(CEP_VERSION_REG)),__DATE__,__TIME__);
+  printf("\n*** CEP SW=0x%x.%x HW VERSION = v%x.%x was built on %s %s ***\n",
+         CEP_MAJOR_VERSION,CEP_MINOR_VERSION,
+         MAJOR_VERSION(lnx_cep_read(CEP_VERSION_REG)), MINOR_VERSION(lnx_cep_read(CEP_VERSION_REG)),__DATE__,__TIME__);
   // do the read and print
-  printf(" CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x%016lx, 0x%016lx, 0x%016lx, 0x%016lx ScratchPad=0x%016lx\n",
+  printf(" CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x%lx, 0x%lx, 0x%lx, 0x%lx\n ScratchPad=0x%lx\n",
 	 (u_int64_t)_cepMap.mem,
 	 (u_int64_t)_ddr3Map.mem,
 	 (u_int64_t)_otherMap.mem,

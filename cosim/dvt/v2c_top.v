@@ -218,12 +218,22 @@ endtask // READ32_64_TASK
    
    always @(posedge singelThread) begin
       // put all core in reset.
-      force `CORE0_PATH.core.reset =1;
-      force `CORE1_PATH.core.reset =1;
-      force `CORE2_PATH.core.reset =1;
-      force `CORE3_PATH.core.reset =1;
+      force `CORE0_PATH.reset =1; 
+      force `CORE1_PATH.reset =1;
+      force `CORE2_PATH.reset =1;
+      force `CORE3_PATH.reset =1;
       // wait for calibration complete
       @(posedge cep_tb.program_loaded);
+      // allow caches to get out of reset but not the core!!!
+      release `CORE0_PATH.reset; 
+      release `CORE1_PATH.reset;
+      release `CORE2_PATH.reset;
+      release `CORE3_PATH.reset;
+      //
+      force `CORE0_PATH.core.reset =1; 
+      force `CORE1_PATH.core.reset =1;
+      force `CORE2_PATH.core.reset =1;
+      force `CORE3_PATH.core.reset =1;      
       //
       for (int c=0;c<4;c=c+1) begin
 	 if (coreActiveMask[c]) begin
@@ -234,7 +244,7 @@ endtask // READ32_64_TASK
 		 if (virtualMode) begin
 		    ResetAllCores();
 		 end
-		 release `CORE0_PATH.core.reset;		 
+		 release `CORE0_PATH.core.reset; 
 		 @(posedge (`CORE0_DRIVER.PassStatus || `CORE0_DRIVER.FailStatus));
 	      end
 	      1: begin

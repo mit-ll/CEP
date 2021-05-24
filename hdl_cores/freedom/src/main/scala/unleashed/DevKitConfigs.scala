@@ -47,7 +47,7 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
   case PeripheryGPIOKey => List(
     GPIOParams(address = BigInt(0x64002000L), width = 8))
   case PeripheryMaskROMKey => List(
-    MaskROMParams(address = 0x10000, name = "BootROM", depth = 4096))
+    MaskROMParams(address = 0x10000, name = "BootROM", depth = 0x2000)) // 8K x 32-bits  words
   case PeripheryDES3Key => List(
     COREParams(
       slave_base_addr     = BigInt(CEPBaseAddresses.des3_base_addr),
@@ -172,7 +172,7 @@ class U500DevKitConfig extends Config(
     case DTSTimebase => BigInt(1000000)
     case JtagDTMKey => new JtagDTMConfig (
       idcodeVersion = 2,      // 1 was legacy (FE310-G000, Acai).
-      idcodePartNum = 0x000,  // Decided to simplify.
+      idcodePartNum = 0x0000, // Decided to simplify.
       idcodeManufId = 0x489,  // As Assigned by JEDEC to SiFive. Only used in wrappers / test harnesses.
       debugIdleCycles = 5)    // Reasonable guess for synchronization
   })

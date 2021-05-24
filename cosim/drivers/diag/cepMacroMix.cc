@@ -68,14 +68,6 @@ int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbo
   //
   // ONly if in the cryptoMask
   //
-
-
-
-
-
-
-
-
   //
   int captureOn = 0;
 #ifdef CAPTURE_CMD_SEQUENCE

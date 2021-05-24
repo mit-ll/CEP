@@ -23,8 +23,8 @@ SOE = 0
 # So force it to use g++ instead
 #
 MY_CC = $(patsubst %gcc, %g++, $(CC))
-CFLAGS += -g -Wall -I . -DLINUX_MODE -DCEP_SOE=$(SOE) -DRISCV_CPU -DBIG_ENDIAN
-CFLAGS += -std=c++11 
+CFLAGS += -g -Wall -I . -DLINUX_MODE -DCEP_SOE=$(SOE) -DRISCV_CPU -DBIG_ENDIAN -DUSE_ATOMIC
+CFLAGS += -std=c++17
 # -static will crash for mutithread
 LFLAGS = -lpthread
 
@@ -139,3 +139,11 @@ clean:
 	rm -f *.o
 	rm -f $(TARGET)
 
+#
+# This target just to rebuild the cep_diag. Assuming everything else already being built via ../README.md file
+#
+#
+buildMe:
+	make install
+	(cd ${FREEDOM_U_SDK_DIR}/work/buildroot_initramfs; rm -rf build/cep_diag*; make)
+	(cd ${FREEDOM_U_SDK_DIR}; make -j8 BOARD=vc707devkit_nopci all)

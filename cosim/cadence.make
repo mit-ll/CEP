@@ -17,12 +17,12 @@
 export VMGR_VERSION	?= VMANAGERAGILE20.06.001
 export XCELIUM_VERSION	?= XCELIUMAGILE20.09.001
 
-export VMGR_PATH	?= /brewhouse/cad4/x86_64/Cadence/${VMGR_VERSION}
-export XCELIUM_INSTALL  ?= /brewhouse/cad4/x86_64/Cadence/${XCELIUM_VERSION}
+export VMGR_PATH	= /brewhouse/cad4/x86_64/Cadence/${VMGR_VERSION}
+export XCELIUM_INSTALL  = /brewhouse/cad4/x86_64/Cadence/${XCELIUM_VERSION}
 
 
-export IMC_INSTALL      ?= ${VMGR_PATH}
-export MDV_XLM_HOME     ?= ${XCELIUM_INSTALL}
+export IMC_INSTALL      = ${VMGR_PATH}
+export MDV_XLM_HOME     = ${XCELIUM_INSTALL}
 #
 # Add to PATH if they are not there yet
 #

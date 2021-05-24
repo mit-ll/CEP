@@ -5,16 +5,9 @@
 // File Name:       llki_pkg.sv
 // Program:         Common Evaluation Platform (CEP)
 // Description:     LLKI related parameters and such.
-// Notes:           Addresses must reside "within" the corresponding
+// Notes:           Addresses MUST reside "within" the corresponding
 //                  range as specified in cep_addresses.scala.
 //              
-//                  Example: For the Surrogate Root of Trust (SRoT)
-//                  cep_addresses.scala specifies
-//                    val srot_base_addr      = 0x70100000L
-//                    val srot_base_depth     = 0x00007fffL
-//                  As a result, the SROT_XXXX addresses must
-//                  reside in this ranges (due to hierarchical decode)
-//
 //                  The address and bitmappings here should match
 //                  those in CEP.h (to allow for SW access)
 //
@@ -32,11 +25,11 @@ package llki_pkg;
     localparam SROT_LLKIC2_SCRATCHPAD1_ADDR     = 32'h7020_0018;
     // See KeyIndexRAM explanation below
     localparam SROT_KEYINDEXRAM_ADDR            = 32'h7020_0100;
-    localparam SROT_KEYINDEXRAM_SIZE            = 32'h0000_0020;
+    localparam SROT_KEYINDEXRAM_SIZE            = 32'h0000_0020;	// 32 64-bit words
     // Holds the LLKI keys as referenced by the those words in the KeyIndex RAM
     // Note: This cannot be less than SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8)!!!
     localparam SROT_KEYRAM_ADDR                 = 32'h7020_0200;
-    localparam SROT_KEYRAM_SIZE                 = 32'h0000_0100;
+    localparam SROT_KEYRAM_SIZE                 = 32'h0000_0800;	// 2048 64-bit words
 
     // All LLKI Protocol Processing blocks will use the same SystemVerilog code, and thus
     // will have their decode addresses uniquified through module parameters.  These will be
@@ -147,10 +140,10 @@ package llki_pkg;
     // LLKI C2 RISCV -> SRoT Message Format
     //
     //                                                                         Word#
-    // 63                               32 31   24 23     16 15     8 7      0  
-    // +----------------------------------+-------+---------+--------+--------+ 
-    // |             Reserved             |Key Idx| MSG LEN | STATUS | MSG ID |  1
-    // +----------------------------------+-------+---------+--------+--------+ 
+    // 63                       40 39   32 31             16 15     8 7      0  
+    // +----------------------------------+-----------------+--------+--------+ 
+    // |             Reserved     |Key Idx|     MSG LEN     | STATUS | MSG ID |  1
+    // +----------------------------------+-----------------+--------+--------+ 
 
     //
     // MSG ID : Only the following message IDs are valid on the LLKIC2 request interface:
@@ -181,10 +174,10 @@ package llki_pkg;
     // NOTE: Each word transferred is a SEPERATE Tilelink transaction
     //
     //                                                                         Word#
-    // 63                                       24 23     16 15     8 7      0  
-    // +------------------------------------------+---------+--------+--------+ 
-    // |                 Reserved                 | MSG LEN | STATUS | MSG ID |  1
-    // +------------------------------------------+---------+--------+--------+ 
+    // 63                       40 39   32 31             16 15     8 7      0  
+    // +----------------------------------+-----------------+--------+--------+ 
+    // |             Reserved     |Key Idx|     MSG LEN     | STATUS | MSG ID |  1
+    // +----------------------------------+-----------------+--------+--------+ 
     //                                      ...
     // +----------------------------------------------------------------------+
     // |             Key Word #1 (LLKI_MID_KLLOADKEYREQ message only)         |  2

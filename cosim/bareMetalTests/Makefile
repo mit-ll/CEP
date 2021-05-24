@@ -66,6 +66,9 @@ BARE_TEST_LIST = 		\
 	fragmemter		\
 	csrTest			\
 	srotMemTest		\
+	bootViaScratch		\
+	clintIntr		\
+	plicPrioIntr		\
 
 
 TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.txt))

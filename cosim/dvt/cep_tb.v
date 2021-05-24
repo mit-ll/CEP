@@ -90,6 +90,11 @@
 //
 `include "config.v"
 
+import "DPI-C" function int jtag_getSocketPortId();
+import "DPI-C" function int jtag_cmd(input int tdo_in, output int encode);   
+import "DPI-C" function int jtag_init();
+import "DPI-C" function int jtag_quit();   
+
 `timescale 1ps/100fs
 
 module cep_tb;
@@ -340,6 +345,15 @@ module cep_tb;
        release fpga.topDesign.topMod_debug_ndreset;
        `DVT_FLAG[`DVTF_TOGGLE_DMI_RESET_BIT] = 0;
    end
+
+   always @(posedge `DVT_FLAG[`DVTF_GET_SOCKET_ID_BIT]) begin
+      `logI("DVTF_GET_SOCKET_ID_BIT");
+      `ifdef OPENOCD_ENABLE
+      `DVT_FLAG[`DVTF_PAT_HI:`DVTF_PAT_LO] = jtag_getSocketPortId();
+      `endif
+      `logI("SocketId=0x%08x",`DVT_FLAG[`DVTF_PAT_HI:`DVTF_PAT_LO]);
+      `DVT_FLAG[`DVTF_GET_SOCKET_ID_BIT] = 0;
+   end
    
    assign sys_rst = RST_ACT_LOW ? sys_rst_n : ~sys_rst_n;
 
@@ -470,19 +484,14 @@ module cep_tb;
     end
   endgenerate
 
+   wire [7:0] led;
    wire jtag_jtag_TCK;
    wire jtag_jtag_TMS;
    wire jtag_jtag_TDI;
-   
+   wire jtag_jtag_TRSTn;
+   pullup (weak1) (jtag_jtag_TRSTn);
    wire jtag_jtag_TDO; 
-   wire [7:0] led;
-   reg 	      JTCK=0;
-   reg 	      JTMS=1;
-   reg 	      JTDI=0;
    
-   assign jtag_jtag_TCK = JTCK;
-   assign jtag_jtag_TMS = JTMS;
-   assign jtag_jtag_TDI = JTDI;
    /*
    initial begin
       forever #20 JTCK = !JTCK;
@@ -603,7 +612,9 @@ module cep_tb;
       repeat (100) @(posedge sys_clk_i);
       //path = "/home/aduong/CEP/CEP-master/cosim/bin/bareboot.hex";
       //path = "../../bin/bareboot.hex";
-      path = "../../drivers/bootbare/bootbare.hex";      
+      //path = "../../drivers/bootbare/bootbare.hex";
+      path = "../../../hdl_cores/freedom/builds/vc707-u500devkit/sdboot_fpga_sim.hex";
+      //
       `logI("=== Overriding bootROm with file %s ==",path);      
       $readmemh(path, `BOOTROM_PATH.rom);
       // also add 0x600DBABE_12345678 at end of the ROM for testing
@@ -622,7 +633,7 @@ module cep_tb;
        .jtag_jtag_TMS 		(jtag_jtag_TMS),
        .jtag_jtag_TDI 		(jtag_jtag_TDI),
        .jtag_jtag_TDO 		(jtag_jtag_TDO),
-       .jtag_srst_n       (pullHi),
+       .jtag_srst_n             (jtag_jtag_TRSTn),
        .uart_txd 		(uart_txd),
        .uart_rxd 		(uart_rxd),
        .uart_rtsn 		(uart_rtsn),
@@ -943,12 +954,16 @@ module cep_tb;
    //
    //
    reg [3:0] enableMask = 0;
+   wire [3:0] passMask;
    initial begin
       #1 enableMask = 'hF; // or contrtol from C side
    end
    genvar c;
+   always @(passMask) begin
+      `logI("**** passMask=0x%x *****\n",passMask);
+   end
    generate
-      for (c=0;c<4;c=c+1) begin : driverX
+      for (c=0;c<4;c=c+1) begin : driverX	 
 	 cep_driver #(.MY_SLOT_ID(0),.MY_LOCAL_ID(c))
 	 driver(
 		.clk 		(sys_clk_i), // clk100),	 
@@ -956,8 +971,75 @@ module cep_tb;
 		.enableMe       (enableMask[c]),
 		.__simTime	()
 		);
+	 assign passMask[c] = driver.PassStatus;
       end
    endgenerate
+
+
+   bit jtag_TCK   = 0;
+   bit jtag_TMS   = 0;  
+   bit jtag_TDI   = 0;
+   bit jtag_TRSTn = 0;
+   assign jtag_jtag_TCK = jtag_TCK;
+   assign jtag_jtag_TMS = jtag_TMS;
+   assign jtag_jtag_TDI = jtag_TDI;
+   assign jtag_jtag_TRSTn = jtag_TRSTn;
+   
+   //pullup (weak1) (jtag_jtag_TRSTn);
+   
+   //
+   // =============================
+   // OpenOCD interface to drive JTAG via DPI
+   // =============================   
+   //
+   reg 	      enable_jtag=0;
+   reg 	      quit_jtag=0;  
+   reg 	      enableDel = 0;
+   int 	      junk;
+   int 	      jtag_encode;
+   wire       dpi_jtag_tdo = fpga.topDesign_auto_jtag_debug_source_out_TDO_data; // jtag_jtag_TDO;
+   always @(posedge `DVT_FLAG[`DVTF_ENABLE_REMOTE_BITBANG_BIT]) begin
+      enable_jtag=1;
+      @(negedge `DVT_FLAG[`DVTF_ENABLE_REMOTE_BITBANG_BIT]);
+      quit_jtag=1;
+   end
+`ifdef OPENOCD_ENABLE
+   always @(posedge passMask[3]) begin
+      repeat (40000) @(posedge sys_clk_i);
+      `logI("Initialting QUIT to close socket...");
+      junk = jtag_quit();
+   end
+   //
+   reg [15:0] 	clkCnt;
+   initial begin
+      junk = jtag_init();
+      jtag_TRSTn = 0;
+      repeat (20) @(posedge sys_clk_i);
+      jtag_TRSTn = 1;
+      repeat (20) @(posedge sys_clk_i);
+      jtag_TRSTn = 0;
+   end
+
+   always @(posedge sys_clk_i) begin
+      if (sys_rst) begin
+	 enableDel <= 0;
+	 clkCnt <= 5;
+      end else begin
+	 enableDel <= enable_jtag;
+         if (enableDel) begin
+            clkCnt <= clkCnt - 1;
+	    if (clkCnt == 0) begin
+	       clkCnt <= 5;
+               if (!quit_jtag) begin
+		  junk = jtag_cmd(dpi_jtag_tdo, // see bug
+				  jtag_encode);
+		  {jtag_TRSTn,jtag_TCK,jtag_TMS,jtag_TDI} = jtag_encode ^ 'h8; // flip the TRSN
+               end
+	    end // if (clkCnt == 0)
+         end // if (enable && init_done_sticky)
+      end // else: !if(reset || r_reset)
+   end // always @ (posedge clock)
+`endif   
    
    //
    //

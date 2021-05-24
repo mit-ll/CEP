@@ -38,4 +38,7 @@ int cepPlicTest_runTest(int cpuId, int seed, int verbose);
 
 int cepPlicTest_runRegTest(int cpuId, int accessSize,int seed, int verbose);
 
+//int cepPlicTest_intrTest(int coreId, int verbose);
+int cepPlicTest_prioIntrTest(int coreId, int verbose);
+
 #endif

@@ -177,19 +177,19 @@ class TLModuleImp(cepregsparams: CEPREGSParams, outer: TLModule) extends LazyMod
       //
       when ((lockNum === 0.U) & (lock0.isLocked === 0.U)) {
          lock0.coreId   := reqId
-     lock0.isLocked := 1.U
+	 lock0.isLocked := 1.U	
       }
       .elsewhen ((lockNum === 1.U) & (lock1.isLocked === 0.U)) {
          lock1.coreId   := reqId
-     lock1.isLocked := 1.U      
+         lock1.isLocked := 1.U      
       }
       .elsewhen ((lockNum === 2.U) & (lock2.isLocked === 0.U)) {
          lock2.coreId   := reqId
-     lock2.isLocked := 1.U      
+         lock2.isLocked := 1.U      
       }
       .elsewhen ((lockNum === 3.U) & (lock3.isLocked === 0.U)) {
          lock3.coreId   := reqId
-     lock3.isLocked := 1.U      
+         lock3.isLocked := 1.U      
       }           
    }
    //

@@ -252,10 +252,10 @@
     // Note: Other LLKI related constants/definitions may be found in cep_crypto.h
     // ------------------------------------------------------------------------------------------------------------
     const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;   // Offset from SROT_BASE_K
-    const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;  
+    const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;   // 32 64-bit words
     const uint32_t SROT_KEYRAM_ADDR                 = 0x00000200;   // Offset from SROT_BASE_K 
                                                                     // Note: This cannot be less than SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8)!!!
-    const uint32_t SROT_KEYRAM_SIZE                 = 0x00000100;
+    const uint32_t SROT_KEYRAM_SIZE                 = 0x00000800;   // 2048 64-bit words
 
     // Reminder: data width is 64-bits
     const uint32_t SROT_CTRLSTS_ADDR                = 0x00000000;

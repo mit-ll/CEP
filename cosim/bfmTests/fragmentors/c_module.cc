@@ -92,7 +92,9 @@ void *c_module(void *arg) {
 
   case 2 : 
     // MaskRom
-    errCnt += cepFragmentorTest_verifyMaskRom(cpuId, bootrom_base_addr, "../../drivers/bootbare/bootbare.bin", 8, seed,verbose);
+    //    errCnt += cepFragmentorTest_verifyMaskRom(cpuId, bootrom_base_addr, "../../drivers/bootbare/bootbare.bin", 8, seed,verbose);
+    errCnt += cepFragmentorTest_verifyMaskRom(cpuId, bootrom_base_addr, "../../../hdl_cores/freedom/builds/vc707-u500devkit/sdboot_fpga_sim.bin", 8, seed,verbose);
+
     // MD5
     errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x0100,        16, 8, (uint64_t) 0, seed, verbose); // HOLE!!
     errCnt += cepFragmentorTest_baseTest(cpuId, md5_base_addr + 0x10,           2, 2, (uint64_t)-1, seed, verbose); 

@@ -27,8 +27,6 @@
 // The test itself
 // =============================
 //
-
-
 int cepMaskromTest_runTest(int cpuId, int seed, int verbose) {
   int errCnt = 0;
   //
@@ -38,15 +36,23 @@ int cepMaskromTest_runTest(int cpuId, int seed, int verbose) {
   uint16_t dat16, edat16;
   uint8_t dat8, edat8;
 
+#ifdef SIM_ENV_ONLY
+  uint32_t known_pat1 = bootrom_known_pat1;
+  uint32_t known_pat0 = bootrom_known_pat0;
+  //
+  // Read ONLY
+  //
+  offs = bootrom_base_addr + ((1 << 15)-8); // bottom of 32k bytes
+#else
   // from bootbare.hex
   uint32_t known_pat1 = 0x00800913; // location 0
   uint32_t known_pat0 = 0x30491073; // location 4
-
   //
   // Read ONLY
   //
   offs = bootrom_base_addr; //  + ((1<<13)-8);
-  
+#endif
+
   // 64-bit
   DUT_READ32_64(offs, dat64);
 

@@ -132,11 +132,19 @@ sub parse_log_file {
 	@tmp = split(/[:=\t\n ]+/,$_);
 	for ($i=0;$i<=$#tmp;$i++) {
 	    if (-f $tmp[$i] && !($tmp[$i] =~ /searchPaths_build/)) {
-		if ($tmp[$i] =~ /\.vhd/) {
-		    $vhdl_list{$tmp[$i]} = 1;
+		$testName = basename($tmp[$i]);
+		# add build_dir if single !!
+		if ($testName eq $tmp[$i]) {
+		    print "Adding fullpath to $tmp[$i]\n";
+		    $testName = "$build_dir/$testName";
+		} else {
+		    $testName = $tmp[$i];
+		}
+		if ($testName =~ /\.vhd/) {
+		    $vhdl_list{$testName} = 1;
 		    $vhdl_empty = 0;
 		} else {
-		    $vc_list{$tmp[$i]} = 1;
+		    $vc_list{$testName} = 1;
 		    $vc_empty = 0;		    
 		}
 		print "Got $tmp[0]\n" if $DBG;

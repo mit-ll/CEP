@@ -652,7 +652,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   reg [31:0]            rsvd;
   reg [7:0]             msg_id;
   reg [7:0]             status;
-  reg [7:0]             msg_len;
+  reg [15:0]            msg_len;
   reg [7:0]             key_index;
   reg [15:0]            low_pointer;
   reg [15:0]            high_pointer;
@@ -728,10 +728,10 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
             // Capture the message elements (incoming status is ignored)
             msg_id                    <= llkic2_reqfifo_rdata_o[7:0];
-            msg_len                   <= llkic2_reqfifo_rdata_o[23:16];
-            key_index                 <= llkic2_reqfifo_rdata_o[31:24];
+            msg_len                   <= llkic2_reqfifo_rdata_o[31:16];
+            key_index                 <= llkic2_reqfifo_rdata_o[39:32];
 
-            rsvd                      <= llkic2_reqfifo_rdata_o[63:32];
+            rsvd                      <= llkic2_reqfifo_rdata_o[63:40];
 
             // Assert the Send FIFO read enable
             llkic2_reqfifo_rready_i  <= 1'b1;
@@ -884,7 +884,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               host_wdata_i[7:0]       <= LLKI_MID_KLLOADKEYREQ;
               // For the Load Key Request Message length is equal
               // to the 2 + (high_pointer - low pointer).
-              host_wdata_i[23:16]     <= (high_pointer - low_pointer) + 2;
+              host_wdata_i[31:16]     <= (high_pointer - low_pointer) + 2;
               host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
@@ -893,7 +893,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             end
             LLKI_MID_C2CLEARKEYREQ  : begin
               host_wdata_i[7:0]       <= LLKI_MID_KLCLEARKEYREQ;
-              host_wdata_i[23:16]     <= 8'h01;
+              host_wdata_i[31:16]     <= 16'h01;
               host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
@@ -901,7 +901,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             end
             LLKI_MID_C2KEYSTATUSREQ : begin
               host_wdata_i[7:0]       <= LLKI_MID_KLKEYSTATUSREQ;
-              host_wdata_i[23:16]     <= 8'h01;
+              host_wdata_i[31:16]     <= 16'h01;
               host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
@@ -1281,7 +1281,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             // Capture the reponse fields from the LLKI-PP block
             msg_id                  <= host_rdata_o[7:0];
             status                  <= host_rdata_o[15:8];
-            msg_len                 <= host_rdata_o[23:16];
+            msg_len                 <= host_rdata_o[31:16];
 
             // Just to creating a C2 Response message
             srot_current_state      <= ST_SROT_C2_RESPONSE;
@@ -1324,7 +1324,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
               // Set most of the LLKI-C2 response fields
               llkic2_respfifo_wdata_i[15:8]   <= status;
-              llkic2_respfifo_wdata_i[23:16]  <= 8'h01;
+              llkic2_respfifo_wdata_i[31:16]  <= 8'h01;
               llkic2_respfifo_wdata_i[63:32]  <= rsvd;
               llkic2_respfifo_wvalid_i        <= 1'b1;
 
@@ -1357,7 +1357,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_STATUS_KL_KEY_OVERWRITE     	: begin
               llkic2_respfifo_wdata_i[7:0]    <= LLKI_MID_C2ERRORRESP;
               llkic2_respfifo_wdata_i[15:8]   <= status;
-              llkic2_respfifo_wdata_i[23:16]  <= 8'h01;
+              llkic2_respfifo_wdata_i[31:16]  <= 16'h01;
               llkic2_respfifo_wdata_i[63:32]  <= rsvd;
               llkic2_respfifo_wvalid_i        <= 1'b1;
             end
@@ -1367,7 +1367,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             default                           : begin
               llkic2_respfifo_wdata_i[7:0]    <= LLKI_MID_C2ERRORRESP;
               llkic2_respfifo_wdata_i[15:8]   <= LLKI_STATUS_UNKNOWN_ERROR;
-              llkic2_respfifo_wdata_i[23:16]  <= 8'h01;
+              llkic2_respfifo_wdata_i[31:16]  <= 16'h01;
               llkic2_respfifo_wdata_i[63:32]  <= rsvd;
               llkic2_respfifo_wvalid_i        <= 1'b1;
             end

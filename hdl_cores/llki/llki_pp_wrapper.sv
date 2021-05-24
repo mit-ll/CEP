@@ -246,7 +246,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   LLKIPP_STATE_TYPE           llkipp_current_state;
   reg [7:0]                   msg_id;
   reg [7:0]                   status;
-  reg [7:0]                   msg_len;
+  reg [15:0]                  msg_len;
 
   always @(posedge clk or posedge rst)
   begin
@@ -281,7 +281,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           if (reg_we_o && reg_addr_o == SENDRECV_ADDR) begin
             msg_id                      <= reg_wdata_o[7:0];
             status                      <= reg_wdata_o[15:8];
-            msg_len                     <= reg_wdata_o[23:16];
+            msg_len                     <= reg_wdata_o[31:16];
 
             // Now that we have captured the message, time to process
             llkipp_current_state        <= ST_LLKIPP_MESSAGE_CHECK;
@@ -462,7 +462,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           // Build the response word and indicate that a response is waiting (remember, no FIFOs)
           llkipp_response_word[7:0]     <= msg_id;
           llkipp_response_word[15:8]    <= status;
-          llkipp_response_word[23:16]   <= 1;       // All responses have a message len of 1
+          llkipp_response_word[31:16]   <= 1;       // All responses have a message len of 1
           llkipp_response_waiting       <= '1;
 
           // When the SEND/RECV address is read via the register interface, we can return to idle

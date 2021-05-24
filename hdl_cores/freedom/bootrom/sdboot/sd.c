@@ -224,7 +224,7 @@ void print_greeting()
     kputs("       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-                   "); 
     kputs("       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.                      "); 
     kputs("                                                                             ");
-    kputs("                     Common Evaluation Platform v3.20                        ");
+    kputs("                     Common Evaluation Platform v3.30                        ");
     kputs("         Copyright 2021 Massachusetts Institute of Technology                ");
     kputs("                                                                             ");
     kputs("            Built upon the SiFive Freedom U500 Platform using                ");
@@ -239,11 +239,13 @@ void print_greeting()
     kputs("                                                                             ");
     kputs(" Specific commit links available in the CEP README.md, Release Notes         ");
     kputs("                                                                             ");
+    kprintf("BootRom Image built on %s %s\n",__DATE__,__TIME__);
 }
 
 
 int main(void)
 {
+#ifndef _NO_SD_DOWNLOAD
     REG32(uart, UART_REG_TXCTRL) = UART_TXEN;
 
     print_greeting();
@@ -260,6 +262,7 @@ int main(void)
     }
 
     kputs("BOOT");
+#endif
 
     __asm__ __volatile__ ("fence.i" : : : "memory");
     return 0;

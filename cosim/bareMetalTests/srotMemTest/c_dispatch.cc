@@ -48,7 +48,7 @@ int main(int argc, char *argv[])
   //
   // each bit is to turn on the given core (bit0 = core0, bit1=core1, etc..)
   //
-  long unsigned int mask = (1 << (seed&0x3));
+  long unsigned int mask = 0xf; // (1 << (seed&0x3));
   //
   // Set the active CPU mask before spawn the threads...
   //

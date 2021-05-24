@@ -751,12 +751,12 @@ endtask // READ32_64_TASK
    //
    // For RISC-TESTS
    //
+   reg 	PassStatus=0;
+   reg 	FailStatus=0;   
 `ifdef RISCV_TESTS
    wire pcPass, pcFail;
-   reg 	PassStatus=0;
-   reg 	FailStatus=0;
    reg 	checkToHost=0;
-   
+
    //
    reg [63:0] passFail [4:0] = '{default:0};
    //
@@ -787,6 +787,14 @@ endtask // READ32_64_TASK
       FailStatus = 1;
       dvtFlags[`DVTF_SET_PASS_FAIL_STATUS] = 0; // self-clear
    end
+   reg DisableStuckChecker = 0;
+   
+   always @(posedge dvtFlags[`DVTF_DISABLE_STUCKCHECKER]) begin
+      `logI("DisableStuckChecker=1");
+      DisableStuckChecker = 1;
+      dvtFlags[`DVTF_DISABLE_STUCKCHECKER] = 0; // self-clear
+   end   
+   
    //
    // To detect stuck loop
    //
@@ -796,7 +804,7 @@ endtask // READ32_64_TASK
    wire        curValid;
    wire        coreInReset;
    wire        pcValid;
-   wire        pcStuck = stuckCnt >= 500;
+   wire        pcStuck = !DisableStuckChecker && (stuckCnt >= 500);
    //
    assign pcPass = curValid &&
 		   ((curPc[29:0] === passFail[0][29:0]) ||
@@ -827,9 +835,11 @@ endtask // READ32_64_TASK
 	       `logI("C0 Pass/fail Detected!!!.. Put it to sleep");
 	       PassStatus = pcPass;
 	       FailStatus = pcFail;
-	       repeat (20) @(posedge clk);
-	       //
-	       force `CORE0_PATH.core.reset =1;
+	       if (!DisableStuckChecker) begin
+		  repeat (20) @(posedge clk);
+		  //
+		  force `CORE0_PATH.core.reset =1;
+	       end
 	    end
 	 end
 	 assign curPc       = `CORE0_PC;
@@ -843,8 +853,10 @@ endtask // READ32_64_TASK
 	       `logI("C1 Pass/fail Detected!!!.. Put it to sleep");
 	       PassStatus = pcPass;
 	       FailStatus = pcFail;
-	       repeat (20) @(posedge clk);	       
-	       force `CORE1_PATH.core.reset =1;
+	       if (!DisableStuckChecker) begin	       
+		  repeat (20) @(posedge clk);	       
+		  force `CORE1_PATH.core.reset =1;
+	       end
 	    end
 	 end
 	 assign curPc       = `CORE1_PC;
@@ -858,8 +870,10 @@ endtask // READ32_64_TASK
 	       `logI("C2 Pass/fail Detected!!!.. Put it to sleep");
 	       PassStatus = pcPass;
 	       FailStatus = pcFail;
-	       repeat (20) @(posedge clk);     
-	       force `CORE2_PATH.core.reset =1;
+	       if (!DisableStuckChecker) begin	       
+		  repeat (20) @(posedge clk);
+		  force `CORE2_PATH.core.reset =1;
+	       end
 	    end
 	 end
 	 assign curPc       = `CORE2_PC;
@@ -873,8 +887,10 @@ endtask // READ32_64_TASK
 	       `logI("C3 Pass/fail Detected!!!.. Put it to sleep");
 	       PassStatus = pcPass;
 	       FailStatus = pcFail;
-	       repeat (20) @(posedge clk);     
-	       force `CORE3_PATH.core.reset =1;
+	       if (!DisableStuckChecker) begin	       
+		  repeat (20) @(posedge clk);     
+		  force `CORE3_PATH.core.reset =1;
+	       end
 	    end
 	 end
 	 assign curPc       = `CORE3_PC;

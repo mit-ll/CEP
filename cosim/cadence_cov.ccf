@@ -1,18 +1,53 @@
-select_functional  -imm_asrt_class_package
-set_covergroup -new_instance_reporting
-set_expr_coverable_statements -procassign -contassign
-set_expr_coverable_operators -relational -conditional -logical_not
+#
+# From Cadence 05/11/21
+#
+
+# enable code and FSM coverage
+select_coverage -block -expr -toggle -fsm -instance cep_tb.fpga.topDesign.topMod...
+
+# remove instances in the hierarchy without any coverage
+deselect_coverage -remove_empty_instances
+
+# Specific options for coverage merging, refinements
+set_code_fine_grained_merging
 set_refinement_resilience
-#
-# need to see all nets in toggle, tony D.
-#set_toggle_portsonly
-#
-set_libcell_scoring
-#
-# From Amit 04/12/2021
-#
+
+# Specific options for finer granularity/control in coverage scoring
+set_libcell_scoring -enable_vy
+set_assign_scoring
+set_branch_scoring
+set_com -log
 set_glitch_strobe 166 ps
+
+# expression specific options
+set_expr_scoring -control -struct
+set_expr_coverable_operators -bitwise -relational -conditional -reduction -logical_not
+set_expr_coverable_statements -all
+
+
+# toggle specific options
+#set_toggle_portsonly                                                  # limit to ports only
+#set_toggle_smart_refinement                                   # enable toggle smart refinement / exclusions
+set_toggle_scoring -sv_mda
+#set_toggle_scoring -sv_mda 16                                 # reduces most of warnings but toggle coverage space large
+#set_toggle_scoring -sv_mda 18                                 # covers all warnings but toggle coverage space very large
+set_toggle_scoring -sv_enum enable_mda
+set_toggle_scoring -sv_enum -sv_struct_with_enum
 set_toggle_strobe 166 ps
 set_toggle_scoring -regeot
-#
-select_coverage -block -expr -toggle -fsm -instance cep_tb.fpga.topDesign.topMod...
+
+# FSM specific options
+set_fsm_scoring -hold_transition
+set_fsm_reset_scoring
+
+# functional coverage 
+select_functional -imm_asrt_class_package
+set_covergroup -per_instance_default_one
+
+# Optimizations
+#set_optimize -vlog_prune_on
+set_optimize -top_expr_non_scorable
+set_optimize -prune_covergroup
+
+#**************************
+

@@ -58,10 +58,13 @@ ISA_VM_1CORE_ONLY_LIST= \
 	rv64ud-v-move 		\
 
 # make 4 cores
-ISA_VM_LIST = $(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}0) \
-	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}1) \
-	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}2) \
-	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}3) 
+ISA_VM_LIST = $(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}0) 
+
+#
+#	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}1) \
+#	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}2) \
+#	$(foreach t,${ISA_VM_1CORE_ONLY_LIST},${t}3) 
+
 
 #
 # special tests that going toHost = Pass
@@ -226,7 +229,17 @@ ISA_TEST_LIST = \
 	${ISA_SINGETHR_LIST} 		\
 	${ISA_PARALLEL_TEST_LIST} 	\
 
+#
+# Special test, NOT ISA
+#
+#
+# This test needs *openocd* to control the JTAG port
+#
+OPENOCD_CHECK := $(filter Debugger, $(shell openocd --version 2>&1 | grep Debugger))
 
+ifeq "$(OPENOCD_CHECK)" "Debugger"
+ISA_TEST_LIST += dtmTest
+endif
 
 TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.txt))
 

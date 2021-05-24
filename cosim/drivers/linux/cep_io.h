@@ -21,37 +21,29 @@
 //#include <sys/types.h>
 
 extern std::mutex iomutex;
-#define THR_LOGI(format, ...) {		 \
-    char _gstr[1024], _tstr[32];			 \
-    sprintf(_tstr,"C%d:",sched_getcpu());	 \
-    snprintf(_gstr,sizeof(_gstr),format, ##__VA_ARGS__);	\
-    std::lock_guard<std::mutex> iolock(iomutex); \
-    printf("%s %s", _tstr, _gstr);		 \
-  }
+#define THR_LOGI(format, ...) {                 \
+        std::scoped_lock iolock(iomutex);       \
+        printf("C%d: ",sched_getcpu());                 \
+        printf(format,  ##__VA_ARGS__);fflush(NULL);    \
+    } 
 
-#define THR_LOGE(format, ...) {		 \
-    char _gstr[1024], _tstr[32];			 \
-    sprintf(_tstr,"C%d: ** ERROR ** ",sched_getcpu());	 \
-    snprintf(_gstr,sizeof(_gstr),format, ##__VA_ARGS__);	 \
-    std::lock_guard<std::mutex> iolock(iomutex); \
-    printf("%s %s", _tstr, _gstr);		 \
-  }
+#define THR_LOGE(format, ...) {                                  \
+        std::scoped_lock iolock(iomutex);                        \
+        printf("C%d: ** ERROR ** ",sched_getcpu());              \
+        printf(format, ##__VA_ARGS__); fflush(NULL);             \
+    }
 
-#define THR_LOGW(format, ...) {		 \
-    char _gstr[1024], _tstr[32];			 \
-    sprintf(_tstr,"C%d: ** WARNING ** ",sched_getcpu());	 \
-    snprintf(_gstr,sizeof(_gstr),format, ##__VA_ARGS__);	 \
-    std::lock_guard<std::mutex> iolock(iomutex); \
-    printf("%s %s", _tstr, _gstr);		 \
-  }
+#define THR_LOGW(format, ...) {                                  \
+        std::scoped_lock iolock(iomutex);                        \
+        printf("C%d: ** WARNING ** ",sched_getcpu());            \
+        printf(format, ##__VA_ARGS__);fflush(NULL);              \
+    }
 
-#define THR_LOGF(format, ...) {		 \
-    char _gstr[1024], _tstr[32];			 \
-    sprintf(_tstr,"C%d: ** FATAL ** ",sched_getcpu());	 \
-    snprintf(_gstr,sizeof(_gstr),format, ##__VA_ARGS__);	 \
-    std::lock_guard<std::mutex> iolock(iomutex); \
-    printf("%s %s", _tstr, _gstr);		 \
-  }
+#define THR_LOGF(format, ...) {                                  \
+        std::scoped_lock iolock(iomutex);                        \
+        printf(_tstr,"C%d: ** FATAL ** ",sched_getcpu());        \
+        printf(format, ##__VA_ARGS__); fflush(NULL);             \
+    }
 
 
 //#define DELAY(a)        mdelay(a)

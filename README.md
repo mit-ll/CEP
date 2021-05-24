@@ -8,7 +8,7 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-    <img src="./doc/version3.2.jpg" width="98" height="60">
+    <img src="./doc/version3.3.jpg" width="98" height="60">
 </p>
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology
@@ -25,7 +25,7 @@ For CEP v3.1+, the full LLKI has been added.  This includes the Surrogate Root o
 
 ### Please check the [Release Notes](./RELEASE_NOTES.md) to understand what has changed and a list of known issues.
 
-<br/><br/>
+<br/>
 
 <p align="center">
     <img src="./doc/cep_v3.1_architecture.jpg">
@@ -341,7 +341,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v3.20
+                      Common Evaluation Platform v3.30
          Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -364,7 +364,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v3.20 was built on Apr 15 2021 09:22:15 ***
+*** CEP Tag=CEPTest CEP HW VERSION = v3.30 was built on Apr 15 2021 09:22:15 ***
  CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x0000000700000000, 0x0000000800000000, 0x0000000600000000, 0x0000000c00000000 ScratchPad=0x0000002000800000
 gSkipInit=0/0
 gverbose=0/0

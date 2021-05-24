@@ -178,6 +178,11 @@
 `define DVTF_SROT_START_CAPTURE_BIT                 111
 `define DVTF_SROT_STOP_CAPTURE_BIT                  112
 
+// JTAG/OpenOcd
+`define DVTF_ENABLE_REMOTE_BITBANG_BIT              113
+`define DVTF_DISABLE_STUCKCHECKER                   114
+`define DVTF_GET_SOCKET_ID_BIT                      115
+
 //
 // ===============================================
 // System Sim Status

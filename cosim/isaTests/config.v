@@ -16,5 +16,6 @@
 //`define RANDOMIZE
 
 `define RISCV_TESTS
+`define OPENOCD_ENABLE   
 
 `timescale 1ns/100ps

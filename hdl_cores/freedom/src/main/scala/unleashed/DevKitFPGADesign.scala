@@ -180,14 +180,9 @@ class U500VC707DevKitSystemModule[+L <: DevKitFPGADesign](_outer: L)
   val gpio_cat = Cat(Seq.tabulate(gpio_pins.pins.length) { i => gpio_pins.pins(i).o.oval })
   
   // make the LED to GPIO connections
-     _outer.ledsOut(0) := gpio_cat(0)
-     _outer.ledsOut(1) := gpio_cat(1)
-     _outer.ledsOut(2) := gpio_cat(2)
-     _outer.ledsOut(3) := gpio_cat(3)
-     _outer.ledsOut(4) := gpio_cat(4)
-     _outer.ledsOut(5) := gpio_cat(5)
-     _outer.ledsOut(6) := gpio_cat(6)
-     _outer.ledsOut(7) := gpio_cat(7)
+  for ( ledindex <- 0 to _outer.ledsOut.length-1 )  {
+     _outer.ledsOut(ledindex) := gpio_cat(ledindex)
+  }
 }
 
 // Allow frequency of the design to be controlled by the Makefile

@@ -36,5 +36,6 @@ uint64_t  cepSpiTest_ReadEntry(regBaseTest_t *me, uint32_t adr);
 //
 int cepSpiTest_runTest(int cpuId, int seed, int verbose);
 int cepSpiTest_runRegTest(int cpuId, int accessSize,int seed, int verbose);
+int cepSpiRdWrTest(int cpuId, int maxChar, int seed, int verbose);
 
 #endif

@@ -36,10 +36,10 @@ void thread_entry(int cid, int nc)
   set_printf(0);
 
   switch (cpuId) {
-  case 0 :  errCnt += cepUartTest_runTest(cpuId,0x10, 0); break;
+  case 3 :  errCnt += cepUartTest_runTest(cpuId,0x10, 0); break;
   case 1 :  errCnt += cepSpiTest_runTest(cpuId,0x20, 0); break;
   case 2 :  errCnt += cepGpioTest_runTest(cpuId,0x30,0); break;
-  case 3 :  errCnt += cepMaskromTest_runTest(cpuId,0x40,0); break;
+  case 0 :  errCnt += cepMaskromTest_runTest(cpuId,0x40,0); break;
   }
 
   //

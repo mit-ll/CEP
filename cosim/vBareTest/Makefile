@@ -50,12 +50,12 @@ VIRT_TEST_LIST = 		\
 	pt3levels		\
 	directMap2Levels	\
 	superpage2Level		\
-	directMap1Level 	\
 	special1Level 		\
 	misalignLdSt2Levels	\
 
 #	iTLB	 		\
 #	dTLB			\
+#	directMap1Level 	\
 
 #x	rdwrDat_sv39	\
 

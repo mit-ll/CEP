@@ -10,8 +10,8 @@ CEP_DIAG_VERSION = 3.3
 CEP_DIAG_SITE = ./package/cep_diag/src
 CEP_DIAG_SITE_METHOD = local
 
-CEP_DIAG_CONF_OPTS += --enable-ssl
-CEP_DIAG_DEPENDENCIES += openssl
+CEP_DIAG_CONF_OPTS += 
+CEP_DIAG_DEPENDENCIES += cryptopp
 
 define CEP_DIAG_BUILD_CMDS
   $(MAKE) CC="$(TARGET_CC)" LD="$(TARGET_LD)" -C $(@D)

@@ -1,169 +1,126 @@
 # See LICENSE for license details.
 
+//
+// Tony Duong 12/17/202
+//
+// Three level page table look ups with dynamic page maps.
+// use default PTW from drivers/virtual/multi_vm.c	
+//	
 #include "riscv_test.h"
 #include "test_macros.h"
 
 # align 12 = page size of 4K
-	
-	
-#define ADD_T_DATA(num) \
-	.align 12 		; \
-tdata ## num: 	.dword (1 << num)
-
-#define ADD_T_DATA2(num) \
-	.align 12 		; \
-	.dword 0		; \
-tdata ## num: 	.dword (1 << num)	
-
-#define ADD_T_EXP(num) \
-	.align 12 		; \
-texp: 	.dword ((1 << num)-1)
-
-#define ADD_T_ACT(num) \
-	.align 12 		; \
-tact: 	.dword num
-
-
-#define ADD2ACT(num) \
-	la a0, tdata ## num	; \
-	add a1,a0,t6		; \
-	sd t6,0(a1)		; \
-	ld t1,0(a0)		; \
-	sd x0,0(a0)		; \
-	add t0,t1,t0		; 
-
 
 RVTEST_RV64U
 RVTEST_CODE_BEGIN
 
 user_code_here:
-	# try to restrict to 128 bytes per page to cut down on memcpy per page
-	# preload
-	//csrr t6,scounteren	; # t6=hartID
-	addi  t6,x0,0x3f	; # bottom of page
-	slli t6,t6,6		; # move to cache line
-	#
-	mv a0, x0		; # clear A0
-	la a0, tact		; # load address of act into a0
-	lw t0,0(a0)		; # t0 = act
-	# add all
-	j 1f
+//	
+// must obey the page table rule as specified in multi_vm.c for this to work!!!
+//
+// MODE: WALK1_0_3LEVELS (vpn2->vpn1->vpn0)
+//
+// Acceptabe User's VA addressing:
+//
+//  VPN[2]     VPN[1]    VPN[0]   PageOffset
+//         3           2          1
+// 876543210_987654321_098765432_109876543210
+// 111111111 mmmmmmmmm xxxxxxxxx pppppppppppp : Kernel code (megapage)
+// 000000000 000000000 000UUUUUU pppppppppppp : user code (restricted to 64 pages = 256Kbytes)
+// 000000011 wwwwwwwww 1011xxxxx pppppppppppp : walk-1 VPN[1] = pattern1
+// 000000011 WWWWWWWWW 1100xxxxx pppppppppppp : walk-0 VPN[1] = pattern2
+// wwwwwwwww 000000011 1101xxxxx pppppppppppp : walk-1 VPN[2] = pattern3
+// WWWWWWWWW 000000011 1110xxxxx pppppppppppp : walk-0 VPN[2] = pattern4
+//
+#define EXP      a0
+#define ACT      a1
+#define SAVE_P   a2
+#define ONES     a3
+#define COREID   s10	
+#define CUR_P    t0		
+#define CUR_A    t1
+#define WRDAT    t2
+#define RDDAT    t3	
+#define CUR_CNT  t4
+#define CUR_LOOP t5
+#define WRN_RD	 t6
+
+// one page away
+#define STACK_TOP (_end + 4096)	
+	//
+	// s11 = hartID << 10 : bit 11:10 
+	//
+	slli COREID,s11,10
+	//
+	// init
+	addi ONES,x0,1			; # use as constant 1
+	addi CUR_LOOP,x0,4		; # loop = 4 patterns. FIXME: 2-patterns for now = virtual[31:0], [38:32] still under debug!!
+	addi WRDAT,x0,1			; # shift-1 = write data pattern
+	addi EXP,x0,0			; # EXP = 0
+	addi ACT,x0,0			; # ACT = 0
+	//
+
+get_pattern:
+	addi WRN_RD,x0,0		; # start with Write
+	
+	la   SAVE_P,pat4          	;
+	addi x1,x0,4			;
+	beq  CUR_LOOP,x1,start_loop	; # test pat4
+	la   SAVE_P,pat3          	;
+	addi x1,x0,3			;
+	beq  CUR_LOOP,x1,start_loop	; # test pat3
+	la   SAVE_P,pat2          	;
+	addi x1,x0,2			;
+	beq  CUR_LOOP,x1,start_loop	; # test pat2	
+	la   SAVE_P,pat1          	; # test pat1
+	j    start_loop			;
+
 	.align 12
-1:	
-ADD2ACT(0)		;
-ADD2ACT(1)		;
-ADD2ACT(2)		;
-ADD2ACT(3)		;
-	j 2f		;
+start_loop:	
+	addi CUR_CNT,x0,16		; # walk-1/0 for 16-bits
+	mv   CUR_P, SAVE_P	        ; # start from top
+	
+sub_loop:
+	ld   CUR_A,0(CUR_P)		; # get virtual address point by CUR_P
+	or   CUR_A, CUR_A, COREID	; # add coreid to make unquie cache block
+	beq  WRN_RD,x0,do_write		; #
+
+do_read:	
+	ld   RDDAT,0(CUR_A)		; # ----- READ! ------
+	add  ACT,ACT,RDDAT		; # add to actual for compare
+	j    continue			; # done?
+do_write:
+	sd   WRDAT,0(CUR_A)		; # ----- WRITE! -------
+	add  EXP,EXP,WRDAT	    	; # compute expected
+	slli WRDAT,WRDAT,1		; # next WRDAT
+
+continue:
+	add  CUR_P,CUR_P,8		; # point to next virtual address
+	sub  CUR_CNT,CUR_CNT,ONES   	; # decrement	
+	bne  CUR_CNT,x0,sub_loop	; # until done
+	
+	beq  WRN_RD, ONES,next_loop	; # next outter loop
+	addi WRN_RD, WRN_RD,1		; # now do read loop
+	j    start_loop			; #
+	
 	.align 12
-2:
-ADD2ACT(4)		;	
-ADD2ACT(5)		;
-ADD2ACT(6)		;
-ADD2ACT(7)		;
-	j 3f		;
-	.align 12
-3:
-ADD2ACT(8)		;
-ADD2ACT(9)		;	
-ADD2ACT(10)		;
-ADD2ACT(11)		;
-	j 4f		;
-	.align 12
-4:
-ADD2ACT(12)		;
-ADD2ACT(13)		;
-ADD2ACT(14)		;	
-ADD2ACT(15)		;
-	j 5f		;
-	.align 12
-5:	
-ADD2ACT(16)		;
-ADD2ACT(17)		;
-ADD2ACT(18)		;
-ADD2ACT(19)		;
-	j 6f		;
-	.align 12
-6:	
-ADD2ACT(20)		;
-ADD2ACT(21)		;
-ADD2ACT(22)		;
-ADD2ACT(23)		;
-	j 7f		;
-	.align 12
-7:
-ADD2ACT(24)		;	
-ADD2ACT(25)		;
-ADD2ACT(26)		;
-ADD2ACT(27)		;
-	j 8f		;
-	.align 12
-8:	
-ADD2ACT(28)		;
-ADD2ACT(29)		;
-ADD2ACT(30)		;
-ADD2ACT(31)		;	
-	j 9f		;
-	.align 12
-9:
-ADD2ACT(32) 		;
-ADD2ACT(33)		;
-ADD2ACT(34)		;
-ADD2ACT(35)		;	
-	j 10f		;
-	.align 12
-10:
-ADD2ACT(36)		;
-ADD2ACT(37)		;
-ADD2ACT(38)		;
-ADD2ACT(39)		;	
-	j 11f		;
-	.align 12
-11:
-ADD2ACT(40)		;
-ADD2ACT(41)		;
-ADD2ACT(42)		;
-ADD2ACT(43)		;	
-	j 12f		;
-	.align 12
-12:
-ADD2ACT(44)		;
-ADD2ACT(45)		;
-ADD2ACT(46)		;
-ADD2ACT(47)		;	
-	j 13f		;
-	.align 12
-13:
-ADD2ACT(48)		;
-ADD2ACT(49)		;
-ADD2ACT(50)		;
-ADD2ACT(51)		;	
-	j 14f		;
-	.align 12
-14:
-ADD2ACT(52)		;
-ADD2ACT(53)		;
-ADD2ACT(54) 		;
-ADD2ACT(55)		;	
-	j 15f		;
-	.align 12
-15:	
-	# check
-	la a0, texp		; # load address of exp into a0
-	ld t1,0(a0)		; # t1 = exp
-	# compare t0 and t1
-	bne t0,t1, test_fail	; # fail if not equal
+next_loop:
+	sub  CUR_LOOP,CUR_LOOP,ONES	; # back to top	if not done
+	beq  CUR_LOOP,x0,compare	; # compare
+	j    get_pattern		; #
+
+compare:
+	bne EXP,ACT, test_fail	   	; # not equal -> fail
+	j   test_pass		   	; # else test pass
 
 #
 # Either pass or timeout
 #
 	.global  test_pass
-	.align 2			
 test_pass:	
 RVTEST_PASS
 
 	.global  test_fail
-	.align 2
 test_fail:
 RVTEST_FAIL	
 
@@ -174,68 +131,101 @@ RVTEST_DATA_BEGIN
 	.align 3
 	.global	vm_flags	
 vm_flags:
-	.dword 0
+	.dword WALK1_0_3LEVELS	
+
+//
+// Pattern 1-4
+//
+
+//
+// all maps to the same page , make sure each line hits different cache line
+// 11:10 = hart ID
+//  9:6  = 16 cache blocks	
+//  5:0	 = within cache line
 //	
-ADD_T_DATA2(0)		;
-ADD_T_DATA2(1)		;
-ADD_T_DATA2(2)		;
-ADD_T_DATA(3)		;
-ADD_T_DATA(4)		;
-ADD_T_DATA(5)		;
-ADD_T_DATA(6)		;
-ADD_T_DATA(7)		;
-ADD_T_DATA(8)		;
-ADD_T_DATA(9)		;
-ADD_T_DATA(10)		;
-ADD_T_DATA(11)		;
-ADD_T_DATA(12)		;
-ADD_T_DATA(13)		;
-ADD_T_DATA(14)		;
-ADD_T_DATA(15)		;
-ADD_T_DATA(16)		;
-ADD_T_DATA(17)		;
-ADD_T_DATA(18)		;
-ADD_T_DATA(19)		;
-ADD_T_DATA(20)		;
-ADD_T_DATA(21)		;
-ADD_T_DATA(22)		;
-ADD_T_DATA(23)		;
-ADD_T_DATA(24)		;
-ADD_T_DATA(25)		;
-ADD_T_DATA(26)		;
-ADD_T_DATA(27)		;
-ADD_T_DATA(28)		;
-ADD_T_DATA(29)		;
-ADD_T_DATA2(30)		;
-ADD_T_DATA2(31)		;
-ADD_T_DATA2(32)		;
-ADD_T_DATA(33)		;
-ADD_T_DATA(34)		;
-ADD_T_DATA(35)		;
-ADD_T_DATA(36)		;
-ADD_T_DATA(37)		;
-ADD_T_DATA(38)		;
-ADD_T_DATA(39)		;
-ADD_T_DATA(40)		;
-ADD_T_DATA(41)		;
-ADD_T_DATA(42)		;
-ADD_T_DATA(43)		;
-ADD_T_DATA(44)		;
-ADD_T_DATA(45)		;
-ADD_T_DATA(46)		;
-ADD_T_DATA(47)		;
-ADD_T_DATA(48)		;
-ADD_T_DATA(49)		;
-ADD_T_DATA(50)		;
-ADD_T_DATA(51)		;
-ADD_T_DATA(52)		;
-ADD_T_DATA(53)		;
-ADD_T_DATA(54)		;
-ADD_T_DATA(55)		;
-#
-#
-#
-ADD_T_EXP(56)		;
-ADD_T_ACT(0)		;
+	.align 12
+pat1:
+	//      Level2     Level1=0 PageAdr   CacheBlock
+	.dword ((0x3<<32)|(0x00<<12)|(0x00<<6)|(0x0<<0))	
+	.dword ((0x3<<32)|(0x01<<12)|(0x01<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x02<<12)|(0x02<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x03<<12)|(0x03<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x04<<12)|(0x04<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x05<<12)|(0x05<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x06<<12)|(0x06<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x07<<12)|(0x07<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x08<<12)|(0x08<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x09<<12)|(0x09<<6)|(0x0<<0))	
+	.dword ((0x3<<32)|(0x0a<<12)|(0x0a<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x0b<<12)|(0x0b<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x0c<<12)|(0x0c<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x0d<<12)|(0x0d<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x0e<<12)|(0x0e<<6)|(0x0<<0))
+	.dword ((0x3<<32)|(0x0f<<12)|(0x0f<<6)|(0x0<<0))
+
+	.align 12
+pat2:
+	//         L2=1   Level1     PageAdr   CacheBlock	
+	.dword ((0x1<<30)|(0x3<<21)|(0x10<<12)|(0x00<<6)|(0x10<<0))	
+	.dword ((0x1<<30)|(0x3<<21)|(0x11<<12)|(0x01<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x12<<12)|(0x02<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x13<<12)|(0x03<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x14<<12)|(0x04<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x15<<12)|(0x05<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x16<<12)|(0x06<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x17<<12)|(0x07<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x18<<12)|(0x08<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x19<<12)|(0x09<<6)|(0x10<<0))	
+	.dword ((0x1<<30)|(0x3<<21)|(0x1a<<12)|(0x0a<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x1b<<12)|(0x0b<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x1c<<12)|(0x0c<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x1d<<12)|(0x0d<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x1e<<12)|(0x0e<<6)|(0x10<<0))
+	.dword ((0x1<<30)|(0x3<<21)|(0x1f<<12)|(0x0f<<6)|(0x10<<0))
+
+
+//
+// Still under debug
+//	
+	.align 12
+pat3:
+	//      Level2     Level1=0 PageAdr   CacheBlock
+	.dword ((0x07f<<30)|(0x20<<12)|(0x00<<6)|(0x20<<0))	
+	.dword ((0x07f<<30)|(0x21<<12)|(0x01<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x22<<12)|(0x02<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x23<<12)|(0x03<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x24<<12)|(0x04<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x25<<12)|(0x05<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x26<<12)|(0x06<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x27<<12)|(0x07<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x28<<12)|(0x08<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x29<<12)|(0x09<<6)|(0x20<<0))	
+	.dword ((0x07f<<30)|(0x2a<<12)|(0x0a<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x2b<<12)|(0x0b<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x2c<<12)|(0x0c<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x2d<<12)|(0x0d<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x2e<<12)|(0x0e<<6)|(0x20<<0))
+	.dword ((0x07f<<30)|(0x2f<<12)|(0x0f<<6)|(0x20<<0))
+
+	.align 12
+pat4:
+	//        L2=1   Level1     PageAdr   CacheBlock	
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x30<<12)|(0x00<<6)|(0x30<<0))	
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x31<<12)|(0x01<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x32<<12)|(0x02<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x33<<12)|(0x03<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x34<<12)|(0x04<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x35<<12)|(0x05<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x36<<12)|(0x06<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x37<<12)|(0x07<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x38<<12)|(0x08<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x39<<12)|(0x09<<6)|(0x30<<0))	
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3a<<12)|(0x0a<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3b<<12)|(0x0b<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3c<<12)|(0x0c<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3d<<12)|(0x0d<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3e<<12)|(0x0e<<6)|(0x30<<0))
+	.dword ((0x1<<30)|(0x1ff<<21)|(0x3f<<12)|(0x0f<<6)|(0x30<<0))
 	
 RVTEST_DATA_END
+

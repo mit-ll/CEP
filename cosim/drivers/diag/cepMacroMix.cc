@@ -84,6 +84,7 @@ int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbo
   cep_srot srot(verbose);
   srot.SetCpuActiveMask(mask);
   srot.SetSrotFlag(captureOn);
+  srot.SetCryptoMask(cryptoMask);
   errCnt += srot.LLKI_Setup(cpuId);
   if (errCnt) return errCnt;
   //
@@ -232,20 +233,13 @@ int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbo
       rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
       //
       maxLoop = 4;
-      int maxBytes=8;
-      //
+      int maxBytes  = 8;
+
       init_rsa();
-      if (!errCnt)  {
-	errCnt += rsa.RunRsaTest2(maxLoop,256/8);
-      }    
-      if (!errCnt)  {    
-	errCnt += rsa.RunRsaMemTest(0xf, 1024); // 8K bits
-      }
-      if (!errCnt)  {    
-	errCnt += rsa.RunRsaTest(maxLoop,maxBytes);
-      }
-      //
+      if (!errCnt) {errCnt += rsa.RunRsaTest(maxLoop, 8);}  // Max Msg/Mod Size = 8 bytes
+//      if (!errCnt) {errCnt += rsa.RunRsaMemTest(0xf, 1024);}}     // 8K bits
       rsa.freeMe();
+
     } 
     if (errCnt) return errCnt;    
     break;

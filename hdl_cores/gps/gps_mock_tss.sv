@@ -23,8 +23,8 @@ module gps_mock_tss import llki_pkg::*; (
     input wire [47 : 0]   pcode_initializers,
     input wire            startRound,
     output wire [12 : 0]  ca_code,
-    input wire [127 : 0]  p_code,
-    input wire [127 : 0]  l_code,
+    output wire [127 : 0] p_code,
+    output wire [127 : 0] l_code,
     output wire           l_code_valid,
 
     // LLKI Discrete I/O

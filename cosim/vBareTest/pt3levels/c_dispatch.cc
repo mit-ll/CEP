@@ -80,6 +80,8 @@ int main(int argc, char *argv[])
   // Enable main memory logging
   //
   //DUT_WRITE_DVT(DVTF_ENABLE_MAIN_MEM_LOGGING, DVTF_ENABLE_MAIN_MEM_LOGGING, 1);
+  DUT_WRITE_DVT(DVTF_PAT_LO, DVTF_PAT_LO, 0);
+  DUT_WRITE_DVT(DVTF_SET_DEFAULTX_BIT,DVTF_SET_DEFAULTX_BIT,1);
   //
   // wait for calibration??
   //

@@ -90,13 +90,15 @@ VSRCS := \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_assert.sv \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_util_pkg.sv \
 	$(base_dir)/../../opentitan/hw/ip/prim/rtl/prim_fifo_sync.sv \
-	$(base_dir)/../../opentitan/hw/ip/prim_generic/rtl/prim_generic_ram_1p.sv \
 	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_pkg.sv \
 	$(base_dir)/../../opentitan/hw/ip/tlul/rtl/tlul_adapter_host.sv \
+	$(base_dir)/../llki/prim_generic_ram_1p.sv \
 	$(base_dir)/../llki/llki_pp_wrapper.sv \
 	$(base_dir)/../llki/srot_wrapper.sv \
+	$(base_dir)/../llki/scratchpad_wrapper.sv \
 	$(base_dir)/../llki/tlul_err.sv \
-	$(base_dir)/../llki/tlul_adapter_reg.sv
+	$(base_dir)/../llki/tlul_adapter_reg.sv \
+	$(base_dir)/../llki/tlul_fifo_sync.sv
 
 
 # Freedom U500 TCL scripts have been expanded to support passing of 

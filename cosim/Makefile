@@ -38,7 +38,7 @@ TEST_GROUP  =  	bareMetalTests	\
 
 runAll: 
 	make cleanAll
-	make libsBuild
+	make buildLibs
 	@for i in ${TEST_GROUP}; do				\
 		rm -f $${i}/$${i}.log;				\
 		(cd $${i}; make STAND_ALONE=0 runAll); 		\
@@ -53,8 +53,7 @@ summary: .force
 #
 # override anything here before calling the common file
 #
-include ./common.make
-
-
+MKFILE_DIR ?= .
+include $(MKFILE_DIR)/common.make
 
 

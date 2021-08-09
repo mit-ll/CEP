@@ -8,32 +8,11 @@
 // Notes:          
 //
 //************************************************************************
-//
-// For bareMetal mode ONLY
-//
-#include "riscv_wrapper.h"
+#ifndef c_module_H
+#define c_module_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-  
-#if 0
-//int main(void)
-void riscvTest_entry(void) 
-{
-  //
- 
-IamHere:
-  int globalCnt=0;
-  int errCnt = 0;
-  for (int i=0;i<4;i++) {
-    globalCnt++;
-  }
-  return;
-}
-#endif
+#include "shPthread.h"
 
-#ifdef __cplusplus
-}
+void *c_module(void *);   /* thread routine */
+
 #endif
-  

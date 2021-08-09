@@ -52,9 +52,10 @@ trait HasPeripheryGPS { this: BaseSubsystem =>
 
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
-     gpsmodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
-    }
+      gpsmodule.llki_node :*= 
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
+   }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
     InModuleBody { gpsmodule.module.reset := coreattachparams.slave_bus.module.reset }
@@ -83,9 +84,11 @@ class gpsTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -120,8 +123,8 @@ class gpsTLModuleImp(coreparams: COREParams, outer: gpsTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -243,18 +246,26 @@ class gpsTLModuleImp(coreparams: COREParams, outer: gpsTLModule) extends LazyMod
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
  
   // Instantiate the blackbox
-  val gps_mock_tss_inst   = Module(new gps_mock_tss())
+  val gps_inst   = Module(new gps_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  gps_inst.suggestName(gps_inst.desiredName()+"_inst")
 
     // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  gps_mock_tss_inst.io.llkid_key_data       := llki_pp_inst.io.llkid_key_data
-  gps_mock_tss_inst.io.llkid_key_valid      := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready           := gps_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete        := gps_mock_tss_inst.io.llkid_key_complete
-  gps_mock_tss_inst.io.llkid_clear_key      := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack       := gps_mock_tss_inst.io.llkid_clear_key_ack
+  gps_inst.io.llkid_key_data          := llki_pp_inst.io.llkid_key_data
+  gps_inst.io.llkid_key_valid         := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := gps_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := gps_inst.io.llkid_key_complete
+  gps_inst.io.llkid_clear_key         := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := gps_inst.io.llkid_clear_key_ack
 
   // Instantiate registers for the blackbox inputs
   val startRound                   = RegInit(0.U(1.W))
@@ -286,25 +297,25 @@ class gpsTLModuleImp(coreparams: COREParams, outer: gpsTLModule) extends LazyMod
   val l_code_valid                 = Wire(Bool())
 
   // Map the blackbox I/O 
-  gps_mock_tss_inst.io.sys_clk_50         := clock                                      // Implicit module clock
-  gps_mock_tss_inst.io.sync_rst_in        := reset.asBool
-  gps_mock_tss_inst.io.sync_rst_in_dut    := (reset.asBool || gps_reset).asAsyncReset 
+  gps_inst.io.sys_clk_50         := clock                                      // Implicit module clock
+  gps_inst.io.sync_rst_in        := reset.asBool
+  gps_inst.io.sync_rst_in_dut    := (reset.asBool || gps_reset).asAsyncReset 
                                                                                         // Implicit module reset
-  gps_mock_tss_inst.io.startRound         := startRound                                 // Start bit
-  gps_mock_tss_inst.io.sv_num             := sv_num                                     // GPS space vehicle number written by cepregression.cpp
-  gps_mock_tss_inst.io.aes_key            := Cat(aes_key0, aes_key1, aes_key2)          // L code encryption key
-  gps_mock_tss_inst.io.pcode_speeds       := Cat(pcode_z_cnt_speed, pcode_xn_cnt_speed) // PCode acceleration register
-  gps_mock_tss_inst.io.pcode_initializers := Cat(pcode_ini_x2b, pcode_ini_x2a, pcode_ini_x1b, pcode_ini_x1a) // Initializers for pcode shift registers
-  ca_code                                 := gps_mock_tss_inst.io.ca_code               // Output GPS CA code
-  p_code0_u                               := gps_mock_tss_inst.io.p_code(127,96)        // Output P Code bits 
-  p_code0_l                               := gps_mock_tss_inst.io.p_code(95,64)         // Output P Code bits      
-  p_code1_u                               := gps_mock_tss_inst.io.p_code(63,32)         // Output P Code bits          
-  p_code1_l                               := gps_mock_tss_inst.io.p_code(31,0)          // Output P Code bits
-  l_code0_u                               := gps_mock_tss_inst.io.l_code(127,96)        // Output L Code bits                        
-  l_code0_l                               := gps_mock_tss_inst.io.l_code(95,64)         // Output L Code bits
-  l_code1_u                               := gps_mock_tss_inst.io.l_code(63,32)         // Output L Code bits      
-  l_code1_l                               := gps_mock_tss_inst.io.l_code(31,0)          // Output L Code bits
-  l_code_valid                            := gps_mock_tss_inst.io.l_code_valid          // Out is valid until start is again asserted
+  gps_inst.io.startRound         := startRound                                 // Start bit
+  gps_inst.io.sv_num             := sv_num                                     // GPS space vehicle number written by cepregression.cpp
+  gps_inst.io.aes_key            := Cat(aes_key0, aes_key1, aes_key2)          // L code encryption key
+  gps_inst.io.pcode_speeds       := Cat(pcode_z_cnt_speed, pcode_xn_cnt_speed) // PCode acceleration register
+  gps_inst.io.pcode_initializers := Cat(pcode_ini_x2b, pcode_ini_x2a, pcode_ini_x1b, pcode_ini_x1a) // Initializers for pcode shift registers
+  ca_code                                 := gps_inst.io.ca_code               // Output GPS CA code
+  p_code0_u                               := gps_inst.io.p_code(127,96)        // Output P Code bits 
+  p_code0_l                               := gps_inst.io.p_code(95,64)         // Output P Code bits      
+  p_code1_u                               := gps_inst.io.p_code(63,32)         // Output P Code bits          
+  p_code1_l                               := gps_inst.io.p_code(31,0)          // Output P Code bits
+  l_code0_u                               := gps_inst.io.l_code(127,96)        // Output L Code bits                        
+  l_code0_l                               := gps_inst.io.l_code(95,64)         // Output L Code bits
+  l_code1_u                               := gps_inst.io.l_code(63,32)         // Output L Code bits      
+  l_code1_l                               := gps_inst.io.l_code(31,0)          // Output L Code bits
+  l_code_valid                            := gps_inst.io.l_code_valid          // Out is valid until start is again asserted
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

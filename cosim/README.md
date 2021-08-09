@@ -18,6 +18,7 @@ Several environments are supported:
 * Cycle-accurate and translation-level accurate unit level simulations.
 * JTAG support to inferace with Openocd tool (via bitbang adapter) for Open On-Chip debugger (version 3.3 or later)
 
+
 ## Benefits: ##
 
 * Re-usability: tests or SW drivers that are written to run on the actual HW can be used here. This allows SW to be verified/checked for functionality even before the HW is built. And of course, debugging HW at the same time.
@@ -44,6 +45,7 @@ Several environments are supported:
 
 - Vivado and Modelsim (or xcelium) have been installed (tested versions are listed in [../README.md](../README.md))
 - CEP hardware has be built as described in "Building the Hardware" in [../README.md](../README.md)
+- Openssl 1.0.2
 
 Assuming you already have the CEP-master (version 2.0 or later) sandbox pulled from git and went thru the vivado build successfully. In other words, all the design files (Verilog/VHDL files) are all created.
 
@@ -525,9 +527,9 @@ make COVERAGE=1	    	<-- run simulation with coverage turned on. Coverage data a
                 be merged together for analysis (via make merge)
 make CADENCE=1      	  <-- run simulation targetting Cadence XCellium on RHEL7
 
-make mergeAll	    	  <-- merge all coverage data and report in HTLM format for modelsim
+make mergeAll	    	  <-- merge all coverage data and report in HTML format for modelsim
 
-make CADENCE=1 mergeAll	  <-- merge all coverage data and report in HTLM format for xcelium
+make CADENCE=1 mergeAll	  <-- merge all coverage data and report in HTML format for xcelium
 ```
 
 * By default, under each test directory, one file will be created **if and only if** it is not yet there: **vsim.do**. It is used when **vsim** command is called to control the wave capturing.. If there is a need to override, users are free to modify and change it to anyway to fit the needs. Makefile will not overwrite it as long as it is there. 

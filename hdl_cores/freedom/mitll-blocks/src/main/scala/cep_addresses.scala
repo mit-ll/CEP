@@ -34,90 +34,7 @@ import freechips.rocketchip.tilelink._
 
 object CEPVersion {
   val CEP_MAJOR_VERSION             = 0x03
-  val CEP_MINOR_VERSION             = 0x30
-}
-
-object CEPBaseAddresses {
-  val scratchpad_base_addr          = 0x64800000L
-  val scratchpad_depth              = 0x0000FFFFL
-
-  val cep_cores_base_addr           = 0x70000000L
-    val aes_base_addr               = 0x70000000L
-    val aes_depth                   = 0x000000FFL                                             
-    val aes_llki_base_addr          = 0x70008000L
-      val aes_llki_ctrlsts_addr     = 0x70008000L
-      val aes_llki_sendrecv_addr    = 0x70008008L
-    val aes_llki_depth              = 0x0000003fL
-    
-    val md5_base_addr               = 0x70010000L
-    val md5_depth                   = 0x000000FFL                                             
-    val md5_llki_base_addr          = 0x70018000L
-      val md5_llki_ctrlsts_addr     = 0x70018000L
-      val md5_llki_sendrecv_addr    = 0x70018008L
-    val md5_llki_depth              = 0x000000ffL
-
-    val sha256_base_addr            = 0x70020000L
-    val sha256_depth                = 0x000000FFL                                             
-    val sha256_llki_base_addr       = 0x70028000L
-      val sha256_llki_ctrlsts_addr  = 0x70028000L
-      val sha256_llki_sendrecv_addr = 0x70028008L
-    val sha256_llki_depth           = 0x000000ffL
-
-    val rsa_base_addr               = 0x70030000L
-    val rsa_depth                   = 0x000000FFL                                             
-    val rsa_llki_base_addr          = 0x70038000L
-      val rsa_llki_ctrlsts_addr     = 0x70038000L
-      val rsa_llki_sendrecv_addr    = 0x70038008L
-    val rsa_llki_depth              = 0x000000ffL
-
-    val des3_base_addr              = 0x70040000L
-    val des3_depth                  = 0x000000FFL                                             
-    val des3_llki_base_addr         = 0x70048000L
-      val des3_llki_ctrlsts_addr    = 0x70048000L
-      val des3_llki_sendrecv_addr   = 0x70048008L
-    val des3_llki_depth             = 0x000000ffL
-
-    val dft_base_addr               = 0x70050000L
-    val dft_depth                   = 0x000000FFL                                             
-    val dft_llki_base_addr          = 0x70058000L
-      val dft_llki_ctrlsts_addr     = 0x70058000L
-      val dft_llki_sendrecv_addr    = 0x70058008L
-    val dft_llki_depth              = 0x000000ffL
-
-    val idft_base_addr              = 0x70060000L
-    val idft_depth                  = 0x000000FFL                                             
-    val idft_llki_base_addr         = 0x70068000L
-      val idft_llki_ctrlsts_addr    = 0x70068000L
-      val idft_llki_sendrecv_addr   = 0x70068008L
-    val idft_llki_depth             = 0x000000ffL
-
-    val fir_base_addr               = 0x70070000L  
-    val fir_depth                   = 0x000000FFL                                             
-    val fir_llki_base_addr          = 0x70078000L
-      val fir_llki_ctrlsts_addr     = 0x70078000L
-      val fir_llki_sendrecv_addr    = 0x70078008L
-    val fir_llki_depth              = 0x000000ffL
-
-    val iir_base_addr               = 0x70080000L 
-    val iir_depth                   = 0x000000FFL                                             
-    val iir_llki_base_addr          = 0x70088000L
-      val iir_llki_ctrlsts_addr     = 0x70088000L
-      val iir_llki_sendrecv_addr    = 0x70088008L
-    val iir_llki_depth              = 0x000000ffL
-
-    val gps_base_addr               = 0x70090000L  
-    val gps_depth                   = 0x000000FFL                                             
-    val gps_llki_base_addr          = 0x70098000L
-      val gps_llki_ctrlsts_addr     = 0x70098000L
-      val gps_llki_sendrecv_addr    = 0x70098008L
-    val gps_llki_depth              = 0x000000ffL
-  val cep_cores_depth               = 0x0000FFFFL
-  
-  val cepregs_base_addr             = 0x700F0000L
-  val cepregs_base_depth            = 0x0000FFFFL
-
-  val srot_base_addr                = 0x70200000L
-  val srot_base_depth               = 0x0000FFFFL
+  val CEP_MINOR_VERSION             = 0x40
 }
 
 object AESAddresses {
@@ -277,7 +194,7 @@ object LLKITilelinkParameters {
     val AddressBits                 = 32    // Should be = TL_DW
     val SourceBits                  = 4     // Should be = TL_AIW
     val SinkBits                    = 2     // Should be = TL_DIW
-    val SizeBits                    = 3     // Should be = TL_SZW
+    val SizeBits                    = 2     // Should be = TL_SZW
 }
 
 // The following class is used to pass paramaters down into the CEP cores
@@ -288,7 +205,8 @@ case class COREParams(
   llki_depth          : BigInt,
   llki_ctrlsts_addr   : BigInt,
   llki_sendrecv_addr  : BigInt,
-  dev_name            : String
+  dev_name            : String,					// Device name as it will appear in the Device Tree
+  verilog_module_name : Option[String] = None	// Allows for override of the Blackbox module & instantiation name
 )
 
 // The following parameter pass attachment info to the lower level objects/classes/etc.
@@ -308,6 +226,19 @@ case class CEPREGSParams(
 // The following parameter pass attachment info to the lower level objects/classes/etc.
 case class CEPREGSAttachParams(
   cepregsparams       : CEPREGSParams,
+  slave_bus           : TLBusWrapper
+)
+
+// The following class is used to pass paramaters down into the Scratchpad
+case class ScratchpadParams(
+  slave_address       : BigInt,
+  slave_depth         : BigInt,
+  dev_name            : String
+)
+
+// The following parameter pass attachment info to the lower level objects/classes/etc.
+case class ScratchpadAttachParams(
+  scratchpadparams    : ScratchpadParams,
   slave_bus           : TLBusWrapper
 )
 

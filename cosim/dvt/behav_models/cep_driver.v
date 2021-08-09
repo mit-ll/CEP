@@ -758,7 +758,9 @@ endtask // READ32_64_TASK
    reg 	checkToHost=0;
 
    //
-   reg [63:0] passFail [4:0] = '{default:0};
+   //reg [63:0] passFail [4:0] = '{default:0};
+   // to avoid Xcelium warning
+   reg [63:0] passFail [0:4] = '{default:0};
    //
    // 0 = pass, 1=fail, 2=finish
    //

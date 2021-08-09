@@ -29,8 +29,11 @@ import mitllBlocks.cep_addresses._
 
 // The following class is used to pass paramaters down into the SROT
 case class SROTParams(
-  slave_address     : BigInt,
-  slave_depth       : BigInt
+  slave_address       : BigInt,
+  slave_depth         : BigInt,
+  cep_cores_base_addr : BigInt,
+  cep_cores_depth     : BigInt,
+  llki_cores_array    : Array[BigInt]
 )
 
 // The following parameter pass attachment info to the lower level objects/classes/etc.
@@ -61,8 +64,9 @@ trait HasSROT { this: BaseSubsystem =>
     // Perform the slave "attachments" to the periphery bus
     srotattachparams.slave_bus.coupleTo("srot_slave") {
       srotModule.slave_node :*= 
-      TLSourceShrinker(16) :*= _
-    }
+      TLSourceShrinker(16) :*=
+      TLFragmenter(srotattachparams.slave_bus) :*=_
+   }
 
     // Perform the master "attachments" to the front bus
     srotattachparams.master_bus.coupleFrom("srot_master") {
@@ -100,9 +104,11 @@ class srotTLModule(srotattachparams: SROTAttachParams)(implicit p: Parameters) e
                               srotattachparams.srotparams.slave_depth)),
       resources           = new SimpleDevice("srot-slave", Seq("mitll,srot-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, srotattachparams.slave_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, srotattachparams.slave_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, srotattachparams.slave_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = LLKITilelinkParameters.BeatBytes)))
 
@@ -115,7 +121,9 @@ class srotTLModule(srotattachparams: SROTAttachParams)(implicit p: Parameters) e
         name              = "srot_master0",
         sourceId          = IdRange(0, 15), 
         requestFifo       = true,
-        visibility        = Seq(AddressSet(CEPBaseAddresses.cep_cores_base_addr, CEPBaseAddresses.cep_cores_depth))
+        visibility        = Seq(AddressSet(
+          srotattachparams.srotparams.cep_cores_base_addr,
+          srotattachparams.srotparams.cep_cores_depth))
       ))
     )))
     
@@ -133,10 +141,15 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
   val (master, masterEdge)  = outer.master_node.out(0)
 
   // Define srot_wrapper blackbox and its associated IO
-  class srot_wrapper(val address: BigInt, depth: BigInt) extends BlackBox(
+  class srot_wrapper(val address: BigInt, depth: BigInt, num_cores: BigInt, core_index_array_packed: BigInt) extends BlackBox(
       Map(
-        "ADDRESS"   -> IntParam(address), // Base address of the TL slave
-        "DEPTH"     -> IntParam(depth)    // Address depth of the TL slave
+        "ADDRESS"                       -> IntParam(address), // Base address of the TL slave
+        "DEPTH"                         -> IntParam(depth),   // Address depth of the TL slave
+        "LLKI_CORE_INDEX_ARRAY_PACKED"  -> IntParam(core_index_array_packed), 
+            // Array of LLKI base addresses, packed into single bitstream 
+            // Each address is 32bit
+            // MSB => address 0
+        "LLKI_NUM_CORES"                -> IntParam(num_cores)  //number of LLKI cores
       )
   ) {
 
@@ -196,9 +209,13 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
     })
   } // end class srot_wrapper
 
-    
+  // Pack core index array
+  val core_index_array_packed = srotparams.llki_cores_array.foldLeft(BigInt(0)) { 
+    (packed, addr) => ((packed << 32) | addr)  }
+  val num_cores = srotparams.llki_cores_array.length
+
   // Instantiate the srot_wrapper
-  val srot_wrapper_inst = Module(new srot_wrapper(srotparams.slave_address, srotparams.slave_depth))
+  val srot_wrapper_inst = Module(new srot_wrapper(srotparams.slave_address, srotparams.slave_depth, num_cores, core_index_array_packed))
 
   // The following "requires" are included to avoid size mismatches between the
   // the Rocket Chip buses and the SRoT Black Box.  The expected values are inhereited
@@ -207,7 +224,7 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
   // Exceptions:
   //  - slaveEdge address gets optimized down to 31-bits during chisel generation
   //  - slaveEdge sink bits are 1, but masterEdge sink bits are 2 
-  //  - slaveEdge size bits are 3, but masterEdge size bits are 4
+  //  - slaveEdge size bits are 2, but masterEdge size bits are 4
   //
   require(slaveEdge.bundle.addressBits  == LLKITilelinkParameters.AddressBits - 1, s"SROT: slaveEdge addressBits exp/act ${LLKITilelinkParameters.AddressBits - 1}/${slaveEdge.bundle.addressBits}")
   require(slaveEdge.bundle.dataBits     == LLKITilelinkParameters.BeatBytes * 8, s"SROT: slaveEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${slaveEdge.bundle.dataBits}")
@@ -219,7 +236,7 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
   require(masterEdge.bundle.dataBits    == LLKITilelinkParameters.BeatBytes * 8, s"SROT: masterEdge dataBits exp/act ${LLKITilelinkParameters.BeatBytes * 8}/${masterEdge.bundle.dataBits}")
   require(masterEdge.bundle.sourceBits  == LLKITilelinkParameters.SourceBits, s"SROT: masterEdge sourceBits exp/act ${LLKITilelinkParameters.SourceBits}/${masterEdge.bundle.sourceBits}")
   require(masterEdge.bundle.sinkBits    == LLKITilelinkParameters.SinkBits, s"SROT: masterEdge sinkBits exp/act ${LLKITilelinkParameters.SinkBits}/${masterEdge.bundle.sinkBits}")
-  require(masterEdge.bundle.sizeBits    == LLKITilelinkParameters.SizeBits + 1, s"SROT: masterEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits + 1}/${masterEdge.bundle.sizeBits}")
+  require(masterEdge.bundle.sizeBits    == LLKITilelinkParameters.SizeBits + 2, s"SROT: masterEdge sizeBits exp/act ${LLKITilelinkParameters.SizeBits + 2}/${masterEdge.bundle.sizeBits}")
 
   // Connect the Clock and Reset
   srot_wrapper_inst.io.clk                := clock
@@ -252,7 +269,7 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
   // Connect the Master A channel to the Black Box IO
   master.a.bits.opcode                    := srot_wrapper_inst.io.master_a_opcode
   master.a.bits.param                     := srot_wrapper_inst.io.master_a_param
-  master.a.bits.size                      := Cat(0.U(1.W), srot_wrapper_inst.io.master_a_size)
+  master.a.bits.size                      := Cat(0.U(2.W), srot_wrapper_inst.io.master_a_size)
   master.a.bits.source                    := srot_wrapper_inst.io.master_a_source
   master.a.bits.address                   := srot_wrapper_inst.io.master_a_address
   master.a.bits.mask                      := srot_wrapper_inst.io.master_a_mask
@@ -264,7 +281,7 @@ class srotTLModuleImp(srotparams: SROTParams, outer: srotTLModule) extends LazyM
   // Connect the Master D channel to the Black Box IO
   srot_wrapper_inst.io.master_d_opcode    := master.d.bits.opcode
   srot_wrapper_inst.io.master_d_param     := master.d.bits.param
-  srot_wrapper_inst.io.master_d_size      := master.d.bits.size(2,0)
+  srot_wrapper_inst.io.master_d_size      := master.d.bits.size(1,0)
   srot_wrapper_inst.io.master_d_source    := master.d.bits.source
   srot_wrapper_inst.io.master_d_sink      := master.d.bits.sink
   srot_wrapper_inst.io.master_d_denied    := master.d.bits.denied

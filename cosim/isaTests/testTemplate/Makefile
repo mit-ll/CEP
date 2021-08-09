@@ -12,10 +12,10 @@
 #
 #
 COSIM_NAME  = $(shell cd ../..; basename `pwd`)
-DUT_TOP_DIR = $(shell cd ../../..; pwd | ./${COSIM_NAME}/bin/strip_net.pl )
-BLD_DIR     = $(shell cd ..; pwd | ../bin/strip_net.pl )
+DUT_TOP_DIR = $(shell cd ../../..; pwd )
+BLD_DIR     = $(shell cd ..; pwd )
 TEST_SUITE  = $(shell basename ${BLD_DIR})
-TEST_DIR    = $(shell cd .; pwd | ../../bin/strip_net.pl )
+TEST_DIR    = $(shell cd .; pwd )
 TEST_NAME   = $(shell basename `pwd`)
 SIM_DIR     = ${DUT_TOP_DIR}/${COSIM_NAME}
 ELF_FILE    = ${RISCV_TEST_DIR}/isa/${TEST_NAME}

@@ -10,7 +10,8 @@
 
 #if defined(BARE_MODE)
 #else
-#include <openssl/sha.h>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/sha.h>
 #include "simPio.h"
 
 #endif
@@ -28,7 +29,7 @@
 cep_sha256::cep_sha256(int seed, int verbose) {
   init();
   
-  SetBlockSize(64); // 64bytes bytes
+  SetBlockSize(64);     // 64 bytes
   SetSeed(seed);
   SetVerbose(verbose);
 }
@@ -36,14 +37,10 @@ cep_sha256::cep_sha256(int seed, int verbose) {
 cep_sha256::~cep_sha256()  {
 }
 
-//
-// via openssl
-//
 int cep_sha256::prepare_sha256_key_N_text
 (
  uint8_t *input,           // input text
  uint8_t *output,           // output packet
- int padding_enable,
  int length,
  int *outlen,
  int verbose)
@@ -51,12 +48,13 @@ int cep_sha256::prepare_sha256_key_N_text
   //
 #if defined(BARE_MODE)
 #else
-  SHA256_CTX ctx;
-  //
-  SHA256_Init(&ctx);
-  SHA256_Update(&ctx,input, length);
-  SHA256_Final(output,&ctx);
+
+  CryptoPP::SHA256 hash;
+
+  hash.Update((const byte *)input, length);
+  hash.Final((byte *)&output[0]);
   *outlen = 64; // 64bytes
+
 #endif
   //
   return mErrCnt;
@@ -195,9 +193,9 @@ int cep_sha256::RunSha256Test(int maxLoop) {
     mErrCnt += prepare_sha256_key_N_text
       (mHwPt, // uint8_t *input,           // input text packet
        mSwCp, // uint8_t *output,           // output cipher packet
-       0,   // int padding_enable,
        GetMsgSize(), // int length,
-       &outLen, GetVerbose());	
+       &outLen, 
+       GetVerbose());	
     //
     int numBlocks = totalLen/64;
     for (int b=0;b<numBlocks;b++) {

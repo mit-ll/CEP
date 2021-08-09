@@ -31,7 +31,8 @@
     // Indexes used to select the desired core
     // Also used by the LLKI to identify the core index
     // that a key is destined for... must match 
-    // the values in LLKI_CORE_INDEX_ARRAY in llki_pkg.sv
+    // the values in LLKI_CORE_INDEX_ARRAY in srot_wrapper.sv,
+    // which is passed down from DevKitsConfig.scala
     #define AES_BASE_K              0
     #define MD5_BASE_K              1
     #define SHA256_BASE_K           2

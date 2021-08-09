@@ -53,7 +53,8 @@ trait HasPeripheryMD5 { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       md5module.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -83,9 +84,11 @@ class md5TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -239,18 +242,26 @@ class md5TLModuleImp(coreparams: COREParams, outer: md5TLModule) extends LazyMod
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val md5_mock_tss_inst   = Module(new md5_mock_tss())
+  val md5_inst   = Module(new md5_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  md5_inst.suggestName(md5_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  md5_mock_tss_inst.io.llkid_key_data     := llki_pp_inst.io.llkid_key_data
-  md5_mock_tss_inst.io.llkid_key_valid    := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready         := md5_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete      := md5_mock_tss_inst.io.llkid_key_complete
-  md5_mock_tss_inst.io.llkid_clear_key    := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack     := md5_mock_tss_inst.io.llkid_clear_key_ack
+  md5_inst.io.llkid_key_data          := llki_pp_inst.io.llkid_key_data
+  md5_inst.io.llkid_key_valid         := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := md5_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := md5_inst.io.llkid_key_complete
+  md5_inst.io.llkid_clear_key         := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := md5_inst.io.llkid_clear_key_ack
 
   val init                   = RegInit(false.B)
   val rst                    = RegInit(false.B)
@@ -267,17 +278,17 @@ class md5TLModuleImp(coreparams: COREParams, outer: md5TLModule) extends LazyMod
   val msg_out_valid          = Wire(Bool())
   val ready                  = Wire(Bool())
 
-  md5_mock_tss_inst.io.clk                := clock
-  md5_mock_tss_inst.io.rst                := (reset.asBool || rst).asAsyncReset
-  md5_mock_tss_inst.io.init               := init
-  md5_mock_tss_inst.io.msg_in_valid       := msg_in_valid
-  md5_mock_tss_inst.io.msg_padded         := Cat(msg_padded_w0, msg_padded_w1,
-                                                 msg_padded_w2, msg_padded_w3,
-                                                 msg_padded_w4, msg_padded_w5, 
-                                                 msg_padded_w6, msg_padded_w7)
-  msg_output                              := md5_mock_tss_inst.io.msg_output
-  msg_out_valid                           := md5_mock_tss_inst.io.msg_out_valid
-  ready                                   := md5_mock_tss_inst.io.ready
+  md5_inst.io.clk            := clock
+  md5_inst.io.rst            := (reset.asBool || rst).asAsyncReset
+  md5_inst.io.init           := init
+  md5_inst.io.msg_in_valid   := msg_in_valid
+  md5_inst.io.msg_padded     := Cat(msg_padded_w0, msg_padded_w1,
+                                    msg_padded_w2, msg_padded_w3,
+                                    msg_padded_w4, msg_padded_w5, 
+                                    msg_padded_w6, msg_padded_w7)
+  msg_output                 := md5_inst.io.msg_output
+  msg_out_valid              := md5_inst.io.msg_out_valid
+  ready                      := md5_inst.io.ready
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

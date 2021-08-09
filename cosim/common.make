@@ -8,6 +8,10 @@
 #// Notes:          
 #//
 #//************************************************************************
+# to avoid circular loop
+ifndef $(COMMON_MAKE_CALLED)
+COMMON_MAKE_CALLED=1
+
 
 #
 # ============================================================================
@@ -17,7 +21,7 @@
 # Specify the target vendor: XILINX, TSMC, etc...
 # (no quote)
 #
-DUT_VENDOR 	= XILINX
+DUT_VENDOR 	?= XILINX
 #
 # Only pick 1!!!
 #
@@ -42,7 +46,7 @@ DUT_IN_VIRTUAL  = 0
 #
 # Some control flags
 #
-NOBUILD			= 0
+NOBUILD		= 0
 NOWAVE          = 0
 PROFILE         = 0
 COVERAGE        = 0
@@ -59,11 +63,11 @@ C2C_CAPTURE     = 0
 #
 VIVADO_PATH	?= /opt/Xilinx/Vivado/2018.3
 SIMULATOR_PATH	?= /opt/questa-2019.1/questasim/bin
-
 #
 # derived paths
 #
 SIM_DIR         ?= ${DUT_TOP_DIR}/cosim
+
 
 
 # stupid VHDL package uses work.* inside so have no choice but to use work!!
@@ -75,6 +79,11 @@ WORK_DIR        = ${BLD_DIR}/${WORK_NAME}
 #
 export DUT_SIM_DIR := ${SIM_DIR}
 
+# ----------------------------------
+# something can be override at command line
+# ----------------------------------
+MKFILE_DIR      ?= ${SIM_DIR}
+
 #
 # more paths for C build
 #
@@ -82,14 +91,41 @@ SHARE_DIR	= ${SIM_DIR}/share
 PLI_DIR		= ${SIM_DIR}/pli
 SIMDIAG_DIR	= ${SIM_DIR}/simDiag
 SRC_DIR		= ${SIM_DIR}/src
-LIB_DIR		= ${SIM_DIR}/lib
-BIN_DIR         = ${SIM_DIR}/bin
 DVT_DIR         = ${SIM_DIR}/dvt
 INC_DIR         = ${SIM_DIR}/include
 BHV_DIR         = ${DVT_DIR}/behav_models
+VENDOR_DIR      = ${DVT_DIR}/vendor_models
+
+# to store object file and archives
+LIB_DIR		= ${SIM_DIR}/lib
 DIAG_DIR        = ${LIB_DIR}/diag
 DLL_DIR        	= ${LIB_DIR}/dll
-VENDOR_DIR      = ${DVT_DIR}/vendor_models
+SHLIB_DIR      	= ${LIB_DIR}/share
+PLILIB_DIR      = ${LIB_DIR}/pli
+SIMLIB_DIR      = ${LIB_DIR}/sim
+SRCLIB_DIR      = ${LIB_DIR}/src
+BARELIB_DIR     = ${LIB_DIR}/bare
+
+#
+# -------------------------------------------
+# can be override by other Makefile
+# -------------------------------------------
+#
+RE_USE_TEST        ?= 0
+XX_LIB_DIR         ?= ${LIB_DIR}
+XX_SIM_DIR         ?= ${SIM_DIR}
+V2C_TAB_FILE       ?= ${PLI_DIR}/v2c.tab
+RISCV_TEST_DIR     ?= ${DUT_TOP_DIR}/software/riscv-tests
+ISA_TEST_TEMPLATE  ?= ${BLD_DIR}/testTemplate
+BUILD_HW_MAKE_FILE ?= ${MKFILE_DIR}/cep_buildChips.make
+BUILD_SW_MAKE_FILE ?= ${MKFILE_DIR}/cep_buildSW.make
+CADENCE_MAKE_FILE  ?= ${MKFILE_DIR}/cadence.make
+#
+#
+V2C_LIB            ?= ${XX_LIB_DIR}/v2c_lib.a
+VPP_LIB            ?= ${XX_LIB_DIR}/libvpp.so
+RISCV_LIB          ?= ${XX_LIB_DIR}/riscv_lib.a
+BIN_DIR            ?= ${XX_SIM_DIR}/bin
 
 #
 # -----------------------------------------------------------------------
@@ -100,7 +136,7 @@ VENDOR_DIR      = ${DVT_DIR}/vendor_models
 #
 VLOG_CMD	= ${SIMULATOR_PATH}/vlog
 VCOM_CMD	= ${SIMULATOR_PATH}/vcom
-oSCOM_CMD	= ${SIMULATOR_PATH}/scom
+SCOM_CMD	= ${SIMULATOR_PATH}/scom
 VOPT_CMD	= ${SIMULATOR_PATH}/vopt
 VSIM_CMD        = ${SIMULATOR_PATH}/vsim
 VLIB_CMD	= ${SIMULATOR_PATH}/vlib
@@ -138,37 +174,6 @@ SIM_DEPEND_TARGET = .${WORK_NAME}_dependList
 #
 DUT_VSIM_DO_FILE	= ${TEST_DIR}/vsim.do
 #
-ifeq (${NOWAVE},1)
-COMMON_CFLAGS	        += -DNOWAVE
-RISCV_BARE_CFLAG        += -DNOWAVE
-endif
-
-ifeq (${USE_DPI},1)
-COMMON_CFLAGS	        += -DUSE_DPI
-RISCV_BARE_CFLAG        += -DUSE_DPI
-endif
-
-#
-# Auto-extract the MAJOR/MINOR version from scala
-#
-CEP_ADR_SCALA_FILE = ${DUT_TOP_DIR}/hdl_cores/freedom/mitll-blocks/src/main/scala/cep_addresses.scala
-CEP_VER_H_FILE     = ${SIM_DIR}/drivers/cep_tests/cep_version.h
-
-${CEP_VER_H_FILE} : ${CEP_ADR_SCALA_FILE}
-	@echo "// auto-extracted from ${CEP_ADR_SCALA_FILE}" > ${CEP_VER_H_FILE}
-	@echo "// Do not modify" >> ${CEP_VER_H_FILE}
-	@echo "#ifndef CEP_VERSION_H" >> ${CEP_VER_H_FILE}
-	@echo "#define CEP_VERSION_H" >> ${CEP_VER_H_FILE}
-	@grep CEP_MAJOR_VERSION ${CEP_ADR_SCALA_FILE} | sed -e 's/val/#define/' -e 's/=//' >> ${CEP_VER_H_FILE}
-	@grep CEP_MINOR_VERSION ${CEP_ADR_SCALA_FILE} | sed -e 's/val/#define/' -e 's/=//' >> ${CEP_VER_H_FILE}
-	@echo "#endif" >> ${CEP_VER_H_FILE}
-	touch $@
-
-#
-#
-#
-COMMON_CFLAGS	        += -DCAPTURE_CMD_SEQUENCE=${TL_CAPTURE}
-COMMON_CFLAGS	        += -DC2C_CAPTURE=${C2C_CAPTURE}
 
 #
 # --------------
@@ -199,21 +204,20 @@ DUT_VSIM_ARGS	  += -cpppath ${GCC}
 # build the DUT's HW for simulation here
 # -------------------------------------------
 #
-include ${SIM_DIR}/cep_buildChips.make
+include ${BUILD_HW_MAKE_FILE}
+include ${BUILD_SW_MAKE_FILE}
 #
 ifeq (${CADENCE},1)
-include ${SIM_DIR}/cadence.make
+include ${CADENCE_MAKE_FILE}
 endif
-ifeq (${VERILATOR},1)
-include ${SIM_DIR}/verilator.make
-endif
+
 #
-COMMON_CFLAGS	        += -DRISCV_WRAPPER=\"${RISCV_WRAPPER}\"
 #
 # run the simulation
 #
-vsimOnly: ${BLD_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE}
-	${VSIM_CMD} -work ${WORK_DIR} -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log
+# add +myplus=0 for stupid plus_arg
+vsimOnly: ${BLD_DIR}/_info ${VPP_LIB} ${DUT_VSIM_DO_FILE}
+	${VSIM_CMD} -work ${WORK_DIR} -tab ${V2C_TAB_FILE} -pli ${VPP_LIB} -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log
 
 PLUSARGS      = " "
 RANDOMIZE     = 1
@@ -221,13 +225,13 @@ UPDATE_INFO   = 1
 TEST_INFO     = testHistory.txt
 USE_GDB       = 0
 
-# add +myplus=0 for stupid plus_arg
-VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${PLI_DIR}/v2c.tab -pli ${DLL_DIR}/libvpp.so -sv_lib ${DLL_DIR}/libvpp -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log +myplus=0"
+# remove the .so
+VPP_SV_LIB = $(subst libvpp.so,libvpp,${VPP_LIB})
 
-
+VSIM_CMD_LINE = "${VSIM_CMD} -work ${WORK_DIR} -t 1ps -tab ${V2C_TAB_FILE} -pli ${VPP_LIB} -sv_lib ${VPP_SV_LIB} -do ${DUT_VSIM_DO_FILE} ${DUT_VSIM_ARGS} ${WORK_DIR}.${DUT_OPT_MODULE} -batch -logfile ${TEST_DIR}/${TEST_NAME}.log +myplus=0"
 # depend list
 
-.vrun_flag: ${BLD_DIR}/_info ${DLL_DIR}/libvpp.so ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
+.vrun_flag: ${BLD_DIR}/_info ${XX_LIB_DIR}/.buildLibs ${DUT_VSIM_DO_FILE} c_dispatch ${RISCV_WRAPPER_ELF}
 ifeq (${COVERAGE},1)
 	@if test ! -d ${DUT_COVERAGE_PATH}; then	\
 		mkdir  ${DUT_COVERAGE_PATH};		\
@@ -294,192 +298,6 @@ ${PERSUITE_CHECK}:
 	if test ! -f ${PERSUITE_CHECK}; then rm -f ${BLD_DIR}/.PERSUITE_*; touch ${PERSUITE_CHECK}; fi
 
 #
-# ====================================
-# Convert verilog to "C"
-# ====================================
-#
-V2C_FILE_LIST       := 	v2c_cmds.h 	\
-			cep_adrMap.h
-
-VERILOG_DEFINE_LIST := $(foreach t,${V2C_FILE_LIST}, ${INC_DIR}/${t})
-VERILOG_DEFINE_LIST += ${PERSUITE_CHECK}
-VERILOG_DEFINE_LIST += ${CEP_VER_H_FILE}
-
-
-build_v2c: ${VERILOG_DEFINE_LIST}
-
-${INC_DIR}/v2c_cmds.h : ${DVT_DIR}/v2c_cmds.incl ${BIN_DIR}/v2c.pl 
-	${BIN_DIR}/v2c.pl $< $@
-
-${INC_DIR}/cep_adrMap.h : ${DVT_DIR}/cep_adrMap.incl ${BIN_DIR}/v2c.pl 
-	${BIN_DIR}/v2c.pl $< $@
-
-
-
-#
-# =======================================
-# Driver stuffs
-# =======================================
-#
-DRIVER_DIR_LIST := ${SIM_DIR}/drivers/diag	\
-		${SIM_DIR}/drivers/cep_tests    \
-		${SIM_DIR}/drivers/vectors 
-
-#
-# -------------------------------------------
-# C/C++ stuffs
-# -------------------------------------------
-#
-DRIVER_GCC                  := $(GCC)
-DRIVER_INC_LIST             := $(foreach t,${DRIVER_DIR_LIST}, -I ${t})
-DRIVER_INC_LIST             += -I ${SIM_DIR}/include
-DRIVER_SOURCE_LIST          := $(foreach t,${DRIVER_DIR_LIST}, $(wildcard ${t}/*.cc))
-DRIVER_OBJECTS_LIST         := $(subst .cc,.obj,${DRIVER_SOURCE_LIST})
-SIMDIAG_DRIVER_OBJECTS      := $(foreach t,${notdir ${DRIVER_OBJECTS_LIST}}, ${DIAG_DIR}/${t})
-
-COMMON_CFLAGS	+= -I ${PLI_DIR} -I ${INC_DIR} -I ${SHARE_DIR}  \
-		-I ${SIMDIAG_DIR} $(DRIVER_INC_LIST)		\
-		-g  -std=gnu++11 \
-		-Wno-format -Wno-narrowing 
-
-COMMON_CFLAGS	+= -DBIG_ENDIAN 
-
-SIM_HW_CFLAGS	= ${COMMON_CFLAGS} -I ${SIMULATOR_PATH}/../include	\
-		-D_SIM_HW_ENV -DSIM_ENV_ONLY
-
-SIM_SW_CFLAGS	= ${COMMON_CFLAGS}	\
-		-D_SIM_SW_ENV -DSIM_ENV_ONLY
-
-LAB_CFLAGS	= ${COMMON_CFLAGS}	\
-
-
-#
-# *.obj is for build C/C++ stuffs for sim/lab
-#
-%.obj: %.cc ${VERILOG_DEFINE_LIST}
-	$(DRIVER_GCC) $(SIM_SW_CFLAGS) -c -o $@ $<
-	$(DRIVER_GCC) $(LAB_CFLAGS) -c -o ${DIAG_DIR}/$(notdir $@) $< 
-
-# use by both C and PLI
-SHARE_SOURCE          = $(wildcard ${SHARE_DIR}/*.cc)
-SHARE_OBJECTS         = $(subst .cc,.o,${SHARE_SOURCE}) 
-SHARE_VERILOG_OBJECTS = $(foreach t,${notdir ${SHARE_OBJECTS}}, ${DLL_DIR}/${t}) 
-SHARE_DIAG_OBJECTS    = $(foreach t,${notdir ${SHARE_OBJECTS}}, ${DIAG_DIR}/${t})
-
-${SHARE_DIR}/%.o: ${SHARE_DIR}/%.cc ${SHARE_DIR}/%.h ${VERILOG_DEFINE_LIST}
-	$(GCC) $(SIM_SW_CFLAGS) -c -o $@ $< 
-	$(GCC) $(LAB_CFLAGS) -c -o ${DIAG_DIR}/$(notdir $@) $< 
-	$(GCC) $(SIM_HW_CFLAGS)  -DDLL_SIM -D_REENTRANT -fPIC -c -o ${DLL_DIR}/$(notdir $@) $< 
-
-#
-# PLI only
-#
-PLI_SOURCE  = $(wildcard ${PLI_DIR}/*.cc)
-PLI_OBJ     = $(subst .cc,.o,${PLI_SOURCE})
-PLI_OBJECTS = $(foreach t,${notdir ${PLI_OBJ}}, ${DLL_DIR}/${t})
-
-${DLL_DIR}/%.o: ${PLI_DIR}/%.cc ${PLI_DIR}/%.h  ${VERILOG_DEFINE_LIST}
-	$(GCC) $(SIM_HW_CFLAGS) -DDLL_SIM -D_REENTRANT -fPIC -c -o $@ $< 
-
-#
-# Simulated Diag Object (portable anywhere)
-#
-SIMDIAG_SOURCE 		:= $(wildcard ${SIMDIAG_DIR}/*.cc)
-SIMDIAG_OBJECTS 	:= $(subst .cc,.o,${SIMDIAG_SOURCE})
-SIMDIAG_DIAG_OBJECTS    = $(foreach t,${notdir ${SIMDIAG_OBJECTS}}, ${DIAG_DIR}/${t}) 
-
-${SIMDIAG_DIR}/%.o: ${SIMDIAG_DIR}/%.cc ${SIMDIAG_DIR}/%.h ${VERILOG_DEFINE_LIST}
-	$(GCC) $(SIM_SW_CFLAGS) -c -o $@ $< 
-	$(GCC) $(LAB_CFLAGS) -c -o ${DIAG_DIR}/$(notdir $@) $< 
-
-
-#
-# use by both now
-#
-C_SOURCE  = $(wildcard ${SRC_DIR}/*.cc)
-C_OBJECTS = $(subst .cc,.o,${C_SOURCE})
-C_DIAG_OBJECTS  = $(foreach t,${notdir ${C_OBJECTS}}, ${DIAG_DIR}/${t})
-C_SHARE_OBJECTS = $(foreach t,${notdir ${C_OBJECTS}}, ${DLL_DIR}/${t})
-
-${SRC_DIR}/%.o: ${SRC_DIR}/%.cc ${INC_DIR}/%.h ${VERILOG_DEFINE_LIST}
-	$(GCC) $(SIM_SW_CFLAGS) -c -o $@ $< 
-	$(GCC) $(LAB_CFLAGS) -c -o ${DIAG_DIR}/$(notdir $@) $< 
-
-# building all AR
-${LIB_DIR}/v2c_lib.a: ${LIB_DIR}/share_lib.a ${VERILOG_DEFINE_LIST} ${C_OBJECTS} ${DRIVER_OBJECTS_LIST} $(SIMDIAG_OBJECTS) 
-ifeq (${NOBUILD},0)
-	$(AR) crv $@ $(C_OBJECTS) ${DRIVER_OBJECTS_LIST} $(SHARE_OBJECTS) $(SIMDIAG_OBJECTS) 
-	$(RANLIB) $@
-endif
-
-${LIB_DIR}/share_lib.a: $(SHARE_OBJECTS)
-ifeq (${NOBUILD},0)
-	$(AR) crv $@ $(SHARE_OBJECTS)
-	$(RANLIB) $@
-endif
-
-# building diag lib
-${LIB_DIR}/diag_lib.a: ${LIB_DIR}/v2c_lib.a
-ifeq (${NOBUILD},0)
-	$(AR) crv $@ $(C_DIAG_OBJECTS) $(SHARE_DIAG_OBJECTS) $(SIMDIAG_DIAG_OBJECTS) $(SIMDIAG_DRIVER_OBJECTS) 
-	$(RANLIB) $@
-endif
-
-${DLL_DIR}/libvpp.so: ${LIB_DIR}/share_lib.a ${PLI_OBJECTS}
-ifeq (${NOBUILD},0)
-	$(share_GCC) $(SIM_HW_CFLAGS) -DDLL_SIM -D_REENTRANT  -fPIC -shared  -g  \
-		-o ${DLL_DIR}/libvpp.so ${SHARE_VERILOG_OBJECTS} ${PLI_OBJECTS}
-
-endif	
-
-comBuild: ${LIB_DIR}/share_lib.a ${PLI_OBJECTS}
-
-libsBuild: ${LIB_DIR}/v2c_lib.a ${DLL_DIR}/libvpp.so
-
-#
-# to build local test
-#
-LOCAL_CC_FILES  := $(wildcard ./*.cc)
-LOCAL_H_FILES   += $(wildcard ./*.h)
-LOCAL_OBJ_FILES += $(LOCAL_CC_FILES:%.cc=%.o)
-
-THREAD_SWITCH  = -lpthread -lcrypto -lssl
-LDFLAGS        =
-
-c_dispatch:  $(LOCAL_OBJ_FILES) ${LIB_DIR}/v2c_lib.a  ${VERILOG_DEFINE_LIST}
-	$(GCC) $(SIM_SW_CFLAGS) $(LDFLAGS) -o $@ $(LOCAL_OBJ_FILES) ${LIB_DIR}/v2c_lib.a ${THREAD_SWITCH} 
-
-%.o: %.cc ${LOCAL_H_FILES} ${LIB_DIR}/v2c_lib.a  ${VERILOG_DEFINE_LIST} 
-	$(GCC) $(SIM_SW_CFLAGS) -I. -c -o $@ $<
-
-
-
-#
-# -------------------------------------------
-# Just to make sure all things are OK to go ahead and "make"
-# -------------------------------------------
-#
-ifeq "$(findstring OK,${ERROR_MESSAGE})" "OK"
-${BLD_DIR}/.is_checked: 
-	@echo "Checking for proper enviroment settings = ${ERROR_MESSAGE}"
-	touch $@
-else
-${BLD_DIR}/.is_checked: .force
-	@echo "ERROR: **** ${ERROR_MESSAGE} ****"
-	@rm -rf ${BLD_DIR}/.is_checked
-	@exit 1
-endif
-#
-# -------------------------------------------
-# Config change detect.. If so, force a rebuild
-# -------------------------------------------
-#
-${BLD_DIR}/${CUR_CONFIG}:
-	-rm -f  ${BLD_DIR}/.CONFIG_*
-	touch $@
-
-
-#
 # -------------------------------------------
 # ISA Auto test generation
 # -------------------------------------------
@@ -499,9 +317,9 @@ ${BLD_DIR}/${TEST_NAME}${SFX}/${TEST_NAME}${SFX}.dump : ${RISCV_TEST_DIR}/isa/${
 	@if test ! -d ${BLD_DIR}/${TEST_NAME}${SFX}; then	\
 		mkdir  ${BLD_DIR}/${TEST_NAME}${SFX}; \
 	fi
-	@cp -f ${BLD_DIR}/testTemplate/Makefile        ${BLD_DIR}/${TEST_NAME}${SFX}/.
-	@cp -f ${BLD_DIR}/testTemplate/*.h             ${BLD_DIR}/${TEST_NAME}${SFX}/.
-	@cp -f ${BLD_DIR}/testTemplate/c_module.cc     ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@cp -f ${ISA_TEST_TEMPLATE}/Makefile        ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@cp -f ${ISA_TEST_TEMPLATE}/*.h             ${BLD_DIR}/${TEST_NAME}${SFX}/.
+	@cp -f ${ISA_TEST_TEMPLATE}/c_module.cc     ${BLD_DIR}/${TEST_NAME}${SFX}/.
 	@rm -f ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
 ifeq (${SINGLE_THREAD},1)
 	@echo "#define SINGLE_THREAD_ONLY" >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
@@ -518,7 +336,7 @@ endif
 ifeq (${PASS_IS_TO_HOST},1)
 	@echo "#define PASS_IS_TO_HOST"    >> ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
 endif
-	@cat ${BLD_DIR}/testTemplate/c_dispatch.cc >>        ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
+	@cat ${ISA_TEST_TEMPLATE}/c_dispatch.cc >>        ${BLD_DIR}/${TEST_NAME}${SFX}/c_dispatch.cc
 	@cp -f ${RISCV_TEST_DIR}/isa/${TEST_NAME}      ${BLD_DIR}/${TEST_NAME}${SFX}/riscv_wrapper.elf
 	@cp -f ${RISCV_TEST_DIR}/isa/${TEST_NAME}.dump ${BLD_DIR}/${TEST_NAME}${SFX}/${TEST_NAME}${SFX}.dump
 	@${BIN_DIR}/createPassFail.pl ${RISCV_TEST_DIR}/isa/${TEST_NAME}.dump ${BLD_DIR}/${TEST_NAME}${SFX}/PassFail.hex
@@ -560,16 +378,16 @@ endif
 
 clean: cleanAll
 
-cleanAll:
+cleanAll:: cleanLibs
 	-rm -rf ${SIM_DIR}/*/*_work ${SIM_DIR}/*/.*work_dependList.make
 	-rm -rf ${SIM_DIR}/*/*.o* ${SIM_DIR}/*/*/*.bo* ${SIM_DIR}/*/*/*.o*
 	-rm -rf ${SIM_DIR}/*/*/status
 	-rm -rf ${SIM_DIR}/bareMetalTests/*/*.elf ${SIM_DIR}/bareMetalTests/*/*.dump
 	-rm -rf ${SIM_DIR}/*/.build*
-	-rm -rf ${LIB_DIR}/*/*.o* ${LIB_DIR}/*.a ${LIB_DIR}/*/*.so
+	-rm -rf ${LIB_DIR}/*/*.o* ${LIB_DIR}/*.a ${LIB_DIR}/*.so
 	-rm -rf ${SIM_DIR}/*/.*_dependList* ${SIM_DIR}/*/.is_checked
 	-rm -rf ${SIM_DIR}/*/*/C2V*
-	-rm -rf ${BHV_DIR}/VCShell*.v
+	-rm -rf ${BHV_DIR}/VCShell*.v ${BHV_DIR}/ddr3.v
 	-rm -rf ${SIM_DIR}/*/xcelium.d ${SIM_DIR}/*/.cadenceBuild ${SIM_DIR}/*/*/cov_work ${SIM_DIR}/*/*/xrun.log
 ifeq (${COVERAGE},1)
 ifeq (${CADENCE},1)
@@ -617,3 +435,7 @@ usage:
 	-echo "$$MAKE_USAGE_HELP_BODY"
 
 
+#
+# ----- ifdef $(COMMON_MAKE_CALLED)
+#
+endif

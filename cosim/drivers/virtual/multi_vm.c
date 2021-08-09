@@ -30,7 +30,13 @@ extern uint64_t vm_flags;
 #define kernel_l2pt pt[cid][2]
 #define user_llpt pt[cid][3]
 #define MAX_CORES 4
-//         
+//
+/*
+#define l1pt        pt[0]
+#define user_l2pt   pt[1]
+#define kernel_l2pt pt[2]
+#define user_llpt   pt[3]
+ */ 
 #define vpn2pt pt[cid][0]
 #define vpn1pt pt[cid][1]
 #define ker1pt pt[cid][2]
@@ -62,8 +68,13 @@ void hangMe(void)
 //
 // For GigaPage Only
 //
+#ifndef userPA2KVA_local
 #define userPA2KVA(pa) ((void*)(pa) - DRAM_BASE - GIGAPAGE_SIZE)
+#endif
+
+#ifndef userVA2kernelVA_local
 #define userVA2kernelVA(adr) ((void*)((adr & 0x3FFFFFFF) + 0xffffffffc0000000))
+#endif
 
 #define flush_page(addr) asm volatile ("sfence.vma %0" : : "r" (addr) : "memory")
 
@@ -142,6 +153,38 @@ void hangMe(void)
 #endif
 
 
+//
+//
+//
+void clear_pmp(void) 
+{
+    uintptr_t pmpc =  0;
+    uintptr_t pmpa[8] = {0,0,0,0,0,0,0,0};
+    asm volatile ("la t0, 1f\n\t"
+                  "csrrw t0, mtvec, t0\n\t"
+                  "csrw pmpaddr0, %1\n\t"
+                  "csrw pmpaddr1, %2\n\t"
+                  "csrw pmpaddr2, %3\n\t"
+                  "csrw pmpaddr3, %4\n\t"
+                  "csrw pmpaddr4, %5\n\t"
+                  "csrw pmpaddr5, %6\n\t"
+                  "csrw pmpaddr6, %7\n\t"
+                  "csrw pmpaddr7, %8\n\t"
+                  "csrw pmpcfg0,  %0\n\t"
+                  ".align 2\n\t"
+                  "1: csrw mtvec, t0"
+                  : : "r" (pmpc), 
+                    "r" (pmpa[0]),  
+                    "r" (pmpa[1]),  
+                    "r" (pmpa[2]),  
+                    "r" (pmpa[3]),  
+                    "r" (pmpa[4]), 
+                    "r" (pmpa[5]),  
+                    "r" (pmpa[6]),  
+                    "r" (pmpa[7]) : 
+		  "t0");
+    
+}
 
 
 //
@@ -237,56 +280,51 @@ void vm_boot_giga(uintptr_t test_addr)
 #ifdef NO_PMP
   // Set up PMPs if present, ignoring illegal instruction trap if not.
   //  uintptr_t pmpc = PMP_NAPOT | PMP_R | PMP_W | PMP_X;
-  uintptr_t pmpc =  PMP_TOR | PMP_R | PMP_W | PMP_X;
-  uintptr_t pmpa = ((uintptr_t)1 << (__riscv_xlen == 32 ? 31 : 53)) - 1;
-  asm volatile ("la t0, 1f\n\t"
-                "csrrw t0, mtvec, t0\n\t"
-                "csrw pmpaddr0, %1\n\t"
-                "csrw pmpcfg0, %0\n\t"
-                ".align 2\n\t"
-                "1: csrw mtvec, t0"
-                : : "r" (pmpc), "r" (pmpa) : "t0");
-
+  //uintptr_t pmpc =  PMP_TOR | PMP_R | PMP_W | PMP_X;
+  uintptr_t pmpc =  0x7F7F7F7F7F7F7F7FLL; // all 8 with all access except not locked
+  uintptr_t pmpa[8];
+  for (int i=0;i<8;i++) {
+    //    pmpa[i] = ((i << 29) | ((1<<28)-1)) >> 2; // bit[31:2] only
+    pmpa[i] = ((uintptr_t)1 << (__riscv_xlen == 32 ? 31 : 53)) - 1;
+  }
 #else
-
   uintptr_t pmpc = 0x7F7F7F7F7F7F7F7FLL; // all 8 with all access except not locked
   uintptr_t pmpa[8];
-  //      3          2         1
-  //   3210987654321098765432109876543210
-  //   xxx0111111111111111111111111111111
-  // xxx = i
-  // bit 33:0 of the virtual address!! not physical!!
-  //
   for (int i=0;i<8;i++) {
     //    pmpa[i] = ((i << 29) | ((1<<28)-1)) >> 2; // bit[31:2] only
     pmpa[i] = ((i << 31) | ((1<<30)-1)) >> 2; // bit[31:2] only
   }
-  //
-  asm volatile ("la t0, 1f\n\t"
-                "csrrw t0, mtvec, t0\n\t"
-                "csrw pmpaddr0, %1\n\t"
-                "csrw pmpaddr1, %2\n\t"
-                "csrw pmpaddr2, %3\n\t"
-                "csrw pmpaddr3, %4\n\t"
-                "csrw pmpaddr4, %5\n\t"
-                "csrw pmpaddr5, %6\n\t"
-                "csrw pmpaddr6, %7\n\t"
-                "csrw pmpaddr7, %8\n\t"
-                "csrw pmpcfg0,  %0\n\t"
-                ".align 2\n\t"
-                "1: csrw mtvec, t0"
-                : : "r" (pmpc), 
-		  "r" (pmpa[0]),  
-		  "r" (pmpa[1]),  
-		  "r" (pmpa[2]),  
-		  "r" (pmpa[3]),  
-		  "r" (pmpa[4]), 
-		  "r" (pmpa[5]),  
-		  "r" (pmpa[6]),  
-		  "r" (pmpa[7]) : 
-		  "t0");
 #endif
-
+  //
+  //
+  for (int i=0;i<2;i++) {
+    asm volatile ("la t0, 1f\n\t"
+		  "csrrw t0, mtvec, t0\n\t"
+		  "csrw pmpaddr0, %1\n\t"
+		  "csrw pmpaddr1, %2\n\t"
+		  "csrw pmpaddr2, %3\n\t"
+		  "csrw pmpaddr3, %4\n\t"
+		  "csrw pmpaddr4, %5\n\t"
+		  "csrw pmpaddr5, %6\n\t"
+		  "csrw pmpaddr6, %7\n\t"
+		  "csrw pmpaddr7, %8\n\t"
+		  "csrw pmpcfg0,  %0\n\t"
+		  ".align 2\n\t"
+		  "1: csrw mtvec, t0"
+		  : : "r" (pmpc), 
+		    "r" (pmpa[0]),  
+		    "r" (pmpa[1]),  
+		    "r" (pmpa[2]),  
+		    "r" (pmpa[3]),  
+		    "r" (pmpa[4]), 
+		    "r" (pmpa[5]),  
+		    "r" (pmpa[6]),  
+		    "r" (pmpa[7]) : 
+                    "t0");
+      // just for toggle, it is require the nets to make transition form 0->1->0
+      if (i==0) clear_pmp();
+  }
+  
   //
   // set up supervisor trap handling
   //
@@ -492,5 +530,4 @@ void handle_trap(trapframe_t* tf)
 
   pop_tf(tf);
 }
-
 

@@ -105,7 +105,8 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   (*regp->AddROReg_p)(regp, CSR_MARCHID,  0x0000000000000001, (uint64_t)(-1));
   (*regp->AddROReg_p)(regp, CSR_MIMPID,   0x0000000020181004, (uint64_t)(-1));
   (*regp->AddROReg_p)(regp, CSR_MHARTID,  cpuId,              (uint64_t)(-1));
-#ifdef SIM_ENV_ONLY
+  //#ifdef SIM_ENV_ONLY
+#if 1
 
   //
   // working
@@ -160,7 +161,8 @@ int cepCsrTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
   // [2] = X
   // [1] = W
   // [0] = R
-#ifdef SIM_ENV_ONLY
+  //#ifdef SIM_ENV_ONLY
+#if 1
   //regWr(`CSR_PMPCFG0, {8{8'b0_00_11_1_1_1}});
   errCnt += cepCsrTest_WriteEntry(regp, CSR_PMPCFG0,0x7F7F7F7F7F7F7F7F);
   errCnt += cepCsrTest_WriteEntry(regp, CSR_PMPADDR0,(1 << 29)-1); // 'b0_<29bits Of1 = mask = all 1s

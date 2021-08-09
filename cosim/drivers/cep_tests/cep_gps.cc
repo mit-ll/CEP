@@ -10,7 +10,6 @@
 
 #if defined(BARE_MODE)
 #else
-#include <openssl/evp.h>
 
 #include "simPio.h"
 
@@ -361,12 +360,10 @@ int cep_gps::RunSingle() {
   Read_PCode();
   Read_LCode();
   // get expected L-code
-  errCnt += openssl_aes192_ecb_encryption
+  errCnt += cryptopp_aes192_ecb_encryption
     (mHwPt, // uint8_t *input,           // input text packet
       mSwCp, // uint8_t *output,          // output cipher packet
-      1,   // int padding_enable,
-      mBlockSize, // int length,
-      &outLen, GetVerbose());
+      GetVerbose());
   //
   errCnt += CheckCipherText();
   //

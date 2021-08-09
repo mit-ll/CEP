@@ -58,7 +58,7 @@ The following files will be deleted with `--clean`:
     aeees_rounds.v
     eees_table.v
     aeees_stimulus.csv
-    eees_tb.sv
+    aeees_tb.sv
     Makefile
     vsim.do
     aeees_roundfn.vi

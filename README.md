@@ -8,7 +8,7 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-    <img src="./doc/version3.3.jpg" width="98" height="60">
+    <img src="./doc/version3.4.jpg" width="98" height="60">
 </p>
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology
@@ -28,7 +28,7 @@ For CEP v3.1+, the full LLKI has been added.  This includes the Surrogate Root o
 <br/>
 
 <p align="center">
-    <img src="./doc/cep_v3.1_architecture.jpg">
+    <img src="./doc/cep_v3.4_architecture.jpg">
 </p>
 
 The CEP is based on the SiFive U500 Platform which leverages the UCB Rocket Chip.  Much of the design is described in Chisel (https://github.com/freechipsproject/chisel3), a domain specific extension to Scala tailored towards constructing hardware.  The output of the Chisel generators is synthesizable verilog.
@@ -104,10 +104,11 @@ Ensure you have write permissions to the directory pointed to by $RISCV and that
     $ make -jN                                   (Where N is the number of cores that can be devoted to the build)
 ```
 
-#### Ubuntu 18.04 LTS instructions
+### Install additional CEP package dependencies
+The CEP co-simulation environment and test software uses Crypto++.  Install it by executing
+`sudo apt install libcrypto++-dev`
 
-Default openssl version is 18.04 is different than 16.04.  Install the following additional package.
-`sudo apt install libssl1.0-dev`
+#### Ubuntu 18.04 LTS instructions
 
 You'll also need to force the compilation of the riscv-toolchain with GCC-5, which is not installed by default.
 
@@ -341,7 +342,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v3.30
+                      Common Evaluation Platform v3.40
          Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -364,8 +365,9 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP Tag=CEPTest CEP HW VERSION = v3.30 was built on Apr 15 2021 09:22:15 ***
- CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x0000000700000000, 0x0000000800000000, 0x0000000600000000, 0x0000000c00000000 ScratchPad=0x0000002000800000
+*** CEP SW=0x3.40 HW VERSION = v3.40 was built on Aug  5 2021 08:36:41 ***
+ CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x700000000, 0x800000000, 0x600000000, 0xc00000000
+ ScratchPad=0x2000400000
 gSkipInit=0/0
 gverbose=0/0
 Setting terminal to VT102 with erase=^H
@@ -377,33 +379,34 @@ EnterCmd> menu
     3 : dcacheCoherency      : D-cache coherency Test (all cores)
     4 : icacheCoherency      : I-cache coherency Test (all cores)
     5 : cepMaskromTest       : CEP Maskrom Read-Only Test (all cores)
-    6 : cepSrotMemTest       : CEP SRoT memory test (single core) 
+    6 : cepSrotMemTest       : CEP SRoT memory test (single core)
     7 : ddr3Test             : Main Memory Test (all cores)
     8 : smemTest             : Scratchpad Memory Test (all cores)
-    9 : cepGpioTest          : CEP GPIO test (single core) 
-   10 : cepSpiTest           : CEP SPI test (single core) 
-   11 : cepSrotErrTest       : CEP SRoT Error Test (single core) 
+    9 : cepGpioTest          : CEP GPIO test (single core)
+   10 : cepSpiTest           : CEP SPI test (single core)
+   11 : cepSrotErrTest       : CEP SRoT Error Test (single core)
    12 : cepAccessTest        : CEP various bus/size access test (all cores)
    13 : cepAtomicTest        : CEP atomic intructions test (all cores)
    14 : cepClintTest         : CEP CLINT register test (all cores)
    15 : cepLockTest          : CEP single lock test (all cores)
-   16 : cepLockfreeAtomic    : CEP lock-free instructions test (all cores) 
+   16 : cepLockfreeAtomic    : CEP lock-free instructions test (all cores)
    17 : cepLrscOps           : CEP Load-Reserve/Store-Conditional test (all cores)
    18 : cepMultiLock         : CEP multi-lock test (all cores)
    19 : cepPlicTest          : CEP PLIC register test (all cores)
    20 : cepRegTest           : CEP register tests on all cores
    21 : cepMacroBadKey       : CEP Macro tests with badKey (all cores)
    22 : cepMacroMix          : CEP Macro tests (all cores)
-   23 : cepSrotMaxKeyTest    : CEP Macro tests with maxKey (single core)
-   24 : cep_AES              : CEP AES test (single core)
-   25 : cep_DES3             : CEP DES3 test (single core)
-   26 : cep_DFT              : CEP DFT and IDFT test (single core)
-   27 : cep_FIR              : CEP FIR test (single core)
-   28 : cep_GPS              : CEP GPS test (single core)
-   29 : cep_IIR              : CEP IIR test (single core)
-   30 : cep_MD5              : CEP MD5 test (single core)
-   31 : cep_RSA              : CEP RSA test (single core)
-   32 : cep_SHA256           : CEP SHA256 test (single core)
+   23 : cepMultiThread       : CEP multi-thread per core (all cores)
+   24 : cepSrotMaxKeyTest    : CEP Macro tests with maxKey (single core)
+   25 : cep_AES              : CEP AES test (single core)
+   26 : cep_DES3             : CEP DES3 test (single core)
+   27 : cep_DFT              : CEP DFT and IDFT test (single core)
+   28 : cep_FIR              : CEP FIR test (single core)
+   29 : cep_GPS              : CEP GPS test (single core)
+   30 : cep_IIR              : CEP IIR test (single core)
+   31 : cep_MD5              : CEP MD5 test (single core)
+   32 : cep_RSA              : CEP RSA test (single core)
+   33 : cep_SHA256           : CEP SHA256 test (single core)
 EnterCmd> 
 ```
 
@@ -428,6 +431,7 @@ The following cores have been integrated into the "standard" CEP build:
 Beginning with the v2.4 release, the following "generated" cores have been added to the repository, but are currently not integrated into the CEP build.
 - A(EE)ES-WB : Advanced Egregiously Extended Encryption Standard - Whitebox Edition [./hdl_cores/aeees/README.md](./hdl_cores/aeees/README.md).
 - (RI)IIR : Randomly Indeterminate Infinite Impulse Response [./hdl_cores/auto-fir/README.md](./hdl_cores/auto-fir/README.md).
+- SHA(AA) : Secure Hash Algorithm Arbitrarily Augment [./hdl_cores/shaaa/README.md](./hdl_cores/shaaa/README.md).
 
 Reminder: Beginning with CEP v3.1, all the aforementioned cores have been Logic Locking Key Interface (LLKI) enabled, and thus must have the mock keys loaded to function properly.
 

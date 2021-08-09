@@ -10,7 +10,9 @@
 
 #if defined(BARE_MODE)
 #else
-#include <openssl/md5.h>
+#include <cryptopp/cryptlib.h>
+#define CRYPTOPP_ENABLE_NAMESPACE_WEAK 1
+#include <cryptopp/md5.h>
 #include "simPio.h"
 
 #endif
@@ -35,14 +37,10 @@ cep_md5::cep_md5(int seed, int verbose) {
 cep_md5::~cep_md5()  {
 }
 
-//
-// via openssl
-//
 int cep_md5::prepare_md5_key_N_text
 (
  uint8_t *input,           // input text
  uint8_t *output,           // output packet
- int padding_enable,
  int length,
  int *outlen,
  int verbose)
@@ -50,12 +48,13 @@ int cep_md5::prepare_md5_key_N_text
   //
 #if defined(BARE_MODE)
 #else
-  MD5_CTX ctx;
-  //
-  MD5_Init(&ctx);
-  MD5_Update(&ctx,input, length);
-  MD5_Final(output,&ctx);
+
+  CryptoPP::Weak::MD5 hash;
+
+  hash.Update((const byte *)input, length);
+  hash.Final((byte *)&output[0]);
   *outlen = 64; // 64bytes
+
 #endif
   //
   return mErrCnt;
@@ -206,7 +205,6 @@ int cep_md5::RunMd5Test(int maxLoop) {
     mErrCnt += prepare_md5_key_N_text
       (mHwPt, // uint8_t *input,           // input text packet
        mSwCp, // uint8_t *output,           // output cipher packet
-       0,   // int padding_enable,
        GetMsgSize(), // int length,
        &outLen, GetVerbose());	
     //

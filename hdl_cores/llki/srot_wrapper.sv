@@ -27,7 +27,8 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   parameter int ADDRESS     = 32'h00000000,   // Currently unused as address selected occurs @ the SRoT Chisel Code
   parameter int DEPTH       = 32'h00000100,   // Currently unused as address selected occurs @ the SRoT Chisel Code
   parameter int FIFO_DEPTH  = 8,              // Define the depth of the LLKI FIFOs
-
+  parameter LLKI_CORE_INDEX_ARRAY_PACKED,     // LLKI interface addresses
+  parameter LLKI_NUM_CORES,
   // Derived parameters
   localparam int DepthW     = prim_util_pkg::vbits(FIFO_DEPTH + 1)
  ) (
@@ -85,6 +86,11 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   output                        master_d_ready
 
 );
+  
+  localparam [0:LLKI_NUM_CORES-1][31:0] LLKI_CORE_INDEX_ARRAY = LLKI_CORE_INDEX_ARRAY_PACKED;
+  //We get this parameter from a verilog file, which does not support unpacked parameter arrays.
+  //So, keep as a 2d packed array. 
+
 
   // Create the structures for communicating with OpenTitan-based Tilelink
   tl_h2d_t                      slave_tl_h2d;
@@ -160,8 +166,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   reg  [top_pkg::TL_AW-1:0]     reg_addr_o_d1;
   wire [top_pkg::TL_DW-1:0]     reg_wdata_o;
   reg [top_pkg::TL_DW-1:0]      reg_rdata_i;
-  wire                          rdata_valid_i;
-  reg                           rdata_valid_i_d1;
+  wire                          ack_i;
   reg                           reg_error_i;
 
   // Define some of the wires and registers associated with the tlul_adapter_host
@@ -204,16 +209,18 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
     .wdata_o        (reg_wdata_o      ),
     .be_o           (                 ),    // Accesses are assumed to be word-wide
     .rdata_i        (reg_rdata_i      ),
-    .rdata_valid_i  (rdata_valid_i    ),    // Should be asserted when the read data
-                                            // data is actually available
+    .ack_i          (ack_i            ),    // External acknowledgement of the
+                                            // transaction
     .error_i        (reg_error_i      )
   );
 
   // The reg_error_i will be asserted if either a read or write error occurs
   assign reg_error_i    = read_error || write_error;
 
-  // Read data takes one cycle to produce a result (to avoid the live decode problem)
-  assign rdata_valid_i  = reg_re_o_d1;
+  // The acknowledgement signal allows for latching of the read data when
+  // available (if it is a read) and/or proper processing of the
+  // external error
+  assign ack_i          = reg_re_o_d1 ||  reg_we_o_d1;
   //------------------------------------------------------------------------
 
 
@@ -446,7 +453,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       keyram_wdata_i              <= '0;
       llkic2_reqfifo_wvalid_i     <= '0;
       llkic2_reqfifo_wdata_i      <= '0;
-      rdata_valid_i_d1            <= '0;
     end else begin
       
       // Default signal assignments
@@ -461,10 +467,6 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       reg_addr_o_d1               <= reg_addr_o;
       reg_we_o_d1                 <= reg_we_o;
       reg_re_o_d1                 <= reg_re_o;
-
-      // Delayed version of rdata_valid_i used to account
-      // for the registered reads of the RAM components
-      rdata_valid_i_d1            <= rdata_valid_i;
 
       // Delay the wdata by once cycle to ensure proper alignment
       keyindexram_wdata_i         <= reg_wdata_o;
@@ -885,7 +887,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
               // For the Load Key Request Message length is equal
               // to the 2 + (high_pointer - low pointer).
               host_wdata_i[31:16]     <= (high_pointer - low_pointer) + 2;
-              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
               host_we_i               <= 1'b1;
@@ -894,7 +896,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_MID_C2CLEARKEYREQ  : begin
               host_wdata_i[7:0]       <= LLKI_MID_KLCLEARKEYREQ;
               host_wdata_i[31:16]     <= 16'h01;
-              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
               host_we_i               <= 1'b1;
@@ -902,7 +904,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             LLKI_MID_C2KEYSTATUSREQ : begin
               host_wdata_i[7:0]       <= LLKI_MID_KLKEYSTATUSREQ;
               host_wdata_i[31:16]     <= 16'h01;
-              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+              host_addr_i             <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
               // Assert write enable and req (indicates a TL PutFullData operation)
               host_req_i              <= 1'b1;
               host_we_i               <= 1'b1;
@@ -1003,7 +1005,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           srot_current_state        <= ST_SROT_KL_READ_READY_STATUS;
 
           // We want to read the selected LLKI-PP Control/Status Register
-          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_CTRLSTS_INDEX];
+          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_CTRLSTS_OFFSET;
           host_req_i                <= 1'b1;
 
           // Did an error get asserted?
@@ -1048,7 +1050,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             end else if (host_rdata_o[LLKIKL_CTRLSTS_READY_FOR_KEY] == 1'b1) begin
               // Issue the key write, understanding that if host_gnt_o is
               // already asserted, this will only be set for a single clock cycle
-              host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+              host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
               host_wdata_i              <= keyram_rdata_o;
               host_req_i                <= 1'b1;
               host_we_i                 <= 1'b1;
@@ -1100,7 +1102,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           srot_current_state        <= ST_SROT_KL_LOAD_KEY_WORD;
 
           // Hold the signals, until host_gnt_o is issued
-          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
           host_wdata_i              <= keyram_rdata_o;
           host_req_i                <= 1'b1;
           host_we_i                 <= 1'b1;
@@ -1167,7 +1169,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           srot_current_state        <= ST_SROT_KL_READ_RESP_STATUS;
 
           // We want to read the selected LLKI-PP Control/Status Register
-          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_CTRLSTS_INDEX];
+          host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_CTRLSTS_OFFSET;
           host_req_i                <= 1'b1;
 
           // Did an error get asserted?
@@ -1207,7 +1209,7 @@ module srot_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             // as we tranisition to the next state            
             if (host_rdata_o[LLKIKL_CTRLSTS_RESP_WAITING] == 1'b1) begin
               // We want to read the selected LLKI-PP Send/Receive Queue
-              host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index][LLKI_SENDRECV_INDEX];
+              host_addr_i               <= LLKI_CORE_INDEX_ARRAY[core_index] + LLKI_SENDRECV_OFFSET;
               host_req_i                <= 1'b1;
 
               srot_current_state        <= ST_SROT_KL_RESP_READ;

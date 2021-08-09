@@ -10,13 +10,10 @@
 
 #if defined(BARE_MODE)
 #else
-//#include <openssl/rand.h>
-//#include <openssl/ecdsa.h>
-//#include <openssl/obj_mac.h>
-//#include <openssl/err.h>
-//#include <openssl/pem.h>
-#include <openssl/evp.h>
-//#include <openssl/hmac.h>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/aes.h>
+#include <cryptopp/rijndael.h>
+#include <cryptopp/modes.h>
 
 #include "simPio.h"
 
@@ -43,55 +40,24 @@ cep_aes::cep_aes(int seed, int verbose) {
 //
 
 //
-// via openssl
+// via cryptopp
 //
-int cep_aes::openssl_aes192_ecb_encryption
+int cep_aes::cryptopp_aes192_ecb_encryption
 (
  uint8_t *input,           // input text packet
  uint8_t *output,           // output cipher packet
- int padding_enable,
- int length,
- int *outlen,
  int verbose)
 {
   //
 #if defined(BARE_MODE)
 #else
-  int tmplen;
-  EVP_CIPHER_CTX ctx;
-  EVP_CIPHER_CTX_init(&ctx);
-  //
-  EVP_EncryptInit_ex(&ctx, EVP_aes_192_ecb(), NULL, &(mKEY[0]), &(mIV[0]));
-  EVP_CIPHER_CTX_set_padding(&ctx, padding_enable); // OFF
-  EVP_CIPHER_CTX_set_key_length(&ctx, mKeySize); 
-  //
-  if(!EVP_EncryptUpdate(&ctx, output, outlen, input, length)) {
-    return 1;
-  }
 
-  /* Buffer passed to EVP_EncryptFinal() must be after data just
-   * encrypted to avoid overwriting it.
-   */
-  if(!EVP_EncryptFinal_ex(&ctx, output + *outlen, &tmplen)) {
-    /* Error */
-    return 1;
-  }
-  *outlen += tmplen;
-  //
-  //
-  if (verbose) {
-    LOGI("%s: inLen=%d outlen=%d\n",__FUNCTION__,
-	   length,*outlen);
-    /*    
-	 EVP_CIPHER_CTX_key_length(&ctx),
-	 EVP_CIPHER_CTX_iv_length(&ctx),
-	 EVP_CIPHER_CTX_block_size(&ctx)
-	 );
-    */
+  using namespace CryptoPP;
 
-  }
-  EVP_CIPHER_CTX_cleanup(&ctx);
-  
+  ECB_Mode< AES >::Encryption encryption;
+  encryption.SetKey(&(mKEY[0]), GetKeySize());
+  encryption.ProcessLastBlock(output, input, GetBlockSize());
+ 
 #endif
   //
   return mErrCnt;
@@ -218,13 +184,12 @@ int cep_aes::RunAes192Test(int maxLoop) {
     
     //
     // create expected cipherTet
-    mErrCnt += cep_aes::openssl_aes192_ecb_encryption
-      (mHwPt, // uint8_t *input,           // input text packet
-       mSwCp, // uint8_t *output,           // output cipher packet
-       1,   // int padding_enable,
-       mBlockSize, // int length,
-       &outLen, GetVerbose());
-    //
+    mErrCnt += cep_aes::cryptopp_aes192_ecb_encryption
+      (mHwPt,           // uint8_t *input,           // input text packet
+       mSwCp,           // uint8_t *output,           // output cipher packet
+       GetVerbose());
+    
+      //
     // load key&plaintext to HW
     //
     LoadPlaintext();

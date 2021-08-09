@@ -10,8 +10,9 @@ TARGET = cep_diag
 FREEDOM_U_SDK_DIR = ../../../software/freedom-u-sdk
 BUILDROOT_DIR = $(FREEDOM_U_SDK_DIR)/buildroot
 PACKAGE_DIR = $(BUILDROOT_DIR)/package/$(TARGET)
+CRYPTOPP_DIR = $(BUILDROOT_DIR)/package/cryptopp
 
-LIBS = -lssl -lcrypto
+LIBS = -lcryptopp
 #
 # top level Makefile override this CC to use gcc BUT we need g++!!!
 #
@@ -93,7 +94,17 @@ install:
 	cp Config.in $(PACKAGE_DIR)
 	cp $(TARGET).mk $(PACKAGE_DIR)
 
+# Overwrite the default cryptopp.mk file
+	@echo
+	@echo "--- Overwriting cryptopp files ---"
+	@echo
+	cp ./cryptopp/Config.in ${CRYPTOPP_DIR}
+	cp ./cryptopp/cryptopp.mk ${CRYPTOPP_DIR}
+
 # Copy the source to the source directory
+	@echo
+	@echo "--- Copying source and other files for $(TARGET) ---"
+	@echo
 	cp $(FILE_LIST) $(PACKAGE_DIR)/src
 	cp $(OTHER_FILES) $(PACKAGE_DIR)/src
 	@echo
@@ -116,9 +127,9 @@ ifeq ($(CONFIG_GREP),)
 	rm -f tmp.txt
 
 # Append the CEP Applications menu item to Config.in
-	echo "" >> $(BUILDROOT_DIR)/package/Config.in
 	echo 'menu "CEP Tests"' >> $(BUILDROOT_DIR)/package/Config.in
 	echo '        source "package/$(TARGET)/Config.in"' >> $(BUILDROOT_DIR)/package/Config.in
+	echo '        source "package/cryptopp/Config.in"' >> $(BUILDROOT_DIR)/package/Config.in
 	echo "endmenu" >> $(BUILDROOT_DIR)/package/Config.in
 	echo "" >> $(BUILDROOT_DIR)/package/Config.in
 	echo "endmenu" >> $(BUILDROOT_DIR)/package/Config.in	# Replacing the endmenu we deleted above
@@ -126,7 +137,6 @@ ifeq ($(CONFIG_GREP),)
 	@echo
 	@echo "--- Enabling application in $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config ---"
 	@echo
-	echo "BR2_PACKAGE_OPENSSL=y" >> $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config
 	echo "BR2_PACKAGE_CEP_DIAG=y" >> $(FREEDOM_U_SDK_DIR)/conf/buildroot_initramfs_config
 	@echo
 	@echo "--- Append Complete ---"

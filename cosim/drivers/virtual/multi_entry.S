@@ -115,7 +115,10 @@ pop_tf:
   LOAD  x24,24*REGBYTES(a0)
   LOAD  x25,25*REGBYTES(a0)
   LOAD  x26,26*REGBYTES(a0)
-  LOAD  x27,27*REGBYTES(a0)
+//  LOAD  x27,27*REGBYTES(a0)
+// use this register to pass hartId to user space
+// it is place in scounteren during M mode
+  csrr  x27,scounteren
   LOAD  x28,28*REGBYTES(a0)
   LOAD  x29,29*REGBYTES(a0)
   LOAD  x30,30*REGBYTES(a0)

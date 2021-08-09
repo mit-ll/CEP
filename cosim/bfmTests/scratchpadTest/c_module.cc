@@ -78,8 +78,8 @@ void *c_module(void *arg) {
     if (!errCnt) { errCnt = cepMemTest_runTest(cpuId, mem_base, adrWidth, dataWidth ,seed + ((cpuId+i)*0x10), verbose, full); }
   }
 #endif
-  // use DDR3 test
   errCnt = cepDdr3MemTest_runTest(cpuId, mem_base, adrWidth, seed, full, verbose);
+
 
   //
   //

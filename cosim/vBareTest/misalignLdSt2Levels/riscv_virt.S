@@ -18,20 +18,9 @@ RVTEST_RV64U
 RVTEST_CODE_BEGIN
 
 user_code_here:
-//	
-// must obey the page table rule as specified in multi_vm.c for this to work!!!
 //
-// MODE: WALK1_0_2LEVELS (vpn2->vpn0)
-//
-// Acceptabe User's VA addressing:
-//
-//  VPN[2]     VPN[1]    VPN[0]   PageOffset
-//         3           2          1
-// 876543210_987654321_098765432_109876543210
-// 111111111 mmmmmmmmm xxxxxxxxx pppppppppppp : Kernel code (megapage)
-// 000000000 000000000 00UUUUUUU pppppppppppp : user code (restricted to 64 pages = 256Kbytes)
-// 000000001 0wwwwwwww wwwwwwwww pppppppppppp : walk-1 VPN[1] = pattern1
-// 000000000 1WWWWWWWW WWWWWWWWW pppppppppppp : walk-0 VPN[1] = pattern2
+// to cause misAligned access fault
+// use default PTW from drivers/virtual/multi_vm.c
 //
 //
 #define EXP      a0

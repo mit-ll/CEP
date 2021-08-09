@@ -20,10 +20,15 @@ DUT_RAW_XILINX_TOP_FILE  := ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500de
 DUT_DDR3_FILE            += ddr3.v
 DUT_DDR3_PARAM_FILE      += 1024Mb_ddr3_parameters.vh
 
+ddr: ${BHV_DIR}/ddr3.v
+
 # replace this line {BL_MAX*DQ_BITS{1'bx}} to {BL_MAX*DQ_BITS{1'b0}} for virtual mode support
-${BHV_DIR}/ddr3.v: ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v
+# set the unused memory to 1'b1 as default unlesss othewise override by individual test
+${BHV_DIR}/ddr3.v: ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v 
 	cp -f ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/1024Mb_ddr3_parameters.vh ${BHV_DIR}/.
-	sed -e 's/BL_MAX\*DQ_BITS{1'\''bx/BL_MAX\*DQ_BITS{1'\''b0/g' ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v > ${BHV_DIR}/ddr3.v
+	sed -e 's/BL_MAX\*DQ_BITS{1'\''bx/BL_MAX\*DQ_BITS{defx/g' 	\
+		-e 's/task memory_read/reg defx=1'\''b1; \n task memory_read/'	\
+	${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/hdl/ddr3.v > ${BHV_DIR}/ddr3.v
 
 #
 # BFM
@@ -31,7 +36,6 @@ ${BHV_DIR}/ddr3.v: ${VIVADO_PATH}/data/rsb/non_default_iprepos/micron_ddr3_v2_0/
 ifeq "$(findstring BFM,${DUT_SIM_MODE})" "BFM"
 DUT_XILINX_TOP_FILE     := ${DUT_BFM_XILINX_TOP_FILE}
 DUT_VLOG_ARGS           += +define+BFM_MODE
-COMMON_CFLAGS	        += -DBFM_MODE
 #
 # Bare Metal
 #
@@ -57,53 +61,28 @@ DUT_VLOG_ARGS           += +define+x1Gb+sg125+x8+den1024Mb
 # -----------------------------------------------------------------------
 #
 ROCKET_DIR	= ${DUT_TOP_DIR}/hdl_cores/freedom/rocket-chip/src/main
-FREEDOM_DIR = ${DUT_TOP_DIR}/hdl_cores/freedom/src/main
+FREEDOM_DIR     = ${DUT_TOP_DIR}/hdl_cores/freedom/src/main
 XLNX_IP_DIR     = ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/obj/ip
 BARE_SRC_DIR    = ${SIM_DIR}/drivers/bare
-BARE_OBJ_DIR    = ${SIM_DIR}/drivers/bare
 
 RISCV            ?= /opt/riscv
 RISCV_GCC         = ${RISCV}/bin/riscv64-unknown-elf-gcc
 RISCV_OBJDUMP     = ${RISCV}/bin/riscv64-unknown-elf-objdump
 RISCV_HEXDUMP     = /usr/bin/hexdump
+RISCV_AR          = ${RISCV}/bin/riscv64-unknown-elf-gcc-ar
+RISCV_RANLIB      = ${RISCV}/bin/riscv64-unknown-elf-gcc-ranlib
 #
 # RISCV-TESTS : isa and benchmark
 #
-#RISCV_TEST_DIR     = ${RISCV}/riscv64-unknown-elf/share/riscv-tests
-RISCV_TEST_DIR     = ${DUT_TOP_DIR}/software/riscv-tests
-
-#
-# Files/stuffs need to build bare metal tests in virtual mode
-#
-#riscv64-unknown-elf-gcc -march=rv64g -mabi=lp64 -static -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -g -DENTROPY=0xdb1550c -std=gnu99 -O2 -I/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v -I/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/macros/scalar -T/data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/link.ld /data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/entry.S /data/aduong/CEP/CEP_v2p8/software/riscv-tests/isa/../env/v/*.c rv64uc/rvc.S -o rv64uc-v-rvc
-#riscv64-unknown-elf-objdump -S -C -d -l -x --disassemble-all --disassemble-zeroes --section=.text --section=.text.startup --section=.text.init --section=.data rv64uc-v-rvc > rv64uc-v-rvc.dump
-
 RISCV_VIRT_CFLAGS  += -march=rv64g -mabi=lp64 -mcmodel=medany -fvisibility=hidden -nostdlib -nostartfiles -DENTROPY=0xdb1550c -static 
-RISCV_VIRT_LFLAGS  += -T${SIM_DIR}/drivers/virtual/link.ld
-RISCV_VIRT_CFILES  += ${SIM_DIR}/drivers/virtual/*.c ${SIM_DIR}/drivers/virtual/multi_entry.S 
-RISCV_VIRT_INC     += -I${SIM_DIR}/drivers/virtual -I${RISCV_TEST_DIR}/isa/macros/scalar 
+RISCV_VIRT_LFLAGS  += -T${XX_SIM_DIR}/drivers/virtual/link.ld
+RISCV_VIRT_CFILES  += ${XX_SIM_DIR}/drivers/virtual/*.c ${XX_SIM_DIR}/drivers/virtual/multi_entry.S 
+RISCV_VIRT_INC     += -I${XX_SIM_DIR}/drivers/virtual -I${RISCV_TEST_DIR}/isa/macros/scalar 
+
 
 #
 # flags to compile codes for bare metal
 #
-RISCV_BARE_CFLAG  += -DBARE_MODE -static -DRISCV_CPU
-RISCV_BARE_CFLAG  += -mcmodel=medany -Wall -O2 -g -fno-common -nostdlib -fno-builtin-printf -I${BARE_SRC_DIR} $(DRIVER_INC_LIST) -I ${SIM_DIR}/share -I ${SIM_DIR}/include
-RISCV_BARE_LDFLAG += -static -nostdlib -nostartfiles -lgcc -DBARE_MODE 
-RISCV_BARE_LDFILE  = ${BARE_SRC_DIR}/link.ld
-RISCV_BARE_CRTFILE = ${BARE_SRC_DIR}/crt.S
-
-# .C-style ONLY
-RISC_BARE_SRC_LIST := $(subst .c,.bobj,$(notdir $(wildcard ${BARE_SRC_DIR}/*.c)))
-RISC_BARE_OBJECTS  := $(foreach t,${RISC_BARE_SRC_LIST}, ${BARE_OBJ_DIR}/${t})
-
-CEP_SRC_FILES            = $(wildcard ${SIM_DIR}/drivers/cep_tests/*.cc)
-CEP_BARE_OBJECTS       := $(subst .cc,.bobj,${CEP_SRC_FILES})
-
-#
-# Bare metal booloader
-#
-#RICSV_BARE_BOOT_DIR       := ${SIM_DIR}/drivers/bootbare
-#RISCV_BARE_BOOT_ROM       := bootbare.hex
 
 # use the one build during verilog generation
 RICSV_BARE_BOOT_DIR       := ${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit
@@ -112,55 +91,8 @@ RISCV_BARE_BOOT_ROM       := sdboot_fpga_sim.hex
 %.hex: ${INC_DIR}/cep_adrMap.h %.c
 	(cd ${RICSV_BARE_BOOT_DIR}; make clean; make;)
 
-CEP_DIAG_FILES          = $(wildcard ${SIM_DIR}/drivers/diag/*.cc)
-CEP_BARE_DIAG_OBJECTS   := $(subst .cc,.bobj,${CEP_DIAG_FILES})
-#
-# -----------------------------------------------------------------------
-# rules to build object file for bare metal under sim (bobj)
-# -----------------------------------------------------------------------
-#
-
-${BARE_OBJ_DIR}/crt.bobj: ${RISCV_BARE_CRTFILE}
-	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
-
-${BARE_OBJ_DIR}/%.bobj: ${BARE_OBJ_DIR}/%.c
-	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
-
-
-riscv_wrapper.bobj: riscv_wrapper.cc
-	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
-
-ifeq "$(findstring BUILTIN,${DUT_ELF_MODE})" "BUILTIN"
-# blank it
-undefine RISCV_WRAPPER_ELF
-else
-
-RISCV_WRAPPER_ELF = ${RISCV_WRAPPER}
-
-#
-# with -g, tests in virtual adr will run forever when it takes a page fault..!! (sending stuffs to console and stop)
-# so build with -g for dump file only
-#
-#
-ifeq (${DUT_IN_VIRTUAL},1)
-riscv_wrapper.elf: riscv_virt.S riscv_wrapper.cc ${RISCV_VIRT_CFILES}
-	$(RISCV_GCC) ${RISCV_VIRT_CFLAGS} ${RISCV_VIRT_LFLAGS} -g ${RISCV_VIRT_INC} $^ -o riscv_withG.elf
-	${RISCV_OBJDUMP} -S -C -d -l -x riscv_withG.elf > riscv_wrapper.dump; rm riscv_withG.elf;
-	$(RISCV_GCC) ${RISCV_VIRT_CFLAGS} ${RISCV_VIRT_LFLAGS} ${RISCV_VIRT_INC} $^ -o riscv_wrapper.elf
-	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex
-	${BIN_DIR}/createPassFail.pl riscv_wrapper.dump PassFail.hex
-else
-riscv_wrapper.elf: riscv_wrapper.bobj ${BARE_OBJ_DIR}/crt.bobj ${RISC_BARE_OBJECTS} ${CEP_BARE_OBJECTS} ${CEP_BARE_DIAG_OBJECTS}
-	$(RISCV_GCC) -T ${RISCV_BARE_LDFILE} ${RISCV_BARE_LDFLAG} $^ -o $@
-	${RISCV_OBJDUMP} -S -C -d -l -x riscv_wrapper.elf > riscv_wrapper.dump
-	${RISCV_HEXDUMP} -C riscv_wrapper.elf > riscv_wrapper.hex
-
-endif
-
-%.bobj: %.cc ${VERILOG_DEFINE_LIST} 
-	$(RISCV_GCC) $(RISCV_BARE_CFLAG) -c $< -o $@
-
-endif
+#CEP_DIAG_FILES          = $(wildcard ${SIM_DIR}/drivers/diag/*.cc)
+#CEP_BARE_DIAG_OBJECTS   := $(subst .cc,.bobj,${CEP_DIAG_FILES})
 #
 # ***************************************************************
 # below are strickly for vlog/vcom to build CEP ASIC/FPGA for sim
@@ -182,9 +114,11 @@ DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 	${DUT_TOP_DIR}/hdl_cores/llki/llki_pkg.sv 		\
 	${DUT_TOP_DIR}/hdl_cores/llki/top_pkg.sv 		\
 	$(DUT_TOP_DIR)/opentitan/hw/ip/tlul/rtl/tlul_pkg.sv	\
+	$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl/prim_util_pkg.sv	\
 	${DUT_TOP_DIR}/hdl_cores/llki/tlul_err.sv 		\
 	${DUT_TOP_DIR}/hdl_cores/llki/tlul_adapter_reg.sv 	\
-	$(DUT_TOP_DIR)/opentitan/hw/ip/prim/rtl/prim_util_pkg.sv	\
+	${DUT_TOP_DIR}/hdl_cores/llki/tlul_fifo_sync.sv 	\
+	${DUT_TOP_DIR}/hdl_cores/llki/prim_generic_ram_1p.sv 	\
 	${DUT_TOP_DIR}/generated_dsp_code/dft_top.v		\
 	-v ${DUT_TOP_DIR}/generated_dsp_code/idft_top.v		\
 	${BHV_DIR}/ddr3.v					\
@@ -192,8 +126,6 @@ DUT_COMMON_FILES = ${DUT_TOP_DIR}/hdl_cores/aes/table.v 	\
 #
 # created from chisel
 #
-#RISCV_FILES	= ${ROCKET_DIR}/resources/vsrc/AsyncResetReg.v  \
-
 RISCV_FILES	= \
 		  ${ROCKET_DIR}/resources/vsrc/plusarg_reader.v	\
 		  ${ROCKET_DIR}/resources/vsrc/EICG_wrapper.v
@@ -206,7 +138,6 @@ FREEDOM_FILES = ${FREEDOM_DIR}/resources/vsrc/AnalogToUInt.v \
 # Xilinx related stuffs if selected
 # ==================================
 #
-
 DUT_XILINX_FILES = ${VIVADO_PATH}/data/verilog/src/glbl.v	\
 	${DUT_TOP_DIR}/hdl_cores/freedom/fpga-shells/xilinx/common/vsrc/PowerOnResetFPGAOnly.v 	\
 	${DUT_TOP_DIR}/hdl_cores/freedom/builds/vc707-u500devkit/sifive.freedom.unleashed.DevKitU500FPGADesign_WithDevKit50MHz.rom.v \
@@ -247,9 +178,7 @@ endif
 # add config file
 DUT_TB_FILES_LIST  = ${DUT_XILINX_TOP_TB} 
 
-
 FPGA_INST_NAME     = /cep_tb/fpga
-
 
 #
 # add config file
@@ -262,8 +191,6 @@ DUT_TB_FILES_LIST  = ${DUT_XILINX_TOP_TB}
 # Search list
 # ===========================================
 #	${VENDOR_DIR}/micron 	\
-
-
 
 SEARCH_DIR_LIST := ${DVT_DIR}		\
 		${BLD_DIR} 		\
@@ -340,14 +267,14 @@ endif
 #
 # Build Verilog and VHDL seperately to save time since VHDL takes a long time
 #
-${BLD_DIR}/.buildVcom : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}/cep_buildChips.make  ${BLD_DIR}/${SIM_DEPEND_TARGET}_VHDL_LIST 
+${BLD_DIR}/.buildVcom : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${MKFILE_DIR}/cep_buildChips.make  ${BLD_DIR}/${SIM_DEPEND_TARGET}_VHDL_LIST 
 	@for i in ${CEP_VHDL_FLIST}; do                        		\
 		${VCOM_CMD} -work ${WORK_DIR} ${DUT_VCOM_ARGS} $$i;		\
 	done
 	touch $@
 
 
-${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${SIM_DIR}/cep_buildChips.make ${DUT_XILINX_TOP_FILE} ${BLD_DIR}/${SIM_DEPEND_TARGET}_OTHER_LIST ${BHV_DIR}/ddr3.v
+${BLD_DIR}/.buildVlog : ${VERILOG_DEFINE_LIST} ${SIM_DIR}/common.make ${MKFILE_DIR}/cep_buildChips.make ${DUT_XILINX_TOP_FILE} ${BLD_DIR}/${SIM_DEPEND_TARGET}_OTHER_LIST ${BHV_DIR}/ddr3.v
 	$(RM) ${BLD_DIR}/searchPaths_build
 	@for i in ${SEARCH_DIR_LIST}; do                        			\
 		echo "-y" $${i} >> ${BLD_DIR}/searchPaths_build;			\
@@ -372,6 +299,5 @@ else
 ${BLD_DIR}/_info: ${BLD_DIR}/.is_checked ${BLD_DIR}/.cadenceBuild ${RICSV_BARE_BOOT_DIR}/${RISCV_BARE_BOOT_ROM}
 	touch $@
 endif
-
 
 buildSim: .force ${BLD_DIR}/_info 

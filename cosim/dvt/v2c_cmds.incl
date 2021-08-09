@@ -183,6 +183,9 @@
 `define DVTF_DISABLE_STUCKCHECKER                   114
 `define DVTF_GET_SOCKET_ID_BIT                      115
 
+// Set default pattern when read gargage data from main memory
+`define DVTF_SET_DEFAULTX_BIT                       116
+
 //
 // ===============================================
 // System Sim Status

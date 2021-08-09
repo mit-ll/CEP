@@ -57,7 +57,8 @@ trait HasPeripheryDFT { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       dftmodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -87,9 +88,11 @@ class dftTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -124,8 +127,8 @@ class dftTLModuleImp(coreparams: COREParams, outer: dftTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -247,18 +250,26 @@ class dftTLModuleImp(coreparams: COREParams, outer: dftTLModule) extends LazyMod
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val dft_top_mock_tss_inst   = Module(new dft_top_mock_tss())
+  val dft_inst   = Module(new dft_top_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  dft_inst.suggestName(dft_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  dft_top_mock_tss_inst.io.llkid_key_data       := llki_pp_inst.io.llkid_key_data
-  dft_top_mock_tss_inst.io.llkid_key_valid      := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready               := dft_top_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete            := dft_top_mock_tss_inst.io.llkid_key_complete
-  dft_top_mock_tss_inst.io.llkid_clear_key      := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack           := dft_top_mock_tss_inst.io.llkid_clear_key_ack
+  dft_inst.io.llkid_key_data          := llki_pp_inst.io.llkid_key_data
+  dft_inst.io.llkid_key_valid         := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := dft_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := dft_inst.io.llkid_key_complete
+  dft_inst.io.llkid_clear_key         := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := dft_inst.io.llkid_clear_key_ack
 
   // Macro definition for creating rising edge detectors
   def rising_edge(x: Bool)    = x && !RegNext(x)
@@ -315,21 +326,21 @@ class dftTLModuleImp(coreparams: COREParams, outer: dftTLModule) extends LazyMod
   }
 
   // Map the blackbox inputs
-  dft_top_mock_tss_inst.io.clk      := clock                // Implicit module clock
-  dft_top_mock_tss_inst.io.rst      := reset                // dft top has an active high reset 
-  dft_top_mock_tss_inst.io.X0       := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U) // Concatenating data into 64 bit blackbox input
-  dft_top_mock_tss_inst.io.X1       := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U) // Concatenating data into 64 bit blackbox input
-  dft_top_mock_tss_inst.io.X2       := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U) // Concatenating data into 64 bit blackbox input       
-  dft_top_mock_tss_inst.io.X3       := Mux(datain_read_idx < 32.U, datain_read_data(15,0),  0.U) // Concatenating data into 64 bit blackbox input
-  dft_top_mock_tss_inst.io.next     := rising_edge(start) 
+  dft_inst.io.clk      := clock                // Implicit module clock
+  dft_inst.io.rst      := reset                // dft top has an active high reset 
+  dft_inst.io.X0       := Mux(datain_read_idx < 32.U, datain_read_data(63,48), 0.U) // Concatenating data into 64 bit blackbox input
+  dft_inst.io.X1       := Mux(datain_read_idx < 32.U, datain_read_data(47,32), 0.U) // Concatenating data into 64 bit blackbox input
+  dft_inst.io.X2       := Mux(datain_read_idx < 32.U, datain_read_data(31,16), 0.U) // Concatenating data into 64 bit blackbox input       
+  dft_inst.io.X3       := Mux(datain_read_idx < 32.U, datain_read_data(15,0),  0.U) // Concatenating data into 64 bit blackbox input
+  dft_inst.io.next     := rising_edge(start) 
                                                             // Map the dft input data only when pointing to
                                                             // a valid memory location
   // Map the blackbox outputs
-  dataout_write_data                := Cat(dft_top_mock_tss_inst.io.Y0,
-                                           dft_top_mock_tss_inst.io.Y1,
-                                           dft_top_mock_tss_inst.io.Y2,
-                                           dft_top_mock_tss_inst.io.Y3)      // dft output data
-  next_out                          := dft_top_mock_tss_inst.io.next_out
+  dataout_write_data                := Cat(dft_inst.io.Y0,
+                                           dft_inst.io.Y1,
+                                           dft_inst.io.Y2,
+                                           dft_inst.io.Y3)      // dft output data
+  next_out                          := dft_inst.io.next_out
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

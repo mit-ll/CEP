@@ -76,7 +76,7 @@ int cepGpioTest_runRegTest(int cpuId, int accessSize,int seed, int verbose) {
   (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_pue		, 0xFF);
   (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_ds		, 0xFF);
   //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_low_ip		, 0xFF);
-  //  (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_en		, 0xFF);
+  //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_en		, 0xFF);
   //(*regp->AddAReg_p)(regp, gpio_base_addr + gpio_iof_sel	, 0xFF);
   (*regp->AddAReg_p)(regp, gpio_base_addr + gpio_out_xor	, 0xFF);
   //

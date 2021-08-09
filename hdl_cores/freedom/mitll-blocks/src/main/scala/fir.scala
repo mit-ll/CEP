@@ -57,7 +57,8 @@ trait HasPeripheryFIR { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       firmodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -87,9 +88,11 @@ class firTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -124,8 +127,8 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -193,15 +196,15 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
   llki_pp_inst.io.rst                 := reset
 
   // Connect the Slave A Channel to the Black box IO
-  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
-  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param
   llki_pp_inst.io.slave_a_size        := llki.a.bits.size
-  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source
   llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
-  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
-  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
-  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
-  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid
   llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
 
   // Connect the Slave D Channel to the Black Box IO    
@@ -240,18 +243,25 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val FIR_filter_mock_tss_inst   = Module(new FIR_filter_mock_tss())
+  val FIR_filter_inst   = Module(new FIR_filter_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  FIR_filter_inst.suggestName(FIR_filter_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  FIR_filter_mock_tss_inst.io.llkid_key_data    := llki_pp_inst.io.llkid_key_data
-  FIR_filter_mock_tss_inst.io.llkid_key_valid   := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready               := FIR_filter_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete            := FIR_filter_mock_tss_inst.io.llkid_key_complete
-  FIR_filter_mock_tss_inst.io.llkid_clear_key   := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack           := FIR_filter_mock_tss_inst.io.llkid_clear_key_ack
+  FIR_filter_inst.io.llkid_key_data    := llki_pp_inst.io.llkid_key_data
+  FIR_filter_inst.io.llkid_key_valid   := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready      := FIR_filter_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete   := FIR_filter_inst.io.llkid_key_complete
+  FIR_filter_inst.io.llkid_clear_key   := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack  := FIR_filter_inst.io.llkid_clear_key_ack
 
   // Macro definition for creating rising edge detectors
   def rising_edge(x: Bool)    = x && !RegNext(x)
@@ -327,13 +337,13 @@ class firTLModuleImp(coreparams: COREParams, outer: firTLModule) extends LazyMod
   // Map the blackbox I/O
   // The FIR needs to be reset in between test vectors, thus a second reset
   // has been added in order to allow for the LLKI keys to persist
-  FIR_filter_mock_tss_inst.io.clk       := clock                            
-  FIR_filter_mock_tss_inst.io.rst       := reset.asBool
-//  FIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || fir_reset_re).asAsyncReset 
-  FIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || fir_reset).asAsyncReset 
+  FIR_filter_inst.io.clk       := clock
+  FIR_filter_inst.io.rst       := reset.asBool
+//  FIR_filter_inst.io.rst_dut   := (reset.asBool || fir_reset_re).asAsyncReset 
+  FIR_filter_inst.io.rst_dut   := (reset.asBool || fir_reset).asAsyncReset 
                                                                      
-  FIR_filter_mock_tss_inst.io.inData    := Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
-  dataout_write_data                    := FIR_filter_mock_tss_inst.io.outData
+  FIR_filter_inst.io.inData    := Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
+  dataout_write_data                    := FIR_filter_inst.io.outData
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

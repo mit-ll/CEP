@@ -212,7 +212,7 @@ static int copy(void)
 void print_greeting()
 {
     kputs("                                                                             ");
-    kputs("           ::::::::::::::/+   `....-----------:/-     ....-:::::::/+         ");
+    kputs("         ::::::::::::::/+   `....-----------:/-     ....-:::::::/+           ");
     kputs("       ...o+++++++++++++o:  :/--:-/++o+++o+++/-`   ..  `..++++++++:          ");
     kputs("       -o++o++///////++++o:  +o++o`/...........    +:::/. .:::::o++:         "); 
     kputs("       -++++--       :+++o: `oo++o`/.........:/   `o+++o`:    -+++o:         "); 
@@ -224,7 +224,7 @@ void print_greeting()
     kputs("       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-                   "); 
     kputs("       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.                      "); 
     kputs("                                                                             ");
-    kputs("                     Common Evaluation Platform v3.30                        ");
+    kputs("                     Common Evaluation Platform v3.40                        ");
     kputs("         Copyright 2021 Massachusetts Institute of Technology                ");
     kputs("                                                                             ");
     kputs("            Built upon the SiFive Freedom U500 Platform using                ");
@@ -240,6 +240,7 @@ void print_greeting()
     kputs(" Specific commit links available in the CEP README.md, Release Notes         ");
     kputs("                                                                             ");
     kprintf("BootRom Image built on %s %s\n",__DATE__,__TIME__);
+    kputs("");
 }
 
 

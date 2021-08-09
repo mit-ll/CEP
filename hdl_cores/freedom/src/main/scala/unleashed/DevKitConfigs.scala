@@ -27,6 +27,7 @@ import mitllBlocks.md5._
 import mitllBlocks.gps._
 import mitllBlocks.dft._
 import mitllBlocks.srot._
+import mitllBlocks.scratchpad._
 
 // Default FreedomU500Config
 class FreedomU500Config extends Config(
@@ -154,10 +155,32 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
       slave_depth         = BigInt(CEPBaseAddresses.cepregs_base_depth),
       dev_name            = s"cepregs"
     ))
+  case ScratchpadKey => List(
+    ScratchpadParams(
+      slave_address       = BigInt(CEPBaseAddresses.scratchpad_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.scratchpad_depth),
+      dev_name            = s"scratchpad"
+    ))
   case SROTKey => List(
     SROTParams(
-      slave_address   = BigInt(CEPBaseAddresses.srot_base_addr),
-      slave_depth     = BigInt(CEPBaseAddresses.srot_base_depth)
+      slave_address       = BigInt(CEPBaseAddresses.srot_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.srot_base_depth),
+      cep_cores_base_addr = BigInt(CEPBaseAddresses.cep_cores_base_addr),
+      cep_cores_depth     = BigInt(CEPBaseAddresses.cep_cores_depth),
+      // The following array results in the creation of LLKI_CORE_INDEX_ARRAY in srot_wrapper.sv
+      // The SRoT uses these indicies for routing keys to the appropriate core
+      llki_cores_array    = Array( 
+        CEPBaseAddresses.aes_llki_base_addr,	// Core Index 0 
+        CEPBaseAddresses.md5_llki_base_addr,	// Core Index 1 
+        CEPBaseAddresses.sha256_llki_base_addr,	// Core Index 2 
+        CEPBaseAddresses.rsa_llki_base_addr,	// Core Index 3 
+        CEPBaseAddresses.des3_llki_base_addr,	// Core Index 4 
+        CEPBaseAddresses.dft_llki_base_addr,	// Core Index 5 
+        CEPBaseAddresses.idft_llki_base_addr,	// Core Index 6 
+        CEPBaseAddresses.fir_llki_base_addr,	// Core Index 7 
+        CEPBaseAddresses.iir_llki_base_addr,	// Core Index 8 
+        CEPBaseAddresses.gps_llki_base_addr		// Core Index 9 
+      )
     ))
 })
 

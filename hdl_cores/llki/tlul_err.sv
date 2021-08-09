@@ -4,7 +4,7 @@
 //
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD 2-Clause
 //
 // File Name:       tlul_err.sv
 // Program:         Common Evaluation Platform (CEP)
@@ -47,13 +47,14 @@ module tlul_err import tlul_pkg::*; (
                         | (tl_i.a_opcode == PutPartialData)
                         | (tl_i.a_opcode == Get);
 
-  // a channel configuration check
+  // a channel configuration check (assertion indicates condition is GOOD)
   logic addr_sz_chk;    // address and size alignment check
   logic mask_chk;       // inactive lane a_mask check
   logic fulldata_chk;   // PutFullData should have size match to mask
 
+  // For single byte transfers, ensure the address offset corresponds to the
+  // the appropriate mask bit (and no other mask bits are asserted)
   logic [MW-1:0] mask;
-
   assign mask = (1 << tl_i.a_address[SubAW-1:0]);
 
   always_comb begin
@@ -63,33 +64,70 @@ module tlul_err import tlul_pkg::*; (
 
     if (tl_i.a_valid) begin
       unique case (tl_i.a_size)
+
         'h0: begin // 1 Byte
           addr_sz_chk  = 1'b1;
-          mask_chk     = ~|(tl_i.a_mask & ~mask);
-          fulldata_chk = |(tl_i.a_mask & mask);
+          mask_chk     = ~|(tl_i.a_mask & ~mask); // ensure no other mask bits are set
+          fulldata_chk = |(tl_i.a_mask & mask);   // ensure the address/mask align
         end
 
-        'h1: begin // 2 Byte
-          addr_sz_chk  = ~tl_i.a_address[0];
-          // check inactive lanes if lower 2B, check a_mask[3:2], if uppwer 2B, a_mask[1:0]
-          mask_chk     = (tl_i.a_address[1]) ? ~|(tl_i.a_mask & 4'b0011)
-                       : ~|(tl_i.a_mask & 4'b1100);
-          fulldata_chk = (tl_i.a_address[1]) ? &tl_i.a_mask[3:2] : &tl_i.a_mask[1:0] ;
+        'h1: begin // 2 Bytes
+          addr_sz_chk     = ~tl_i.a_address[0];      // Per TL spec, address must be aligned to size
+          if (DW==64) begin
+            unique case (tl_i.a_address[2:1])
+              'h0     : begin
+                mask_chk      = ~|(tl_i.a_mask & 8'b11111100);
+                fulldata_chk  = &tl_i.a_mask[1:0];
+              end
+              'h1     : begin
+                mask_chk      = ~|(tl_i.a_mask & 8'b11110011);
+                fulldata_chk  = &tl_i.a_mask[3:2];
+              end
+              'h2     : begin
+                mask_chk      = ~|(tl_i.a_mask & 8'b11001111);
+                fulldata_chk  = &tl_i.a_mask[5:4];
+              end
+              'h3     : begin
+                mask_chk      = ~|(tl_i.a_mask & 8'b00111111);
+                fulldata_chk  = &tl_i.a_mask[7:6];
+              end
+              default : begin
+                mask_chk      = 1'b0;  
+                fulldata_chk  = 1'b0;
+              end
+            endcase
+          end else begin
+            mask_chk          = (tl_i.a_address[1]) ? ~|(tl_i.a_mask & 4'b0011) : ~|(tl_i.a_mask & 4'b1100);
+            fulldata_chk      = (tl_i.a_address[1]) ? &tl_i.a_mask[3:2] : &tl_i.a_mask[1:0];
+          end // end if (DW==64)
         end
 
-        'h2: begin // 4 Byte
-          addr_sz_chk  = ~|tl_i.a_address[SubAW-1:0];
-          mask_chk     = 1'b1;
-          fulldata_chk = &tl_i.a_mask[3:0];
+        'h2: begin // 4 Bytes
+          if (DW==64) begin
+            addr_sz_chk  = ~|tl_i.a_address[1:0];   // Per TL spec, address must be aligned to size
+            mask_chk     = (tl_i.a_address[2]) ? ~|(tl_i.a_mask & 8'b00001111) : ~|(tl_i.a_mask & 8'b11110000);
+            fulldata_chk = (tl_i.a_address[2]) ? &tl_i.a_mask[7:4] : &tl_i.a_mask[3:0];
+          end else begin
+            addr_sz_chk  = ~|tl_i.a_address[1:0];   // Per TL spec, address must be aligned to size
+            mask_chk     = 1'b1;                    // Mas alignment not an issue when all mask bits are asserted
+            fulldata_chk = &tl_i.a_mask[3:0];       // All mask bits should be asserted
+          end // end if (DW==64)
         end
 
-        'h3: begin // 8 Byte
-          addr_sz_chk  = ~|tl_i.a_address[SubAW-1:0];
-          mask_chk     = 1'b1;
-          fulldata_chk = &tl_i.a_mask[7:0];
+        'h3,          // 8 Bytes
+        'h6: begin    // 64 Bytes
+          if (DW==64) begin
+            addr_sz_chk  = ~|tl_i.a_address[2:0]; // Per TL spec, address must be aligned to size
+            mask_chk     = 1'b1;
+            fulldata_chk = &tl_i.a_mask[7:0];     // Given 8-byte transfer, all mask bits should be set
+          end else begin
+            addr_sz_chk  = 1'b0;
+            mask_chk     = 1'b0;
+            fulldata_chk = 1'b0;
+          end // end if (DW==64)
         end
 
-        default: begin // else
+        default: begin // Unsupported/invalid Sizes
           addr_sz_chk  = 1'b0;
           mask_chk     = 1'b0;
           fulldata_chk = 1'b0;
@@ -107,8 +145,6 @@ module tlul_err import tlul_pkg::*; (
                           & (op_get | op_partial | fulldata_chk) ;
 
   // Only 32/64 bit data width for current tlul_err
-   `ASSERT_INIT(dataWidthOnly32_A, (DW == 32) || (DW == 64))
-   
-
+  `ASSERT_INIT(dataWidthOnly32_64_A, (DW == 32) || (DW == 64))
 endmodule
 

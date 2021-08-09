@@ -53,7 +53,8 @@ trait HasPeripheryDES3 { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       des3module.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -83,9 +84,11 @@ class des3TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) e
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -120,8 +123,8 @@ class des3TLModuleImp(coreparams: COREParams, outer: des3TLModule) extends LazyM
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -241,18 +244,26 @@ class des3TLModuleImp(coreparams: COREParams, outer: des3TLModule) extends LazyM
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val des3_mock_tss_inst   = Module(new des3_mock_tss())
+  val des3_inst   = Module(new des3_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  des3_inst.suggestName(des3_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  des3_mock_tss_inst.io.llkid_key_data  := llki_pp_inst.io.llkid_key_data
-  des3_mock_tss_inst.io.llkid_key_valid := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready       := des3_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete    := des3_mock_tss_inst.io.llkid_key_complete
-  des3_mock_tss_inst.io.llkid_clear_key := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack   := des3_mock_tss_inst.io.llkid_clear_key_ack
+  des3_inst.io.llkid_key_data         := llki_pp_inst.io.llkid_key_data
+  des3_inst.io.llkid_key_valid        := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := des3_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := des3_inst.io.llkid_key_complete
+  des3_inst.io.llkid_clear_key        := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := des3_inst.io.llkid_clear_key_ack
 
   // Instantiate registers for the blackbox inputs
   val start                   = RegInit(0.U(1.W))
@@ -267,16 +278,16 @@ class des3TLModuleImp(coreparams: COREParams, outer: des3TLModule) extends LazyM
   val out_valid               = Wire(Bool())
 
   // Map the blackbox I/O 
-  des3_mock_tss_inst.io.clk       := clock
-  des3_mock_tss_inst.io.rst       := reset
-  des3_mock_tss_inst.io.start     := start
-  des3_mock_tss_inst.io.decrypt   := decrypt
-  des3_mock_tss_inst.io.desIn     := desIn
-  des3_mock_tss_inst.io.key1      := key1
-  des3_mock_tss_inst.io.key2      := key2
-  des3_mock_tss_inst.io.key3      := key3
-  desOut                          := des3_mock_tss_inst.io.desOut
-  out_valid                       := des3_mock_tss_inst.io.out_valid
+  des3_inst.io.clk       := clock
+  des3_inst.io.rst       := reset
+  des3_inst.io.start     := start
+  des3_inst.io.decrypt   := decrypt
+  des3_inst.io.desIn     := desIn
+  des3_inst.io.key1      := key1
+  des3_inst.io.key2      := key2
+  des3_inst.io.key3      := key3
+  desOut                 := des3_inst.io.desOut
+  out_valid              := des3_inst.io.out_valid
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

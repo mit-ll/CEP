@@ -9,13 +9,8 @@
 //************************************************************************
 #if defined(BARE_MODE)
 #else
-//#include <openssl/rand.h>
-//#include <openssl/ecdsa.h>
-//#include <openssl/obj_mac.h>
-//#include <openssl/err.h>
-//#include <openssl/pem.h>
-#include <openssl/evp.h>
-//#include <openssl/hmac.h>
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/des.h>
 
 #include "simPio.h"
 
@@ -43,60 +38,28 @@ cep_des3::~cep_des3()  {
 }
 
 //
-// via openssl
+// Routine only supports a single DES block
 //
 int cep_des3::prepare_des3_key_N_text
 (
- uint8_t *input,           // input text
- uint8_t *output,           // output packet
- int padding_enable,
- int length,
- int *outlen,
- int verbose)
+  uint8_t *input,           // input text
+  uint8_t *output,          // output packet
+  int verbose)
 {
   //
 #if defined(BARE_MODE)
 #else
-  int tmplen;
-  EVP_CIPHER_CTX ctx;
-  EVP_CIPHER_CTX_init(&ctx);
-  //
+
   if (GetDecrypt()) {
-    EVP_DecryptInit_ex(&ctx, EVP_des_ede3_ecb(), NULL, &(mKEY[0]), NULL);
-    if(!EVP_DecryptUpdate(&ctx, output, outlen, input, length)) {
-      return 1;
-    }      
+    CryptoPP::DES_EDE3::Decryption decryption;
+    decryption.SetKey(&(mKEY[0]), GetKeySize());
+    decryption.ProcessBlock(input, output);
   } else {
-    EVP_EncryptInit_ex(&ctx, EVP_des_ede3_ecb(), NULL, &(mKEY[0]), NULL);
-    EVP_CIPHER_CTX_set_padding(&ctx, padding_enable); // OFF
-    //    EVP_CIPHER_CTX_set_key_length(&ctx, GetKeySize());     
-    //
-    if(!EVP_EncryptUpdate(&ctx, output, outlen, input, length)) {
-      return 1;
-    }
-    
-    /* Buffer passed to EVP_EncryptFinal() must be after data just
-     * encrypted to avoid overwriting it.
-     */
-    if(!EVP_EncryptFinal_ex(&ctx, output + *outlen, &tmplen)) {
-      /* Error */
-      return 1;
-    }
-    *outlen += tmplen;
-    //
+    CryptoPP::DES_EDE3::Encryption encryption;
+    encryption.SetKey(&(mKEY[0]), GetKeySize());
+    encryption.ProcessBlock(input, output);
   }
-  //
-  if (verbose) {
-      LOGI("%s: inLen=%d outlen=%d kL=%d bL=%d\n",__FUNCTION__,
-	   length,*outlen,    
-	   EVP_CIPHER_CTX_key_length(&ctx),
-	   EVP_CIPHER_CTX_block_size(&ctx)
-	 );
 
-
-  }
-  EVP_CIPHER_CTX_cleanup(&ctx);
-  
 #endif
   //
   return mErrCnt;
@@ -200,54 +163,66 @@ int cep_des3::RunDes3Test(int maxLoop) {
   // HW expetts only 56-bits
   /*
   uint8_t keyx[] = {0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		    0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
-		    0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01};
+        0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01,
+        0x01,0x01,0x01,0x01,0x01,0x01,0x01,0x01};
   uint8_t pt0[]  = {0x95, 0xF8, 0xA5, 0xE5, 0xDD, 0x31, 0xD9, 0x00}; // 
   */
-  
+
   int outLen=mBlockSize;
-  //
-  for (int i=0;i<maxLoop;i++) {
-    SetDecrypt(i&0x1);
-    for (int l=0;l<2;l++) {
+
+  // Main loop
+  for (int i = 0; i < maxLoop; i++) {
+
+    // Set Encrypt/Decrypt based on the LSBit of the outer loop
+    SetDecrypt(i & 0x1);
+
+    // Alternate between fixed and random inputs
+    for (int l = 0; l < 2; l++) {
       if (GetVerbose()) {
-	LOGI("%s: Loop %d Decrypt=%d\n",__FUNCTION__,i,GetDecrypt());
+        LOGI("%s: Loop %d Decrypt=%d\n",__FUNCTION__,i,GetDecrypt());
       }
+
       if (l == 0) {
-	//
-	// cover every byte of key and plain text
-	//
-	if (i < 128) {
-	  for (int j=0;j<GetKeySize();j++) {
-	    mKEY[j] = (i&0x1) ? ((~(i+j) & 0x7F) << 1) : (((i+j) & 0x7F) << 1);
-	  }
-	  for (int j=0;j<GetBlockSize();j++) {
-	    mHwPt[j] = (i&0x1) ? ((i+j+GetKeySize()+(GetDecrypt()*128)) & 0xFF) : (~(i+j+GetKeySize()+(GetDecrypt()*128)) & 0xFF);
-	  }
-	} else {
-	  // just randomize
-	  // random
-	  RandomGen(mKEY, GetKeySize());
-	  RandomGen(mHwPt, GetBlockSize());      
-	}
-	// adjust parity and convert to SW/HW keys
-	AdjustParity();
-	//
-	// create expected cipherTet
-	mErrCnt += prepare_des3_key_N_text
-	  (mHwPt, // uint8_t *input,           // input text packet
-	   mSwCp, // uint8_t *output,           // output cipher packet
-	   0,   // int padding_enable,
-	   mBlockSize, // int length,
-	   &outLen, GetVerbose());	
-      }
-#if 0
-      memcpy(mKEY,keyx,24);
-      memcpy(mHwPt,pt0,8);
+  
+        //
+        // cover every byte of key and plain text
+        //
+        if (i < 128) {
+          for (int j=0;j<GetKeySize();j++) {
+            mKEY[j] = (i&0x1) ? ((~(i+j) & 0x7F) << 1) : (((i+j) & 0x7F) << 1);
+        }
+    
+        for (int j=0;j<GetBlockSize();j++) {
+          mHwPt[j] = (i&0x1) ? ((i+j+GetKeySize()+(GetDecrypt()*128)) & 0xFF) : (~(i+j+GetKeySize()+(GetDecrypt()*128)) & 0xFF);
+        }
       
-      PrintMe("XXK",&(mKEY[0]),mKeySize);          
-      PrintMe("XXT",&(mHwPt[0]),mBlockSize);
-#endif
+      } else {
+    
+        // Randomize Key and Plaintext inputs
+        RandomGen(mKEY, GetKeySize());
+        RandomGen(mHwPt, GetBlockSize());      
+    
+      } // if (i < 128)
+  
+      // adjust parity and convert to SW/HW keys
+      AdjustParity();
+  
+      //
+      // Routine only supports a single DES block
+      //
+      mErrCnt += prepare_des3_key_N_text
+        (mHwPt,           // uint8_t *input,        W// input text packet
+         mSwCp,           // uint8_t *output,       // output cipher packet
+         GetVerbose());  
+      }
+
+      #if 0
+        memcpy(mKEY,keyx,24);
+        memcpy(mHwPt,pt0,8);
+      
+        PrintMe("XXK",&(mKEY[0]),mKeySize);          
+        PrintMe("XXT",&(mHwPt[0]),mBlockSize);
+      #endif
       
       //
       // load key&plaintext to HW
@@ -255,35 +230,43 @@ int cep_des3::RunDes3Test(int maxLoop) {
       SetMode();
       LoadInText();
       if (l==0) { 
-	LoadKey();
+        LoadKey();
       }
+      
       Start();
       mErrCnt += waitTilDone(50);
       if (!mErrCnt) {
-	ReadOutText();
-	mErrCnt += CheckCipherText();
+        ReadOutText();
+        mErrCnt += CheckCipherText();
       }
+      
       if (mErrCnt && !GetExpErr()) {
-	LOGE("%s: Loop %d l=%d with %d error\n",__FUNCTION__,i,l,mErrCnt);      
+        LOGE("%s: Loop %d l=%d with %d error\n",__FUNCTION__,i,l,mErrCnt);      
       }
-      //
+
       // Print
-      //
       if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
-	PrintMe("Key",       &(mKEY[0]),mKeySize);          
-	PrintMe("InText    ",&(mHwPt[0]),mBlockSize);
-	PrintMe("ExpOutText",&(mSwCp[0]),mBlockSize);
-	PrintMe("ActOutText",&(mHwCp[0]),mBlockSize);        
+        PrintMe("Key",       &(mKEY[0]),mKeySize);          
+        PrintMe("InText    ",&(mHwPt[0]),mBlockSize);
+        PrintMe("ExpOutText",&(mSwCp[0]),mBlockSize);
+        PrintMe("ActOutText",&(mHwCp[0]),mBlockSize);        
       }
+
       if (mErrCnt) break;
+    
       // flip, use memcpy instead of strncpy since migth has 0 in it
       memcpy(mSwCp,mHwPt,GetBlockSize()); // swap
       memcpy(mHwPt,mHwCp,GetBlockSize());      
       SetDecrypt(GetDecrypt() ^ 0x1);
-    }
-    MarkSingle(i);    
-    if (mErrCnt) break;    
-  }
+    
+    } // for (int l = 0; l < 2; l++)
+      
+      MarkSingle(i);    
+      if (mErrCnt) break;    
+  
+  } // for (int i = 0; i < maxLoop; i++)
+
   return mErrCnt;
-}
+
+} // int cep_des3::RunDes3Test(int maxLoop)
 

@@ -48,42 +48,42 @@ longint srot_playback[] = {
 	,  `WRITE__CMD,'h70058008, 'h0123456789abcdef //          25
 	,  `RDSPIN_CMD,'h70058000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          26
 	,  `RDSPIN_CMD,'h70058008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          27
-	,  `WRITE__CMD,'h70078008, 'h0000000000010008 //          28
-	,  `RDSPIN_CMD,'h70078000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          29
-	,  `RDSPIN_CMD,'h70078008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          30
-	,  `WRITE__CMD,'h70078008, 'h0000000000020007 //          31
-	,  `RDSPIN_CMD,'h70078000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          32
-	,  `WRITE__CMD,'h70078008, 'h0123456789abcdef //          33
-	,  `RDSPIN_CMD,'h70078000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          34
-	,  `RDSPIN_CMD,'h70078008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          35
-	,  `WRITE__CMD,'h70098008, 'h0000000000010008 //          36
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          37
-	,  `RDSPIN_CMD,'h70098008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          38
-	,  `WRITE__CMD,'h70098008, 'h0000000000060007 //          39
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          40
-	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          41
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          42
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          43
-	,  `WRITE__CMD,'h70098008, 'hfedcba9876543210 //          44
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          45
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          46
-	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          47
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          48
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          49
-	,  `WRITE__CMD,'h70098008, 'hfedcba9876543210 //          50
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          51
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          52
-	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          53
-	,  `RDSPIN_CMD,'h70098000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          54
-	,  `RDSPIN_CMD,'h70098008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          55
-	,  `WRITE__CMD,'h70068008, 'h0000000000010008 //          56
-	,  `RDSPIN_CMD,'h70068000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          57
-	,  `RDSPIN_CMD,'h70068008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          58
-	,  `WRITE__CMD,'h70068008, 'h0000000000020007 //          59
-	,  `RDSPIN_CMD,'h70068000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          60
-	,  `WRITE__CMD,'h70068008, 'h0123456789abcdef //          61
-	,  `RDSPIN_CMD,'h70068000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          62
-	,  `RDSPIN_CMD,'h70068008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          63
+	,  `WRITE__CMD,'h70068008, 'h0000000000010008 //          28
+	,  `RDSPIN_CMD,'h70068000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          29
+	,  `RDSPIN_CMD,'h70068008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          30
+	,  `WRITE__CMD,'h70068008, 'h0000000000020007 //          31
+	,  `RDSPIN_CMD,'h70068000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          32
+	,  `WRITE__CMD,'h70068008, 'h0123456789abcdef //          33
+	,  `RDSPIN_CMD,'h70068000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          34
+	,  `RDSPIN_CMD,'h70068008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          35
+	,  `WRITE__CMD,'h70078008, 'h0000000000010008 //          36
+	,  `RDSPIN_CMD,'h70078000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          37
+	,  `RDSPIN_CMD,'h70078008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          38
+	,  `WRITE__CMD,'h70078008, 'h0000000000020007 //          39
+	,  `RDSPIN_CMD,'h70078000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          40
+	,  `WRITE__CMD,'h70078008, 'h0123456789abcdef //          41
+	,  `RDSPIN_CMD,'h70078000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          42
+	,  `RDSPIN_CMD,'h70078008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          43
+	,  `WRITE__CMD,'h70098008, 'h0000000000010008 //          44
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          45
+	,  `RDSPIN_CMD,'h70098008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          46
+	,  `WRITE__CMD,'h70098008, 'h0000000000060007 //          47
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          48
+	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          49
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          50
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          51
+	,  `WRITE__CMD,'h70098008, 'hfedcba9876543210 //          52
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          53
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          54
+	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          55
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          56
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          57
+	,  `WRITE__CMD,'h70098008, 'hfedcba9876543210 //          58
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000000, 'hffffffffffffffff, 'h32 //          59
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000002, 'hffffffffffffffff, 'h32 //          60
+	,  `WRITE__CMD,'h70098008, 'h0123456789abcdef //          61
+	,  `RDSPIN_CMD,'h70098000, 'h0000000000000001, 'hffffffffffffffff, 'h32 //          62
+	,  `RDSPIN_CMD,'h70098008, 'h000000000001000a, 'hffffffffffffffff, 'h32 //          63
 	,  `WRITE__CMD,'h70088008, 'h0000000000010008 //          64
 	,  `RDSPIN_CMD,'h70088000, 'h0000000000000003, 'hffffffffffffffff, 'h32 //          65
 	,  `RDSPIN_CMD,'h70088008, 'h000000000001000b, 'hffffffffffffffff, 'h32 //          66

@@ -82,15 +82,16 @@ public: //
   int mKeySize;
   int mBlockSize;
   int mMsgSize;
+  
+  // Byte Arrays used by the various Crypto functions
+  uint8_t mKEY[MAX_KEY_SIZE];
+  uint8_t mHwPt[MAX_MSG_SIZE];
+  uint8_t mSwPt[MAX_MSG_SIZE];
+  uint8_t mHwCp[MAX_MSG_SIZE];
+  uint8_t mSwCp[MAX_MSG_SIZE];
+  
   //
-  uint8_t mKEY[MAX_KEY_SIZE];   // upto 256-bits AES key
-  uint8_t mIV[MAX_KEY_SIZE];   // DOnt care
-  uint8_t mHwPt[MAX_MSG_SIZE];   // from HW
-  uint8_t mSwPt[MAX_MSG_SIZE];   // expected  
-  uint8_t mHwCp[MAX_MSG_SIZE];   // from HW
-  uint8_t mSwCp[MAX_MSG_SIZE];   // expected Cipher
-  //
-  // To support capture and playback (bareMetal & unit testbench)
+  // Flags and Variables associated with the Bare Metal and Unit Simulation Recordings
   //
   int mCapture;
   int mSrotFlag;
@@ -101,7 +102,8 @@ public: //
   int mSingle;
   int mWordCnt;
   int mErrCnt;
-  int mExpErr; // expect error
+  int mExpErr;
+
   //
   uint64_t mAdrBase;
   uint64_t mAdrSize;

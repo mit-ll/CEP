@@ -44,10 +44,9 @@ public: //
   ~cep_rsa(); 
 
   int RunRsaTest(int maxLoop, int maxBytes);
-  int RunRsaTest2(int maxLoop, int maxBytes);  
-  void CleamMem(int maxEntries);
   int RunRsaMemTest(int memMask, int sizeInBytes);
- protected:
+
+protected:
   //
   int GetAddZeros(void) { return mAddZeros; }
   void SetAddZeros(int on) { mAddZeros = on; }
@@ -62,22 +61,11 @@ public: //
   void ReadResult(uint8_t *result, int resultBytes) ;
   void Start(void);
   int  waitTilDone(int maxTO);
-  int expIsOne(void);
   int generate_key(void);
   uint64_t Byte2Word(uint8_t *buf);
   void Word2Byte(uint64_t word, uint8_t *buf);
   int compute_results(void);
-  uint64_t compute_manually(void);
-  //
-  uint32_t ModularMultiplication(uint32_t A, uint32_t B, uint32_t n);
-  uint32_t ModularExponentiation(uint32_t A, uint32_t B, uint32_t n); // E = A**B mod (A=message,B=exponent, n=modulus)
-  //
-  // montgomery
-  uint32_t MonPro2(int x, uint32_t A, uint32_t B, uint32_t M);
-  uint32_t MonExp_R2L(uint32_t P, uint32_t E, uint32_t M);
-  uint32_t MonExp_L2R(uint32_t P, uint32_t E, uint32_t M);  
-  
-  int mUseManualMod;
+
   int mAddZeros;
   int mUseExpBits;
 };

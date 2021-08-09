@@ -28,12 +28,10 @@ public: //
 
  protected:
   //
-  int openssl_aes192_ecb_encryption
+  int cryptopp_aes192_ecb_encryption
     (
      uint8_t *input,           // input text packet
-     uint8_t *output,           // output cipher packet
-     int padding_enable,     // 1 = ON, 0 = OFF
-     int length, int*outlen,
+     uint8_t *output,          // output cipher packet
      int verbose);
   //
   void LoadKey(void);

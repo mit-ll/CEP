@@ -78,7 +78,7 @@ TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.
 runAll: 
 ifeq (${STAND_ALONE},1)
 	make cleanAll
-	make libsBuild
+	make buildLibs
 endif
 	-rm -rf ${BLD_DIR}/*_work ${BLD_DIR}/.*work_dependList.make
 	-rm -f ${BLD_DIR}/*/*.elf

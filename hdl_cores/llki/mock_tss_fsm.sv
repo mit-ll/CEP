@@ -104,10 +104,10 @@ module mock_tss_fsm import llki_pkg::*; #(
           // for the key)
           if (wait_state_counter == 0) begin
 
-            // No more words exist
+            // No more words exist, now jump to another wait state
             if (llkid_key_word_counter == KEY_WORDS - 1) begin 
-              llkid_key_complete      <= '1;
-              current_state           <= ST_MOCKTSS_IDLE;
+              wait_state_counter      <= MOCKTSS_WAIT_STATE_COUNTER_INIT;
+              current_state           <= ST_MOCKTSS_WAIT_STATE2;
             end else begin
               // Increment the word counter
               llkid_key_word_counter  <= llkid_key_word_counter + 1;
@@ -158,7 +158,7 @@ module mock_tss_fsm import llki_pkg::*; #(
           current_state           <= ST_MOCKTSS_WAIT_STATE1;
         end
         //------------------------------------------------------------------
-        // Mock TSS - Wait State 2
+        // Mock TSS - Wait State 1
         //------------------------------------------------------------------
         ST_MOCKTSS_WAIT_STATE1    : begin
           // Default signal assignments
@@ -177,6 +177,27 @@ module mock_tss_fsm import llki_pkg::*; #(
           end // end if (wait_state_counter == 0)
 
         end // ST_MOCKTSS_WAIT_STATE1
+        //------------------------------------------------------------------
+        // Mock TSS - Wait State 2 - Wait for some cycles after the
+        //   final key word is loaded before assert llkid_key_complete
+        //------------------------------------------------------------------
+        ST_MOCKTSS_WAIT_STATE2    : begin
+          // Default signal assignments
+          llkid_key_ready         <= '0;
+          llkid_key_complete      <= '0;
+          llkid_clear_key_ack     <= '0;
+          current_state           <= ST_MOCKTSS_WAIT_STATE2;
+
+          // Decrement the wait state counter
+          wait_state_counter      <= wait_state_counter - 1;
+
+          // Jump when the wait state counter has reached zero
+          if (wait_state_counter == 0) begin
+            llkid_key_complete      <= '1;
+            current_state           <= ST_MOCKTSS_IDLE;
+          end // end if (wait_state_counter == 0)
+
+        end // ST_MOCKTSS_WAIT_STATE2
         //------------------------------------------------------------------
         // Mock TSS - Trap State
         //------------------------------------------------------------------

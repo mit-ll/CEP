@@ -17,5 +17,6 @@
 
 `define RISCV_TESTS
 `define OPENOCD_ENABLE   
+`define VIRTUAL_MODE
 
 `timescale 1ns/100ps

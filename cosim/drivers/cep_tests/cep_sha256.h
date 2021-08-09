@@ -33,7 +33,6 @@ public: //
     (
      uint8_t *input,           // input text
      uint8_t *output,           // output text
-     int padding_enable,     // 1 = ON, 0 = OFF
      int length, int*outlen,
      int verbose);
   //

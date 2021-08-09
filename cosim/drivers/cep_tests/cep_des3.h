@@ -32,12 +32,12 @@ public: //
 
  protected:
   //
+  // Routine only supports a single DES block
+  //
   int prepare_des3_key_N_text
     (
-     uint8_t *input,           // input text
-     uint8_t *output,           // output text
-     int padding_enable,     // 1 = ON, 0 = OFF
-     int length, int*outlen,
+     uint8_t *input,        // input text
+     uint8_t *output,       // output text
      int verbose);
   //
   void LoadKey(void);

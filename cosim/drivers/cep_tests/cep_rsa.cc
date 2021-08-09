@@ -9,12 +9,11 @@
 //************************************************************************
 #if defined(BARE_MODE)
 #else
-#include <openssl/evp.h>
-#include <openssl/err.h>
-#include <openssl/rand.h>
-#include <openssl/rsa.h>
-#include <openssl/bn.h>
 
+#include <cryptopp/cryptlib.h>
+#include <cryptopp/integer.h>
+#include <cryptopp/osrng.h>
+#include <cryptopp/rsa.h>
 #include "simPio.h"
 
 #endif
@@ -46,10 +45,9 @@ cep_rsa::cep_rsa(int seed, int verbose) {
   init();  
   SetSeed(seed);
   SetVerbose(verbose);
-  mUseManualMod = 0;
-  SetAddZeros(1); // 32bit become 32+32, etc..
+  SetAddZeros(1);       // 32bit become 32+32, etc..
   SetUseExpBits(0);
-  SetExpSize(4); // fix at 32-bits
+  SetExpSize(4);        // fix at 32-bits
 }
 //
 cep_rsa::~cep_rsa()  {
@@ -233,205 +231,156 @@ void cep_rsa::Start(void) {
 
 int cep_rsa::waitTilDone(int maxTO) {
   if (GetVerbose(2)) { LOGI("%s: to=%d\n",__FUNCTION__,maxTO); }
-#if 1
-  return cep_readNspin(RSA_BASE_K, RSA_ADDR_STATUS, 1, maxTO);
-#else
-  while (maxTO > 0) {
-    if (cep_readNcapture(RSA_BASE_K, RSA_ADDR_STATUS)== 0x0000000000000001) break;
-    maxTO--;
-    DUT_RUNCLK(2000);
-  };
-  return (maxTO <= 0) ? 1 : 0;
-#endif
+    return cep_readNspin(RSA_BASE_K, RSA_ADDR_STATUS, 1, maxTO);
 }
 
-// Using Bignum to compute c = m^e mod n;
+// Use Crypto++ to compute c = m^e mod n;
 int cep_rsa::compute_results(void) {
-  #if defined(BARE_MODE)
+#if defined(BARE_MODE)
 #else
-  BIGNUM *expNum = BN_new();
-  BIGNUM *modNum = BN_new();
-  BIGNUM *msgNum = BN_new();
-  BIGNUM *resNum = BN_new();
-  BN_CTX *bnCtx  = BN_CTX_new();
+
+  using namespace CryptoPP;
+  AutoSeededRandomPool rng;
+
+  // Declare and initialize the Modulus and Exponent Integers
+  Integer e ((const byte*)EXPSTR, GetExpSize());
+  Integer n ((const byte*)MODSTR, GetModSize());
+
+  // Initialize the public key and validate as a sanity check
+  RSAFunction pubKey;
+  pubKey.Initialize(n, e);
+
+  // Validate the public key
+  if (!pubKey.Validate(rng, 2)) {
+    mErrCnt++;
+    if (!GetExpErr()) {
+      LOGE("%s ERROR Public Key is not valid\n",__FUNCTION__);
+    }
+  } // if (!pubKey.Validate(rng, 2))
+
+  // Report that the function was called
   if (GetVerbose(2)) {
     LOGI("%s\n",__FUNCTION__);
   }
-  if ((expNum == NULL) || (modNum == NULL) || (msgNum == NULL) || (resNum == NULL)) { LOGE("%s: can't make eNum\n",__FUNCTION__); return 1; }
-  // convert to BN
-  BN_CTX_init(bnCtx);
-  (void) BN_bin2bn(EXPSTR, GetExpSize(), expNum);
-  (void) BN_bin2bn(MODSTR, GetModSize(), modNum);
-  (void) BN_bin2bn(MSGSTR, GetMsgSize(), msgNum);    
-  // compute result
-  mErrCnt += (BN_mod_exp(resNum,msgNum,expNum,modNum, bnCtx) == 0) ? 1 : 0;
-  //convert back to char
-  (void)BN_bn2bin(resNum, ERESSTR);
-  BN_CTX_free(bnCtx);
-  BN_free(msgNum);
-  BN_free(expNum);
-  BN_free(modNum);
-  BN_free(resNum);
+
+  // Create Integer datatypes for message and result
+  Integer msgNum ((const byte *)MSGSTR, GetMsgSize());
+  Integer resNum;
+
+  // Perform the encryption
+  resNum = pubKey.ApplyFunction(msgNum);
+
+  // Convert the result back to a byte array
+  resNum.Encode((byte *)ERESSTR, (size_t)GetMsgSize());
+
 #endif
   return mErrCnt;
 }
 
-int cep_rsa::expIsOne(void) {
-  int isOne = (EXPSTR[GetExpSize()-1] == 1) ? 1 : 0;
-  for (int i=0;i<GetExpSize()-1;i++) {
-    if (EXPSTR[i] != 0) {
-      isOne = 0;
-      break;
-    }
-  }
-  return isOne;
-}
-
+// Use Crypto++ to create a public key
 int cep_rsa::generate_key(void) {
 #if defined(BARE_MODE)
 #else  
-  // Get the exponent
-  BIGNUM *eNum;
-  BIGNUM *modNum;
-  RSA *rsa;
-  //
+
+  using namespace CryptoPP;
+  AutoSeededRandomPool rng;
+
+  // Report that the function was called
   if (GetVerbose(2)) {
     LOGI("%s\n",__FUNCTION__);
   }
-  rsa    = RSA_new();
-  eNum   = BN_new();
-  modNum = BN_new();  
-  if ((rsa == NULL) || (eNum == NULL) || (modNum == NULL)) {
-    LOGE("%s: can't make eNum\n",__FUNCTION__);
-    return 1;
-  }
-  (void) BN_bin2bn(EXPSTR, GetExpSize(), eNum);
-  //  (void) BN_bin2bn(MODSTR, GetMsgSize(), modNum);
-  mErrCnt += (RSA_generate_key_ex(rsa, (GetModSize()*8), eNum, NULL) == 0) ? 1 : 0;
-  if (mErrCnt) {
-    LOGI("%s: Problem with RSA_generate_key_ex. (%s) \n",__FUNCTION__,
-	 ERR_error_string(ERR_get_error(),NULL));
-    mErrCnt=0; // for now, ignore it
-  }
-  //
-  if (mUseManualMod == 0) {
-    (void) BN_bn2bin(rsa->n, MODSTR); // Update MOD from 
-  } else {
-    (void) BN_bin2bn(MODSTR,GetMsgSize(),rsa->n); // force to use manual mod
-  }
-  //
-  // Ned to adjust MSGSTR to make sure it is smaller then Modulus
-  //
-  if ((MSGSTR[0] > 0) && (MSGSTR[0] >= MODSTR[0])) {
-    MSGSTR[0] = MODSTR[0]-1;
-  }
-  //
-  //
-  mErrCnt += (RSA_public_encrypt(GetMsgSize(),MSGSTR, ERESSTR, rsa, RSA_NO_PADDING) == -1) ? 1 : 0; // no
-  
-  if (mErrCnt && !GetExpErr()) {
-    LOGE("%s: Problem with RSA_public_encrypt. (%s) \n",__FUNCTION__,
-	 ERR_error_string(ERR_get_error(),NULL));
-    mErrCnt=0; // for now, ignore it
-  }
-  //
-  #ifdef SIM_ENV_ONLY
-  //LOGI("eNum=0x%08x modNum=0x%08x\n",rsa->e->d[0],rsa->n->d[0]);
-  FILE *fp;
-  fp = fopen("BIO_OUT","a");  
-  RSA_print_fp(fp,rsa,0);
-  fclose(fp);
-  #endif
-  //
-  (void)BN_bn2bin(rsa->n, MODSTR);  
-  //
-  if ((RSA_check_key(rsa) != 1) && !expIsOne()) {
+
+  // Initialize our Public Exponent Integer
+  Integer e ((const byte*)EXPSTR, GetExpSize());
+
+  // Generate the private key
+  InvertibleRSAFunction privKey;
+  privKey.Initialize(rng, GetModSize() * 8, e);
+
+  // Validate the private key
+  if (!privKey.Validate(rng, 2)) {
     mErrCnt++;
     if (!GetExpErr()) {
-      LOGE("%s ERROR Key is not valid\n",__FUNCTION__);
+      LOGE("%s ERROR Private Key is not valid\n",__FUNCTION__);
     }
-  }
-  RSA_free(rsa);
-  BN_free(eNum);
-  BN_free(modNum);
-  //
+  } // if (!privKey.Validate(rng, 2))
+
+  // Extract the modulus and put it back in the MODSTR array
+  const Integer& n    = privKey.GetModulus();  
+
+  // Initialize the public key and validate as a sanity check
+  RSAFunction pubKey;
+  pubKey.Initialize(n, e);
+
+  // Validate the public key
+  if (!pubKey.Validate(rng, 2)) {
+    mErrCnt++;
+    if (!GetExpErr()) {
+      LOGE("%s ERROR Public Key is not valid\n",__FUNCTION__);
+    }
+  } // if (!pubKey.Validate(rng, 2))
+
+  n.Encode((byte *)MODSTR, GetModSize());
+
 #endif
   return mErrCnt;
 }
 
-
-// clean memories
-void cep_rsa::CleamMem(int maxEntries) {
-  if (GetVerbose(2)) { LOGI("%s maxEntries=%d\n",__FUNCTION__,maxEntries); }    
-  SetModSize(maxEntries*4);   // Exponent
-  SetMsgSize(maxEntries*4);     // modulus & message
-  LoadMessage(mHwPt, GetMsgSize(),1);   
-  LoadModulus(mHwCp, GetModSize(),1);   
-  LoadExponent(mKEY, GetExpSize(),1);   
-}
-
+//
+// Run the RSA Test
+//
 int cep_rsa::RunRsaTest(int maxLoop, int maxBytes) {
-  //  int outLen=mBlockSize;
-  // kind of empty the file
-#ifdef SIM_ENV_ONLY  
-  FILE *fp;  
-  fp = fopen("BIO_OUT","w");  
-  fclose(fp);
-#endif
-  //
+
   SetAddZeros(1);
   SetUseExpBits(1);
-  //
-  if (GetVerbose()) { LOGI("%s: maxLop=%d\n",__FUNCTION__,maxLoop); }  
-  //
-  //
-  int bCnt = 0; //  min is 4 and multiple of 4
-  for (int i=0;i<maxLoop;i++) { //  
-    //
+  
+  if (GetVerbose()) { 
+    LOGI("%s: maxLoop=%d\n",__FUNCTION__,maxLoop);
+  } // if (GetVerbose())
+
+  // Used to define the number of bytes for the Modulus and Message
+  // Must be a multiple of 4
+  int bCnt = 0;
+  for (int i = 0; i < maxLoop; i++) { //  
+ 
     // Takes 10+ hours just to run 128-bit encrytion
-    //
     bCnt += 4;
-    if (bCnt > maxBytes) {
-      bCnt = 4;
-    }
+    if (bCnt > maxBytes) {bCnt = 4;}
+    
     if (GetVerbose()) {
       LOGI("%s: Loop %d. bCnt=%d\n",__FUNCTION__,i,bCnt);
     }    
+ 
     // 32-bits, 64, 96 ...
     SetExpSize(4);
     SetModSize(bCnt);   
     SetMsgSize(bCnt);   // modulus & message
+ 
     // generate random message, exp and modulus
     // NOTE: exp should be odd
     RandomGen(MSGSTR, GetMsgSize());
-    for (int z=0;z<GetExpSize();z++) { EXPSTR[z] = 0; }
-    //RandomGen(EXPSTR, GetExpSize());
-    EXPSTR[GetExpSize()-4] = 0x00;    
-    EXPSTR[GetExpSize()-3] = 0x01;
-    EXPSTR[GetExpSize()-2] = 0x00;
-    EXPSTR[GetExpSize()-1] = 0x01;
-    // fixed exp
-   //
-#if 0
-    mUseManualMod = 0;          // let openssl pick a valid modulus    
-    // Message
-    Word2Byte(0x0F1182EA+(i*4),MSGSTR); // 
-    // Exponent
-    Word2Byte(0x10001 + (i*4),EXPSTR);
-    // modulus
-    Word2Byte(0xb60eee11, MODSTR); // this is the valid modulus picked from openssl
-#endif
-    //1
-    mErrCnt += generate_key(); //
+
+    // Initialize the Public Exponent
+    for (int z = 0; z < GetExpSize(); z++) { 
+      EXPSTR[z] = 0;
+    }
+    EXPSTR[3] = 0x11;
+
+    // Generate the Public Key
+    mErrCnt += generate_key(); 
+
+    // Break if there is an error
     if (mErrCnt) break;
-    // print
+
+    // Print debug info
     if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
       PrintMe("Exponent" , EXPSTR, GetExpSize());
       PrintMe("Modulus " , MODSTR, GetModSize());
       PrintMe("Message " , MSGSTR, GetMsgSize());
-      PrintMe("ExpCp   "  ,ERESSTR, GetMsgSize());      
     }
-#if 1
+
+    // Load the operands into the RSA core and perform encryption
+
     LoadExponent(EXPSTR, GetExpSize(),1);    
     LoadModulus(MODSTR, GetModSize(),1);
     LoadMessage(MSGSTR, GetMsgSize(),1);
@@ -441,26 +390,22 @@ int cep_rsa::RunRsaTest(int maxLoop, int maxBytes) {
     if (!mErrCnt) {
       ReadResult(ARESSTR,GetMsgSize());
     }
-    //
-    // Check results against openssl
-    //
-    mErrCnt += CheckCipherText();    
-#endif
-    //
-    // Print
-    //
+
+    // Generate the expected results
+    mErrCnt += compute_results();
+
+    // Print debug info
     if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
-      PrintMe("Exponent" , EXPSTR, GetExpSize());
-      PrintMe("Modulus " , MODSTR, GetModSize());
-      PrintMe("Message " , MSGSTR, GetMsgSize());
+      PrintMe("Exponent" , EXPSTR,  GetExpSize());
+      PrintMe("Modulus " , MODSTR,  GetModSize());
+      PrintMe("Message " , MSGSTR,  GetMsgSize());
       PrintMe("ExpCp   "  ,ERESSTR, GetMsgSize());
-      compute_results();
-      PrintMe("BNCp    "  ,ERESSTR, GetMsgSize());
-      // openSSL
       PrintMe("ActCp   "  ,ARESSTR, GetMsgSize());      
-      //Word2Byte(compute_manually(), ERESSTR);
-      //PrintMe("Manual  "  ,ERESSTR, GetMsgSize());      
     }
+  
+    // Check results against Crypto++
+    mErrCnt += CheckCipherText(); 
+
     MarkSingle(i);
     if (mErrCnt) break;
   }
@@ -483,7 +428,7 @@ int cep_rsa::CountExpBits(uint8_t *exp, int expBytes) {
 }
 
 //
-// To test memory
+// To test the RSA memory
 //
 int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
   //
@@ -553,72 +498,5 @@ int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
   }
   return mErrCnt;
 }
-//
-// Big message/small exponent
-//
 
-int cep_rsa::RunRsaTest2(int maxLoop, int maxBytes) {
-  //  int outLen=mBlockSize;
-  // kind of empty the file
-#ifdef SIM_ENV_ONLY  
-  FILE *fp;  
-  fp = fopen("BIO_OUT","w");  
-  fclose(fp);
-#endif
-  //
-  SetAddZeros(1);
-  SetUseExpBits(1);
-  //
-  //
-  //
-  int bCnt = maxBytes; //
-  //
-  // 32-bits, 64, 96 ...
-  //
-  SetExpSize(4);
-  Word2Byte(0x1,EXPSTR);
-  SetModSize(bCnt);   
-  SetMsgSize(bCnt);   // modulus & message
-  // generate random message, exp and modulus
-  // NOTE: exp should be odd
-  RandomGen(MSGSTR, GetMsgSize());
-  //1
-  mErrCnt += generate_key(); //
-  // print
-  if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
-    PrintMe("Exponent" , EXPSTR, GetExpSize());
-    PrintMe("Modulus " , MODSTR, GetModSize());
-    PrintMe("Message " , MSGSTR, GetMsgSize());
-    PrintMe("ExpCp   "  ,ERESSTR, GetMsgSize());      
-  }
-#if 1
-  LoadExponent(EXPSTR, GetExpSize(),1);    
-  LoadModulus(MODSTR, GetModSize(),1);
-  LoadMessage(MSGSTR, GetMsgSize(),1);
-  Start();
-  mErrCnt += waitTilDone(((GetMsgSize()/4)+1) * 20000); // about 16K+ cycle per 32-bits (64-bit actual)
-  if (!mErrCnt) {
-    ReadResult(ARESSTR,GetMsgSize());
-  }
-  //
-  // Check results against openssl
-  //
-  mErrCnt += CheckCipherText();    
-#endif
-  //
-  // Print
-  //
-  if ((mErrCnt && !GetExpErr()) || GetVerbose(2)) {
-    PrintMe("Exponent" , EXPSTR, GetExpSize());
-    PrintMe("Modulus " , MODSTR, GetModSize());
-    PrintMe("Message " , MSGSTR, GetMsgSize());
-    PrintMe("ExpCp   "  ,ERESSTR, GetMsgSize());
-    compute_results();
-    PrintMe("BNCp    "  ,ERESSTR, GetMsgSize());
-    // openSSL
-    PrintMe("ActCp   "  ,ARESSTR, GetMsgSize());      
-    //Word2Byte(compute_manually(), ERESSTR);
-    //PrintMe("Manual  "  ,ERESSTR, GetMsgSize());      
-  }
-  return mErrCnt;
-}
+

@@ -47,14 +47,18 @@ include ../common.make
 # List of test under this directory
 #
 VIRT_TEST_LIST = 		\
+	misalignLdSt2Levels	\
+	dTLB			\
+	l0_iTLB	 		\
+	l1_iTLB			\
+	l2_iTLB			\
+	l2_scratch		\
+	l2_ucache		\
 	pt3levels		\
 	directMap2Levels	\
 	superpage2Level		\
 	special1Level 		\
-	misalignLdSt2Levels	\
 
-#	iTLB	 		\
-#	dTLB			\
 #	directMap1Level 	\
 
 #x	rdwrDat_sv39	\
@@ -69,7 +73,7 @@ TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.
 runAll: 
 ifeq (${STAND_ALONE},1)
 	make cleanAll
-	make libsBuild
+	make buildLibs
 endif
 	-rm -rf ${BLD_DIR}/*_work ${BLD_DIR}/.*work_dependList.make
 	-rm -f ${BLD_DIR}/*/*.elf

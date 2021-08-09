@@ -1,0 +1,270 @@
+//======================================================================
+//
+// {MODULE_NAME}_w_mem_regs.v
+// -------------------
+// The W memory. This version uses 16 32-bit registers as a sliding
+// window to generate the 64 words.
+//
+//
+// Author: Joachim Strombergson
+// Copyright (c) 2013, Secworks Sweden AB
+// All rights reserved.
+//
+// Redistribution and use in source and binary forms, with or
+// without modification, are permitted provided that the following
+// conditions are met:
+//
+// 1. Redistributions of source code must retain the above copyright
+//    notice, this list of conditions and the following disclaimer.
+//
+// 2. Redistributions in binary form must reproduce the above copyright
+//    notice, this list of conditions and the following disclaimer in
+//    the documentation and/or other materials provided with the
+//    distribution.
+//
+// THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+// "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+// LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS
+// FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE
+// COPYRIGHT OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT,
+// INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
+// BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+// LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
+// CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+// STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+// ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
+// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+//
+//======================================================================
+
+module {MODULE_NAME}_w_mem(
+            input wire           clk,
+            input wire           rst,
+
+            input wire [BLOCKSIZE-1 : 0] block,
+
+            input wire           init,
+            input wire           next,
+            output wire [WORDSIZE-1 : 0] w
+        );
+
+
+//----------------------------------------------------------------
+// Internal constant and parameter definitions.
+//----------------------------------------------------------------
+parameter WORDSIZE = {WORDSIZE};
+parameter BLOCKSIZE = WORDSIZE*16;
+parameter ITERATIONS_LIM = {ITERATIONS}-1;
+parameter LOG_ITERATIONS = {LOG_ITERATIONS};
+parameter DIGEST_SIZE = WORDSIZE*8;
+
+parameter CTRL_IDLE   = 0;
+parameter CTRL_UPDATE = 1;
+
+
+//----------------------------------------------------------------
+// Registers including update variables and write enable.
+//----------------------------------------------------------------
+reg [WORDSIZE-1 : 0] w_mem [0 : 15];
+reg [WORDSIZE-1 : 0] w_mem_new [0 : 15];
+reg                  w_mem_we;
+
+reg [LOG_ITERATIONS-1 : 0] w_ctr_reg;
+reg [LOG_ITERATIONS-1 : 0] w_ctr_new;
+reg                        w_ctr_we;
+reg                        w_ctr_inc;
+reg                        w_ctr_rst;
+
+reg [1 : 0]  shaaa_w_mem_ctrl_reg;
+reg [1 : 0]  shaaa_w_mem_ctrl_new;
+reg          shaaa_w_mem_ctrl_we;
+
+
+//----------------------------------------------------------------
+// Wires.
+//----------------------------------------------------------------
+reg [WORDSIZE-1 : 0] w_tmp;
+reg [WORDSIZE-1 : 0] w_new;
+
+
+//----------------------------------------------------------------
+// Concurrent connectivity for ports etc.
+//----------------------------------------------------------------
+assign w = w_tmp;
+
+
+//----------------------------------------------------------------
+// reg_update
+// Update functionality for all registers in the core.
+// All registers are positive edge triggered with synchronous
+// reset. All registers have write enable.
+//----------------------------------------------------------------
+always @ (posedge clk)
+    begin : reg_update
+        integer i;
+        if (rst)
+            begin
+                for (i=0; i<16; i=i+1)
+                    w_mem[i] <= {WORDSIZE}'b0;
+                w_ctr_reg             <= 0;
+                shaaa_w_mem_ctrl_reg <= CTRL_IDLE;
+            end
+        else
+            begin
+                if (w_mem_we)
+                    begin
+                        for (i=0; i<16; i=i+1)
+                            w_mem[i] <= w_mem_new[i];
+                    end
+
+                if (w_ctr_we)
+                    w_ctr_reg <= w_ctr_new;
+
+                if (shaaa_w_mem_ctrl_we)
+                    shaaa_w_mem_ctrl_reg <= shaaa_w_mem_ctrl_new;
+            end
+    end // reg_update
+
+
+//----------------------------------------------------------------
+// select_w
+//
+// Mux for the external read operation. This is where we exract
+// the W variable.
+//----------------------------------------------------------------
+always @*
+    begin : select_w
+        if (w_ctr_reg < 16)
+            begin
+                w_tmp = w_mem[w_ctr_reg[3 : 0]];
+            end
+        else
+            begin
+                w_tmp = w_new;
+            end
+    end // select_w
+
+
+//----------------------------------------------------------------
+// w_new_logic
+//
+// Logic that calculates the next value to be inserted into
+// the sliding window of the memory.
+//----------------------------------------------------------------
+always @*
+    begin : w_mem_update_logic
+        reg [WORDSIZE-1 : 0] w_sums; //w terms to add
+        reg [WORDSIZE-1 : 0] p_0; //parameter for Sigma_low_0
+        reg [WORDSIZE-1 : 0] p_1; //parameter for Sigma_low_0
+        reg [WORDSIZE-1 : 0] d0;
+        reg [WORDSIZE-1 : 0] d1;
+
+        integer i;
+        integer j;
+        for (i=0; i<16; i=i+1)
+            w_mem_new[i] = {WORDSIZE}'b0;
+
+        w_mem_we    = 0;
+
+        w_sums = w_mem[16-{W_SUMS:join|] + w_mem[16-}];
+        p_0 = w_mem[16-{P_SIGMA_LOW_0}];
+        p_1 = w_mem[16-{P_SIGMA_LOW_1}];
+
+        d0 ={{ p_0[{SIGMA_LOW_0[0]}-1 : 0], p_0[WORDSIZE-1 : {SIGMA_LOW_0[0]}]}} ^ //Rotate
+            {{ p_0[{SIGMA_LOW_0[1]}-1 : 0], p_0[WORDSIZE-1 : {SIGMA_LOW_0[1]}]}} ^ //Rotate
+            {{     {SIGMA_LOW_0[2]}'b0,     p_0[WORDSIZE-1 : {SIGMA_LOW_0[2]}]}};  //Shift
+
+        d1 ={{ p_1[{SIGMA_LOW_1[0]}-1 : 0], p_1[WORDSIZE-1 : {SIGMA_LOW_1[0]}]}} ^ //Rotate
+            {{ p_1[{SIGMA_LOW_1[1]}-1 : 0], p_1[WORDSIZE-1 : {SIGMA_LOW_1[1]}]}} ^ //Rotate
+            {{     {SIGMA_LOW_1[2]}'b0,     p_1[WORDSIZE-1 : {SIGMA_LOW_1[2]}]}};  //Shift
+
+        w_new = d0 + d1 + w_sums;
+
+        if (init)
+            begin
+                for (i=0; i<=15; i=i+1) begin
+                    j=(15-i)*WORDSIZE;
+                    w_mem_new[i] = block[j +: WORDSIZE];
+                end
+                w_mem_we    = 1;
+            end
+        else if (w_ctr_reg > 15)
+            begin
+                
+                for (i=0; i<15; i=i+1)
+                    w_mem_new[i] = w_mem[i+1];
+
+                w_mem_new[15] = w_new;
+                w_mem_we    = 1;
+            end
+    end // w_mem_update_logic
+
+
+//----------------------------------------------------------------
+// w_ctr
+// W schedule adress counter. Counts from 0x10 to 0x3f and
+// is used to expand the block into words.
+//----------------------------------------------------------------
+always @*
+    begin : w_ctr
+        w_ctr_new = 0;
+        w_ctr_we  = 0;
+
+        if (w_ctr_rst)
+            begin
+                w_ctr_new = 0;
+                w_ctr_we  = 1;
+            end
+
+        if (w_ctr_inc)
+            begin
+                w_ctr_new = w_ctr_reg + 1;
+                w_ctr_we  = 1;
+            end
+    end // w_ctr
+
+
+//----------------------------------------------------------------
+// shaaa_w_mem_fsm
+// Logic for the w shedule FSM.
+//----------------------------------------------------------------
+always @*
+    begin : shaaa_w_mem_fsm
+        w_ctr_rst = 0;
+        w_ctr_inc = 0;
+
+        shaaa_w_mem_ctrl_new = CTRL_IDLE;
+        shaaa_w_mem_ctrl_we  = 0;
+
+        case (shaaa_w_mem_ctrl_reg)
+            CTRL_IDLE:
+                begin
+                    if (init)
+                        begin
+                            w_ctr_rst            = 1;
+                            shaaa_w_mem_ctrl_new = CTRL_UPDATE;
+                            shaaa_w_mem_ctrl_we  = 1;
+                        end
+                end
+
+            CTRL_UPDATE:
+                begin
+                    if (next)
+                        begin
+                            w_ctr_inc = 1;
+                        end
+
+                    if (w_ctr_reg == ITERATIONS_LIM)
+                        begin
+                            shaaa_w_mem_ctrl_new = CTRL_IDLE;
+                            shaaa_w_mem_ctrl_we  = 1;
+                        end
+                end
+        endcase // case (shaaa_ctrl_reg)
+    end // shaaa_ctrl_fsm
+
+endmodule // shaaa_w_mem
+
+          //======================================================================
+          // {MODULE_NAME}_w_mem.v
+          //======================================================================

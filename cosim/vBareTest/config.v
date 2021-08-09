@@ -16,5 +16,6 @@
 //`define RANDOMIZE
 
 `define RISCV_TESTS
+`define VIRTUAL_MODE
 
 `timescale 1ns/100ps

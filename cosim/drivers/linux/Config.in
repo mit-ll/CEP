@@ -8,6 +8,7 @@
 
 config BR2_PACKAGE_CEP_DIAG
 	bool "cep_diag"
+	select BR2_PACKAGE_CRYPTOPP
 	help
 	  Linux port of the CEP diagnostic suite.
 

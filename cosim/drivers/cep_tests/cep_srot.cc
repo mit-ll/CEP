@@ -2,21 +2,14 @@
 // Copyright 2021 Massachusetts Institute of Technology
 // SPDX License Identifier: MIT
 //
-// File Name:      cep_aes.cc/h
+// File Name:      cep_srot.cc/h
 // Program:        Common Evaluation Platform (CEP)
-// Description:    aes test for CEP
+// Description:    Functions / Test for the CEP Surrogate Root of Trust
 // Notes:          
 //************************************************************************
 
 #if defined(BARE_MODE)
 #else
-//#include <openssl/rand.h>
-//#include <openssl/ecdsa.h>
-//#include <openssl/obj_mac.h>
-//#include <openssl/err.h>
-//#include <openssl/pem.h>
-#include <openssl/evp.h>
-//#include <openssl/hmac.h>
 
 #include "simPio.h"
 
@@ -32,8 +25,11 @@
 #include "cep_adrMap.h"
 #include "cepregression.h"
 
+#define IS_CRYPTO_ENABLED(c) ((1 << c ## _BASE_K) & GetCryptoMask())
+
+//
 cep_srot::cep_srot(int verbose) {
-  init();
+    init();
   
   // Default Timeout Parameter
   maxTO = 5000;
@@ -43,6 +39,7 @@ cep_srot::cep_srot(int verbose) {
   
   // Set the default CPU Active Mask
   SetCpuActiveMask(0xf);
+  SetCryptoMask(-1); // all present
   
   // Initialize some of the core datastructures
   init_srot();
@@ -340,98 +337,115 @@ int cep_srot::LLKIClearComplete (int cpuId)
 // Public Method for setting up the LLKI
 // ------------------------------------------------------------------------------------------------------------
 int cep_srot::LLKI_Setup(int cpuId) {
-  int errCnt = 0;
-
-  // pick the first LSB in cpuActiveMask as master
-  //
-  int iAMmaster = 0;
-  for (int i = 0; i < 4; i++) {
-    if (((1 << i) & GetCpuActiveMask())) { // found the first LSB=1 bit
-      if (i == cpuId) {
-	iAMmaster = 1;
-      }
-      break;
+    int errCnt = 0;
+    
+    // pick the first LSB in cpuActiveMask as master
+    //
+    int iAMmaster = 0;
+    for (int i = 0; i < 4; i++) {
+        if (((1 << i) & GetCpuActiveMask())) { // found the first LSB=1 bit
+            if (i == cpuId) {
+                iAMmaster = 1;
+            }
+            break;
+        }
     }
-  }
-
-  //
-  // Master stuffs
-  //
-  if (iAMmaster) {
-
+    
+    //
+    // Master stuffs
+    //
+    if (iAMmaster) {
+        
 #ifdef SIM_ENV_ONLY
-    if (mSrotFlag) {
-      LOGI("%s: cpu#%d: enable SROT vector capture\n",__FUNCTION__,cpuId);
-      DUT_WRITE_DVT(DVTF_SROT_START_CAPTURE_BIT, DVTF_SROT_START_CAPTURE_BIT , 1);
-    }
+        if (mSrotFlag) {
+            LOGI("%s: cpu#%d: enable SROT vector capture\n",__FUNCTION__,cpuId);
+            DUT_WRITE_DVT(DVTF_SROT_START_CAPTURE_BIT, DVTF_SROT_START_CAPTURE_BIT , 1);
+        }
 #endif
+        
+        if (GetVerbose()) {
+            LOGI("%s: cpu#%d is the master. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
+        }
+        //
+        // Initiate the LLKI for all cores
+        // For multi-core tests, core0 will be responsible for the following:
+        // - Initializing the LLKI Key Index RAM for ALL KEYS
+        // - Loading all keys into the SRoT
+        // - Enabling the LLKI for all cores
+        
+        //
+        // Initialize the LLKI
+        //
+        InitKeyIndexRAM();
+        
+        // Load the all the keys (Core indicies MUST correspond
+        // to those identified in the LLKI_CORE_INDEX_ARRAY as
+        // listed in llki_pkg.sv
+        // tony duong 02/26/21:
+        /* for the sake of easy  testing, use keyIndex same as core Index for now */
+        if (IS_CRYPTO_ENABLED(AES)) {
+            LoadLLKIKey(AES_BASE_K     , AES_BASE_K,     0,  1, AES_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+            DisableLLKI(AES_BASE_K    );    EnableLLKI(AES_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(DES3)) {        
+            LoadLLKIKey(DES3_BASE_K    , DES3_BASE_K,    2,  2, DES3_MOCK_TSS_KEY,   INVERT_ALL_BITS);
+            DisableLLKI(DES3_BASE_K   );    EnableLLKI(DES3_BASE_K   );            
+        }
+        // NOTE: DFT/IDFT: they go together
+        if (IS_CRYPTO_ENABLED(DFT) || IS_CRYPTO_ENABLED(IDFT)) {        
+            LoadLLKIKey(DFT_BASE_K     , DFT_BASE_K,     3,  3, DFT_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+            DisableLLKI(DFT_BASE_K    );    EnableLLKI(DFT_BASE_K    );
+            //
+            LoadLLKIKey(IDFT_BASE_K    , IDFT_BASE_K,   10, 10, IDFT_MOCK_TSS_KEY,   INVERT_ALL_BITS);
+            DisableLLKI(IDFT_BASE_K   );    EnableLLKI(IDFT_BASE_K   );                        
+        }
+        if (IS_CRYPTO_ENABLED(FIR)) {        
+            LoadLLKIKey(FIR_BASE_K     , FIR_BASE_K,     4,  4, FIR_MOCK_TSS_KEY,    INVERT_ALTERNATE);
+            DisableLLKI(FIR_BASE_K    );    EnableLLKI(FIR_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(GPS)) {        
+            LoadLLKIKey(GPS_BASE_K     , GPS_BASE_K,     5,  9, GPS_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+            DisableLLKI(GPS_BASE_K    );    EnableLLKI(GPS_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(IIR)) {        
+            LoadLLKIKey(IIR_BASE_K     , IIR_BASE_K,    11, 11, IIR_MOCK_TSS_KEY,    INVERT_ALTERNATE); // can't use invert_all_bits
+            DisableLLKI(IIR_BASE_K    );    EnableLLKI(IIR_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(MD5)) {        
+            LoadLLKIKey(MD5_BASE_K     , MD5_BASE_K,    12, 19, MD5_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+            DisableLLKI(MD5_BASE_K    );    EnableLLKI(MD5_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(RSA)) {        
+            LoadLLKIKey(RSA_BASE_K     , RSA_BASE_K,    20, 20, RSA_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+            DisableLLKI(RSA_BASE_K    );    EnableLLKI(RSA_BASE_K    );            
+        }
+        if (IS_CRYPTO_ENABLED(SHA256)) {        
+            LoadLLKIKey(SHA256_BASE_K  , SHA256_BASE_K, 21, 28, SHA256_MOCK_TSS_KEY, INVERT_ALL_BITS);
+            DisableLLKI(SHA256_BASE_K );    EnableLLKI(SHA256_BASE_K );            
+        }
 
-    if (GetVerbose()) {
-      LOGI("%s: cpu#%d is the master. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
-    }
-    //
-    // Initiate the LLKI for all cores
-    // For multi-core tests, core0 will be responsible for the following:
-    // - Initializing the LLKI Key Index RAM for ALL KEYS
-    // - Loading all keys into the SRoT
-    // - Enabling the LLKI for all cores
-    
-    //
-    // Initialize the LLKI
-    //
-    InitKeyIndexRAM();
-    
-    // Load the all the keys (Core indicies MUST correspond
-    // to those identified in the LLKI_CORE_INDEX_ARRAY as
-    // listed in llki_pkg.sv
-    // tony duong 02/26/21:
-    /* for the sake of easy  testing, use keyIndex same as core Index for now */
-
-    LoadLLKIKey(AES_BASE_K     , AES_BASE_K,     0,  1, AES_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    LoadLLKIKey(DES3_BASE_K    , DES3_BASE_K,    2,  2, DES3_MOCK_TSS_KEY,   INVERT_ALL_BITS);
-    LoadLLKIKey(DFT_BASE_K     , DFT_BASE_K,     3,  3, DFT_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    LoadLLKIKey(FIR_BASE_K     , FIR_BASE_K,     4,  4, FIR_MOCK_TSS_KEY,    INVERT_ALTERNATE);
-    LoadLLKIKey(GPS_BASE_K     , GPS_BASE_K,     5,  9, GPS_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    LoadLLKIKey(IDFT_BASE_K    , IDFT_BASE_K,   10, 10, IDFT_MOCK_TSS_KEY,   INVERT_ALL_BITS);
-    LoadLLKIKey(IIR_BASE_K     , IIR_BASE_K,    11, 11, IIR_MOCK_TSS_KEY,    INVERT_ALTERNATE); // can't use invert_all_bits
-    LoadLLKIKey(MD5_BASE_K     , MD5_BASE_K,    12, 19, MD5_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    LoadLLKIKey(RSA_BASE_K     , RSA_BASE_K,    20, 20, RSA_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    LoadLLKIKey(SHA256_BASE_K  , SHA256_BASE_K, 21, 28, SHA256_MOCK_TSS_KEY, INVERT_ALL_BITS);
-    
-    // Enable the LLKI for all the cores
-    DisableLLKI(AES_BASE_K    );    EnableLLKI(AES_BASE_K    );
-    DisableLLKI(DES3_BASE_K   );    EnableLLKI(DES3_BASE_K   );
-    DisableLLKI(DFT_BASE_K    );    EnableLLKI(DFT_BASE_K    );
-    DisableLLKI(FIR_BASE_K    );    EnableLLKI(FIR_BASE_K    );
-    DisableLLKI(GPS_BASE_K    );    EnableLLKI(GPS_BASE_K    );
-    DisableLLKI(IDFT_BASE_K   );    EnableLLKI(IDFT_BASE_K   );
-    DisableLLKI(IIR_BASE_K    );    EnableLLKI(IIR_BASE_K    );
-    DisableLLKI(MD5_BASE_K    );    EnableLLKI(MD5_BASE_K    );
-    DisableLLKI(RSA_BASE_K    );    EnableLLKI(RSA_BASE_K    );
-    DisableLLKI(SHA256_BASE_K );    EnableLLKI(SHA256_BASE_K );
-
-    // Write to the core0 status register indicating that the LLKI operations are complete
-    cep_writeNcapture(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE);
-    //
-    // Done!!
-    //
+        // Write to the core0 status register indicating that the LLKI operations are complete
+        cep_writeNcapture(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE);
+        //
+        // Done!!
+        //
 #ifdef SIM_ENV_ONLY
-    if (mSrotFlag) {
-      DUT_WRITE_DVT(DVTF_SROT_STOP_CAPTURE_BIT, DVTF_SROT_STOP_CAPTURE_BIT , 1);
-    }
+        if (mSrotFlag) {
+            DUT_WRITE_DVT(DVTF_SROT_STOP_CAPTURE_BIT, DVTF_SROT_STOP_CAPTURE_BIT , 1);
+        }
 #endif
-  
-  } else {
-    if (GetVerbose()) {
-      LOGI("%s: cpu#%d will be the slave. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
+        
+    } else {
+        if (GetVerbose()) {
+            LOGI("%s: cpu#%d will be the slave. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
+        }
+        errCnt += cep_readNspin(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF,maxTO); 
     }
-    errCnt += cep_readNspin(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF,maxTO); 
-  }
-  if (GetVerbose()) {
-    LOGI("%s: Done ...cpu=%d !!!\n",__FUNCTION__,cpuId);
-  }  
-  //
-  return errCnt;
+    if (GetVerbose()) {
+        LOGI("%s: Done ...cpu=%d !!!\n",__FUNCTION__,cpuId);
+    }  
+    //
+    return errCnt;
 } // cep_srot::LLKI_Setup
 // ------------------------------------------------------------------------------------------------------------
 

@@ -93,17 +93,17 @@ const uint8_t   LLKI_KEYINDEX_VALID               = 0x80;
   } while (0)
 
 // Mock TSS Keys
-const uint64_t  AES_MOCK_TSS_KEY[]      = {
-  0x0123456789ABCDEF,
+const uint64_t  AES_MOCK_TSS_KEY[]     = {
+  0xAE53456789ABCDEF,
   0xFEDCBA9876543210
 };
 
-const uint64_t  DES3_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+const uint64_t  DES3_MOCK_TSS_KEY[]    = {
+  0xDE53456789ABCDEF
 };
 
-const uint64_t  SHA256_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF,
+const uint64_t  SHA256_MOCK_TSS_KEY[]  = {
+  0x54A3456789ABCDEF,
   0xFEDCBA9876543210,
   0x0123456789ABCDEF,
   0xFEDCBA9876543210,
@@ -114,7 +114,7 @@ const uint64_t  SHA256_MOCK_TSS_KEY[]     = {
 };
 
 const uint64_t  MD5_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF,
+  0x3D53456789ABCDEF,
   0xFEDCBA9876543210,
   0x0123456789ABCDEF,
   0xFEDCBA9876543210,
@@ -125,27 +125,27 @@ const uint64_t  MD5_MOCK_TSS_KEY[]     = {
 };
 
 const uint64_t  RSA_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+  0x45A3456789ABCDEF
 };
 
 const uint64_t  IIR_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+  0x1143456789ABCDEF
 };
 
 const uint64_t  FIR_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+  0xF143456789ABCDEF
 };
 
 const uint64_t  DFT_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+  0xDF73456789ABCDEF
 };
 
-const uint64_t  IDFT_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF
+const uint64_t  IDFT_MOCK_TSS_KEY[]    = {
+  0x1DF7456789ABCDEF
 };
 
 const uint64_t  GPS_MOCK_TSS_KEY[]     = {
-  0x0123456789ABCDEF,
+  0x6953456789ABCDEF,
   0xFEDCBA9876543210,
   0x0123456789ABCDEF,
   0xFEDCBA9876543210,
@@ -174,6 +174,11 @@ class cep_srot : public cep_crypto {
 
     void SetCpuActiveMask(int mask) {  mCpuActiveMask = mask; }
     int  GetCpuActiveMask(void) { return mCpuActiveMask; }
+
+    //
+    void SetCryptoMask(int mask) {  mCryptoMask = mask; }
+    int  GetCryptoMask(void) { return mCryptoMask; }
+
     // for negative testing
     void LLKI_invertKey(int enable) { mInvertKey = enable; }
   //
@@ -191,6 +196,9 @@ class cep_srot : public cep_crypto {
 
     int mCpuActiveMask;
     int maxTO;  
+    //
+    int mCryptoMask;
+
     //
     int mInvertKey;
     uint64_t mInvertMask;

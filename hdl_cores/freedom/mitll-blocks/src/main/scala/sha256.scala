@@ -53,7 +53,8 @@ trait HasPeripherySHA256 { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       sha256module.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -83,9 +84,11 @@ class sha256TLModule(coreattachparams: COREAttachParams)(implicit p: Parameters)
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -120,8 +123,8 @@ class sha256TLModuleImp(coreparams: COREParams, outer: sha256TLModule) extends L
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -239,18 +242,26 @@ class sha256TLModuleImp(coreparams: COREParams, outer: sha256TLModule) extends L
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+    // Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val sha256_mock_tss_inst   = Module(new sha256_mock_tss())
+  val sha256_inst   = Module(new sha256_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  sha256_inst.suggestName(sha256_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  sha256_mock_tss_inst.io.llkid_key_data  := llki_pp_inst.io.llkid_key_data
-  sha256_mock_tss_inst.io.llkid_key_valid := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready         := sha256_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete      := sha256_mock_tss_inst.io.llkid_key_complete
-  sha256_mock_tss_inst.io.llkid_clear_key := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack     := sha256_mock_tss_inst.io.llkid_clear_key_ack
+  sha256_inst.io.llkid_key_data       := llki_pp_inst.io.llkid_key_data
+  sha256_inst.io.llkid_key_valid      := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := sha256_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := sha256_inst.io.llkid_key_complete
+  sha256_inst.io.llkid_clear_key      := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := sha256_inst.io.llkid_clear_key_ack
 
   // Macro definition for creating rising edge detectors
   def rising_edge(x: Bool)    = x && !RegNext(x)
@@ -271,17 +282,17 @@ class sha256TLModuleImp(coreparams: COREParams, outer: sha256TLModule) extends L
   val ready                  = Wire(Bool())
 
   // Connect the Core I/O
-  sha256_mock_tss_inst.io.clk             := clock
-  sha256_mock_tss_inst.io.rst             := reset
-  sha256_mock_tss_inst.io.init            := rising_edge(init)
-  sha256_mock_tss_inst.io.next            := rising_edge(next)
-  sha256_mock_tss_inst.io.block           := Cat(block0, block1, 
-                                                 block2, block3, 
-                                                 block4, block5, 
-                                                 block6, block7)
-  digest                                  := sha256_mock_tss_inst.io.digest
-  digest_valid                            := sha256_mock_tss_inst.io.digest_valid
-  ready                                   := sha256_mock_tss_inst.io.ready
+  sha256_inst.io.clk             := clock
+  sha256_inst.io.rst             := reset
+  sha256_inst.io.init            := rising_edge(init)
+  sha256_inst.io.next            := rising_edge(next)
+  sha256_inst.io.block           := Cat(block0, block1, 
+                                        block2, block3, 
+                                        block4, block5, 
+                                        block6, block7)
+  digest                         := sha256_inst.io.digest
+  digest_valid                   := sha256_inst.io.digest_valid
+  ready                          := sha256_inst.io.ready
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

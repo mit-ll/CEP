@@ -317,9 +317,6 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                 int maxBytes=8;
                     //
                 init_rsa();
-                if (!errCnt)  {
-                    errCnt += rsa.RunRsaTest2(maxLoop,256/8);
-                }    
                 if (!errCnt)  {    
                     errCnt += rsa.RunRsaMemTest(0xf, 1024); // 8K bits
                 }

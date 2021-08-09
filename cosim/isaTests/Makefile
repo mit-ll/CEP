@@ -249,7 +249,7 @@ TESTINFO_LIST := $(sort $(foreach t,${TALUS_TEST_LIST},${BLD_DIR}/${t}/testInfo.
 runAll: ${BLD_DIR}/.ISACreated
 ifeq (${STAND_ALONE},1)
 	make cleanAll
-	make libsBuild
+	make buildLibs
 endif
 	-rm -rf ${BLD_DIR}/*_work ${BLD_DIR}/.*work_dependList.make
 	-rm -rf ${BLD_DIR}/.*_dependList* ${BLD_DIR}/.is_checked

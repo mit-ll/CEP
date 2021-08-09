@@ -23,9 +23,11 @@ package llki_pkg;
     localparam SROT_LLKIC2_SENDRECV_ADDR        = 32'h7020_0008;
     localparam SROT_LLKIC2_SCRATCHPAD0_ADDR     = 32'h7020_0010;
     localparam SROT_LLKIC2_SCRATCHPAD1_ADDR     = 32'h7020_0018;
+
     // See KeyIndexRAM explanation below
     localparam SROT_KEYINDEXRAM_ADDR            = 32'h7020_0100;
     localparam SROT_KEYINDEXRAM_SIZE            = 32'h0000_0020;	// 32 64-bit words
+
     // Holds the LLKI keys as referenced by the those words in the KeyIndex RAM
     // Note: This cannot be less than SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8)!!!
     localparam SROT_KEYRAM_ADDR                 = 32'h7020_0200;
@@ -58,8 +60,10 @@ package llki_pkg;
     // Field descriptions:
     //  - Valid             : Indicates a valid key index and valid key material in the
     //                        range identified to by the high and low pointers
-    //  - Core Indx         : Pointer to an entry in LLKI_CORE_INDEX_ROM that determines
+    //  - Core Indx         : Pointer to an entry in LLKI_CORE_INDEX_ARRAY that determines
     //                        which LLKI-enabled core is the target of the current operation
+    //                        Constant definitions are located in DevKitsConfig.scala under
+    //                        the U500DevKitPeripherals class (SROTKey)
     //  - High Pointer      : Upper Key RAM addr
     //  - Low Pointer       : Lower Key RAM addr
     //
@@ -70,48 +74,10 @@ package llki_pkg;
     // of the SRoT state machine (in srot_wrapper.sv)
     //
 
-    // Generate a list of all the valid LLKI Key Load interface
-    // address pairs: One for send/receive, one for control/status
-    // Ensure these match the equivalent constants in cep_addresses.scala
-    localparam AES_LLKIKL_CTRLSTS_ADDR      = 32'h7000_8000;
-    localparam AES_LLKIKL_SENDRECV_ADDR     = 32'h7000_8008;
-    localparam MD5_LLKIKL_CTRLSTS_ADDR      = 32'h7001_8000;
-    localparam MD5_LLKIKL_SENDRECV_ADDR     = 32'h7001_8008;
-    localparam SHA256_LLKIKL_CTRLSTS_ADDR   = 32'h7002_8000;
-    localparam SHA256_LLKIKL_SENDRECV_ADDR  = 32'h7002_8008;
-    localparam RSA_LLKIKL_CTRLSTS_ADDR      = 32'h7003_8000;
-    localparam RSA_LLKIKL_SENDRECV_ADDR     = 32'h7003_8008;
-    localparam DES3_LLKIKL_CTRLSTS_ADDR     = 32'h7004_8000;
-    localparam DES3_LLKIKL_SENDRECV_ADDR    = 32'h7004_8008;
-    localparam DFT_LLKIKL_CTRLSTS_ADDR      = 32'h7005_8000;
-    localparam DFT_LLKIKL_SENDRECV_ADDR     = 32'h7005_8008;
-    localparam IDFT_LLKIKL_CTRLSTS_ADDR     = 32'h7006_8000;
-    localparam IDFT_LLKIKL_SENDRECV_ADDR    = 32'h7006_8008;
-    localparam FIR_LLKIKL_CTRLSTS_ADDR      = 32'h7007_8000;
-    localparam FIR_LLKIKL_SENDRECV_ADDR     = 32'h7007_8008;
-    localparam IIR_LLKIKL_CTRLSTS_ADDR      = 32'h7008_8000;
-    localparam IIR_LLKIKL_SENDRECV_ADDR     = 32'h7008_8008;
-    localparam GPS_LLKIKL_CTRLSTS_ADDR      = 32'h7009_8000;
-    localparam GPS_LLKIKL_SENDRECV_ADDR     = 32'h7009_8008;
 
-    localparam LLKI_CTRLSTS_INDEX           = 0;
-    localparam LLKI_SENDRECV_INDEX          = 1;
+    localparam LLKI_CTRLSTS_OFFSET        = 32'h0;
+    localparam LLKI_SENDRECV_OFFSET       = 32'h8;
 
-    // The following array provides constants to the Surrogate Root of Trust for indexing the LLKI
-    localparam [31:0] LLKI_CORE_INDEX_ARRAY [0:9][0:1] = '{
-        {AES_LLKIKL_CTRLSTS_ADDR, AES_LLKIKL_SENDRECV_ADDR},            // Core Index 0 - AES
-        {MD5_LLKIKL_CTRLSTS_ADDR, MD5_LLKIKL_SENDRECV_ADDR},            // Core Index 1 - MD5
-        {SHA256_LLKIKL_CTRLSTS_ADDR, SHA256_LLKIKL_SENDRECV_ADDR},      // Core Index 2 - SHA256
-        {RSA_LLKIKL_CTRLSTS_ADDR, RSA_LLKIKL_SENDRECV_ADDR},            // Core Index 3 - RSA
-        {DES3_LLKIKL_CTRLSTS_ADDR, DES3_LLKIKL_SENDRECV_ADDR},          // Core Index 4 - DES3
-        {DFT_LLKIKL_CTRLSTS_ADDR, DFT_LLKIKL_SENDRECV_ADDR},            // Core Index 5 - DFT
-        {IDFT_LLKIKL_CTRLSTS_ADDR, IDFT_LLKIKL_SENDRECV_ADDR},          // Core Index 6 - IDFT
-        {FIR_LLKIKL_CTRLSTS_ADDR, FIR_LLKIKL_SENDRECV_ADDR},            // Core Index 7 - FIR
-        {IIR_LLKIKL_CTRLSTS_ADDR, IIR_LLKIKL_SENDRECV_ADDR},            // Core Index 8 - IIR
-        {GPS_LLKIKL_CTRLSTS_ADDR, GPS_LLKIKL_SENDRECV_ADDR}             // Core Index 9 - GPS
-    };
-
- 
     //
     // The LLKI is comprised of the following three interface types:
     //      LLKI-C2         : Using Tilelink, it supports the following message types:
@@ -267,27 +233,41 @@ package llki_pkg;
         ST_LLKIPP_IDLE,
         ST_LLKIPP_MESSAGE_CHECK,
         ST_LLKIPP_LOAD_KEY_WORDS,
+        ST_SROT_KL_WAIT_FOR_COMPLETE,
         ST_LLKIPP_CLEAR_KEY,
         ST_LLKIPP_RESPONSE
     } LLKIPP_STATE_TYPE;
 
+    // The Mock TSS introduces artificial wait states to demonstrate
+    // a delay when loading or clearing keys
+    typedef enum {
+        ST_MOCKTSS_IDLE,
+        ST_MOCKTSS_WAIT_STATE0,
+        ST_MOCKTSS_WAIT_FOR_NEXT_KEY_WORD,
+        ST_MOCKTSS_CLEAR_KEY,
+        ST_MOCKTSS_WAIT_STATE1,
+        ST_MOCKTSS_WAIT_STATE2
+    } MOCKTSS_STATE_TYPE;
+
+    localparam  MOCKTSS_WAIT_STATE_COUNTER_INIT     = 8'h0A;
+
     // The following parameters are used by the AES instance of the Mock Technique Specific Shim (TSS)
     localparam AES_MOCK_TSS_NUM_KEY_WORDS       = 2;
     localparam [63:0] AES_MOCK_TSS_KEY_WORDS [0:AES_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF,
+        64'hAE53456789ABCDEF,
         64'hFEDCBA9876543210
     };
 
     // The following parameters are used by the DES3 instance of the Mock Technique Specific Shim (TSS)
     localparam DES3_MOCK_TSS_NUM_KEY_WORDS      = 1;
     localparam [63:0] DES3_MOCK_TSS_KEY_WORDS [0:DES3_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'hDE53456789ABCDEF
     };
 
     // The following parameters are used by the SHA256 instance of the Mock Technique Specific Shim (TSS)
     localparam SHA256_MOCK_TSS_NUM_KEY_WORDS    = 8;
     localparam [63:0] SHA256_MOCK_TSS_KEY_WORDS [0:SHA256_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF,
+        64'h54A3456789ABCDEF,
         64'hFEDCBA9876543210,
         64'h0123456789ABCDEF,
         64'hFEDCBA9876543210,
@@ -300,7 +280,7 @@ package llki_pkg;
     // The following parameters are used by the MD5 instance of the Mock Technique Specific Shim (TSS)
     localparam MD5_MOCK_TSS_NUM_KEY_WORDS    = 8;
     localparam [63:0] MD5_MOCK_TSS_KEY_WORDS [0:MD5_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF,
+        64'h3D53456789ABCDEF,
         64'hFEDCBA9876543210,
         64'h0123456789ABCDEF,
         64'hFEDCBA9876543210,
@@ -313,53 +293,41 @@ package llki_pkg;
     // The following parameters are used by the RSA (modexp_core) instance of the Mock Technique Specific Shim (TSS)
     localparam RSA_MOCK_TSS_NUM_KEY_WORDS    = 1;
     localparam [63:0] RSA_MOCK_TSS_KEY_WORDS [0:RSA_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'h45A3456789ABCDEF
     };
 
     // The following parameters are used by the IIR instance of the Mock Technique Specific Shim (TSS)
     localparam IIR_MOCK_TSS_NUM_KEY_WORDS    = 1;
     localparam [63:0] IIR_MOCK_TSS_KEY_WORDS [0:IIR_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'h1143456789ABCDEF
     };
 
     // The following parameters are used by the FIR instance of the Mock Technique Specific Shim (TSS)
     localparam FIR_MOCK_TSS_NUM_KEY_WORDS    = 1;
     localparam [63:0] FIR_MOCK_TSS_KEY_WORDS [0:FIR_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'hF143456789ABCDEF
     };
 
     // The following parameters are used by the DFT instance of the Mock Technique Specific Shim (TSS)
     localparam DFT_MOCK_TSS_NUM_KEY_WORDS    = 1;
     localparam [63:0] DFT_MOCK_TSS_KEY_WORDS [0:DFT_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'hDF73456789ABCDEF
     };
 
     // The following parameters are used by the IDFT instance of the Mock Technique Specific Shim (TSS)
     localparam IDFT_MOCK_TSS_NUM_KEY_WORDS   = 1;
     localparam [63:0] IDFT_MOCK_TSS_KEY_WORDS [0:IDFT_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF
+        64'h1DF7456789ABCDEF
     };
 
     // The following parameters are used by the GPS instance of the Mock Technique Specific Shim (TSS)
     localparam GPS_MOCK_TSS_NUM_KEY_WORDS    = 5;
     localparam [63:0] GPS_MOCK_TSS_KEY_WORDS [0:GPS_MOCK_TSS_NUM_KEY_WORDS - 1] = '{
-        64'h0123456789ABCDEF,
+        64'h6953456789ABCDEF,
         64'hFEDCBA9876543210,
         64'h0123456789ABCDEF,
         64'hFEDCBA9876543210,
         64'h0123456789ABCDEF
     };
-
-    // The Mock TSS introduces artificial wait states to demonstrate
-    // a delay when loading or clearing keys
-    typedef enum {
-        ST_MOCKTSS_IDLE,
-        ST_MOCKTSS_WAIT_STATE0,
-        ST_MOCKTSS_WAIT_FOR_NEXT_KEY_WORD,
-        ST_MOCKTSS_CLEAR_KEY,
-        ST_MOCKTSS_WAIT_STATE1
-    } MOCKTSS_STATE_TYPE;
-
-    localparam  MOCKTSS_WAIT_STATE_COUNTER_INIT     = 8'h0A;
 
 endpackage

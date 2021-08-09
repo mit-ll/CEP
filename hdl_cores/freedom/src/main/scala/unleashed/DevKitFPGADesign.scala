@@ -39,6 +39,7 @@ import mitllBlocks.md5._
 import mitllBlocks.gps._
 import mitllBlocks.dft._
 import mitllBlocks.srot._
+import mitllBlocks.scratchpad._
 
 object PinGen {
   def apply(): BasePin = {
@@ -93,6 +94,7 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode, corePLL: PLLNode)(implici
   with HasPeripheryDES3
   with HasPeripheryGPS
   with HasPeripheryMD5
+  with HasScratchpad
   with HasSROT
 {
   val tlclock = new FixedClockResource("tlclk", p(DevKitFPGAFrequencyKey))
@@ -117,15 +119,6 @@ class DevKitFPGADesign(wranglerNode: ClockAdapterNode, corePLL: PLLNode)(implici
       Resource(mmc, "reg").bind(ResourceAddress(0))
     }
   } }
-
-  // Instantiate the Scratchpad memory (64k) and attach it to the Memory Bus
-  val scratchpadRAM = LazyModule(new TLRAM(address   = AddressSet(
-                                    BigInt(CEPBaseAddresses.scratchpad_base_addr),
-                                    BigInt(CEPBaseAddresses.scratchpad_depth)),
-                                    beatBytes = mbus.beatBytes,
-									devName = Some(s"scratchpad")))
-
-  mbus.coupleTo(s"scratchpad") { scratchpadRAM.node := TLFragmenter(mbus) := _ }
 
   // TODO: currently, only hook up one memory channel
   val fourgbdimm = p(ExtMem).get.master.size == 0x100000000L

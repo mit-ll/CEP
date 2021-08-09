@@ -53,7 +53,8 @@ trait HasPeripheryRSA { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       rsamodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -82,9 +83,11 @@ class rsaTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -119,8 +122,8 @@ class rsaTLModuleImp(coreparams: COREParams, outer: rsaTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -253,18 +256,26 @@ class rsaTLModuleImp(coreparams: COREParams, outer: rsaTLModule) extends LazyMod
       val llkid_clear_key_ack           = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val modexp_core_mock_tss_inst   = Module(new modexp_core_mock_tss())
+  val modexp_core_inst   = Module(new modexp_core_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  modexp_core_inst.suggestName(modexp_core_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  modexp_core_mock_tss_inst.io.llkid_key_data   := llki_pp_inst.io.llkid_key_data
-  modexp_core_mock_tss_inst.io.llkid_key_valid  := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready               := modexp_core_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete            := modexp_core_mock_tss_inst.io.llkid_key_complete
-  modexp_core_mock_tss_inst.io.llkid_clear_key  := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack           := modexp_core_mock_tss_inst.io.llkid_clear_key_ack
+  modexp_core_inst.io.llkid_key_data   := llki_pp_inst.io.llkid_key_data
+  modexp_core_inst.io.llkid_key_valid  := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready      := modexp_core_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete   := modexp_core_inst.io.llkid_key_complete
+  modexp_core_inst.io.llkid_clear_key  := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack  := modexp_core_inst.io.llkid_clear_key_ack
 
   // Define registers and wires associated with the Core I/O
   val start                                 = RegInit(false.B)
@@ -299,39 +310,39 @@ class rsaTLModuleImp(coreparams: COREParams, outer: rsaTLModule) extends LazyMod
   def rising_edge(x: Bool)    = x && !RegNext(x)
 
   // Connect the Clock and Reset
-  modexp_core_mock_tss_inst.io.clk                          := clock
-  modexp_core_mock_tss_inst.io.rst                          := reset
+  modexp_core_inst.io.clk                          := clock
+  modexp_core_inst.io.rst                          := reset
 
   // Connect the Core I/O
-  modexp_core_mock_tss_inst.io.start                        := start;
-  modexp_core_mock_tss_inst.io.exponent_length              := exponent_length;
-  modexp_core_mock_tss_inst.io.modulus_length               := modulus_length;
-  ready                                                     := modexp_core_mock_tss_inst.io.ready
-  cycles                                                    := modexp_core_mock_tss_inst.io.cycles
+  modexp_core_inst.io.start                        := start;
+  modexp_core_inst.io.exponent_length              := exponent_length;
+  modexp_core_inst.io.modulus_length               := modulus_length;
+  ready                                            := modexp_core_inst.io.ready
+  cycles                                           := modexp_core_inst.io.cycles
 
-  modexp_core_mock_tss_inst.io.exponent_mem_api_cs          := rising_edge(exponent_mem_api_cs)
-  modexp_core_mock_tss_inst.io.exponent_mem_api_wr          := rising_edge(exponent_mem_api_wr)
-  modexp_core_mock_tss_inst.io.exponent_mem_api_rst         := rising_edge(exponent_mem_api_rst)
-  modexp_core_mock_tss_inst.io.exponent_mem_api_write_data  := exponent_mem_api_write_data
-  exponent_mem_api_read_data                                := modexp_core_mock_tss_inst.io.exponent_mem_api_read_data
+  modexp_core_inst.io.exponent_mem_api_cs          := rising_edge(exponent_mem_api_cs)
+  modexp_core_inst.io.exponent_mem_api_wr          := rising_edge(exponent_mem_api_wr)
+  modexp_core_inst.io.exponent_mem_api_rst         := rising_edge(exponent_mem_api_rst)
+  modexp_core_inst.io.exponent_mem_api_write_data  := exponent_mem_api_write_data
+  exponent_mem_api_read_data                       := modexp_core_inst.io.exponent_mem_api_read_data
 
-  modexp_core_mock_tss_inst.io.modulus_mem_api_cs           := rising_edge(modulus_mem_api_cs)
-  modexp_core_mock_tss_inst.io.modulus_mem_api_wr           := rising_edge(modulus_mem_api_wr)
-  modexp_core_mock_tss_inst.io.modulus_mem_api_rst          := rising_edge(modulus_mem_api_rst)
-  modexp_core_mock_tss_inst.io.modulus_mem_api_write_data   := modulus_mem_api_write_data
-  modulus_mem_api_read_data                                 := modexp_core_mock_tss_inst.io.modulus_mem_api_read_data
+  modexp_core_inst.io.modulus_mem_api_cs           := rising_edge(modulus_mem_api_cs)
+  modexp_core_inst.io.modulus_mem_api_wr           := rising_edge(modulus_mem_api_wr)
+  modexp_core_inst.io.modulus_mem_api_rst          := rising_edge(modulus_mem_api_rst)
+  modexp_core_inst.io.modulus_mem_api_write_data   := modulus_mem_api_write_data
+  modulus_mem_api_read_data                        := modexp_core_inst.io.modulus_mem_api_read_data
 
-  modexp_core_mock_tss_inst.io.message_mem_api_cs           := rising_edge(message_mem_api_cs)
-  modexp_core_mock_tss_inst.io.message_mem_api_wr           := rising_edge(message_mem_api_wr)
-  modexp_core_mock_tss_inst.io.message_mem_api_rst          := rising_edge(message_mem_api_rst)
-  modexp_core_mock_tss_inst.io.message_mem_api_write_data   := message_mem_api_write_data
-  message_mem_api_read_data                                 := modexp_core_mock_tss_inst.io.message_mem_api_read_data
+  modexp_core_inst.io.message_mem_api_cs           := rising_edge(message_mem_api_cs)
+  modexp_core_inst.io.message_mem_api_wr           := rising_edge(message_mem_api_wr)
+  modexp_core_inst.io.message_mem_api_rst          := rising_edge(message_mem_api_rst)
+  modexp_core_inst.io.message_mem_api_write_data   := message_mem_api_write_data
+  message_mem_api_read_data                        := modexp_core_inst.io.message_mem_api_read_data
 
-  modexp_core_mock_tss_inst.io.result_mem_api_cs            := rising_edge(result_mem_api_cs)
-  modexp_core_mock_tss_inst.io.result_mem_api_rst           := rising_edge(result_mem_api_rst)
+  modexp_core_inst.io.result_mem_api_cs            := rising_edge(result_mem_api_cs)
+  modexp_core_inst.io.result_mem_api_rst           := rising_edge(result_mem_api_rst)
 
   when (rising_edge(result_mem_api_cs)) {
-    result_mem_api_read_data                                := modexp_core_mock_tss_inst.io.result_mem_api_read_data
+    result_mem_api_read_data                       := modexp_core_inst.io.result_mem_api_read_data
   }
 
   // Define the register map

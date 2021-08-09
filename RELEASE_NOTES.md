@@ -131,4 +131,17 @@ v3.3 - (19 May 2021)
 * Re-capture vectors for unit sim due to changes in LLKI key size
 * Bootrom size is increased to 32K bytes (8kx32) to accomodate new built-in test (execute codes out of bootrom without main memory)
 
+v3.4 - (6 August 2021)
+
+* Added external interrupt test (extIntr)
+* Added test to boot rom to verify code execution out of scratchpad is working
+* Added cryptoMask to cep_srot to support individual key loading only if enable
+* Restructured cosim Makefiles to support re-use from other repos
+* Modified cadence Makefile to enable partial toggle scoring
+* Changed un-initialized main memory default state (from 0 -> 1) to improve coverage
+* Addressed an LLKI bug in which the LLKI-PP component would send a respond to the SRoT before llkid_key_complete is asserted by the mock_tss_fsm
+* Fixed GPS port directions in verilog
+* Scratchpad RAM changed to blackbox implementation to facilitate ASIC development
+* OpenSSL replaced by Cryptopp for crypto-related tests (cosim + linux)
+
 #### Return to the root CEP [README](./README.md)

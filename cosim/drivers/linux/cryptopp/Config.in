@@ -1,0 +1,14 @@
+#************************************************************************
+# Copyright 2021 Massachusetts Institute of Technology
+#
+# File Name:      Config.in
+# Program:        Common Evaluation Platform (CEP)
+# Description:    Buildroot Config.in for CEP Regression Suite
+#************************************************************************
+
+config BR2_PACKAGE_CRYPTOPP
+	bool "cryptopp"
+	help
+		An advanced C++ encryption library (AES, Twofish, TripleDES)
+		
+		http://www.cryptopp.com/

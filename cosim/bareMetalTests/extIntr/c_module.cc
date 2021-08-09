@@ -62,9 +62,7 @@ void *c_module(void *arg) {
   int calibDone = is_program_loaded(50);
 
   //
-  // use seed as timeout
-  errCnt += check_PassFail_status(cpuId,2000);
-
+  errCnt += check_bare_status(cpuId,500);
   //
   pio.RunClk(100);  
   //

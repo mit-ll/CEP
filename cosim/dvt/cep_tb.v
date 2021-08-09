@@ -785,7 +785,16 @@ module cep_tb;
 	    end
 	 end
 	 //
-        ddr3 ddr3
+	 //
+	 //
+	 always @(posedge `DVT_FLAG[`DVTF_SET_DEFAULTX_BIT]) begin
+	    #1;
+	    ddr3.defx = `DVT_FLAG[`DVTF_PAT_LO];
+	    `logI("== Setting default pattern for unused main memory to %d==",ddr3.defx);
+	    `DVT_FLAG[`DVTF_SET_DEFAULTX_BIT] = 0;
+	 end
+	 //
+         ddr3 ddr3
           (
            .rst_n   (ddr3_reset_n),
            .ck      (ddr3_ck_p_sdram[(i*MEMORY_WIDTH)/72]),
@@ -1071,5 +1080,53 @@ module cep_tb;
    `include "fir_capture.incl"                     
    //
    `include "srot_capture.incl"
+
+   //
+   // Virtual mode
+   //
+`ifdef VIRTUAL_MODE
+ptw_monitor ptwC0R0
+  (
+   .clk					(`CORE0_PATH.ptw.clock		    ),
+   .trace_valid                         (`CORE0_PATH.core.csr_io_trace_0_valid   ),
+   .pc_valid                            (`CORE0_PATH.core.coreMonitorBundle_valid),
+   .pc                                  (`CORE0_PATH.core.coreMonitorBundle_pc   ),
+   .io_requestor_x_req_ready		(`CORE0_PATH.ptw.io_requestor_0_req_ready	),
+   .io_requestor_x_req_valid		(`CORE0_PATH.ptw.io_requestor_0_req_valid		),
+   .io_requestor_x_req_bits_bits_addr	(`CORE0_PATH.ptw.io_requestor_0_req_bits_bits_addr	),
+   .io_requestor_x_resp_valid		(`CORE0_PATH.ptw.io_requestor_0_resp_valid		),
+   .io_requestor_x_resp_bits_ae		(`CORE0_PATH.ptw.io_requestor_0_resp_bits_ae	),
+   .io_requestor_x_resp_bits_pte_ppn	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_ppn	),
+   .io_requestor_x_resp_bits_pte_d	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_d	),
+   .io_requestor_x_resp_bits_pte_a	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_a	),
+   .io_requestor_x_resp_bits_pte_g	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_g	),
+   .io_requestor_x_resp_bits_pte_u	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_u	),
+   .io_requestor_x_resp_bits_pte_x	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_x	),
+   .io_requestor_x_resp_bits_pte_w	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_w	),
+   .io_requestor_x_resp_bits_pte_r	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_r	),
+   .io_requestor_x_resp_bits_pte_v	(`CORE0_PATH.ptw.io_requestor_0_resp_bits_pte_v	)
+   );
+ptw_monitor ptwC0R1
+  (
+   .clk					(`CORE0_PATH.ptw.clock		),
+   .trace_valid                         (1'b0),
+   .pc_valid                            (1'b0),
+   .pc                                  (64'h0),
+   .io_requestor_x_req_ready		(`CORE0_PATH.ptw.io_requestor_1_req_ready	),
+   .io_requestor_x_req_valid		(`CORE0_PATH.ptw.io_requestor_1_req_valid		),
+   .io_requestor_x_req_bits_bits_addr	(`CORE0_PATH.ptw.io_requestor_1_req_bits_bits_addr	),
+   .io_requestor_x_resp_valid		(`CORE0_PATH.ptw.io_requestor_1_resp_valid		),
+   .io_requestor_x_resp_bits_ae		(`CORE0_PATH.ptw.io_requestor_1_resp_bits_ae	),
+   .io_requestor_x_resp_bits_pte_ppn	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_ppn	),
+   .io_requestor_x_resp_bits_pte_d	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_d	),
+   .io_requestor_x_resp_bits_pte_a	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_a	),
+   .io_requestor_x_resp_bits_pte_g	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_g	),
+   .io_requestor_x_resp_bits_pte_u	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_u	),
+   .io_requestor_x_resp_bits_pte_x	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_x	),
+   .io_requestor_x_resp_bits_pte_w	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_w	),
+   .io_requestor_x_resp_bits_pte_r	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_r	),
+   .io_requestor_x_resp_bits_pte_v	(`CORE0_PATH.ptw.io_requestor_1_resp_bits_pte_v	)
+   );
+`endif
    
 endmodule

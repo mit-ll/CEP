@@ -59,8 +59,21 @@ void *c_module(void *arg) {
   //int calibDone = calibrate_ddr3(50);
   pio.RunClk(1000);
   //
+
+  // Select which tests to run.  Core indicies are defined in CEP.h
   int mask = seed; // seed is used as cpuActiveMask from c_displatch
   int cryptoMask = 0xFFFFFFFF; // all cores
+// int cryptoMask = 0x00000001; // AES only
+//  int cryptoMask = 0x00000002; // MD5 only
+//  int cryptoMask = 0x00000004; // SHA256 only
+//  int cryptoMask = 0x00000008; // RSA only
+//  int cryptoMask = 0x00000010; // DES3 only
+//  int cryptoMask = 0x00000020; // DFT only
+//  int cryptoMask = 0x00000040; // IDFT only
+//  int cryptoMask = 0x00000080; // FIR only
+//  int cryptoMask = 0x00000100; // IIR only
+//  int cryptoMask = 0x00000200; // GPS only
+
   if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, cryptoMask, seed, verbose); }
   //
   pio.RunClk(100);  

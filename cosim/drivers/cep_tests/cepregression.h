@@ -20,8 +20,6 @@ extern "C" {
   //
   // for use with cep_diag
   //
-  int cepregression_test(int mask);
-  int run_ceptest(int mask);  
   void initConfig();
   void init_md5(void) ;
   void init_sha256(void) ;
@@ -35,17 +33,6 @@ extern "C" {
   void init_rsa(void) ;
   void init_srot(void);
   void init_cepregs(void);
-  
-  int cep_AES_test(void);
-  int cep_DES3_test(void);
-  int cep_DFT_test(void);
-  int cep_IDFT_test(void);
-  int cep_FIR_test(void);
-  int cep_IIR_test(void) ;
-  int cep_GPS_test(void) ;
-  int cep_MD5_test(void);
-  int cep_RSA_test(void);
-  int cep_SHA256_test(void);
 
   uint64_t get_physical_adr(int device, uint32_t pAddress);
   // 32-bits

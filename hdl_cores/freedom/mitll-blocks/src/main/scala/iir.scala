@@ -57,7 +57,8 @@ trait HasPeripheryIIR { this: BaseSubsystem =>
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       iirmodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -87,9 +88,11 @@ class iirTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -124,8 +127,8 @@ class iirTLModuleImp(coreparams: COREParams, outer: iirTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -240,18 +243,26 @@ class iirTLModuleImp(coreparams: COREParams, outer: iirTLModule) extends LazyMod
       val llkid_clear_key_ack = Output(Bool())
 
     })
+
+	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val IIR_filter_mock_tss_inst   = Module(new IIR_filter_mock_tss())
+  val IIR_filter_inst   = Module(new IIR_filter_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  IIR_filter_inst.suggestName(IIR_filter_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  IIR_filter_mock_tss_inst.io.llkid_key_data    := llki_pp_inst.io.llkid_key_data
-  IIR_filter_mock_tss_inst.io.llkid_key_valid   := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready               := IIR_filter_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete            := IIR_filter_mock_tss_inst.io.llkid_key_complete
-  IIR_filter_mock_tss_inst.io.llkid_clear_key   := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack           := IIR_filter_mock_tss_inst.io.llkid_clear_key_ack
+  IIR_filter_inst.io.llkid_key_data    := llki_pp_inst.io.llkid_key_data
+  IIR_filter_inst.io.llkid_key_valid   := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready      := IIR_filter_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete   := IIR_filter_inst.io.llkid_key_complete
+  IIR_filter_inst.io.llkid_clear_key   := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack  := IIR_filter_inst.io.llkid_clear_key_ack
 
   // Macro definition for creating rising edge detectors
   def rising_edge(x: Bool)    = x && !RegNext(x)
@@ -327,13 +338,13 @@ class iirTLModuleImp(coreparams: COREParams, outer: iirTLModule) extends LazyMod
   // Map the blackbox I/O
   // The IIR needs to be reset in between test vectors, thus a second reset
   // has been added in order to allow for the LLKI keys to persist
-  IIR_filter_mock_tss_inst.io.clk       := clock                            
-  IIR_filter_mock_tss_inst.io.rst       := reset.asBool
-//  IIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || iir_reset_re).asAsyncReset 
-  IIR_filter_mock_tss_inst.io.rst_dut   := (reset.asBool || iir_reset).asAsyncReset 
+  IIR_filter_inst.io.clk       := clock
+  IIR_filter_inst.io.rst       := reset.asBool
+//  IIR_filter_inst.io.rst_dut   := (reset.asBool || iir_reset_re).asAsyncReset 
+  IIR_filter_inst.io.rst_dut   := (reset.asBool || iir_reset).asAsyncReset 
                                                                    
-  IIR_filter_mock_tss_inst.io.inData    := Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
-  dataout_write_data                    := IIR_filter_mock_tss_inst.io.outData
+  IIR_filter_inst.io.inData    := Mux(datain_read_idx < 32.U, datain_read_data, 0.U)
+  dataout_write_data           := IIR_filter_inst.io.outData
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)
@@ -342,7 +353,7 @@ class iirTLModuleImp(coreparams: COREParams, outer: iirTLModule) extends LazyMod
       RegField    (1, start               ),      // Start passing data to the IIR blackbox
       RegField    (1, datain_we           ),      // Write enable for the datain memory
       RegField.r  (1, dataout_valid       ))),    // Data Out Valid
-    IIRAddresses.iir_reset_addr                 -> Seq(RegField     (1,  iir_reset)),
+    IIRAddresses.iir_reset_addr         -> Seq(RegField     (1,  iir_reset)),
     IIRAddresses.iir_datain_addr_addr   -> Seq(RegField     (5,  datain_write_idx)),
     IIRAddresses.iir_datain_data_addr   -> Seq(RegField     (32, datain_write_data)),
     IIRAddresses.iir_dataout_addr_addr  -> Seq(RegField     (5,  dataout_read_idx)),

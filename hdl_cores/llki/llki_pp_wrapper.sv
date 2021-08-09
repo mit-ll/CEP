@@ -109,10 +109,11 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   // Define some of the wires and registers associated with the tlul_adapter_reg
   wire                          reg_we_o;
   wire                          reg_re_o;
+  reg                           reg_we_o_d1;
   wire [top_pkg::TL_AW-1:0]     reg_addr_o;
   wire [top_pkg::TL_DW-1:0]     reg_wdata_o;
   reg [top_pkg::TL_DW-1:0]      reg_rdata_i;
-  wire                          rdata_valid_i;
+  wire                          ack_i;
   reg                           reg_error_i;
 
   // Misc. signals
@@ -141,16 +142,18 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
     .wdata_o        (reg_wdata_o      ),
     .be_o           (                 ),  // Accesses are assumed to be word-wide
     .rdata_i        (reg_rdata_i      ),
-    .rdata_valid_i  (rdata_valid_i    ),
+    .ack_i          (ack_i            ),    // External acknowledgement of the
+                                            // transaction
     .error_i        (reg_error_i      )
   );
 
   // The reg_error_i will be asserted if either a read or write error occurs
   assign reg_error_i    = read_error || write_error;
 
-  // For the llki_pp_wrapper component, all read data is "immediatelty" available,
-  // since there is no RAM components
-  assign rdata_valid_i  = reg_re_o;
+  // The acknowledgement signal allows for latching of the read data when
+  // available (if it is a read) and/or proper processing of the
+  // external error
+  assign ack_i          = reg_re_o ||  reg_we_o_d1;
   //------------------------------------------------------------------------
 
 
@@ -167,7 +170,11 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
     if (rst) begin
       llkipp_ctrlstatus_register    <= '0;
       write_error                   <= 1'b0;
+      reg_we_o_d1                   <= 1'b0;
     end else begin
+
+      // Registered version of the write enable
+      reg_we_o_d1                   <= reg_we_o;
 
       // Default signal assignments
       write_error                   <= 1'b0;
@@ -228,8 +235,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
         SENDRECV_ADDR  : begin
           reg_rdata_i       = llkipp_response_word;
         end
-        // Trap State - Currently, the control/status register has no
-        // LLKI-PP writable bits and thus c
+        // Trap State - Invalid addresses
         default             : begin
           read_error        = 1'b1;
         end
@@ -399,7 +405,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
 
               msg_id                    <= LLKI_MID_KLLOADKEYACK;
               status                    <= LLKI_STATUS_GOOD;
-              llkipp_current_state      <= ST_LLKIPP_RESPONSE;
+              llkipp_current_state      <= ST_SROT_KL_WAIT_FOR_COMPLETE;
             // This is not the last word of the key load, load the key word
             // via the LLKI-Discrete and just wait for the next word
             end else begin
@@ -413,6 +419,26 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
           end // end if (reg_we_o && reg_addr_o == SENDRECV_ADDR)
 
         end   // ST_LLKIPP_LOAD_KEY_WORDS
+        //------------------------------------------------------------------
+        // After all key words have been loaded into the selected TSS,
+        // wait for llkid_key_complete to be asserted before sending
+        // the response 
+        //------------------------------------------------------------------
+        ST_SROT_KL_WAIT_FOR_COMPLETE  : begin
+          // Default signal assignments
+          llkid_key_data                <= '0;
+          llkid_key_valid               <= '0;
+          llkid_clear_key               <= '0;
+          llkipp_response_waiting       <= '0;
+          llkipp_response_word          <= '0;
+          llkipp_current_state          <= ST_SROT_KL_WAIT_FOR_COMPLETE;
+
+          // When llkid_key_complete is asserted, then jump to sending the response
+          if (llkid_key_complete) begin
+            llkipp_current_state      <= ST_LLKIPP_RESPONSE;
+          end // end if (llkid_key_complete)
+
+        end // ST_SROT_KL_WAIT_FOR_COMPLETE
         //------------------------------------------------------------------
         // Clear Key State
         //------------------------------------------------------------------
@@ -440,7 +466,7 @@ module llki_pp_wrapper import tlul_pkg::*; import llki_pkg::*; #(
             llkipp_current_state        <= ST_LLKIPP_RESPONSE;
           end
 
-        end
+        end // ST_LLKIPP_CLEAR_KEY
         //------------------------------------------------------------------
         // Response Message state
         //

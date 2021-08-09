@@ -47,13 +47,14 @@ trait HasPeripheryAES { this: BaseSubsystem =>
     // Perform the slave "attachments" to the slave bus
     coreattachparams.slave_bus.coupleTo(coreattachparams.coreparams.dev_name + "_slave") {
       aesmodule.slave_node :*=
-      TLFragmenter(coreattachparams.slave_bus.beatBytes, coreattachparams.slave_bus.blockBytes) :*= _
+      TLFragmenter(coreattachparams.slave_bus) :*= _
     }
 
     // Perform the slave "attachments" to the llki bus
     coreattachparams.llki_bus.coupleTo(coreattachparams.coreparams.dev_name + "_llki_slave") {
       aesmodule.llki_node :*= 
-      TLSourceShrinker(16) :*= _
+      TLSourceShrinker(16) :*=
+      TLFragmenter(coreattachparams.llki_bus) :*=_
     }
 
     // Explicitly connect the clock and reset (the module will be clocked off of the slave bus)
@@ -83,9 +84,11 @@ class aesTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       resources           = new SimpleDevice(coreattachparams.coreparams.dev_name + "-llki-slave", 
                               Seq("mitll," + coreattachparams.coreparams.dev_name + "-llki-slave")).reg,
       regionType          = RegionType.IDEMPOTENT,
-      supportsGet         = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutFull     = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
-      supportsPutPartial  = TransferSizes(1, coreattachparams.llki_bus.blockBytes),
+      supportsGet         = TransferSizes(1, 8),
+      supportsPutFull     = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes(1, 8),
+      supportsArithmetic  = TransferSizes.none,
+      supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order
     beatBytes = coreattachparams.llki_bus.beatBytes)))
 
@@ -119,8 +122,8 @@ class aesTLModuleImp(coreparams: COREParams, outer: aesTLModule) extends LazyMod
   // Define the LLKI Protocol Processing blackbox and its associated IO
   class llki_pp_wrapper(val llki_ctrlsts_addr: BigInt, llki_sendrecv_addr: BigInt) extends BlackBox(
       Map(
-        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Base address of the TL slave
-        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address depth of the TL slave
+        "CTRLSTS_ADDR"    -> IntParam(llki_ctrlsts_addr),  // Address of the LLKI PP Control/Status Register
+        "SENDRECV_ADDR"   -> IntParam(llki_sendrecv_addr)  // Address of the LLKI PP Message Send/Receive interface
       )
   ) {
 
@@ -188,15 +191,15 @@ class aesTLModuleImp(coreparams: COREParams, outer: aesTLModule) extends LazyMod
   llki_pp_inst.io.rst                 := reset
 
   // Connect the Slave A Channel to the Black box IO
-  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode    
-  llki_pp_inst.io.slave_a_param       := llki.a.bits.param     
+  llki_pp_inst.io.slave_a_opcode      := llki.a.bits.opcode
+  llki_pp_inst.io.slave_a_param       := llki.a.bits.param
   llki_pp_inst.io.slave_a_size        := llki.a.bits.size
-  llki_pp_inst.io.slave_a_source      := llki.a.bits.source    
+  llki_pp_inst.io.slave_a_source      := llki.a.bits.source
   llki_pp_inst.io.slave_a_address     := Cat(0.U(1.W), llki.a.bits.address)
-  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask      
-  llki_pp_inst.io.slave_a_data        := llki.a.bits.data      
-  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt   
-  llki_pp_inst.io.slave_a_valid       := llki.a.valid          
+  llki_pp_inst.io.slave_a_mask        := llki.a.bits.mask
+  llki_pp_inst.io.slave_a_data        := llki.a.bits.data
+  llki_pp_inst.io.slave_a_corrupt     := llki.a.bits.corrupt
+  llki_pp_inst.io.slave_a_valid       := llki.a.valid
   llki.a.ready                        := llki_pp_inst.io.slave_a_ready  
 
   // Connect the Slave D Channel to the Black Box IO    
@@ -238,18 +241,25 @@ class aesTLModuleImp(coreparams: COREParams, outer: aesTLModule) extends LazyMod
 
     })
 
+ 	// Provide an optional override of the Blackbox module name
+    override def desiredName(): String = {
+      return coreparams.verilog_module_name.getOrElse(super.desiredName)
+    }
   }
 
   // Instantiate the blackbox
-  val aes_192_mock_tss_inst   = Module(new aes_192_mock_tss())
+  val aes_192_inst   = Module(new aes_192_mock_tss())
+
+  // Provide an optional override of the Blackbox module instantiation name
+  aes_192_inst.suggestName(aes_192_inst.desiredName()+"_inst")
 
   // Map the LLKI discrete blackbox IO between the core_inst and llki_pp_inst
-  aes_192_mock_tss_inst.io.llkid_key_data   := llki_pp_inst.io.llkid_key_data
-  aes_192_mock_tss_inst.io.llkid_key_valid  := llki_pp_inst.io.llkid_key_valid
-  llki_pp_inst.io.llkid_key_ready           := aes_192_mock_tss_inst.io.llkid_key_ready
-  llki_pp_inst.io.llkid_key_complete        := aes_192_mock_tss_inst.io.llkid_key_complete
-  aes_192_mock_tss_inst.io.llkid_clear_key  := llki_pp_inst.io.llkid_clear_key
-  llki_pp_inst.io.llkid_clear_key_ack       := aes_192_mock_tss_inst.io.llkid_clear_key_ack
+  aes_192_inst.io.llkid_key_data      := llki_pp_inst.io.llkid_key_data
+  aes_192_inst.io.llkid_key_valid     := llki_pp_inst.io.llkid_key_valid
+  llki_pp_inst.io.llkid_key_ready     := aes_192_inst.io.llkid_key_ready
+  llki_pp_inst.io.llkid_key_complete  := aes_192_inst.io.llkid_key_complete
+  aes_192_inst.io.llkid_clear_key     := llki_pp_inst.io.llkid_clear_key
+  llki_pp_inst.io.llkid_clear_key_ack := aes_192_inst.io.llkid_clear_key_ack
 
   // Instantiate registers for the blackbox inputs
   val start               = RegInit(0.U(1.W))
@@ -262,13 +272,13 @@ class aesTLModuleImp(coreparams: COREParams, outer: aesTLModule) extends LazyMod
   val out_valid           = Wire(Bool())
 
   // Map the core specific blackbox IO
-  aes_192_mock_tss_inst.io.clk    := clock            
-  aes_192_mock_tss_inst.io.rst    := reset            
-  aes_192_mock_tss_inst.io.start  := start            
-  aes_192_mock_tss_inst.io.state  := Cat(state0, state1)
-  aes_192_mock_tss_inst.io.key    := Cat(key0, key1, key2)
-  out                             := aes_192_mock_tss_inst.io.out  
-  out_valid                       := aes_192_mock_tss_inst.io.out_valid
+  aes_192_inst.io.clk    := clock
+  aes_192_inst.io.rst    := reset
+  aes_192_inst.io.start  := start
+  aes_192_inst.io.state  := Cat(state0, state1)
+  aes_192_inst.io.key    := Cat(key0, key1, key2)
+  out                    := aes_192_inst.io.out
+  out_valid              := aes_192_inst.io.out_valid
 
   // Define the register map
   // Registers with .r suffix to RegField are Read Only (otherwise, Chisel will assume they are R/W)

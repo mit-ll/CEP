@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -42,34 +42,24 @@ uint8_t send_srot_message(int verbose, uint64_t message) {
   //
   // Send a message to the SRoT
   //
-  cep_write(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, message);
+  cep_write(SROT_INDEX, SROT_LLKIC2_SENDRECV_ADDR, message);
 
   // Poll the response waiting bit
   //do {;} while (!(cep_read(SROT_BASE_K, SROT_CTRLSTS_ADDR) & SROT_CTRLSTS_RESP_WAITING_MASK));
   while (timeOut > 0) {
-    if (cep_read(SROT_BASE_K, SROT_CTRLSTS_ADDR) & SROT_CTRLSTS_RESP_WAITING_MASK) break;
+    if (cep_read(SROT_INDEX, SROT_CTRLSTS_ADDR) & SROT_CTRLSTS_RESP_WAITING_MASK) break;
     timeOut--;
     if (timeOut == 0) return 0xff; // bad!!
   }
   
   // Read the response
-  response_message = cep_read(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR);
+  response_message = cep_read(SROT_INDEX, SROT_LLKIC2_SENDRECV_ADDR);
 
   // Return the status
   return((uint8_t)llkic2_extract_status(response_message));
 } // end send_srot_message
 
 
-//
-// Macro to selective assign MOCK_TSS_KEY and its size based on the selected core
-//
-#define SET_KEY_PARAM(k)          \
-  case k ## _BASE_K :           \
-  kPtr = (uint64_t *)k ## _MOCK_TSS_KEY;      \
-  kSize = sizeof(k ## _MOCK_TSS_KEY)/sizeof(uint64_t);    \
-  maxKeySize = 128;           \
-  break               \
-  
 int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
   int errCnt=0;
 
@@ -89,30 +79,21 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
   LOGI("%s : Initializing Key RAM to all Ones\n",__FUNCTION__);
 
   for (int i = 0; i < MAX_LLKI_KEY_SIZE; i++) {
-    cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + (i*8), (uint64_t)-1);
+    cep_write(SROT_INDEX, SROT_KEYRAM_ADDR + (i*8), (uint64_t)-1);
   }
 
   //
   // Goes thru all the cores!!!
   //
-  for (core_index = AES_BASE_K; core_index <= GPS_BASE_K; core_index++) {
+  for (core_index = 0; core_index < CEP_LLKI_CORES; core_index++) {
 
     // For now, the key_index will equal the core_index (though this is not required)
     key_index = core_index;
     
-    // Set the Key Paramaters
-    switch (key_index) {
-      SET_KEY_PARAM(AES);
-      SET_KEY_PARAM(MD5);
-      SET_KEY_PARAM(SHA256);
-      SET_KEY_PARAM(RSA);
-      SET_KEY_PARAM(DES3);
-      SET_KEY_PARAM(DFT);
-      SET_KEY_PARAM(IDFT);
-      SET_KEY_PARAM(FIR);
-      SET_KEY_PARAM(IIR);
-      SET_KEY_PARAM(GPS);
-    }
+    cep_key_info_t key = KEY_DATA[core_index];
+    kPtr = (uint64_t *) key.keyData;
+    kSize = key.highPointer - key.lowPointer + 1;
+    maxKeySize = 128;
 
     // Loop through different keys for the current core
     for (int l = 0; l < 4; l++) {
@@ -128,7 +109,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
           // BAD!!! Keys=0xFFFF...FFF...
           // -----------------------
           for (int i = 0; i < kSize; i++) {
-            cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + (i*8), (uint64_t) - 1);
+            cep_write(SROT_INDEX, SROT_KEYRAM_ADDR + (i*8), (uint64_t) - 1);
           }
           break;
         case 1:
@@ -136,7 +117,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
           // Inverted Key
           // -----------------------
           for (int i = 0; i < kSize; i++) {
-            cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + (i*8), ~kPtr[i]);
+            cep_write(SROT_INDEX, SROT_KEYRAM_ADDR + (i*8), ~kPtr[i]);
           }
           break;
         case 2:
@@ -144,7 +125,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
           //  BAD LEN : max len Key with the front end = expected key
           // -----------------------
           for (int i = 0; i < kSize; i++) {
-            cep_write(SROT_BASE_K, SROT_KEYRAM_ADDR + (i*8), kPtr[i]);
+            cep_write(SROT_INDEX, SROT_KEYRAM_ADDR + (i*8), kPtr[i]);
           }
           ks = maxKeySize - 1;
           break;
@@ -157,7 +138,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
 
       // Load the Key Index (based on the currently selected core) in the Key Index RAM
       LOGI("%s : Loading the Key Index into the Key Index RAM\n",__FUNCTION__);
-      cep_write(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + key_index * 8, key_index_pack( 0x0000,   // low pointer
+      cep_write(SROT_INDEX, SROT_KEYINDEXRAM_ADDR + key_index * 8, key_index_pack( 0x0000,   // low pointer
                   ks,            // high pointer
                   core_index,    // core index
                   0x1));         // Valid
@@ -228,7 +209,7 @@ int cepSrotTest_maxKeyTest(int cpuId, int verbose) {
       if (errCnt) return 1;
 
     } // for (int l = 0; l < 4; l++)
-  } // for (core_index=AES_BASE_K;core_index<=GPS_BASE_K;core_index++)
+  } // for (core_index = 0; core_index < CEP_LLKI_CORES; core_index++)
 #endif
 
   //

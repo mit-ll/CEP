@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -22,10 +22,11 @@
 #include "cepregression.h"
 #include "random48.h"
 
-void cep_crypto::init(void) {
+void cep_crypto::init(int coreIndex) {
 #ifndef  BARE_MODE        
   mFd     = 0;
-#endif  
+#endif
+  mCoreIndex = coreIndex;
   mCapture = 0;
   mSrotFlag = 0;
   mC2C_Capture = 0;
@@ -161,7 +162,7 @@ void cep_crypto::SetCaptureMode(int mode, const char *path, const char *testName
   //
   char fName[512];
   //  
-  init();
+  //init();
   //
   // Sim Only
   //
@@ -251,42 +252,48 @@ void cep_crypto::SetCaptureMode(int mode, const char *path, const char *testName
   
 }
 
-void cep_crypto::cep_writeNcapture(int device, uint32_t pAddress, uint64_t pData)
+void cep_crypto::cep_writeNcapture(uint32_t pAddress, uint64_t pData)
 {
-  cep_write(device, pAddress, pData);
+  cep_writeNcapture(mCoreIndex, pAddress, pData);
+}
+
+void cep_crypto::cep_writeNcapture(int coreIndex, uint32_t pAddress, uint64_t pData)
+{
+  cep_write(coreIndex, pAddress, pData);
   //
   // save to file in captured mode (BFM only)
   //
 #ifndef BARE_MODE  
   if (mCapture) {
     if (mCount++ == 0) {
-      fprintf(mFd,"\t  WRITE__CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(device,pAddress), pData, mCount);
+      fprintf(mFd,"\t  WRITE__CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(coreIndex,pAddress), pData, mCount);
     } else {
-      fprintf(mFd,"\t, WRITE__CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(device,pAddress), pData, mCount);      
+      fprintf(mFd,"\t, WRITE__CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(coreIndex,pAddress), pData, mCount);      
     }
     // save this away
     if (mAdrBase == 0) {
-      mAdrBase = get_physical_adr(device,pAddress) & ~(mAdrSize-1);
+      mAdrBase = get_physical_adr(coreIndex,pAddress) & ~(mAdrSize-1);
     }    
     mWordCnt += 3;
   }
 #endif
 }
 
-//
-//
-//
-uint64_t cep_crypto::cep_readNcapture(int device, uint32_t pAddress) {
-  uint64_t pData = cep_read(device, pAddress);
+uint64_t cep_crypto::cep_readNcapture(uint32_t pAddress) {
+  cep_readNcapture(mCoreIndex, pAddress);
+}
+
+uint64_t cep_crypto::cep_readNcapture(int coreIndex, uint32_t pAddress) {
+  uint64_t pData = cep_read(coreIndex, pAddress);
   //
   // save to file in captured mode (BFM only)
   //
 #ifndef  BARE_MODE  
   if (mCapture) {
     if (mCount++ == 0) {
-      fprintf(mFd,"\t  RDnCMP_CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(device,pAddress), pData, mCount);
+      fprintf(mFd,"\t  RDnCMP_CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(coreIndex,pAddress), pData, mCount);
     } else {
-      fprintf(mFd,"\t, RDnCMP_CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(device,pAddress), pData, mCount);      
+      fprintf(mFd,"\t, RDnCMP_CMD, 0x%08x, 0x%016lx // %d\n", (uint32_t)get_physical_adr(coreIndex,pAddress), pData, mCount);      
     }
     mWordCnt += 3;    
   }
@@ -295,28 +302,30 @@ uint64_t cep_crypto::cep_readNcapture(int device, uint32_t pAddress) {
   return pData;
 }
 //
-int cep_crypto::cep_readNspin(int device, uint32_t pAddress, uint64_t pData,int timeOut) {
-  return cep_readNspin(device, pAddress,pData,(uint64_t)(-1), timeOut) ;
+int cep_crypto::cep_readNspin(uint32_t pAddress, uint64_t pData,int timeOut) {
+  return cep_readNspin(pAddress,pData,(uint64_t)(-1), timeOut) ;
 }
-
-int cep_crypto::cep_readNspin(int device, uint32_t pAddress,uint64_t pData,uint64_t mask, int timeOut) {
+int cep_crypto::cep_readNspin(uint32_t pAddress, uint64_t pData,uint64_t mask, int timeOut) {
+  return cep_readNspin(mCoreIndex,pAddress,pData,mask, timeOut) ;
+}
+int cep_crypto::cep_readNspin(int coreIndex, uint32_t pAddress,uint64_t pData,uint64_t mask, int timeOut) {
   uint64_t rdDat;
   //
 #ifndef  BARE_MODE  
   if (mCapture) {
     if (mCount++ == 0) {
       fprintf(mFd,"\t  RDSPIN_CMD, 0x%08x, 0x%016lx, 0x%lx, 0x%x // %d\n",
-	      (uint32_t)get_physical_adr(device,pAddress), pData,mask,timeOut, mCount);
+	      (uint32_t)get_physical_adr(coreIndex,pAddress), pData,mask,timeOut, mCount);
     } else {
       fprintf(mFd,"\t, RDSPIN_CMD, 0x%08x, 0x%016lx, 0x%lx, 0x%x // %d\n",
-	      (uint32_t)get_physical_adr(device,pAddress), pData,mask,timeOut, mCount);      
+	      (uint32_t)get_physical_adr(coreIndex,pAddress), pData,mask,timeOut, mCount);      
     }
     mWordCnt += 5;    
   }
 #endif
   //
   while (timeOut > 0) {
-    rdDat = cep_read(device, pAddress);
+    rdDat = cep_read(coreIndex, pAddress);
     if (((rdDat ^ pData) & mask) == 0) {
       break;
     }

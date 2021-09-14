@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -90,7 +90,6 @@ typedef enum {
   RUN_cepRegTest   ,
   RUN_cepLockTest  ,
   RUN_cepMultiLock ,    
-  // single thread
   RUN_cepGpioTest  ,
   RUN_cepSrotMemTest  ,
   RUN_cepSrotMaxKeyTest,
@@ -104,20 +103,8 @@ typedef enum {
   RUN_cepAtomicTest,
   RUN_cepSpiTest,
   RUN_cepMaskromTest,
-  //  RUN_cepCsrTest,
   RUN_cepSrotErrTest,
-//  RUN_cepPlicPrioIntrTest,  
-  //
-  RUN_cepMacroMix  , // multi-threaded
-  RUN_cep_AES ,
-  RUN_cep_DES3 ,
-  RUN_cep_DFT ,
-  RUN_cep_FIR ,
-  RUN_cep_IIR ,
-  RUN_cep_GPS ,
-  RUN_cep_MD5 ,
-  RUN_cep_RSA ,
-  RUN_cep_SHA256 ,
+  RUN_cepMacroMix  ,
   RUN_cepMultiThread,
   //
   RUN_ddr3Test     ,
@@ -196,7 +183,7 @@ extern "C" {
   void cep_set_thr_errCnt(int value);
     void cep_set_mthr_errCnt(int thrId,int value);    
   int cep_get_thr_errCnt(void);
-  int run_multiThreads(int coreMask); // , cep_thread_funct_t funct);
+  int run_multiThreads(int cpuMask); // , cep_thread_funct_t funct);
   int run_multiThreadFloats(int num_threads);
   int thr_waitTilLock(int id, int maxTO);
   

@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_fir.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -28,7 +28,7 @@ class cep_fir : public cep_crypto {
 public: //
   // constructors
   //
-  cep_fir(int seed, int verbose);
+  cep_fir(int coreIndex, int seed, int verbose);
   cep_fir() { }
   ~cep_fir(); 
 
@@ -37,7 +37,7 @@ public: //
 
   int RunFirTest(int maxLoop);
 
- protected:
+protected:
   fixp32_8 float_to_fixed(double input);
   double fixed_to_float(fixp32_8 input);
   void adjust_float(double *inout, int length);

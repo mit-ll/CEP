@@ -6,7 +6,7 @@
 
 # README for CEP co-simulation environment
 
-This SW/HW co-simulation evironment has been developed to support "chip-level" simulation of the CEP.  
+This SW/HW co-simulation evironment has been developed to support "chip-level" simulation of the CEP.
 
 Several environments are supported:
 
@@ -25,19 +25,19 @@ Several environments are supported:
 
 * SW and HW are de-coupled such that mistakes that are found in the test/driver (SW side) during development process can be quickly corrected and rerun without having to rebuild the HW. Sometimes, it might takes minutes (or even hours for big ASIC) just to rebuild the HW if test and DUT (Device Under Test) are tightly coupled
 
-* Makefile is setup to support vendor independent designs such that same design can be used to target FPGA vendor as Xilinx or TSMC for ASIC, for example.
+* Makefile is setup to support vendor independent designs such that the same design can be used to target an FPGA vendor such as Xilinx or TSMC for ASIC.
 
 * To take advantage of multi-core machines, support up to 4K+ threads where all threads can run in parallel and target different HW sections. For example: one core can target the AES block while another core targets the FIR block, etc...
 
 * Mailboxes are setup to support in between thread communication for synchronization, handshaking, etc...
 
-* All are *makefile* driven with scripts to support auto-dependencies generation. Which means anything changes in either HW files or SW files: incremental builds will be called to save time. This is a must in order to support parallel batching.
+* All are *makefile* driven with scripts to support auto-dependencies generation. Which means when anything changes in either HW files or SW files, incremental builds will be called to save time. This is a must in order to support parallel batching.
 
 * Provide 100% visibility to everything in the test bench via wave capturing. From the SW (test) side, any signal in HW can be observed and forced (for negative testing) or to be used to synchronize events (wait for something before sending packet, etc...)
 
 * Same setup can be used for any design. Therefore, it takes only hour to set up new test bench for new design and let designer/verification engineers start writing tests right away.
 
-* Most of the tests can even be re-used across multiple projects such as memory test, register tests, packet generator and checker. They are written as template where only simple read/write methods need to be overload.
+* Most of the tests can even be re-used across multiple projects such as memory test, register tests, packet generator and checker. They are written as templates where only simple read/write methods need to be overload.
 
 * Open source codebase
 
@@ -66,7 +66,19 @@ For CEP, the path to tools required are as listed below (see **common.make**)
     SIMULATOR_PATH  ?= /opt/questa-2019.1/questasim/bin
     RISCV           ?= /opt/riscv
 
-**NOTE**: If they are not matched your setup, dont need to edit the common.make file, use enviroment variables to override as such (assuming bash shell is used). 
+As of release 3.2 or later, Cadence tool set is also supported, all setup related to Cadence tool set can be found in `cadence.make`
+
+If you decide to use Cadence's xcelium for simulation, modify cadence.make or override with environment variables to match the below variables:
+
+```
+export VMGR_VERSION	?= VMANAGERAGILE20.06.001
+export XCELIUM_VERSION	?= XCELIUMAGILE20.09.001
+
+export VMGR_PATH	?= /brewhouse/cad4/x86_64/Cadence/${VMGR_VERSION}
+export XCELIUM_INSTALL  ?= /brewhouse/cad4/x86_64/Cadence/${XCELIUM_VERSION}
+```
+
+**NOTE**: If they are not matched to your setup, you dont need to edit the common.make file. Instead, use enviroment variables to override as such (assuming bash shell is used).
 ```
 export VIVADO_PATH=<Your_path_to_Vivado_tool>
 export SIMULATOR_PATH=<Your_path_to_questa_tool>
@@ -116,7 +128,7 @@ You should see something like this under *cosim* directory:
 
 ## Compiling the Xilinx Simulation Libraries ##
 
-**NOTE**: xil_lib is the generated library packages created via vivado 's compile_simlib command.  Not all Vivado / Modelsim version combinations yield the desired result.  See the following notes:
+**NOTE**: xil_lib is the generated library packages created via vivado's compile_simlib command.  Not all Vivado / Modelsim version combinations yield the desired result.  See the following notes:
 - When Vivado 2019.1 and Questa 2019.1 is selected ,the compilation will stop and not generate the appropriate modelsim.ini file, which is required by the co-simulation environemt.
 - When Vivado 2018.3 and Questa 2019.1 (or Quest 10.7c) is selected, the compilation will return with an error in the qdma_v3_0_0 library.  This library is not required for CEP simulation and thus the error can be safely ignored.
 - When Vivado 2018.3 and Question 10.6c is selected, the compilation will complete without error.  However, it is recommended that Questa 2019.1 be used in order to take advantage of optimizations and bug fixes.  

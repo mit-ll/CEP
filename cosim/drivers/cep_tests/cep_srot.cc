@@ -1,11 +1,17 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
-// File Name:      cep_srot.cc/h
-// Program:        Common Evaluation Platform (CEP)
-// Description:    Functions / Test for the CEP Surrogate Root of Trust
-// Notes:          
+// File Name:       cep_srot.cc/h
+// Program:         Common Evaluation Platform (CEP)
+// Description:     Functions / Test for the CEP Surrogate Root of Trust
+// Notes:           In the constructor function below, there are two
+//                  indicies (coreIndex & statusIndex).  These are
+//                  references to the ipCores data structure 
+//                  (cepregression.cc/h).  coreIndex for the surrogate
+//                  root of trust and statusIndex is for the 
+//                  CEP Registers.
+//              
 //************************************************************************
 
 #if defined(BARE_MODE)
@@ -25,11 +31,14 @@
 #include "cep_adrMap.h"
 #include "cepregression.h"
 
-#define IS_CRYPTO_ENABLED(c) ((1 << c ## _BASE_K) & GetCryptoMask())
+#define IS_ON(c) ((1 << c) & GetCoreMask())
 
-//
-cep_srot::cep_srot(int verbose) {
-    init();
+cep_srot::cep_srot(int coreIndex, int statusIndex, int verbose) {
+  
+  init(coreIndex);
+
+
+  mStatusIndex = statusIndex;
   
   // Default Timeout Parameter
   maxTO = 5000;
@@ -39,11 +48,8 @@ cep_srot::cep_srot(int verbose) {
   
   // Set the default CPU Active Mask
   SetCpuActiveMask(0xf);
-  SetCryptoMask(-1); // all present
-  
+
   // Initialize some of the core datastructures
-  init_srot();
-  init_cepregs();
   mInvertKey = 0;
   mInvertMask = 0x5555555555555555LLU;
 
@@ -65,7 +71,7 @@ int cep_srot::InitKeyIndexRAM (void)
     LOGI("\n");
   }
   for (int i = 0; i < (int)SROT_KEYINDEXRAM_SIZE; i++) {
-    cep_writeNcapture(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + (i*8), 0);
+    cep_writeNcapture(SROT_KEYINDEXRAM_ADDR + (i*8), 0);
   }
 
   return errCnt;
@@ -80,7 +86,7 @@ int cep_srot::InitKeyIndexRAM (void)
 // ------------------------------------------------------------------------------------------------------------
 // Parameter list:
 //    KeyIndex    - Selected Index into the Key Index RAM
-//    CoreIndex   - Which core is this key for? The XXXX_BASE_K constants in CEP.h should be used
+//    CoreIndex   - Which core is this key for?
 //    LowPointer  - The location of the first key word in the KeyRAM
 //    HighPointer - The location of the last key word in the KeyRAM
 //    Key         - Contains the actual key bits (length = High_Pointer - Low_Pointer + 1)
@@ -106,7 +112,7 @@ int cep_srot::LoadLLKIKey (uint8_t KeyIndex, uint8_t CoreIndex, uint16_t LowPoin
   }
   for (int i = 0; i < (HighPointer - LowPointer + 1); i++) {
     // not invert all the bits, just the odd bits, IIR will give the same results if flip all bits
-    cep_writeNcapture(SROT_BASE_K, SROT_KEYRAM_ADDR + LowPointer*8 + (i*8), mInvertKey ? (Key[i] ^ mInvertMask) : Key[i]);
+    cep_writeNcapture(SROT_KEYRAM_ADDR + LowPointer*8 + (i*8), mInvertKey ? (Key[i] ^ mInvertMask) : Key[i]);
   }
   
   // Load a valid key index
@@ -117,7 +123,7 @@ int cep_srot::LoadLLKIKey (uint8_t KeyIndex, uint8_t CoreIndex, uint16_t LowPoin
     LOGI("----------------------------------------------------------------------------\n");
     LOGI("\n");
   }
-  cep_writeNcapture(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + KeyIndex*8, key_index_pack(
+  cep_writeNcapture(SROT_KEYINDEXRAM_ADDR + KeyIndex*8, key_index_pack(
                       LowPointer,     // low pointer
                       HighPointer,    // high pointer
                       CoreIndex,      // core index
@@ -148,7 +154,7 @@ int cep_srot::SetOperationalMode (void)
     LOGI("----------------------------------------------------------------------------\n");
     LOGI("\n");
   }
-  cep_writeNcapture(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_MODEBIT0_MASK | SROT_CTRLSTS_MODEBIT1_MASK);
+  cep_writeNcapture(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_MODEBIT0_MASK | SROT_CTRLSTS_MODEBIT1_MASK);
 
   return errCnt;
 
@@ -163,8 +169,8 @@ int cep_srot::SetOperationalMode (void)
 int cep_srot::EnableLLKI (uint8_t KeyIndex)
 {
 
-  int 			errCnt = 0;
-  uint8_t		status = 0;
+  int       errCnt = 0;
+  uint8_t   status = 0;
 
   //
   if (GetVerbose(2)) {
@@ -177,7 +183,7 @@ int cep_srot::EnableLLKI (uint8_t KeyIndex)
   }
 
   // Write a word to the LLKI C2 Send FIFO
-  cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+  cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                     LLKI_MID_C2LOADKEYREQ,  // Message ID
                     0x00,                   // Status (unused)
                     0x0001,                 // Message Length
@@ -185,10 +191,10 @@ int cep_srot::EnableLLKI (uint8_t KeyIndex)
                     0xDEADBE));             // rsvd1
   
   // Poll the response waiting bit
-  cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+  cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
   
   // Read and check the response
-  status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+  status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
   CHECK_RESPONSE(status, LLKI_STATUS_GOOD, GetVerbose());
 
   // Return the error count
@@ -205,8 +211,8 @@ int cep_srot::EnableLLKI (uint8_t KeyIndex)
 int cep_srot::DisableLLKI (uint8_t KeyIndex)
 {
 
-  int 			errCnt = 0;
-  uint8_t		status = 0;
+  int       errCnt = 0;
+  uint8_t   status = 0;
 
   if (GetVerbose(2)) {
     LOGI("\n");
@@ -217,7 +223,7 @@ int cep_srot::DisableLLKI (uint8_t KeyIndex)
     LOGI("\n");
   }
   // Write a word to the LLKI C2 Send FIFO
-  cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+  cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                     LLKI_MID_C2CLEARKEYREQ, // Message ID
                     0x00,                   // Status (unused)
                     0x0001,                 // Message Length
@@ -225,10 +231,10 @@ int cep_srot::DisableLLKI (uint8_t KeyIndex)
                     0xDEADBE));             // rsvd1
   
   // Poll the response waiting bit
-  cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+  cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
   
   // Read and check the response
-  status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+  status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
   CHECK_RESPONSE(status, LLKI_STATUS_GOOD, GetVerbose());
 
   // Return the error count
@@ -239,213 +245,107 @@ int cep_srot::DisableLLKI (uint8_t KeyIndex)
 
 
 
-
-// ------------------------------------------------------------------------------------------------------------
-// The following method will set a bit in the cep_core0_status register in order to indicate to the other
-// cores that the LLKI operations have been completed.
-//
-// For core0, the method will set the appropriate bit in the cep_core0_status register
-// For the other cores, this function will poll the status bit continuously until it is set
-//
-// ------------------------------------------------------------------------------------------------------------
-int cep_srot::LLKIInitComplete (int cpuId)
-{
-
-  int errCnt  = 0;
-  int maxTO   = 50000; // Maximum number of "counts" to try before continuing
-
-  
-  // If I am core 0
-  if (cpuId == 0) {
-    
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("%s: Core 0 setting interlock bit...                                         \n",__FUNCTION__);
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    
-    // Write to the core0 status register indicating that the LLKI operations are complete
-      cep_writeNcapture(CEP_VERSION_REG_K, cep_core0_status, 0x0000000000000001);
-      
-  } else {
-    
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("%s: Core %d waiting for interlock bit...                                    \n", __FUNCTION__, cpuId);
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-    
-    // Wait for the interlock bit to be set (and capture if a timeout occurs)
-    errCnt += cep_readNspin(CEP_VERSION_REG_K, cep_core0_status, 0x0000000000000001, 0x0000000000000001, maxTO); 
-    
-    if (GetVerbose()) {
-      LOGI("\n");
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("%s: Core %d interlock bit received...                                       \n", __FUNCTION__, cpuId);
-      LOGI("----------------------------------------------------------------------------\n");
-      LOGI("\n");
-    }
-  } // else if (cpuId == 0)
-  return errCnt;
-
-} // cep_srot::LLKIInitComplete
-// ------------------------------------------------------------------------------------------------------------
-
-
-
-
-// ------------------------------------------------------------------------------------------------------------
-// Simple method that will clear the cep_core0_status register if this is cpuId 0
-// ------------------------------------------------------------------------------------------------------------
-int cep_srot::LLKIClearComplete (int cpuId)
-{
-
-  int errCnt = 0;
-
-    // If I am core 0
-    if (cpuId == 0) {
-
-      if (GetVerbose()) {
-        LOGI("\n");
-        LOGI("----------------------------------------------------------------------------\n");
-        LOGI("%s: Core 0 clearing interlock bit...                                        \n",__FUNCTION__);
-        LOGI("----------------------------------------------------------------------------\n");
-        LOGI("\n");
-      }
-
-      // Write to the core0 status register indicating that the LLKI operations are complete
-      cep_writeNcapture(CEP_VERSION_REG_K, cep_core0_status, 0);
-
-      return errCnt;
-
-    } else {
-
-      return errCnt;
-
-    } // else if (cpuId == 0)
-
-
-} // cep_srot::LLKIInitComplete
-// ------------------------------------------------------------------------------------------------------------
-
-
 // ------------------------------------------------------------------------------------------------------------
 // Public Method for setting up the LLKI
+//
+// Every call to this method will begin by initializing the SRoT's KeyIndexRAM, which will effectively "erase"
+// all existing SRoT keys
 // ------------------------------------------------------------------------------------------------------------
 int cep_srot::LLKI_Setup(int cpuId) {
-    int errCnt = 0;
-    
-    // pick the first LSB in cpuActiveMask as master
-    //
-    int iAMmaster = 0;
-    for (int i = 0; i < 4; i++) {
-        if (((1 << i) & GetCpuActiveMask())) { // found the first LSB=1 bit
-            if (i == cpuId) {
-                iAMmaster = 1;
-            }
-            break;
-        }
-    }
-    
-    //
-    // Master stuffs
-    //
-    if (iAMmaster) {
-        
-#ifdef SIM_ENV_ONLY
-        if (mSrotFlag) {
-            LOGI("%s: cpu#%d: enable SROT vector capture\n",__FUNCTION__,cpuId);
-            DUT_WRITE_DVT(DVTF_SROT_START_CAPTURE_BIT, DVTF_SROT_START_CAPTURE_BIT , 1);
-        }
-#endif
-        
-        if (GetVerbose()) {
-            LOGI("%s: cpu#%d is the master. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
-        }
-        //
-        // Initiate the LLKI for all cores
-        // For multi-core tests, core0 will be responsible for the following:
-        // - Initializing the LLKI Key Index RAM for ALL KEYS
-        // - Loading all keys into the SRoT
-        // - Enabling the LLKI for all cores
-        
-        //
-        // Initialize the LLKI
-        //
-        InitKeyIndexRAM();
-        
-        // Load the all the keys (Core indicies MUST correspond
-        // to those identified in the LLKI_CORE_INDEX_ARRAY as
-        // listed in llki_pkg.sv
-        // tony duong 02/26/21:
-        /* for the sake of easy  testing, use keyIndex same as core Index for now */
-        if (IS_CRYPTO_ENABLED(AES)) {
-            LoadLLKIKey(AES_BASE_K     , AES_BASE_K,     0,  1, AES_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-            DisableLLKI(AES_BASE_K    );    EnableLLKI(AES_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(DES3)) {        
-            LoadLLKIKey(DES3_BASE_K    , DES3_BASE_K,    2,  2, DES3_MOCK_TSS_KEY,   INVERT_ALL_BITS);
-            DisableLLKI(DES3_BASE_K   );    EnableLLKI(DES3_BASE_K   );            
-        }
-        // NOTE: DFT/IDFT: they go together
-        if (IS_CRYPTO_ENABLED(DFT) || IS_CRYPTO_ENABLED(IDFT)) {        
-            LoadLLKIKey(DFT_BASE_K     , DFT_BASE_K,     3,  3, DFT_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-            DisableLLKI(DFT_BASE_K    );    EnableLLKI(DFT_BASE_K    );
-            //
-            LoadLLKIKey(IDFT_BASE_K    , IDFT_BASE_K,   10, 10, IDFT_MOCK_TSS_KEY,   INVERT_ALL_BITS);
-            DisableLLKI(IDFT_BASE_K   );    EnableLLKI(IDFT_BASE_K   );                        
-        }
-        if (IS_CRYPTO_ENABLED(FIR)) {        
-            LoadLLKIKey(FIR_BASE_K     , FIR_BASE_K,     4,  4, FIR_MOCK_TSS_KEY,    INVERT_ALTERNATE);
-            DisableLLKI(FIR_BASE_K    );    EnableLLKI(FIR_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(GPS)) {        
-            LoadLLKIKey(GPS_BASE_K     , GPS_BASE_K,     5,  9, GPS_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-            DisableLLKI(GPS_BASE_K    );    EnableLLKI(GPS_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(IIR)) {        
-            LoadLLKIKey(IIR_BASE_K     , IIR_BASE_K,    11, 11, IIR_MOCK_TSS_KEY,    INVERT_ALTERNATE); // can't use invert_all_bits
-            DisableLLKI(IIR_BASE_K    );    EnableLLKI(IIR_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(MD5)) {        
-            LoadLLKIKey(MD5_BASE_K     , MD5_BASE_K,    12, 19, MD5_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-            DisableLLKI(MD5_BASE_K    );    EnableLLKI(MD5_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(RSA)) {        
-            LoadLLKIKey(RSA_BASE_K     , RSA_BASE_K,    20, 20, RSA_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-            DisableLLKI(RSA_BASE_K    );    EnableLLKI(RSA_BASE_K    );            
-        }
-        if (IS_CRYPTO_ENABLED(SHA256)) {        
-            LoadLLKIKey(SHA256_BASE_K  , SHA256_BASE_K, 21, 28, SHA256_MOCK_TSS_KEY, INVERT_ALL_BITS);
-            DisableLLKI(SHA256_BASE_K );    EnableLLKI(SHA256_BASE_K );            
-        }
 
-        // Write to the core0 status register indicating that the LLKI operations are complete
-        cep_writeNcapture(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE);
-        //
-        // Done!!
-        //
+  int errCnt = 0;
+    
+  //
+  // pick the first LSB in cpuActiveMask as master
+  //
+  int iAMmaster = 0;
+  for (int i = 0; i < 4; i++) {
+    if (((1 << i) & GetCpuActiveMask())) { // found the first LSB=1 bit
+      if (i == cpuId) {
+        iAMmaster = 1;
+      }
+      break;
+    }
+  }
+    
+  //
+  // Only one core can perform LLKI operations
+  //
+  if (iAMmaster) {
+        
 #ifdef SIM_ENV_ONLY
-        if (mSrotFlag) {
-            DUT_WRITE_DVT(DVTF_SROT_STOP_CAPTURE_BIT, DVTF_SROT_STOP_CAPTURE_BIT , 1);
-        }
+    if (mSrotFlag) {
+      LOGI("%s: cpu#%d: enable SROT vector capture\n",__FUNCTION__,cpuId);
+      DUT_WRITE_DVT(DVTF_SROT_START_CAPTURE_BIT, DVTF_SROT_START_CAPTURE_BIT , 1);
+    }
 #endif
         
-    } else {
-        if (GetVerbose()) {
-            LOGI("%s: cpu#%d will be the slave. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
-        }
-        errCnt += cep_readNspin(CEP_VERSION_REG_K, cep_core0_status, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF,maxTO); 
-    }
     if (GetVerbose()) {
-        LOGI("%s: Done ...cpu=%d !!!\n",__FUNCTION__,cpuId);
-    }  
+      LOGI("%s: cpu#%d is the master. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
+    }
+  
+
     //
-    return errCnt;
+    // Initialize the LLKI Key Index RAM to all zeroes (thus effectively deleting any existing keys)
+    //
+    InitKeyIndexRAM();
+        
+    //
+    // Loop through all the LLKI cores and load keys if the following conditions are met:
+    //  1) The core is enabled as define in cep_core_info (CEP.h)
+    //  2) The current CoreMask has selected the current core
+    //
+    // As a single index is being used to access both the cep_core_info and KEY_DATA arrays,
+    // the cores that use keys must be lower justified in cep_core_info array
+    for (int coreIndex = 0; coreIndex < CEP_LLKI_CORES; coreIndex ++) {
+      cep_core_info_t core = cep_core_info[coreIndex];
+      cep_key_info_t  key  = KEY_DATA[coreIndex];
+
+      core_type_t coreType = core.type;
+      
+      if (IS_ON(coreIndex) && core.enabled) {
+
+        // Load the appropriate key
+        LoadLLKIKey(coreIndex,        // KeyIndex (address in the KeyIndexRAM)
+                    coreIndex,        // CoreIndex (defines the core for which this key is destined for.  Corresponds
+                                      // to the core indecies defined in DevKitConfigs.scala)
+                    key.lowPointer,
+                    key.highPointer,
+                    key.keyData,
+                    key.invertType);
+
+        DisableLLKI(coreIndex);
+        EnableLLKI(coreIndex);
+
+      } // if (IS_ON(keyIndex) && core.enabled)
+
+    } // for (int coreIndex = 0; coreIndex < CEP_LLKI_CORES; coreIndex ++) 
+        
+    // Write to the core0 status register indicating that the LLKI operations are complete
+    cep_writeNcapture(mStatusIndex, cep_core0_status, CEP_OK2RUN_SIGNATURE);
+        
+    //
+    // Done!!
+    //
+#ifdef SIM_ENV_ONLY
+    if (mSrotFlag) {
+      DUT_WRITE_DVT(DVTF_SROT_STOP_CAPTURE_BIT, DVTF_SROT_STOP_CAPTURE_BIT , 1);
+    }
+#endif
+      
+  } else {  // else if (iAMMaster)
+    if (GetVerbose()) {
+      LOGI("%s: cpu#%d will be the slave. mask=0x%x\n",__FUNCTION__,cpuId,GetCpuActiveMask());
+    }
+    errCnt += cep_readNspin(mStatusIndex, cep_core0_status, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
+    
+  } // if (iAMmaster) {
+
+  if (GetVerbose()) {
+    LOGI("%s: Done ...cpu=%d !!!\n",__FUNCTION__,cpuId);
+  }  
+  
+  return errCnt;
 } // cep_srot::LLKI_Setup
 // ------------------------------------------------------------------------------------------------------------
 
@@ -455,8 +355,8 @@ int cep_srot::LLKI_Setup(int cpuId) {
 // ------------------------------------------------------------------------------------------------------------
 int cep_srot::LLKI_ErrorTest(int cpuId) {
 
-  int 			errCnt = 0;
-  uint8_t		status = 0;
+  int       errCnt = 0;
+  uint8_t   status = 0;
 
   // pick the first LSB in cpuActiveMask as master
   //
@@ -488,29 +388,34 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Load some Key Indexes - Some good, some bad
     // --------------------------------------------------------------------------------------------------------
-    errCnt += LoadLLKIKey(0     , AES_BASE_K,     0,  1, AES_MOCK_TSS_KEY,    INVERT_ALL_BITS);
-    errCnt += LoadLLKIKey(1     , AES_BASE_K,     2,  6, GPS_MOCK_TSS_KEY,    INVERT_ALL_BITS);
+    cep_key_info_t key0 = KEY_DATA[0];
+    cep_key_info_t key1 = KEY_DATA[1];
+    
+    errCnt += LoadLLKIKey(0 , 0, key0.lowPointer, key0.highPointer, key0.keyData, key0.invertType);
+
+    // Bad core index
+    errCnt += LoadLLKIKey(1 , 0, key1.lowPointer,  key1.highPointer, key1.keyData, key1.invertType); 
 
     // Disable LLKI to clear it.. to make it independent of the states of the chip, tony d.
     errCnt += DisableLLKI (0);
 
 
     // Load a Key Index with a bad pointer pair (low pointer > high pointer)
-    cep_writeNcapture(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + 2*8, key_index_pack(
+    cep_writeNcapture(SROT_KEYINDEXRAM_ADDR + 2*8, key_index_pack(
                       2,                // low pointer
                       1,                // high pointer
-                      AES_BASE_K,       // core index
+                      0,                // core index
                       0x1));            // Valid
 
     // Load a Key Index with a bad pointer pair (pointer exceeds key ram size)
-    cep_writeNcapture(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + 3*8, key_index_pack(
+    cep_writeNcapture(SROT_KEYINDEXRAM_ADDR + 3*8, key_index_pack(
                       0,                // low pointer
                       SROT_KEYRAM_SIZE, // high pointer
-                      AES_BASE_K,       // core index
+                      0,                // core index
                       0x1));            // Valid
 
     // Load a Key Index with a bad core index
-    cep_writeNcapture(SROT_BASE_K, SROT_KEYINDEXRAM_ADDR + 4*8, key_index_pack(
+    cep_writeNcapture(SROT_KEYINDEXRAM_ADDR + 4*8, key_index_pack(
                       0,                // low pointer
                       1,                // high pointer
                       31,               // core index
@@ -525,7 +430,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Peform a redundant key load load for the AES Core
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -533,10 +438,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_KL_KEY_OVERWRITE, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
@@ -548,7 +453,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Load a bad length key into the AES Core
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -556,10 +461,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_KL_BAD_KEY_LEN, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
@@ -567,7 +472,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Send a BAD message ID
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       0xFF,                   // Bad Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -575,10 +480,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_BAD_MSG_ID, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
@@ -586,7 +491,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Send a BAD message Length  (all LLKI-C2 messages are length 1)
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0002,                 // BAD Message Length
@@ -594,18 +499,18 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
-	  CHECK_RESPONSE(status, LLKI_STATUS_BAD_MSG_LEN, GetVerbose());
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
+    CHECK_RESPONSE(status, LLKI_STATUS_BAD_MSG_LEN, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
 
     // --------------------------------------------------------------------------------------------------------
     // Stimulate the LLKI_STATUS_KEY_INDX_EXCEED error
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -613,18 +518,18 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
-	CHECK_RESPONSE(status, LLKI_STATUS_KEY_INDEX_EXCEED, GetVerbose());
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
+  CHECK_RESPONSE(status, LLKI_STATUS_KEY_INDEX_EXCEED, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
 
     // --------------------------------------------------------------------------------------------------------
     // Stimulate the LLKI_STATUS_KEY_INDEX_INVALID error
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -632,10 +537,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_KEY_INDEX_INVALID, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
@@ -643,7 +548,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Stimulate the LLKI_STATUS_BAD_POINTER_PAIR error (low > high)
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -651,18 +556,18 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
-  	CHECK_RESPONSE(status, LLKI_STATUS_BAD_POINTER_PAIR, GetVerbose());
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
+    CHECK_RESPONSE(status, LLKI_STATUS_BAD_POINTER_PAIR, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
 
     // --------------------------------------------------------------------------------------------------------
     // Stimulate the LLKI_STATUS_BAD_POINTER_PAIR error (high pointer > Key RAM size)
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -670,10 +575,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_BAD_POINTER_PAIR, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 
@@ -681,7 +586,7 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
     // --------------------------------------------------------------------------------------------------------
     // Stimulate the LLKI_STATUS_BAD_CORE_INDEX error
     // --------------------------------------------------------------------------------------------------------
-    cep_writeNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
+    cep_writeNcapture(SROT_LLKIC2_SENDRECV_ADDR, llkic2_pack(  
                       LLKI_MID_C2LOADKEYREQ,  // Message ID
                       0x00,                   // Status (unused)
                       0x0001,                 // Message Length
@@ -689,10 +594,10 @@ int cep_srot::LLKI_ErrorTest(int cpuId) {
                       0xDEADBE));             // rsvd1
   
     // Poll the response waiting bit
-    cep_readNspin(SROT_BASE_K, SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
+    cep_readNspin(SROT_CTRLSTS_ADDR, SROT_CTRLSTS_RESP_WAITING_MASK, SROT_CTRLSTS_RESP_WAITING_MASK, 100);
 
     // Compare expected and received responses
-    status = llkic2_extract_status(cep_readNcapture(SROT_BASE_K, SROT_LLKIC2_SENDRECV_ADDR));
+    status = llkic2_extract_status(cep_readNcapture(SROT_LLKIC2_SENDRECV_ADDR));
     CHECK_RESPONSE(status, LLKI_STATUS_BAD_CORE_INDEX, GetVerbose());
     // --------------------------------------------------------------------------------------------------------
 

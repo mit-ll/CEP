@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -37,8 +37,6 @@ void *c_module(void *arg) {
   int restart = tParm->restart;
   int offset = GET_OFFSET(slotId,cpuId);
   GlobalShMemory.getSlotCpuId(offset,&slotId,&cpuId);
-  //printf("offset=%x seed=%x verbose=%x GlobalShMemory=%x\n",offset,seed, verbose,(unsigned long) &GlobalShMemory);
-  // notify I am Alive!!!
   shIpc *ptr = GlobalShMemory.getIpcPtr(offset);
   ptr->SetAliveStatus();
   sleep(1);
@@ -59,19 +57,18 @@ void *c_module(void *arg) {
   // wait until Calibration is done..
   int calibDone = calibrate_ddr3(50);
       //pio.RunClk(1000);
-  //
-  int coreMask = seed; // seed is used as cpuActiveMask from c_displatch
-  int cryptoMask = ((1<<10)-1) & ~(1 << RSA_BASE_K);
-      //
+
+  int cpuActiveMask = seed; // seed is used as cpuActiveMask from c_displatch
+
   int maxTest = 10;
   int maxLoop = 2;
   uint64_t testLockBuf = 0x90000000;
   
   if (!errCnt) {
-      errCnt += cepMultiThread_setup(cpuId, testLockBuf, maxTest, coreMask, verbose) ;
+      errCnt += cepMultiThread_setup(cpuId, testLockBuf, maxTest, cpuActiveMask, verbose) ;
   }
   //    LOGI(" errCnt=%d\n",errCnt);  
-  if (!errCnt) { errCnt += cepMultiThread_runThr(cpuId, testLockBuf, cryptoMask, maxTest, maxLoop,seed, verbose);  }
+  if (!errCnt) { errCnt += cepMultiThread_runThr(cpuId, testLockBuf, cpuActiveMask, maxTest, maxLoop,seed, verbose);  }
       //
   //
   pio.RunClk(100);  

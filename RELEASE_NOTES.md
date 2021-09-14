@@ -144,4 +144,11 @@ v3.4 - (6 August 2021)
 * Scratchpad RAM changed to blackbox implementation to facilitate ASIC development
 * OpenSSL replaced by Cryptopp for crypto-related tests (cosim + linux)
 
+v3.41 - (10 September 2021)
+* CEP Configuration nows includes 4xGPS and 4xSHA-256 cores
+* Integrated configurable co-simulation environment (provide a co-sim that can more easily adapt to CEP architecture changes)
+* Known Issues:
+  - Some idft test vectors fail under QuestaSim (xcellium regression ran successfully)
+  - Multithreaded test (#23) non-functional under linux
+
 #### Return to the root CEP [README](./README.md)

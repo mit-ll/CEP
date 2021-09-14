@@ -105,45 +105,45 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   // everything is being moved here
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      outstanding_read    <= '0;
-      outstanding_write   <= '0;
-      req_id              <= '0;
-      req_sz              <= '0;
-      resp_opcode         <= AccessAck;
-      error               <= '0;
-      d_valid             <= '0;
-      rdata               <= '0;
+      outstanding_read      <= '0;
+      outstanding_write     <= '0;
+      req_id                <= '0;
+      req_sz                <= '0;
+      resp_opcode           <= AccessAck;
+      error                 <= '0;
+      d_valid               <= '0;
+      rdata                 <= '0;
     end else begin
 
       // Queue up some of the d channel response fields
       // Internal errors will be detected at the time A Channel is being processed
       if (a_ack) begin
-        req_id      <= tl_i.a_source;
-        req_sz      <= tl_i.a_size;        
-        resp_opcode <= (rd_req) ? AccessAckData : AccessAck;  // Return AccessAckData regardless of error
-        error       <= err_internal; 
+        req_id              <= tl_i.a_source;
+        req_sz              <= tl_i.a_size;        
+        resp_opcode         <= (rd_req) ? AccessAckData : AccessAck;  // Return AccessAckData regardless of error
+        error               <= err_internal; 
       end;
 
       // Acknowledgements (reads and writes) need to be delayed
       // to allow higher level (external) decode to do things
       if (wr_req) begin
-        outstanding_write <= '1;
+        outstanding_write   <= '1;
       end else if (rd_req) begin
-        outstanding_read  <= '1;
+        outstanding_read    <= '1;
       end
 
       // If a read is ongoing and has been acknowleedge, time
       // to assert valid on the D channel (and capture rdata and or in the external error)
       // Adding a_ack allows for zero-cycle decode on reads
       if (ack_i & (outstanding_read | a_ack)) begin
-        d_valid           <= '1;
-        rdata             <= rdata_i;
-        error             <= error | error_i;
+        d_valid             <= '1;
+        rdata               <= rdata_i;
+        error               <= error | error_i;
       // If a write is ongoing, just capture the valid and or in the external error)
       // Adding a_ack allows for zero-cycle decode on writes
       end else if (ack_i & (outstanding_write | a_ack)) begin
-        d_valid           <= '1;
-        error             <= error | error_i;
+        d_valid             <= '1;
+        error               <= error | error_i;
       end else if (tl_i.d_ready & (outstanding_read | outstanding_write)) begin
         outstanding_read    <= '0;
         outstanding_write   <= '0;
@@ -180,6 +180,6 @@ module tlul_adapter_reg import tlul_pkg::*; #(
   `ASSERT_INIT(MatchedWidthAssert, RegDw == top_pkg::TL_DW)
 
   // Ensure we don't have an error asserted
-  `ASSERT(tlul_size_incorrect, !tl_o.d_error, clk_i, !rst_ni)
+  `ASSERT(tlul_d_channel_error, !tl_o.d_error, clk_i, !rst_ni)
 
 endmodule

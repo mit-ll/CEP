@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -435,13 +435,10 @@ int cep_init_cmds(void)
   CEP_ADD_CMD(memRead,    5, cep_acc_memRead,    "<deviceName> <devId> <memType> <memId> <offset> [word2read]"); 
   CEP_ADD_CMD(memSearch,  7, cep_acc_memSearch,  "<deviceName> <devId> <memType> <memId> <offset> <#2search> <pattern>");
   CEP_ADD_CMD(system,     1, run_cep_system,     "system <linux_cmd...>");  
-  //
+
   // must do this 
-  //
   cep_set_max_cmd_count(CMD_zzMAX_CEP_COUNT);
-  //
-  //
-  // =====================================
+
   return errCnt;
 }
 

@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_srot.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -14,8 +14,11 @@
 #include "stdint.h"
 #include "cep_crypto.h"
 
-#define INVERT_ALL_BITS  1
-#define INVERT_ALTERNATE 2
+
+// Include srot keys - must define invert modes first.
+#include "cep_srot_keys.h"
+
+
 
 #define MAX_LLKI_KEY_SIZE   256   // Maximize size of an LLKI Key in units
                                   // of 64-bit words
@@ -92,65 +95,6 @@ const uint8_t   LLKI_KEYINDEX_VALID               = 0x80;
     } \
   } while (0)
 
-// Mock TSS Keys
-const uint64_t  AES_MOCK_TSS_KEY[]     = {
-  0xAE53456789ABCDEF,
-  0xFEDCBA9876543210
-};
-
-const uint64_t  DES3_MOCK_TSS_KEY[]    = {
-  0xDE53456789ABCDEF
-};
-
-const uint64_t  SHA256_MOCK_TSS_KEY[]  = {
-  0x54A3456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210
-};
-
-const uint64_t  MD5_MOCK_TSS_KEY[]     = {
-  0x3D53456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210
-};
-
-const uint64_t  RSA_MOCK_TSS_KEY[]     = {
-  0x45A3456789ABCDEF
-};
-
-const uint64_t  IIR_MOCK_TSS_KEY[]     = {
-  0x1143456789ABCDEF
-};
-
-const uint64_t  FIR_MOCK_TSS_KEY[]     = {
-  0xF143456789ABCDEF
-};
-
-const uint64_t  DFT_MOCK_TSS_KEY[]     = {
-  0xDF73456789ABCDEF
-};
-
-const uint64_t  IDFT_MOCK_TSS_KEY[]    = {
-  0x1DF7456789ABCDEF
-};
-
-const uint64_t  GPS_MOCK_TSS_KEY[]     = {
-  0x6953456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF,
-  0xFEDCBA9876543210,
-  0x0123456789ABCDEF
-};
 
 //
 // CEP's SRoT
@@ -161,7 +105,7 @@ class cep_srot : public cep_crypto {
   // Public methods
   //
   public: 
-    cep_srot(int verbose);  
+    cep_srot(int coreIndex, int statusIndex, int verbose);  
     ~cep_srot() {}; 
 
     //
@@ -175,12 +119,12 @@ class cep_srot : public cep_crypto {
     void SetCpuActiveMask(int mask) {  mCpuActiveMask = mask; }
     int  GetCpuActiveMask(void) { return mCpuActiveMask; }
 
-    //
-    void SetCryptoMask(int mask) {  mCryptoMask = mask; }
-    int  GetCryptoMask(void) { return mCryptoMask; }
-
+    void SetCoreMask(int mask) {  mCoreMask = mask; }
+    int  GetCoreMask(void) { return mCoreMask; }
+    
     // for negative testing
     void LLKI_invertKey(int enable) { mInvertKey = enable; }
+  
   //
   // Private methods
   //
@@ -191,15 +135,11 @@ class cep_srot : public cep_crypto {
     // ------------------------------------------------------
     int InitKeyIndexRAM (void);
     int LoadLLKIKey (uint8_t KeyIndex, uint8_t CoreIndex, uint16_t LowPointer, uint16_t HighPointer, const uint64_t *Key, int invertType);
-    int LLKIInitComplete (int cpuId);
-    int LLKIClearComplete (int cpuId);
 
+    int mStatusIndex;
     int mCpuActiveMask;
     int maxTO;  
-    //
-    int mCryptoMask;
-
-    //
+    int mCoreMask;
     int mInvertKey;
     uint64_t mInvertMask;
 };

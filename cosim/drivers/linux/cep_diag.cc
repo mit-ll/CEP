@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -287,7 +287,7 @@ main (int argc, char * const *argv)
 {
   int gErrCnt = 0;
   //int flags = 0;
-  int gSkipInit=0, gVerbose=0;
+  int gVerbose=0;
   //
   //int my_id=0, slot=0, targetMask=0;
   //
@@ -308,12 +308,7 @@ main (int argc, char * const *argv)
   // Global setup
   //
   if (argc > 1) {
-    sscanf(argv[1],"%d",&gSkipInit);
-    SET_VAR_VALUE(skipInit,gSkipInit);
-  }
-  printf("gSkipInit=%d/%d\n",gSkipInit,GET_VAR_VALUE(skipInit));
-  if (argc > 2) {
-    sscanf(argv[2],"%d",&gVerbose);
+    sscanf(argv[1],"%d",&gVerbose);
     SET_VAR_VALUE(verbose,gVerbose);  
   }
   

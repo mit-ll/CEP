@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_aes.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -21,12 +21,12 @@ class cep_aes : public cep_crypto {
 public: //
   // constructors
   //
-  cep_aes(int seed, int verbose);  
+  cep_aes(int coreIndex, int seed, int verbose);  
   ~cep_aes() {}; 
 
   int RunAes192Test(int maxLoop);
 
- protected:
+protected:
   //
   int cryptopp_aes192_ecb_encryption
     (

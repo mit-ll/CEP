@@ -1,5 +1,6 @@
 .Xil/
 xil_lib/
+.xil_lib/
 .cxl.ip/
 .cxl*
 *.log*
@@ -8,6 +9,7 @@ xil_lib/
 *.bin
 **/*.o
 **/*.obj
+**/*.bobj
 **/*.hex
 **/*.a
 **/*.KEY
@@ -16,6 +18,7 @@ modelsim.ini*
 **/c_dispatch
 **/testHistory.txt
 vsim.do
+.c_children.mk
 **/transcript
 **/*.wlf
 **/*.dump
@@ -25,4 +28,5 @@ dvt/behav_models/ddr3.v
 include/cep_adrMap.h
 include/v2c_cmds.h
 lib/dll/libvpp.so
-
+lib/libvpp.so
+lib/.buildLibs

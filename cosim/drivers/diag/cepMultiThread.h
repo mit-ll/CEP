@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -18,8 +18,8 @@ extern "C" {
 #endif
     int cepMultiThread_findATest2Run(int thrId, uint64_t testLockPtr, int doneMask, int maxTest, int verbose);
     int cepMultiThread_releaseTestLock(int thrId, int testId,uint64_t testLockPtr);
-    int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int coreMask, int verbose);
-    int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int maxTest, int maxLoop,int seed, int verbose);
+    int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int cpuActiveMask, int verbose);
+    int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cpuActiveMask, int maxTest, int maxLoop,int seed, int verbose);
 
 #ifdef __cplusplus
 }

@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_sha256.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -21,13 +21,13 @@ class cep_sha256 : public cep_crypto {
 public: //
   // constructors
   //
-  cep_sha256(int seed, int verbose);  
+  cep_sha256(int coreIndex, int seed, int verbose);  
   ~cep_sha256(); 
 
   //
   int RunSha256Test(int maxLoop);
 
- protected:
+protected:
   //
   int prepare_sha256_key_N_text
     (

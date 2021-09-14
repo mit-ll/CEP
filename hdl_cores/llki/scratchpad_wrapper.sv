@@ -175,14 +175,14 @@ module scratchpad_wrapper import tlul_pkg::*; import llki_pkg::*; #(
   // Perform the remaining tilelink connections
   always_ff @(posedge clk or posedge rst) begin
     if (rst) begin
-      slave_tl_d2h_i.d_opcode   = AccessAck;
-      slave_tl_d2h_i.d_param    = '0;
-      slave_tl_d2h_i.d_size     = '0;
-      slave_tl_d2h_i.d_source   = '0;
-      slave_tl_d2h_i.d_sink     = '0;
-      slave_tl_d2h_i.d_user     = '0;
-      slave_tl_d2h_i.d_error    = '0;
-      slave_tl_d2h_i.d_valid    = '0;
+      slave_tl_d2h_i.d_opcode   <= AccessAck;
+      slave_tl_d2h_i.d_param    <= '0;
+      slave_tl_d2h_i.d_size     <= '0;
+      slave_tl_d2h_i.d_source   <= '0;
+      slave_tl_d2h_i.d_sink     <= '0;
+      slave_tl_d2h_i.d_user     <= '0;
+      slave_tl_d2h_i.d_error    <= '0;
+      slave_tl_d2h_i.d_valid    <= '0;
     end else begin
       //  The following assingment methodology is borrowed from the tlul_adapter_reg component
       if ((slave_tl_h2d_o.a_opcode == PutFullData) | (slave_tl_h2d_o.a_opcode == PutPartialData))
@@ -190,14 +190,14 @@ module scratchpad_wrapper import tlul_pkg::*; import llki_pkg::*; #(
       else
         slave_tl_d2h_i.d_opcode   <= AccessAckData;
 
-      slave_tl_d2h_i.d_param    = '0;
-      slave_tl_d2h_i.d_size     = slave_tl_h2d_o.a_size;
-      slave_tl_d2h_i.d_source   = slave_tl_h2d_o.a_source;
-      slave_tl_d2h_i.d_sink     = '0;
-      slave_tl_d2h_i.d_user     = '0;
-      slave_tl_d2h_i.d_error    = tl_err;
+      slave_tl_d2h_i.d_param    <= '0;
+      slave_tl_d2h_i.d_size     <= slave_tl_h2d_o.a_size;
+      slave_tl_d2h_i.d_source   <= slave_tl_h2d_o.a_source;
+      slave_tl_d2h_i.d_sink     <= '0;
+      slave_tl_d2h_i.d_user     <= '0;
+      slave_tl_d2h_i.d_error    <= tl_err;
       // We cannot process the response if not ready
-      slave_tl_d2h_i.d_valid    = slave_tl_h2d_o.a_valid & slave_tl_d2h_i.a_ready;
+      slave_tl_d2h_i.d_valid    <= slave_tl_h2d_o.a_valid & slave_tl_d2h_i.a_ready;
     end // end if (!rst_ni)
   end // always_ff @(posedge clk_i or negedge rst_ni)
 

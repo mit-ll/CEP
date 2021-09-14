@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_gps.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -23,7 +23,7 @@ class cep_gps : public cep_aes {
 public: //
   // constructors
   //
-  cep_gps(int seed, int verbose);  
+  cep_gps(int coreIndex, int seed, int verbose);  
   ~cep_gps() {}; 
 
   int  GetSvNum ( ) { return mSvNum; }
@@ -44,7 +44,7 @@ public: //
   //
   int RunGpsTest(int maxLoop);
 
- protected:
+protected:
   //
   int mSvNum;
   int mExpCaCode;

@@ -34,7 +34,7 @@ import freechips.rocketchip.tilelink._
 
 object CEPVersion {
   val CEP_MAJOR_VERSION             = 0x03
-  val CEP_MINOR_VERSION             = 0x40
+  val CEP_MINOR_VERSION             = 0x41
 }
 
 object AESAddresses {

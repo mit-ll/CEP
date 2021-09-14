@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_rsa.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -40,12 +40,11 @@ class cep_rsa : public cep_crypto {
 public: //
   // constructors
   //
-  cep_rsa(int seed, int verbose);  
+  cep_rsa(int coreIndex, int seed, int verbose);  
   ~cep_rsa(); 
 
   int RunRsaTest(int maxLoop, int maxBytes);
   int RunRsaMemTest(int memMask, int sizeInBytes);
-
 protected:
   //
   int GetAddZeros(void) { return mAddZeros; }

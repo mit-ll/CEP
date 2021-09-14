@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_gps.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -24,12 +24,8 @@
 #include "random48.h"
 //
 //
-cep_gps::cep_gps(int seed, int verbose) : cep_aes(seed,verbose) {
-  init();  
-  //
-  //SetSvNum(0);
-  // can't call this!!! since we dont know which core is running it yet!!!
-  //ResetCA_code(); 
+cep_gps::cep_gps(int coreIndex, int seed, int verbose) : cep_aes(coreIndex, seed,verbose) {
+  init(coreIndex);
 }
 //
 
@@ -40,7 +36,7 @@ void cep_gps::SetSvNum (int svNum) {
     mSvNum= svNum;
   }
   // Load SvNum
-  cep_writeNcapture(GPS_BASE_K, GPS_SV_NUM, GetSvNum());
+  cep_writeNcapture(GPS_SV_NUM, GetSvNum());
   //
 }
 
@@ -52,7 +48,7 @@ void cep_gps::SetPcodeSpeed (uint16_t xn_cnt_speed, uint32_t z_cnt_speed) {
   xn_cnt_speed &= 0xfff;
   z_cnt_speed &= 0x7ffff;
   uint64_t pcode_speed = xn_cnt_speed | (z_cnt_speed << 12);
-  cep_writeNcapture(GPS_BASE_K, GPS_PCODE_SPEED, pcode_speed);
+  cep_writeNcapture(GPS_PCODE_SPEED, pcode_speed);
 }
 
 /* Defaults:
@@ -72,7 +68,7 @@ void cep_gps::SetPcodeXnInit (uint16_t x1a_initial, uint16_t x1b_initial, uint16
   pcode_xinitial |= (uint64_t)x1b_initial << 12;
   pcode_xinitial |= (uint64_t)x2a_initial << 24;
   pcode_xinitial |= (uint64_t)x2b_initial << 36;
-  cep_writeNcapture(GPS_BASE_K, GPS_PCODE_XINI, pcode_xinitial);
+  cep_writeNcapture(GPS_PCODE_XINI, pcode_xinitial);
 }
 
 
@@ -85,7 +81,7 @@ void cep_gps::LoadKey(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mKEY[i*8 + j];      
     }
-    cep_writeNcapture(GPS_BASE_K, GPS_KEY_BASE + (i * BYTES_PER_WORD), word);
+    cep_writeNcapture(GPS_KEY_BASE + (i * BYTES_PER_WORD), word);
   }
 #else
   for(int i = 0; i < mKeySize/8; i++) { //  8-bytes/word
@@ -93,7 +89,7 @@ void cep_gps::LoadKey(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mKEY[i*8 + j];      
     }
-    cep_writeNcapture(GPS_BASE_K, GPS_KEY_BASE + (((AES_KEY_WORDS - 1) - i) * BYTES_PER_WORD), word);
+    cep_writeNcapture(GPS_KEY_BASE + (((AES_KEY_WORDS - 1) - i) * BYTES_PER_WORD), word);
   }
 #endif
 }
@@ -101,20 +97,20 @@ void cep_gps::LoadKey(void) {
 
 void cep_gps::Start(void) {
   //
-  cep_writeNcapture(GPS_BASE_K, GPS_GEN_NEXT, 0x1);
-  cep_writeNcapture(GPS_BASE_K, GPS_GEN_NEXT, 0x0);
+  cep_writeNcapture(GPS_GEN_NEXT, 0x1);
+  cep_writeNcapture(GPS_GEN_NEXT, 0x0);
 }
 
 void cep_gps::BusReset(int assert) {
-  cep_writeNcapture(GPS_BASE_K, GPS_RESET, 0x01);
+  cep_writeNcapture(GPS_RESET, 0x01);
 }
 
 void cep_gps::BusReset(void) {
   // need to extend at least for slow clock can catch      
   for (int i=0;i<5;i++) {
-    cep_writeNcapture(GPS_BASE_K, GPS_RESET, 0x01);
+    cep_writeNcapture(GPS_RESET, 0x01);
   }
-  cep_writeNcapture(GPS_BASE_K, GPS_RESET, 0x00);
+  cep_writeNcapture(GPS_RESET, 0x00);
   //
 }
 
@@ -123,7 +119,7 @@ int cep_gps::ReadNCheck_CA_Code(int mask)
 {
   int errCnt = 0;
   int expCACode= GetCA_code(GetSvNum());
-  int actCACode = cep_readNcapture(GPS_BASE_K, GPS_CA_BASE);
+  int actCACode = cep_readNcapture(GPS_CA_BASE);
   errCnt += ((expCACode ^ actCACode) & mask);
   //
   
@@ -141,10 +137,10 @@ int cep_gps::ReadNCheck_CA_Code(int mask)
 int cep_gps::waitTilDone(int maxTO) {
 #if 1
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(GPS_BASE_K, GPS_GEN_DONE, 2, 2, maxTO);  
+  return cep_readNspin(GPS_GEN_DONE, 2, 2, maxTO);  
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(GPS_BASE_K, GPS_GEN_DONE)) break;
+    if (cep_readNcapture(GPS_GEN_DONE)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -157,14 +153,14 @@ void cep_gps::Read_PCode(void) {
   uint64_t word;
 #ifdef BIG_ENDIAN
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(GPS_BASE_K, GPS_P_BASE + i*8);
+    word = cep_readNcapture(GPS_P_BASE + i*8);
     for (int j=0;j<8;j++) {
       mHwPt[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
   }  
 #else
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(GPS_BASE_K, GPS_P_BASE + (1-i)*8);
+    word = cep_readNcapture(GPS_P_BASE + (1-i)*8);
     // As of 04/12/20: each 32 bits are swapped within 64-bit register (see gps.scala)
     for (int j=0;j<8;j++) {
       switch (j) {
@@ -186,14 +182,14 @@ void cep_gps::Read_LCode(void) {
   uint64_t word;
 #ifdef BIG_ENDIAN
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(GPS_BASE_K, GPS_L_BASE + i*8);
+    word = cep_readNcapture(GPS_L_BASE + i*8);
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
   }  
 #else
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(GPS_BASE_K, GPS_L_BASE + (1-i)*8);
+    word = cep_readNcapture(GPS_L_BASE + (1-i)*8);
     // As of 04/12/20: each 32 bits are swapped within 64-bit register (see gps.scala)
     for (int j=0;j<8;j++) {
       switch (j) {

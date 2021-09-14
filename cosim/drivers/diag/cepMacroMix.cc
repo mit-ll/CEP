@@ -1,11 +1,15 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
-// File Name:      
+// File Name:      cepMacroMix.cc
 // Program:        Common Evaluation Platform (CEP)
-// Description:    
-// Notes:          
+// Description:    Allows for selective test of CEP acclerator cores
+// Notes:          CEP.h defines the core types as well as the currently
+//                 enabled cores.  The cryptomix parameter defines which
+//                 of the currently enabled cores to test.  Bit definition
+//                 (up to 32) corresponds to the index in the cep_core_info
+//                 array.
 //
 //************************************************************************
 
@@ -33,9 +37,11 @@
 #include "cep_fir.h"
 #include "cep_iir.h"
 #include "cep_dft.h"
+#include "cep_idft.h"
 #include "cep_rsa.h"
 #include "cep_srot.h"
 
+#define IS_ON(c) ((1 << c) & coreMask)
 #define CHECK4ERR(e,name) do {			\
     if (!errCnt) { \
       if (srot.GetVerbose()) { \
@@ -55,18 +61,14 @@
 // =============================
 // The test itself
 // =============================
-//
-// 04/07/21 : added cryptoMask to allow running indiviual crypto core
-//
-#define IS_ON(c) (1 << c ## _BASE_K) & cryptoMask
 
-int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbose) {
+int cepMacroMix_runTest(int cpuId, int cpuActiveMask, int coreMask, int seed, int verbose) {
   //
   int errCnt = 0;
 
 #ifndef BARE_MODE
   //
-  // ONly if in the cryptoMask
+  // ONly if in the coreMask
   //
   //
   int captureOn = 0;
@@ -75,377 +77,398 @@ int cepMacroMix_runTest(int cpuId, int mask, int cryptoMask, int seed, int verbo
 #endif
   int maxLoop;
   if (VERBOSE1()) {
-    LOGI("%s: mask=0x%x cryptoMask=0x%08x\n",__FUNCTION__,mask,cryptoMask);
+    LOGI("%s: cpuActiveMask=0x%x coreMask=0x%08x\n",__FUNCTION__, cpuActiveMask, coreMask);
   }
-  //
-  //
-  // do the LLKI unlock here
-  //
-  cep_srot srot(verbose);
-  srot.SetCpuActiveMask(mask);
-  srot.SetSrotFlag(captureOn);
-  srot.SetCryptoMask(cryptoMask);
-  errCnt += srot.LLKI_Setup(cpuId);
-  if (errCnt) return errCnt;
-  //
-  //
-  switch (cpuId) {
-  case 0 :
-    //
-    // AES
-    //    
-    if (IS_ON(AES)) {
-      cep_aes aes(seed,verbose);
-      aes.init();
-      aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");      
-      //
-      maxLoop =  200;
-      init_aes();
-      errCnt += aes.RunAes192Test(maxLoop);
-      //
-      aes.freeMe();
-      if (errCnt) return errCnt;
-    } 
-    //
-    // DES3
-    //
-    if (IS_ON(DES3)) {
-      cep_des3 des3(seed,verbose);
-      des3.init();      
-      des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");      
-      //
-      maxLoop = 150;
-      init_des3();
-      errCnt += des3.RunDes3Test(maxLoop);
-      //
-      des3.freeMe();
-      if (errCnt) return errCnt;
-    } 
-    //
-    // MD5
-    //
-    if (IS_ON(MD5)) {
-      cep_md5 md5(seed,verbose);
-      md5.init();
-      md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");          
-      //
-      maxLoop = 32;
-      init_md5();
-      errCnt += md5.RunMd5Test(maxLoop);
-      //
-      md5.freeMe();
-    } 
-    // Free the srot object at the end of thread 0 (freeing it too soon will result
-    // problems with the other threads who use the object)
 
-    if (errCnt) return errCnt;
-    break;
-    
-  case 1 : 
-    //
-    // FIR
-    //
-    if (IS_ON(FIR)) {
-      cep_fir fir(seed,verbose);
-      fir.init();      
-      fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");      
-      //
-      maxLoop = 10;
-      init_fir();
-      errCnt += fir.RunFirTest(maxLoop);
-      //
-      fir.freeMe();
-      if (errCnt) return errCnt;
-    } 
-    //
-    // IIR
-    //
-    if (IS_ON(IIR)) {    
-      cep_iir iir(seed,verbose);
-      iir.init();
-      iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");          
-      //
-      maxLoop = 10;
-      init_iir();
-      errCnt += iir.RunIirTest(maxLoop);
-      //
-      iir.freeMe();
-      if (errCnt) return errCnt;
-    } 
-    //
-    // SHA256
-    //
-    if (IS_ON(SHA256)) {
-      cep_sha256 sha256(seed,verbose);
-      sha256.init();
-      sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
-      //
-      maxLoop = 32;
-      init_sha256();
-      errCnt += sha256.RunSha256Test(maxLoop);
-      //
-      sha256.freeMe();
-      if (errCnt) return errCnt;
-    } 
-
-    break;
-
-  case 2:
-    //
-    // GPS
-    //
-    if (IS_ON(GPS)) {
-      cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
-      gps.init();  
-      gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
-      //
-      maxLoop  = 38;
-      init_gps();
-      errCnt += gps.RunGpsTest(maxLoop);
-      //
-      gps.freeMe();
-      if (errCnt) return errCnt;    
-    } 
-    //
-    // DFT & IDFT
-    //
-    if (IS_ON(DFT)) {
-      cep_dft dft(seed,verbose);
-      dft.init();
-      dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");          
-      //
-      maxLoop = 10;
-      init_dft();
-      errCnt += dft.RunDftTest(maxLoop);
-      //
-      dft.freeMe();
-    } 
-    if (errCnt) return errCnt;    
-    break;
+  // Instantiate and initialize an SRoT object
+  cep_srot srot(SROT_INDEX, CEP_VERSION_REG_INDEX, verbose);
   
-  case 3:
-    //
-    // RSA
-    //
-    if (IS_ON(RSA)) {
-      cep_rsa rsa(seed,verbose);
-      rsa.init();
-      rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
-      //
-      maxLoop = 4;
-      int maxBytes  = 8;
+  srot.SetCpuActiveMask(cpuActiveMask);
+  srot.SetSrotFlag(captureOn);
+  srot.SetCoreMask(coreMask);
 
-      init_rsa();
-      if (!errCnt) {errCnt += rsa.RunRsaTest(maxLoop, 8);}  // Max Msg/Mod Size = 8 bytes
-//      if (!errCnt) {errCnt += rsa.RunRsaMemTest(0xf, 1024);}}     // 8K bits
-      rsa.freeMe();
+  // Initialize the LLKI (One a single core will perform this function)
+  errCnt += srot.LLKI_Setup(cpuId);
+  
+  if (errCnt) return errCnt;
 
-    } 
-    if (errCnt) return errCnt;    
-    break;
+  int maxCoreIndex = CEP_LLKI_CORES;
 
-  } // switch (cpuId)
-  srot.freeMe();  
+  for (int coreIndex = 0; coreIndex < maxCoreIndex; coreIndex ++) {
+    cep_core_info_t core = cep_core_info[coreIndex];
+    core_type_t coreType = core.type;
+    if (IS_ON(coreIndex) && core.enabled) {
+      switch (coreType) {
+      case AES_CORE :
+        //
+        // AES
+        //
+        if (cpuId == 0) {
+          cep_aes aes(coreIndex,seed,verbose);
+          aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");
+
+          maxLoop =  200;
+          errCnt += aes.RunAes192Test(maxLoop);
+
+          aes.freeMe();
+        }
+      break;
+      case DES3_CORE:
+        //
+        // DES3
+        //
+        if (cpuId == 0) {
+          cep_des3 des3(coreIndex,seed,verbose);
+          des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");
+
+          maxLoop = 150;
+          errCnt += des3.RunDes3Test(maxLoop);
+
+          des3.freeMe();
+        } 
+      break;
+      case MD5_CORE:
+        //
+        // MD5
+        //
+        if (cpuId == 0) {
+          cep_md5 md5(coreIndex,seed,verbose);
+          md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");
+
+          maxLoop = 32;
+          errCnt += md5.RunMd5Test(maxLoop);
+
+          md5.freeMe();
+        } 
+      break;
+      case FIR_CORE:
+        //
+        // FIR
+        //
+        if (cpuId == 1) {
+          cep_fir fir(coreIndex,seed,verbose);
+          fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");
+
+          maxLoop = 10;
+          errCnt += fir.RunFirTest(maxLoop);
+
+          fir.freeMe();
+        }
+      break;
+      case IIR_CORE:
+        //
+        // IIR
+        //
+        if (cpuId == 1) {
+          cep_iir iir(coreIndex,seed,verbose);
+          iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");
+
+          maxLoop = 10;
+          errCnt += iir.RunIirTest(maxLoop);
+
+          iir.freeMe();
+        } 
+      break;
+      case SHA256_CORE:
+        //
+        // SHA256
+        //
+        if (cpuId == 1) {
+          cep_sha256 sha256(coreIndex,seed,verbose);
+          sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");
+
+          maxLoop = 32;
+          errCnt += sha256.RunSha256Test(maxLoop);
+
+          sha256.freeMe();
+        } 
+      break;
+      case GPS_CORE:
+        //
+        // GPS
+        //
+        if (cpuId == 2) {
+          cep_gps gps(coreIndex,seed,verbose);
+          gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");
+
+          maxLoop  = 38;
+          errCnt += gps.RunGpsTest(maxLoop);
+
+          gps.freeMe();
+        } 
+      break;
+      case DFT_CORE:
+        //
+        // DFT
+        //
+        if (cpuId == 2) {
+          cep_dft dft(coreIndex,seed,verbose);
+          dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");
+
+          maxLoop = 10;
+          errCnt += dft.RunDftTest(maxLoop);
+
+          dft.freeMe();
+        }
+      break;
+      case IDFT_CORE:
+        //
+        // IDFT
+        //
+        if (cpuId == 2) {
+          cep_idft idft(coreIndex,seed,verbose);
+          idft.SetCaptureMode(captureOn,"../../drivers/vectors","idft");
+
+          maxLoop = 10;
+          errCnt += idft.RunIdftTest(maxLoop);
+
+          idft.freeMe();
+        }
+      
+      break;
+      case RSA_CORE:
+        //
+        // RSA
+        //
+        if (cpuId == 3) {
+          cep_rsa rsa(coreIndex,seed,verbose);
+          rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");
+
+          maxLoop = 4;
+          errCnt += rsa.RunRsaTest(maxLoop,8);
+
+          rsa.freeMe();
+        }
+        break;
+
+      } // switch (cpuId)
+      if (errCnt) return errCnt;
+    } // if isOn(coreIndex)
+  } // for (coreIndex)
+
+  srot.freeMe();
 
 // else do nothing
 #endif
   return errCnt;
 }
 
-//
+// 
 // =============================
 // With bad keys
 // =============================
 //
-int cepMacroMix_runBadKeysTest(int cpuId, int mask, int seed, int verbose) {
+int cepMacroMix_runBadKeysTest(int cpuId, int cpuActiveMask, int coreMask, int seed, int verbose) {
   //
   int errCnt = 0;
 
+// Do nothing in Bare Mode
 #ifndef BARE_MODE
-  //
-  //
-  int captureOn = 0; //  no capturing!!!
+
+  // No capturing for this test
+  int captureOn = 0;
   int maxLoop;
-  //
-  //
-  // do the LLKI unlock here
-  //
-  cep_srot srot(verbose);
-  srot.SetCpuActiveMask(mask);
-  srot.SetSrotFlag(captureOn);
-  srot.LLKI_invertKey(1); // all test should fails!!
-  errCnt += srot.LLKI_Setup(cpuId);
-  if (errCnt) return errCnt;
-  //
-  //
-  switch (cpuId) {
-  case 0 : {
-    //
-    // AES
-    //    
-    cep_aes aes(seed,verbose);
-    aes.init();
-    aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");      
-    aes.SetExpErr(1);
-    //
-    maxLoop =  2;
-    init_aes();
-    errCnt += aes.RunAes192Test(maxLoop);
-    //
-    aes.freeMe();
-    srot.DisableLLKI(AES_BASE_K); // use as KeyIndex
-    //
-    CHECK4ERR(errCnt,"aes");
-    //
-    // DES3
-    //
-    cep_des3 des3(seed,verbose);
-    des3.init();      
-    des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");      
-    des3.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_des3();
-    errCnt += des3.RunDes3Test(maxLoop);
-    //
-    des3.freeMe();
-    srot.DisableLLKI(DES3_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"des3");
-    //
-    // MD5
-    //
-    cep_md5 md5(seed,verbose);
-    md5.init();
-    md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");          
-    md5.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_md5();
-    errCnt += md5.RunMd5Test(maxLoop);
-    //
-    md5.freeMe();
-    srot.DisableLLKI(MD5_BASE_K); // use as KeyIndex
-    // Free the srot object at the end of thread 0 (freeing it too soon will result
-    // problems with the other threads who use the object)
-    CHECK4ERR(errCnt,"md5");
-    break;
-  }
-    
-  case 1 : {
-    //
-    // IIR
-    //    
-    cep_iir iir(seed,verbose);
-    iir.init();
-    iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");          
-    iir.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_iir();
-    errCnt += iir.RunIirTest(maxLoop);
-    //
-    iir.freeMe();
-    srot.DisableLLKI(IIR_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"iir");
-    //
-    // FIR
-    //
-    cep_fir fir(seed,verbose);
-    fir.init();      
-    fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");      
-    fir.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_fir();
-    errCnt += fir.RunFirTest(maxLoop);
-    //
-    fir.freeMe();
-    srot.DisableLLKI(FIR_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"fir");
-
-    //
-    // SHA256
-    //
-    cep_sha256 sha256(seed,verbose);
-    sha256.init();
-    sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");          
-    sha256.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_sha256();
-    errCnt += sha256.RunSha256Test(maxLoop);
-    //
-    sha256.freeMe();
-    srot.DisableLLKI(SHA256_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"sha256");
-
-    break;
-  }
-
-  case 2: {
-    //
-    // GPS
-    //
-    cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
-    gps.init();  
-    gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");  
-    gps.SetExpErr(1);
-    //
-    maxLoop  = 2;
-    init_gps();
-    errCnt += gps.RunGpsTest(maxLoop);
-    //
-    gps.freeMe();
-    srot.DisableLLKI(GPS_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"gps");
-    //
-    // DFT & IDFT
-    //
-    cep_dft dft(seed,verbose);
-    dft.init();
-    dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");          
-    dft.SetExpErr(1);
-    //
-    maxLoop = 2;
-    init_dft();
-    errCnt += dft.RunDftTest(maxLoop);
-    //
-    dft.freeMe();
-    srot.DisableLLKI(DFT_BASE_K); // use as KeyIndex
-    srot.DisableLLKI(IDFT_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"dft");
-    break;
-  }
   
-  case 3: {
-    //
-    // RSA
-    //
-    cep_rsa rsa(seed,verbose);
-    rsa.init();
-    rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");      
-    rsa.SetExpErr(1);
-    //
-    maxLoop = 2;
-    int maxBytes=8;
-    //
-    init_rsa();
-    if (!errCnt)  {    
-      errCnt += rsa.RunRsaTest(maxLoop,maxBytes);
-    }
-    //
-    rsa.freeMe();
-    srot.DisableLLKI(RSA_BASE_K); // use as KeyIndex
-    CHECK4ERR(errCnt,"rsa");
-    break;
-  }
+  // Instantiate and initialize an SRoT object
+  cep_srot srot(SROT_INDEX, CEP_VERSION_REG_INDEX, verbose);
+  
+  srot.SetCpuActiveMask(cpuActiveMask);
+  srot.SetSrotFlag(captureOn);
+  srot.SetCoreMask(coreMask);
+  srot.LLKI_invertKey(1);     // all test should fails!!
 
-  } // switch (cpuId)
-  srot.freeMe();    
+  // Initialize the LLKI (One a single core will perform this function)
+  errCnt += srot.LLKI_Setup(cpuId);
+
+  if (errCnt) return errCnt;
+
+  int maxCoreIndex = CEP_LLKI_CORES;
+
+  for (int coreIndex = 0; coreIndex < maxCoreIndex; coreIndex ++) {
+    cep_core_info_t core = cep_core_info[coreIndex];
+    core_type_t coreType = core.type;
+    if (IS_ON(coreIndex) && core.enabled) {
+      switch (coreType) {
+      case AES_CORE :
+        //
+        // AES
+        //
+        if (cpuId == 0) {
+          cep_aes aes(coreIndex,seed,verbose);
+          aes.SetCaptureMode(captureOn,"../../drivers/vectors","aes");
+          aes.SetExpErr(1);
+
+          maxLoop =  2;
+          errCnt += aes.RunAes192Test(maxLoop);
+
+          aes.freeMe();
+
+          CHECK4ERR(errCnt,"aes");
+        }
+      break;
+      case DES3_CORE:
+        //
+        // DES3
+        //
+        if (cpuId == 0) {
+          cep_des3 des3(coreIndex,seed,verbose);
+          des3.SetCaptureMode(captureOn,"../../drivers/vectors","des3");
+          des3.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += des3.RunDes3Test(maxLoop);
+
+          des3.freeMe();
+
+          CHECK4ERR(errCnt,"des3");
+        } 
+      break;
+      case MD5_CORE:
+        //
+        // MD5
+        //
+        if (cpuId == 0) {
+          cep_md5 md5(coreIndex,seed,verbose);
+          md5.SetCaptureMode(captureOn,"../../drivers/vectors","md5");
+          md5.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += md5.RunMd5Test(maxLoop);
+
+          md5.freeMe();
+
+          CHECK4ERR(errCnt,"md5");
+        } 
+      break;
+      case FIR_CORE:
+        //
+        // FIR
+        //
+        if (cpuId == 1) {
+          cep_fir fir(coreIndex,seed,verbose);
+          fir.SetCaptureMode(captureOn,"../../drivers/vectors","fir");
+          fir.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += fir.RunFirTest(maxLoop);
+
+          fir.freeMe();
+
+          CHECK4ERR(errCnt,"fir");
+        }
+      break;
+      case IIR_CORE:
+        //
+        // IIR
+        //
+        if (cpuId == 1) {
+          cep_iir iir(coreIndex,seed,verbose);
+          iir.SetCaptureMode(captureOn,"../../drivers/vectors","iir");
+          iir.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += iir.RunIirTest(maxLoop);
+
+          iir.freeMe();
+
+          CHECK4ERR(errCnt,"iir");
+        } 
+      break;
+      case SHA256_CORE:
+        //
+        // SHA256
+        //
+        if (cpuId == 1) {
+          cep_sha256 sha256(coreIndex,seed,verbose);
+          sha256.SetCaptureMode(captureOn,"../../drivers/vectors","sha256");
+          sha256.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += sha256.RunSha256Test(maxLoop);
+
+          sha256.freeMe();
+
+          CHECK4ERR(errCnt,"sha256");
+        } 
+      break;
+      case GPS_CORE:
+        //
+        // GPS
+        //
+        if (cpuId == 2) {
+          cep_gps gps(coreIndex,seed,verbose);
+          gps.SetCaptureMode(captureOn,"../../drivers/vectors","gps");
+          gps.SetExpErr(1);
+
+          maxLoop  = 2;
+          errCnt += gps.RunGpsTest(maxLoop);
+
+          gps.freeMe();
+
+          CHECK4ERR(errCnt,"gps");
+        } 
+      break;
+      case DFT_CORE:
+        //
+        // DFT
+        //
+        if (cpuId == 2) {
+          cep_dft dft(coreIndex,seed,verbose);
+          dft.SetCaptureMode(captureOn,"../../drivers/vectors","dft");
+          dft.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += dft.RunDftTest(maxLoop);
+
+          dft.freeMe();
+
+          CHECK4ERR(errCnt,"dft");
+        }
+      break;
+      case IDFT_CORE:
+        //
+        // IDFT
+        //
+        if (cpuId == 2) {
+          cep_idft idft(coreIndex,seed,verbose);
+          idft.SetCaptureMode(captureOn,"../../drivers/vectors","idft");
+          idft.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += idft.RunIdftTest(maxLoop);
+
+          idft.freeMe();
+
+          CHECK4ERR(errCnt,"idft");
+        }
+      
+      break;
+      case RSA_CORE:
+        //
+        // RSA
+        //
+        if (cpuId == 3) {
+          cep_rsa rsa(coreIndex,seed,verbose);
+          rsa.SetCaptureMode(captureOn,"../../drivers/vectors","rsa");
+          rsa.SetExpErr(1);
+
+          maxLoop = 2;
+          errCnt += rsa.RunRsaTest(maxLoop,8);
+
+          rsa.freeMe();
+
+          CHECK4ERR(errCnt,"rsa");
+        }
+        break;
+
+      } // switch (cpuId)
+      if (errCnt) return errCnt;
+    } // if isOn(coreIndex)
+  } // for (coreIndex)
+
+  srot.freeMe();
+
 // else do nothing
 #endif
-  //
-
   return errCnt;
 }
-

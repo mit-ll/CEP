@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_aes.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -29,8 +29,8 @@
 //
 //
 
-cep_aes::cep_aes(int seed, int verbose) {
-  init();
+cep_aes::cep_aes(int coreIndex, int seed, int verbose) {
+  init(coreIndex);
   //
   SetKeySize(192/8);
   SetBlockSize(128/8);
@@ -72,7 +72,7 @@ void cep_aes::LoadKey(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mKEY[i*8 + j];      
     }
-    cep_writeNcapture(AES_BASE_K, AES_KEY_BASE + (i * BYTES_PER_WORD), word);
+    cep_writeNcapture(AES_KEY_BASE + (i * BYTES_PER_WORD), word);
   }
 #else
   for(int i = 0; i < mKeySize/8; i++) { //  8-bytes/word
@@ -80,7 +80,7 @@ void cep_aes::LoadKey(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mKEY[i*8 + j];      
     }
-    cep_writeNcapture(AES_BASE_K, AES_KEY_BASE + (((AES_KEY_WORDS - 1) - i) * BYTES_PER_WORD), word);
+    cep_writeNcapture(AES_KEY_BASE + (((AES_KEY_WORDS - 1) - i) * BYTES_PER_WORD), word);
   }
 #endif
 }
@@ -94,7 +94,7 @@ void cep_aes::LoadPlaintext(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mHwPt[i*8 + j];      
     }
-    cep_writeNcapture(AES_BASE_K, AES_PT_BASE + (i* BYTES_PER_WORD), word);
+    cep_writeNcapture(AES_PT_BASE + (i* BYTES_PER_WORD), word);
   }  
 #else
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
@@ -102,24 +102,24 @@ void cep_aes::LoadPlaintext(void) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)mHwPt[i*8 + j];      
     }
-    cep_writeNcapture(AES_BASE_K, AES_PT_BASE + (((AES_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), word);
+    cep_writeNcapture(AES_PT_BASE + (((AES_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), word);
   }
 #endif
   
 }
 
 void cep_aes::StartEncrypt(void) {
-  cep_writeNcapture(AES_BASE_K, AES_START, 0x1);
-  cep_writeNcapture(AES_BASE_K, AES_START, 0x0);
+  cep_writeNcapture(AES_START, 0x1);
+  cep_writeNcapture(AES_START, 0x0);
 }
 
 int cep_aes::waitTilDone(int maxTO) {
 #if 1
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(AES_BASE_K, AES_DONE, 2, maxTO);
+  return cep_readNspin(AES_DONE, 2, maxTO);
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(AES_BASE_K, AES_DONE)) break;
+    if (cep_readNcapture(AES_DONE)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -130,14 +130,14 @@ void cep_aes::ReadCiphertext(void) {
   uint64_t word;
 #ifdef BIG_ENDIAN
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(AES_BASE_K, AES_CT_BASE +(i * BYTES_PER_WORD));
+    word = cep_readNcapture(AES_CT_BASE +(i * BYTES_PER_WORD));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
   }  
 #else
   for(int i = 0; i < mBlockSize/8; i++) { //  8-bytes/word
-    word = cep_readNcapture(AES_BASE_K, AES_CT_BASE +(((AES_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD));
+    word = cep_readNcapture(AES_CT_BASE +(((AES_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
@@ -163,10 +163,10 @@ int cep_aes::RunAes192Test(int maxLoop) {
     //
     if (i < 256) {
       for (int j=0;j<GetKeySize();j++) {
-	mKEY[j] = (i&1) ? ((i+j) & 0xFF) : (~(i+j) & 0xFF);
+        mKEY[j] = (i&1) ? ((i+j) & 0xFF) : (~(i+j) & 0xFF);
       }
       for (int j=0;j<GetBlockSize();j++) {
-	mHwPt[j] = (i&1) ? (~(i+GetKeySize()+j) & 0xFF) : ((i+GetKeySize()+j) & 0xFF);
+        mHwPt[j] = (i&1) ? (~(i+GetKeySize()+j) & 0xFF) : ((i+GetKeySize()+j) & 0xFF);
       }
     } else {
       // just randomize

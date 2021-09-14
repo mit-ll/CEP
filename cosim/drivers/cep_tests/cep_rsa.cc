@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_rsa.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -41,8 +41,8 @@
 #define SetModSize  SetBlockSize
 #define GetModSize  GetBlockSize
 
-cep_rsa::cep_rsa(int seed, int verbose) {
-  init();  
+cep_rsa::cep_rsa(int coreIndex, int seed, int verbose) {
+  init(coreIndex);
   SetSeed(seed);
   SetVerbose(verbose);
   SetAddZeros(1);       // 32bit become 32+32, etc..
@@ -85,8 +85,8 @@ void cep_rsa::LoadMessage(uint8_t *msg, int msgBytes, int wrEn) {
   int j=0;
   if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }
   // 
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 1<<MESSAGE_MEM_API_RST);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
+  cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , 1<<MESSAGE_MEM_API_RST);
+  cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
   //
   if (wrEn) {
     if (GetAddZeros()) wCnt++;
@@ -99,20 +99,20 @@ void cep_rsa::LoadMessage(uint8_t *msg, int msgBytes, int wrEn) {
 	j += 4;
       }
       //
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_DATA , word);
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , (1 << MESSAGE_MEM_API_CS) | (wrEn<<MESSAGE_MEM_API_WR));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_MESSAGE_DATA , word);
+      cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , (1 << MESSAGE_MEM_API_CS) | (wrEn<<MESSAGE_MEM_API_WR));
+      cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
     }
   } else {
     // readback for checking
     for (int i=0; i<wCnt;i++) {
       // read from current
-      word = cep_readNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_DATA); // bit[63:32] are read data
+      word = cep_readNcapture(RSA_ADDR_MESSAGE_DATA); // bit[63:32] are read data
       Word2Byte(word>>32,&(msg[j]));
       j += 4;
       // issue for next
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , (1 << MESSAGE_MEM_API_CS));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , (1 << MESSAGE_MEM_API_CS));
+      cep_writeNcapture(RSA_ADDR_MESSAGE_CTRL , 0x0000000000000000);
     }
   }
 }
@@ -126,8 +126,8 @@ void cep_rsa::LoadModulus(uint8_t *modulus, int modulusBytes, int wrEn) {
   int j=0;
   if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }  
   // 
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 1<<MODULUS_MEM_API_RST);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
+  cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , 1<<MODULUS_MEM_API_RST);
+  cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
   //
   if (wrEn) {
     if (GetAddZeros()) wCnt++;  
@@ -138,20 +138,20 @@ void cep_rsa::LoadModulus(uint8_t *modulus, int modulusBytes, int wrEn) {
 	word = Byte2Word(&(modulus[j]));    
 	j += 4;
       }
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_DATA , word);
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , (1 << MODULUS_MEM_API_CS) | (wrEn<<MODULUS_MEM_API_WR));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_MODULUS_DATA , word);
+      cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , (1 << MODULUS_MEM_API_CS) | (wrEn<<MODULUS_MEM_API_WR));
+      cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
     }
-    cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_LENGTH  , wCnt);
+    cep_writeNcapture(RSA_ADDR_MODULUS_LENGTH  , wCnt);
   } else {
     for (int i=0; i<wCnt;i++) {    
       // read from current
-      word = cep_readNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_DATA); // bit[63:32] are read data
+      word = cep_readNcapture(RSA_ADDR_MODULUS_DATA); // bit[63:32] are read data
       Word2Byte(word>>32,&(modulus[j]));
       j += 4;
       // issue for next
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , (1 << MODULUS_MEM_API_CS));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , (1 << MODULUS_MEM_API_CS));
+      cep_writeNcapture(RSA_ADDR_MODULUS_CTRL , 0x0000000000000000);
     }
   }
 }
@@ -165,8 +165,8 @@ void cep_rsa::LoadExponent(uint8_t *exponent, int exponentBytes, int wrEn) {
   int j=0;
   if (GetVerbose(2)) { LOGI("%s wCnt=%d\n",__FUNCTION__,wCnt); }    
   // 
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 1<<EXPONENT_MEM_API_RST);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
+  cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , 1<<EXPONENT_MEM_API_RST);
+  cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
   //
   // add 32-bits in front to extend the size!!
   //
@@ -175,25 +175,25 @@ void cep_rsa::LoadExponent(uint8_t *exponent, int exponentBytes, int wrEn) {
       word = Byte2Word(&(exponent[j]));        
       j += 4;
       //
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_DATA , word);
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , (1 << EXPONENT_MEM_API_CS) | (wrEn<<EXPONENT_MEM_API_WR));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_EXPONENT_DATA , word);
+      cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , (1 << EXPONENT_MEM_API_CS) | (wrEn<<EXPONENT_MEM_API_WR));
+      cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
     }
     int bitCnt = exponentBytes*8;
     if (GetUseExpBits()) {
       bitCnt = CountExpBits(exponent,exponentBytes);
     }
-    cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_LENGTH  , bitCnt); // wCnt*32);    
+    cep_writeNcapture(RSA_ADDR_EXPONENT_LENGTH  , bitCnt); // wCnt*32);    
   }
   else {
     for (int i=0; i<wCnt;i++) {    
       // read from current
-      word = cep_readNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_DATA); // bit[63:32] are read data
+      word = cep_readNcapture(RSA_ADDR_EXPONENT_DATA); // bit[63:32] are read data
       Word2Byte(word>>32,&(exponent[j]));
       j += 4;
       // next
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , (1 << EXPONENT_MEM_API_CS));
-      cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
+      cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , (1 << EXPONENT_MEM_API_CS));
+      cep_writeNcapture(RSA_ADDR_EXPONENT_CTRL , 0x0000000000000000);
     }
   }
 }
@@ -207,14 +207,14 @@ void cep_rsa::ReadResult(uint8_t *result, int resultBytes) {
   int j=0;
   if (GetVerbose(2)) { LOGI("%s: wCnt=%d\n",__FUNCTION__,wCnt); }  
   // 
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , 1<<RESULT_MEM_API_RST);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , 0x0000000000000000);
+  cep_writeNcapture(RSA_ADDR_RESULT_CTRL , 1<<RESULT_MEM_API_RST);
+  cep_writeNcapture(RSA_ADDR_RESULT_CTRL , 0x0000000000000000);
   //
   if (GetAddZeros()) wCnt++; 
   for (int i=0; i<wCnt;i++) {
-    cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , (1 << RESULT_MEM_API_CS));
-    cep_writeNcapture(RSA_BASE_K, RSA_ADDR_RESULT_CTRL , 0);
-    word = cep_readNcapture(RSA_BASE_K, RSA_ADDR_RESULT_DATA);
+    cep_writeNcapture(RSA_ADDR_RESULT_CTRL , (1 << RESULT_MEM_API_CS));
+    cep_writeNcapture(RSA_ADDR_RESULT_CTRL , 0);
+    word = cep_readNcapture(RSA_ADDR_RESULT_DATA);
     if (!GetAddZeros() || (GetAddZeros() && (i > 0))) {
       Word2Byte(word,&(result[j]));
       //
@@ -225,13 +225,13 @@ void cep_rsa::ReadResult(uint8_t *result, int resultBytes) {
 
 void cep_rsa::Start(void) {
   if (GetVerbose(2)) { LOGI("%s\n",__FUNCTION__); }  
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000002);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_CTRL            , 0x0000000000000000);
+  cep_writeNcapture(RSA_ADDR_CTRL            , 0x0000000000000002);
+  cep_writeNcapture(RSA_ADDR_CTRL            , 0x0000000000000000);
 }
 
 int cep_rsa::waitTilDone(int maxTO) {
   if (GetVerbose(2)) { LOGI("%s: to=%d\n",__FUNCTION__,maxTO); }
-    return cep_readNspin(RSA_BASE_K, RSA_ADDR_STATUS, 1, maxTO);
+  return cep_readNspin(RSA_ADDR_STATUS, 1, maxTO);
 }
 
 // Use Crypto++ to compute c = m^e mod n;
@@ -436,10 +436,10 @@ int cep_rsa::RunRsaMemTest(int memMask, int sizeInBytes) {
   //
   // Just for coverage
   //
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_LENGTH  , -1);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_EXPONENT_LENGTH  ,  0);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_LENGTH   , -1);
-  cep_writeNcapture(RSA_BASE_K, RSA_ADDR_MODULUS_LENGTH   ,  0);  
+  cep_writeNcapture(RSA_ADDR_EXPONENT_LENGTH  , -1);
+  cep_writeNcapture(RSA_ADDR_EXPONENT_LENGTH  ,  0);
+  cep_writeNcapture(RSA_ADDR_MODULUS_LENGTH   , -1);
+  cep_writeNcapture(RSA_ADDR_MODULUS_LENGTH   ,  0);  
   //
   // Modulus memory
   //

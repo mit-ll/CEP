@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_idft.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -27,12 +27,12 @@ class cep_idft : public cep_crypto {
 public: //
   // constructors
   //
-  cep_idft(int seed, int verbose);  
+  cep_idft(int coreIndex, int seed, int verbose);  
   ~cep_idft(); 
 
   int RunIdftTest(int maxLoop);
 
- protected:
+protected:
   void adjust_float(double *rl, double *img, int length);
   void adjust_fixp(fixp16 *rl, fixp16 *img, int length);
   void do_idft(const double *rIn, const double *iIn, double *rOut, double *iOut, int len);
@@ -42,7 +42,7 @@ public: //
   void idft_getY(double *rbuf, double *ibuf, int len) ;
   void idft_Start(void) ;
   int idft_waitTilDone(int maxTO);
-  int idft_CheckSamples(int startIdx,int samCnt) ;  
+  int idft_CheckSamples(int lpCnt, int startIdx,int samCnt) ;
   //
   double mRin[MAX_DFT_SAMPLES];
   double mIin[MAX_DFT_SAMPLES];
@@ -51,11 +51,11 @@ public: //
   double mIexp[MAX_DFT_SAMPLES];
   double mRact[MAX_DFT_SAMPLES];
   double mIact[MAX_DFT_SAMPLES];    
-
   
   // tolerance in percentage
   int mRTolerance;
   int mITolerance;  
+
 };
 
 //

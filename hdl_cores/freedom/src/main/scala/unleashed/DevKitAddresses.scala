@@ -29,12 +29,33 @@ object CEPBaseAddresses {
       val md5_llki_sendrecv_addr    = 0x70018008L
     val md5_llki_depth              = 0x000000ffL
 
-    val sha256_base_addr            = 0x70020000L
-    val sha256_depth                = 0x000000FFL
-    val sha256_llki_base_addr       = 0x70028000L
-      val sha256_llki_ctrlsts_addr  = 0x70028000L
-      val sha256_llki_sendrecv_addr = 0x70028008L
-    val sha256_llki_depth           = 0x000000ffL
+    val sha256_0_base_addr            = 0x70020000L
+    val sha256_0_depth                = 0xFFL
+    val sha256_0_llki_base_addr       = 0x70020800L
+      val sha256_0_llki_ctrlsts_addr  = 0x70020800L
+      val sha256_0_llki_sendrecv_addr = 0x70020808L
+    val sha256_0_llki_depth           = 0xFFL
+
+    val sha256_1_base_addr            = 0x70021000L
+    val sha256_1_depth                = 0xFFL
+    val sha256_1_llki_base_addr       = 0x70021800L
+      val sha256_1_llki_ctrlsts_addr  = 0x70021800L
+      val sha256_1_llki_sendrecv_addr = 0x70021808L
+    val sha256_1_llki_depth           = 0xFFL
+
+    val sha256_2_base_addr            = 0x70022000L
+    val sha256_2_depth                = 0xFFL
+    val sha256_2_llki_base_addr       = 0x70022800L
+      val sha256_2_llki_ctrlsts_addr  = 0x70022800L
+      val sha256_2_llki_sendrecv_addr = 0x70022808L
+    val sha256_2_llki_depth           = 0xFFL
+
+    val sha256_3_base_addr            = 0x70023000L
+    val sha256_3_depth                = 0xFFL
+    val sha256_3_llki_base_addr       = 0x70023800L
+      val sha256_3_llki_ctrlsts_addr  = 0x70023800L
+      val sha256_3_llki_sendrecv_addr = 0x70023808L
+    val sha256_3_llki_depth           = 0xFFL
 
     val rsa_base_addr               = 0x70030000L
     val rsa_depth                   = 0x000000FFL
@@ -78,12 +99,36 @@ object CEPBaseAddresses {
       val iir_llki_sendrecv_addr    = 0x70088008L
     val iir_llki_depth              = 0x000000ffL
 
-    val gps_base_addr               = 0x70090000L
-    val gps_depth                   = 0x000000FFL
-    val gps_llki_base_addr          = 0x70098000L
-      val gps_llki_ctrlsts_addr     = 0x70098000L
-      val gps_llki_sendrecv_addr    = 0x70098008L
-    val gps_llki_depth              = 0x000000ffL
+
+    val gps_0_base_addr             = 0x70090000L
+    val gps_0_depth                 = 0xFFL
+    val gps_0_llki_base_addr        = 0x70090800L
+      val gps_0_llki_ctrlsts_addr   = 0x70090800L
+      val gps_0_llki_sendrecv_addr  = 0x70090808L
+    val gps_0_llki_depth            = 0xFFL
+
+    val gps_1_base_addr             = 0x70091000L
+    val gps_1_depth                 = 0xFFL
+    val gps_1_llki_base_addr        = 0x70091800L
+      val gps_1_llki_ctrlsts_addr   = 0x70091800L
+      val gps_1_llki_sendrecv_addr  = 0x70091808L
+    val gps_1_llki_depth            = 0xFFL
+
+    val gps_2_base_addr             = 0x70092000L
+    val gps_2_depth                 = 0xFFL
+    val gps_2_llki_base_addr        = 0x70092800L
+      val gps_2_llki_ctrlsts_addr   = 0x70092800L
+      val gps_2_llki_sendrecv_addr  = 0x70092808L
+    val gps_2_llki_depth            = 0xFFL
+
+    val gps_3_base_addr             = 0x70093000L
+    val gps_3_depth                 = 0xFFL
+    val gps_3_llki_base_addr        = 0x70093800L
+      val gps_3_llki_ctrlsts_addr   = 0x70093800L
+      val gps_3_llki_sendrecv_addr  = 0x70093808L
+    val gps_3_llki_depth            = 0xFFL
+
+
   val cep_cores_depth               = 0x000FFFFFL
   
   val cepregs_base_addr             = 0x700F0000L

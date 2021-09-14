@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -61,14 +61,18 @@ public: //
   // To support capturing for playback in BAREMetal mode and Unit-testbench
   //
   void SetSrotFlag(int mode) { mSrotFlag = mode; } // no write to file
-  void SetCaptureMode(int mode, const char *path, const char *testName);  
-  void cep_writeNcapture(int device, uint32_t pAddress, uint64_t pData);
-  uint64_t cep_readNcapture(int device, uint32_t pAddress);
-  int cep_readNspin(int device, uint32_t pAddress,uint64_t pData, uint64_t mask, int timeOut);
-  int cep_readNspin(int device, uint32_t pAddress,uint64_t pData, int timeOut);
+  void SetCaptureMode(int mode, const char *path, const char *testName);
+  void cep_writeNcapture(uint32_t pAddress, uint64_t pData);
+  void cep_writeNcapture(int coreIndex, uint32_t pAddress, uint64_t pData);
+  uint64_t cep_readNcapture(uint32_t pAddress);
+  uint64_t cep_readNcapture(int coreIndex, uint32_t pAddress);
+  int cep_readNspin(int coreIndex, uint32_t pAddress,uint64_t pData, uint64_t mask, int timeOut);
+  int cep_readNspin(uint32_t pAddress,uint64_t pData, uint64_t mask, int timeOut);
+  int cep_readNspin(uint32_t pAddress,uint64_t pData, int timeOut);
+  
   void MarkSingle(int loop);
   //
-  void init(void);
+  void init(int coreIndex);
   void freeMe(void);
   //
   
@@ -77,6 +81,7 @@ public: //
   //
  protected:
 
+  int mCoreIndex;
   int mSeed;
   int mVerbose;
   int mKeySize;

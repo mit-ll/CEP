@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_des3.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -21,7 +21,7 @@ class cep_des3 : public cep_crypto {
 public: //
   // constructors
   //
-  cep_des3(int seed, int verbose);  
+  cep_des3(int coreIndex, int seed, int verbose);  
   ~cep_des3(); 
 
   void SetDecrypt(int decrypt) { mDecrypt = decrypt; }
@@ -30,7 +30,7 @@ public: //
   //
   int RunDes3Test(int maxLoop);
 
- protected:
+protected:
   //
   // Routine only supports a single DES block
   //

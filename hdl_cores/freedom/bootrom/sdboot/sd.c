@@ -224,7 +224,7 @@ void print_greeting()
     kputs("       ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-                   "); 
     kputs("       .--:---:-:-::-::`  -::::::::::::::::::.   :::::.                      "); 
     kputs("                                                                             ");
-    kputs("                     Common Evaluation Platform v3.40                        ");
+    kputs("                     Common Evaluation Platform v3.41                        ");
     kputs("         Copyright 2021 Massachusetts Institute of Technology                ");
     kputs("                                                                             ");
     kputs("            Built upon the SiFive Freedom U500 Platform using                ");
@@ -239,6 +239,7 @@ void print_greeting()
     kputs("                                                                             ");
     kputs(" Specific commit links available in the CEP README.md, Release Notes         ");
     kputs("                                                                             ");
+    kputs("");
     kprintf("BootRom Image built on %s %s\n",__DATE__,__TIME__);
     kputs("");
 }

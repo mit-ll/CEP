@@ -1,10 +1,13 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
-// File Name:      
+// File Name:      cep_adrMap.incl
 // Program:        Common Evaluation Platform (CEP)
-// Description:    
+// Description:    Miscellaneous constants and addresses related to 
+//                 CEP items that are not part of the accelerator cores
+//                 as defined in CEP.h.  Converted to cep_adrMap.h via
+//                 a PERL script
 // Notes:          
 //
 //************************************************************************
@@ -296,11 +299,8 @@ Generated Address Map
 //
 `define	reg_base_addr           'h700F_0000
 `define   CEP_VERSION_REG	'h700F_0000
-/*
- 04/10/21 removed, use from auto-extract from scala
-`define CEP_EXPECTED_VERSION 	'h20030000_00000000
-*/
-`define CEP_VERSION_MASK     	'h0FFFFFFF_FFFFFFFF
+`define CEP_VERSION_MASK      'h0FFFFFFF_FFFFFFFF
+
 
 //
 // Test and Set

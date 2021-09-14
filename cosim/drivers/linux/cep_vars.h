@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -70,7 +70,7 @@ typedef enum {
   VAR_CEP_MARKER=-1,
   // ======== BEGIN (must start at 0) ===========
   VAR_curErrCnt,
-  VAR_coreMask,
+  VAR_cpuMask,
   VAR_noCoreLock, // no core lock
   //
   VAR_lockSeed,                  
@@ -82,13 +82,10 @@ typedef enum {
   VAR_quit,                      
   VAR_regress,                   
   VAR_seed,                      
-  VAR_skipInit,
-  VAR_testMask,
+  VAR_coreMask,
   VAR_verbose, 
   VAR_revCheck,
   VAR_longRun,
-  VAR_step,
-  VAR_stop_when_done,
   VAR_filter,
   VAR_detail,
   VAR_xterm,    
@@ -151,7 +148,6 @@ extern "C" {
   int cep_exe_setvar(void);
   int cep_exe_getvar(void);
   int cep_exe_adjvar(void);
-  int cep_exe_monitor(void);
   void cep_set_run_revCheck_func(cep_exe_var_vect_t checkFunc);
   void cep_search_var_and_printAll(char *varName);
   cep_var_info *cep_search_var(char *varName, int *matchFound);

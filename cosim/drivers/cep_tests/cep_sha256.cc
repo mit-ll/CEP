@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_sha256.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -26,8 +26,8 @@
 //
 //
 
-cep_sha256::cep_sha256(int seed, int verbose) {
-  init();
+cep_sha256::cep_sha256(int coreIndex, int seed, int verbose) {
+  init(coreIndex);
   
   SetBlockSize(64);     // 64 bytes
   SetSeed(seed);
@@ -70,7 +70,7 @@ void cep_sha256::LoadInText(uint8_t *buf) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)buf[i*8 + j];      
     }
-    cep_writeNcapture(SHA256_BASE_K, SHA256_MSG_BASE + (i * BYTES_PER_WORD), word);
+    cep_writeNcapture(SHA256_MSG_BASE + (i * BYTES_PER_WORD), word);
   }  
 #else
   for(int i = 0; i < GetBlockSize()/8; i++) { //  8-bytes/word
@@ -78,7 +78,7 @@ void cep_sha256::LoadInText(uint8_t *buf) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)buf[i*8 + j];      
     }
-    cep_writeNcapture(SHA256_BASE_K, SHA256_MSG_BASE + ((7-i) * BYTES_PER_WORD), word);
+    cep_writeNcapture(SHA256_MSG_BASE + ((7-i) * BYTES_PER_WORD), word);
   }
 #endif
 }
@@ -86,21 +86,21 @@ void cep_sha256::LoadInText(uint8_t *buf) {
 void cep_sha256::Start(int firstTime) {
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
   if (firstTime) {
-    cep_writeNcapture(SHA256_BASE_K, SHA256_NEXT_INIT, 0x0000000000000002);
+    cep_writeNcapture(SHA256_NEXT_INIT, 0x0000000000000002);
   } else {
-    cep_writeNcapture(SHA256_BASE_K, SHA256_NEXT_INIT, 0x0000000000000004);    
+    cep_writeNcapture(SHA256_NEXT_INIT, 0x0000000000000004);    
   }
-  cep_writeNcapture(SHA256_BASE_K, SHA256_NEXT_INIT, 0x0000000000000000);    
+  cep_writeNcapture(SHA256_NEXT_INIT, 0x0000000000000000);    
 }
 
 int cep_sha256::waitTilReady(int maxTO) {
 #if 1
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(SHA256_BASE_K, SHA256_READY, 1, maxTO);
+  return cep_readNspin(SHA256_READY, 1, maxTO);
 #else
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
   while (maxTO > 0) {
-    if (cep_readNcapture(SHA256_BASE_K, SHA256_READY)) break;
+    if (cep_readNcapture(SHA256_READY)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -110,11 +110,11 @@ int cep_sha256::waitTilReady(int maxTO) {
 int cep_sha256::waitTilDone(int maxTO) {
 #if 1
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(SHA256_BASE_K, SHA256_HASH_DONE, 1, maxTO);
+  return cep_readNspin(SHA256_HASH_DONE, 1, maxTO);
 #else
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }    
   while (maxTO > 0) {
-    if (cep_readNcapture(SHA256_BASE_K, SHA256_HASH_DONE)) break;
+    if (cep_readNcapture(SHA256_HASH_DONE)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -126,14 +126,14 @@ void cep_sha256::ReadOutText(void) {
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }
 #ifdef BIG_ENDIAN
   for(int i = 0; i < 4; i++) { //  256-bits=32
-    word = cep_readNcapture(SHA256_BASE_K, SHA256_HASH_BASE + (i*8));
+    word = cep_readNcapture(SHA256_HASH_BASE + (i*8));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
   }  
 #else
   for(int i = 0; i < 4; i++) { //  256-bits=32
-    word = cep_readNcapture(SHA256_BASE_K, SHA256_HASH_BASE + (8*(3-i)));
+    word = cep_readNcapture(SHA256_HASH_BASE + (8*(3-i)));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }

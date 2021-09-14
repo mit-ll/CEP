@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -10,14 +10,9 @@
 //************************************************************************
 
 
+#ifndef cep_H
+#define cep_H
 #include "cep_version.h"
-
-    // CEP Verion String
-/* Tony D. 04/10/21
-   these are auot-extracted from scala file in cep_version.h" above
-    const uint8_t CEP_MAJOR_VERSION = 0x03;
-    const uint8_t CEP_MINOR_VERSION = 0x20;
-*/
 
     // General Constants
     const uint32_t BITS_PER_BYTE    = 8;
@@ -27,50 +22,67 @@
     // Maximum expected name size for the ipCoreData structure
     #define MAX_CONFIG_STRING_K     32
 
-
-    // Indexes used to select the desired core
-    // Also used by the LLKI to identify the core index
-    // that a key is destined for... must match 
-    // the values in LLKI_CORE_INDEX_ARRAY in srot_wrapper.sv,
-    // which is passed down from DevKitsConfig.scala
-    #define AES_BASE_K              0
-    #define MD5_BASE_K              1
-    #define SHA256_BASE_K           2
-    #define RSA_BASE_K              3
-    #define DES3_BASE_K             4
-    #define DFT_BASE_K              5
-    #define IDFT_BASE_K             6
-    #define FIR_BASE_K              7
-    #define IIR_BASE_K              8
-    #define GPS_BASE_K              9
-    #define CEP_VERSION_REG_K       10
-    #define SROT_BASE_K             11
-    // Defines the total number of cores in the CEP
-    #define CEP_TOTAL_CORES         12
+    // Enumerated type that is used by cepMacroMix to know which type of test
+    // to run on the selected core
+    typedef enum core_type_t {
+        AES_CORE,
+        MD5_CORE,
+        SHA256_CORE,
+        RSA_CORE,
+        DES3_CORE,
+        DFT_CORE,
+        IDFT_CORE,
+        FIR_CORE,
+        IIR_CORE,
+        GPS_CORE,
+        CEP_VERSION_CORE,
+        SROT_CORE
+    } core_type_t;
 
     // Structure defining the base address and status
     // of the CEP cores
     typedef struct cep_core_info_t {
         const char      *name;
+        core_type_t     type;
         uint32_t        base_address;
         bool            enabled;
     } cep_core_info_t;
 
+    // Defines the total number of cores in the CEP
+    #define CEP_TOTAL_CORES         18
+
     // Array containing the base addresses and enable status of
-    // all the CEP cores (indexed by the constants above)
+    // all the CEP cores (index in array == core index)
+    // cepMacroMix.cc implementation limits this to 32 total cores.
     const cep_core_info_t cep_core_info[CEP_TOTAL_CORES] = {
-        {"AES",             0x70000000, true},     // AES
-        {"MD5",             0x70010000, true},     // MD5
-        {"SHA256",          0x70020000, true},     // SHA256
-        {"RSA",             0x70030000, true},     // RSA
-        {"DES3",            0x70040000, true},     // DES3
-        {"DFT",             0x70050000, true},     // DFT
-        {"IDFT",            0x70060000, true},     // IDFT
-        {"FIR",             0x70070000, true},     // FIR
-        {"IIR",             0x70080000, true},     // IIR
-        {"GPS",             0x70090000, true},     // GPS
-        {"CEP Version",     0x700F0000, true},     // CEP Version Register
-        {"SROT",            0x70200000, true}};    // SRoT
+        {"AES",         AES_CORE,         0x70000000, true },     // AES
+        {"MD5",         MD5_CORE,         0x70010000, true },     // MD5
+        {"SHA256.0",    SHA256_CORE,      0x70020000, true },     // SHA256 .0
+        {"SHA256.1",    SHA256_CORE,      0x70021000, true },     // SHA256 .1
+        {"SHA256.2",    SHA256_CORE,      0x70022000, true },     // SHA256 .2
+        {"SHA256.3",    SHA256_CORE,      0x70023000, true },     // SHA256 .3
+        {"RSA",         RSA_CORE,         0x70030000, true },     // RSA
+        {"DES3",        DES3_CORE,        0x70040000, true },     // DES3
+        {"DFT",         DFT_CORE,         0x70050000, true },     // DFT
+        {"IDFT",        IDFT_CORE,        0x70060000, true },     // IDFT
+        {"FIR",         FIR_CORE,         0x70070000, true },     // FIR
+        {"IIR",         IIR_CORE,         0x70080000, true },     // IIR
+        {"GPS.0",       GPS_CORE,         0x70090000, true },     // GPS .0
+        {"GPS.1",       GPS_CORE,         0x70091000, true },     // GPS .1
+        {"GPS.2",       GPS_CORE,         0x70092000, true },     // GPS .2
+        {"GPS.3",       GPS_CORE,         0x70093000, true },     // GPS .3
+        {"CEP Version", CEP_VERSION_CORE, 0x700F0000, true },     // CEP Version Register
+        {"SROT",        SROT_CORE,        0x70200000, true }};    // SRoT
+    
+    // Direct indexes of version+SROT "cores"
+    #define CEP_VERSION_REG_INDEX  (CEP_TOTAL_CORES - 2)
+    #define SROT_INDEX             (CEP_TOTAL_CORES - 1)
+   
+
+    // ------------------------------------------------------------------------------------------------------------
+    // The constants below, copied from the original implementations of the CEP
+    // cores, provide constants and offsets for a given core, but not
+    // ------------------------------------------------------------------------------------------------------------
 
     // Constants copied from AES.h
     const uint32_t AES_KEY_BITS     = 192;
@@ -250,11 +262,14 @@
     // Constants related to the Surrogate Root of Trust
     // These constants MUST be equal to those in llki_pkg.sv
     //
+    // Additional, those constants which are addresses (i.e., ***_ADDR) are offsets
+    // within the SRoT memory map.  
+    //
     // Note: Other LLKI related constants/definitions may be found in cep_crypto.h
     // ------------------------------------------------------------------------------------------------------------
-    const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;   // Offset from SROT_BASE_K
+    const uint32_t SROT_KEYINDEXRAM_ADDR            = 0x00000100;   // Offset from SROT base address
     const uint32_t SROT_KEYINDEXRAM_SIZE            = 0x00000020;   // 32 64-bit words
-    const uint32_t SROT_KEYRAM_ADDR                 = 0x00000200;   // Offset from SROT_BASE_K 
+    const uint32_t SROT_KEYRAM_ADDR                 = 0x00000200;   // Offset from SROT base address
                                                                     // Note: This cannot be less than SROT_KEYINDEXRAM_ADDR + (SROT_KEYINDEXRAM_SIZE * 8)!!!
     const uint32_t SROT_KEYRAM_SIZE                 = 0x00000800;   // 2048 64-bit words
 
@@ -270,3 +285,5 @@
     const uint32_t SROT_LLKIC2_SCRATCHPAD1_ADDR     = 0x00000018;
     // ------------------------------------------------------------------------------------------------------------
 
+
+#endif

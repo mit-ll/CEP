@@ -2,7 +2,7 @@
 // Copyright 2021 Massachusetts Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
-// File Name:      
+// File Name:      log.cc
 // Program:        Common Evaluation Platform (CEP)
 // Description:    
 // Notes:          
@@ -18,6 +18,7 @@
 
 // FIXME!!!
 int debug_mode = 0;
+
 #include <unistd.h>
 #include "VecVal.h"
 #include "shIpc.h"

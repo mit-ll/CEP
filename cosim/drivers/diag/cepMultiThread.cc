@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -34,6 +34,7 @@
 #include "cep_fir.h"
 #include "cep_iir.h"
 #include "cep_dft.h"
+#include "cep_idft.h"
 #include "cep_rsa.h"
 #include "cep_srot.h"
 
@@ -120,7 +121,7 @@ int cepMultiThread_releaseTestLock(int thrId, int testId,uint64_t testLockPtr)
 //
 // SRoT
 //
-int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int coreMask, int verbose) 
+int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int cpuActiveMask, int verbose) 
 {
         //
     int errCnt =0;
@@ -132,8 +133,8 @@ int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int coreMa
         DUT_WRITE32_64(testLockPtr + (i*8), 0);    
     }
 #endif
-    cep_srot srot(verbose);
-    srot.SetCpuActiveMask(coreMask);
+    cep_srot srot(SROT_INDEX, CEP_VERSION_REG_INDEX, verbose);
+    srot.SetCpuActiveMask(cpuActiveMask);
     errCnt += srot.LLKI_Setup(cpuId);
     srot.freeMe();
 #endif
@@ -146,7 +147,7 @@ int cepMultiThread_setup(int cpuId, uint64_t testLockPtr,int maxTest, int coreMa
 //
 // Run Multi-thread
 //
-int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int maxTest, int maxLoop, int seed, int verbose)
+int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cpuActiveMask, int maxTest, int maxLoop, int seed, int verbose)
 {
   //
     int errCnt = 0;
@@ -157,9 +158,9 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
 #ifndef BARE_MODE    
     int myDoneMask = 0;
         //
-    while ((myDoneMask != cryptoMask) && (errCnt == 0)) {
+    while ((myDoneMask != cpuActiveMask) && (errCnt == 0)) {
             //
-        int testId = cepMultiThread_findATest2Run(thrId, testLockPtr, cryptoMask & ~myDoneMask, maxTest, verbose);
+        int testId = cepMultiThread_findATest2Run(thrId, testLockPtr, cpuActiveMask & ~myDoneMask, maxTest, verbose);
         if (testId == -1) {
             LOGE("%s: can't find a test to run thrId=%d myDoneMask=0x%x\n",__FUNCTION__,thrId,myDoneMask);
             return 1;
@@ -172,20 +173,17 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
         if (verbose) {
             LOGI("===== RUNNING test=%d thrId=%d doneMask=0x%x\n",testId,thrId,myDoneMask);
         }
-        
-        switch (testId) {
-            case AES_BASE_K : 
+
+        int coreIndex = testId;
+        cep_core_info_t core = cep_core_info[coreIndex];
+        switch (core.type) {
+            case AES_CORE : 
             {
                     //
                     // AES
                     //    
-                cep_aes aes(seed,verbose);
-                aes.init();
-                    //
-                //maxLoop =  20;
-                init_aes();
+                cep_aes aes(coreIndex,seed,verbose);
                 errCnt += aes.RunAes192Test(maxLoop);
-                    //
                 aes.freeMe();
                 break;
             }
@@ -193,28 +191,18 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // DES3
                     //
-            case DES3_BASE_K : 
+            case DES3_CORE : 
             {
-                cep_des3 des3(seed,verbose);
-                des3.init();      
-                    //
-                //maxLoop = 10;
-                init_des3();
+                cep_des3 des3(coreIndex,seed,verbose);
                 errCnt += des3.RunDes3Test(maxLoop);
-                    //
                 des3.freeMe();
                 break;
             }
             
-            case MD5_BASE_K :
+            case MD5_CORE :
             {                
-                cep_md5 md5(seed,verbose);
-                md5.init();
-                    //
-                //maxLoop = 8;
-                init_md5();
+                cep_md5 md5(coreIndex,seed,verbose);
                 errCnt += md5.RunMd5Test(maxLoop);
-                    //
                 md5.freeMe();
                 break;
             }
@@ -222,15 +210,10 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // FIR
                     //
-            case FIR_BASE_K :
+            case FIR_CORE :
             {                
-                cep_fir fir(seed,verbose);
-                fir.init();      
-                    //
-                //maxLoop = 5;
-                init_fir();
+                cep_fir fir(coreIndex,seed,verbose);
                 errCnt += fir.RunFirTest(maxLoop);
-                    //
                 fir.freeMe();
                 break;
             }
@@ -238,16 +221,11 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // IIR
                     //
-            case IIR_BASE_K:
+            case IIR_CORE:
             {
                 
-                cep_iir iir(seed,verbose);
-                iir.init();
-                    //
-                //maxLoop = 5;
-                init_iir();
+                cep_iir iir(coreIndex,seed,verbose);
                 errCnt += iir.RunIirTest(maxLoop);
-                    //
                 iir.freeMe();
                 break;
             }
@@ -255,16 +233,11 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // SHA256
                     //
-            case SHA256_BASE_K:
+            case SHA256_CORE:
             {
                 
-                cep_sha256 sha256(seed,verbose);
-                sha256.init();
-                    //
-                //maxLoop = 8;
-                init_sha256();
+                cep_sha256 sha256(coreIndex,seed,verbose);
                 errCnt += sha256.RunSha256Test(maxLoop);
-                    //
                 sha256.freeMe();
                 break;
             }
@@ -272,16 +245,11 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // GPS
                     //
-            case GPS_BASE_K:
+            case GPS_CORE:
             {
                 
-                cep_gps gps(seed,verbose);    // Note: The GPS constructor does write to the core
-                gps.init();  
-                    //
-                //maxLoop  = 38;
-                init_gps();
+                cep_gps gps(coreIndex,seed,verbose);    // Note: The GPS constructor does write to the core
                 errCnt += gps.RunGpsTest(maxLoop);
-                    //
                 gps.freeMe();
                 break;
             }
@@ -289,34 +257,30 @@ int cepMultiThread_runThr(int thrId, uint64_t testLockPtr, int cryptoMask, int m
                     //
                     // DFT & IDFT
                     //
-            case DFT_BASE_K:
+            case DFT_CORE:
             {
-                
-                cep_dft dft(seed,verbose);
-                dft.init();
-                    //
-                //maxLoop = 5;
-                init_dft();
-                init_idft();                
+                cep_dft dft(coreIndex,seed,verbose);
                 errCnt += dft.RunDftTest(maxLoop);
-                    //
                 dft.freeMe();
+                break;
+            }
+            case IDFT_CORE:
+            {
+                cep_idft idft(coreIndex,seed,verbose);
+                errCnt += idft.RunIdftTest(maxLoop);
+                    //
+                idft.freeMe();
                 break;
             }
             
                     //
                     // RSA
                     //
-            case RSA_BASE_K:
+            case RSA_CORE:
             {
                 
-                cep_rsa rsa(seed,verbose);
-                rsa.init();
-                    //
-                //maxLoop = 4;
+                cep_rsa rsa(coreIndex,seed,verbose);
                 int maxBytes=8;
-                    //
-                init_rsa();
                 if (!errCnt)  {    
                     errCnt += rsa.RunRsaMemTest(0xf, 1024); // 8K bits
                 }

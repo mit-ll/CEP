@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -23,6 +23,8 @@
 #include <string.h>
 #include "cep_adrMap.h"
 
+#include "CEP.h"
+#include "cep_srot_keys.h"
 #include "cep_io.h"
 #include "cep_cmds.h"
 #include "cep_vars.h"
@@ -575,10 +577,8 @@ int cep_init_run(void)
   CEP_ADD_RUN(3,cepGpioTest,        0xFFFFFFFF,  run_cepGpioTest,      NULL,  NULL, "CEP GPIO test (single core) ");
   CEP_ADD_RUN(3,cepSpiTest,         0xFFFFFFFF,  run_cepSpiTest,       NULL,  NULL, "CEP SPI test (single core) ");
   CEP_ADD_RUN(3,cepSrotErrTest,     0xFFFFFFFF,  run_cepSrotErrTest,   NULL,  NULL, "CEP SRoT Error Test (single core) ");
-//CEP_ADD_RUN(3,cepCsrTest,         0xFFFFFFFF,  run_cepCsrTest,       NULL,  NULL, "CEP SPI test (all cores) ");
 
   CEP_ADD_RUN(4,cepPlicTest,        0xFFFFFFFF,  run_cepPlicTest,      NULL,  NULL, "CEP PLIC register test (all cores)");
-//CEP_ADD_RUN(4,cepPlicPrioIntrTest,0xFFFFFFFF,  run_cepPlicPrioIntrTest,NULL,NULL, "CEP PLIC priority Interrupt test (all cores)");      
   CEP_ADD_RUN(4,cepClintTest,       0xFFFFFFFF,  run_cepClintTest,     NULL,  NULL, "CEP CLINT register test (all cores)");    
   CEP_ADD_RUN(4,cepRegTest,         0xFFFFFFFF,  run_cepRegTest,       NULL,  NULL, "CEP register tests on all cores");
   CEP_ADD_RUN(4,cepLockTest,        0xFFFFFFFF,  run_cepLockTest,      NULL,  NULL, "CEP single lock test (all cores)");
@@ -592,17 +592,7 @@ int cep_init_run(void)
   //
   CEP_ADD_RUN(5,cepMacroMix,        0xFFFFFFFF,  run_cepMacroMix,      NULL,  NULL, "CEP Macro tests (all cores)");
   CEP_ADD_RUN(5,cepMacroBadKey,     0xFFFFFFFF,  run_cepMacroBadKey,   NULL,  NULL, "CEP Macro tests with badKey (all cores)");
-  //
-  CEP_ADD_RUN(6,cepSrotMaxKeyTest,  0xFFFFFFFF,  run_cepMacroBadKey,   NULL,  NULL, "CEP Macro tests with maxKey (single core)");
-  CEP_ADD_RUN(6,cep_AES     ,       0xFFFFFFFF,  run_cep_AES     ,     NULL,  NULL, "CEP AES test (single core)");  
-  CEP_ADD_RUN(6,cep_DES3    ,       0xFFFFFFFF,  run_cep_DES3    ,     NULL,  NULL, "CEP DES3 test (single core)");  
-  CEP_ADD_RUN(6,cep_DFT     ,       0xFFFFFFFF,  run_cep_DFT     ,     NULL,  NULL, "CEP DFT and IDFT test (single core)");  
-  CEP_ADD_RUN(6,cep_FIR     ,       0xFFFFFFFF,  run_cep_FIR     ,     NULL,  NULL, "CEP FIR test (single core)");  
-  CEP_ADD_RUN(6,cep_IIR     ,       0xFFFFFFFF,  run_cep_IIR     ,     NULL,  NULL, "CEP IIR test (single core)");  
-  CEP_ADD_RUN(6,cep_GPS     ,       0xFFFFFFFF,  run_cep_GPS     ,     NULL,  NULL, "CEP GPS test (single core)");  
-  CEP_ADD_RUN(6,cep_MD5     ,       0xFFFFFFFF,  run_cep_MD5     ,     NULL,  NULL, "CEP MD5 test (single core)");  
-  CEP_ADD_RUN(6,cep_RSA     ,       0xFFFFFFFF,  run_cep_RSA     ,     NULL,  NULL, "CEP RSA test (single core)");  
-  CEP_ADD_RUN(6,cep_SHA256  ,       0xFFFFFFFF,  run_cep_SHA256  ,     NULL,  NULL, "CEP SHA256 test (single core)");
+  
   CEP_ADD_RUN(6,cepMultiThread  ,   0xFFFFFFFF,  run_cepMultiThread  , NULL,  NULL, "CEP multi-thread per core (all cores)");
   //
   //
@@ -838,14 +828,14 @@ int thr_waitTilLock(int id, int maxTO) {
 }
 
 
-int run_multiThreads(int coreMask) { // , cep_thread_funct_t funct) {
+int run_multiThreads(int cpuMask) { // , cep_thread_funct_t funct) {
   int errCnt = 0;
   constexpr unsigned num_threads = MAX_CORES;
   // A mutex ensures orderly access to std::cout from multiple threads.
   std::mutex liomutex;
   std::vector<std::thread> threads(num_threads);
   for (unsigned i = 0; i < num_threads; ++i) {
-    if ((1 << i) & coreMask) {
+    if ((1 << i) & cpuMask) {
       _thr_errCnt[i] = 0; // clear the error
       threads[i] = std::thread(cep_get_thr_function(), i);
       std::this_thread::sleep_for(std::chrono::milliseconds(20)); // ?? need to??
@@ -870,7 +860,7 @@ int run_multiThreads(int coreMask) { // , cep_thread_funct_t funct) {
     }
   }
   for (unsigned i = 0; i < num_threads; ++i) {
-    if ((1 << i) & coreMask) {
+    if ((1 << i) & cpuMask) {
       if (threads[i].joinable()) {
 	threads[i].join();
       }

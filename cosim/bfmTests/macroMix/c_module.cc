@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -54,27 +54,30 @@ void *c_module(void *arg) {
   // ======================================
   // Test starts here
   // ======================================
-  // MUST
-  // wait until Calibration is done..
-  //int calibDone = calibrate_ddr3(50);
+  // MUST wait until Calibration is done..
   pio.RunClk(1000);
-  //
+  
+  int mask = seed; // seed is used as cpuActiveMask from c_dispatch
 
-  // Select which tests to run.  Core indicies are defined in CEP.h
-  int mask = seed; // seed is used as cpuActiveMask from c_displatch
-  int cryptoMask = 0xFFFFFFFF; // all cores
-// int cryptoMask = 0x00000001; // AES only
-//  int cryptoMask = 0x00000002; // MD5 only
-//  int cryptoMask = 0x00000004; // SHA256 only
-//  int cryptoMask = 0x00000008; // RSA only
-//  int cryptoMask = 0x00000010; // DES3 only
-//  int cryptoMask = 0x00000020; // DFT only
-//  int cryptoMask = 0x00000040; // IDFT only
-//  int cryptoMask = 0x00000080; // FIR only
-//  int cryptoMask = 0x00000100; // IIR only
-//  int cryptoMask = 0x00000200; // GPS only
+  int coreMask = 0xFFFFFFFF; // all cores
+//  int coreMask = 0x00000001;  // AES
+//  int coreMask = 0x00000002;  // MD5
+//  int coreMask = 0x00000004;  // SHA256.0
+//  int coreMask = 0x00000008;  // SHA256.1
+//  int coreMask = 0x00000010;  // SHA256.2
+//  int coreMask = 0x00000020;  // SHA256.3
+//  int coreMask = 0x00000040;  // RSA
+//  int coreMask = 0x00000080;  // DES3
+//  int coreMask = 0x00000100;  // DFT
+//  int coreMask = 0x00000200;  // IDFT
+//  int coreMask = 0x00000400;  // FIR
+//  int coreMask = 0x00000800;  // IIR
+//  int coreMask = 0x00001000;  // GPS.0
+//  int coreMask = 0x00002000;  // GPS.1
+//  int coreMask = 0x00004000;  // GPS.2
+//  int coreMask = 0x00008000;  // GPS.3
 
-  if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, cryptoMask, seed, verbose); }
+  if (!errCnt) { errCnt = cepMacroMix_runTest(cpuId, mask, coreMask, seed, verbose); }
   //
   pio.RunClk(100);  
   //

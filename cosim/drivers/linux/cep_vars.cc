@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -126,32 +126,28 @@ int cep_init_vars(void)
   // This is where you add global control variable to CEP
   // ======================================================
   //            name           isNum  DefaultVaue FuncVect Description
-  CEP_ADD_VAR(coreMask,        1,     0xf,        NULL,       "Core Mask");
-  CEP_ADD_VAR(noCoreLock,      1,     0x0,        NULL,       "no CORE Lock (default=lock)");  
-  //
-  CEP_ADD_VAR(loop,    	       1, 1,          NULL,           "number of test iterations");
+  CEP_ADD_VAR(cpuMask,         1,     0xf,    NULL,           "Specifies which CPUs are allowed to run tests (default=0xf");
+  CEP_ADD_VAR(noCoreLock,      1,     0x0,    NULL,           "no CORE Lock (default=lock)");  
+  CEP_ADD_VAR(loop,            1, 1,          NULL,           "number of test iterations");
   CEP_ADD_VAR(mloop,           1, 1,          NULL,           "loop for macro/script execution");
   CEP_ADD_VAR(curErrCnt,       1, 0,          NULL,           "current error count");
   CEP_ADD_VAR(lockSeed,        1, 0,          NULL,           "1=seed is locked, 0=seed is random");
   CEP_ADD_VAR(maxErr,          1, 1,          NULL,           "max number of errors before stop test");
   CEP_ADD_VAR(maxThreads,      1,32,          NULL,           "max number of threads");  
   CEP_ADD_VAR(regress,         1, 0,          NULL,           "1=regress mode on, 0=off");
-  CEP_ADD_VAR(quit,    	       1, 0,          NULL,           "1=quit cep_test");
-  CEP_ADD_VAR(seed,    	       1, 0,          NULL,           "random seed uses for every test");
-  CEP_ADD_VAR(verbose,	       1, 0,          run_verbose,    "verbose level");
-  CEP_ADD_VAR(skipInit,	       1, 0,          NULL,           "1=skip the init, 0=do the init");
-  CEP_ADD_VAR(prompt,	       1, 0,          NULL,           "1=wait for user input, 0=no wait");
-  CEP_ADD_VAR(step   ,         1, 3,          NULL,           "memory test increment step value");
+  CEP_ADD_VAR(quit,            1, 0,          NULL,           "1=quit cep_test");
+  CEP_ADD_VAR(seed,            1, 0,          NULL,           "random seed uses for every test");
+  CEP_ADD_VAR(verbose,         1, 0,          run_verbose,    "verbose level");
+  CEP_ADD_VAR(prompt,          1, 0,          NULL,           "1=wait for user input, 0=no wait");
   CEP_ADD_VAR(revCheck,        1, 1,          run_revCheck,   "revision Check Enable (1), 0=don't check for revision");
   CEP_ADD_VAR(longRun,         1, 0,          NULL,           "1=full (long) test enable");
   CEP_ROA_VAR(lastDataRead,    1, 0,          NULL,           "data from last read");
   CEP_ROA_VAR(cur_loop,        1, 0,          NULL,           "DONT TOUCH");
-  CEP_ADD_VAR(stop_when_done,  1, 0,          NULL,           "1=stop PRBS generator when test done, 0=no stop");
   CEP_ADD_VAR(filter,          1, -1,         cep_exe_filter, "Test filter mask");
   CEP_ADD_VAR(detail,          1, 0,          NULL,           "1=print detailed info, 0=minimal info");
   CEP_ADD_VAR(xterm,           1, 0,          set_stty,       "xterm versus tty");  
   // ReadOnly
-  CEP_ADD_VAR(testMask,        1, -1,         NULL,           "test Mask to pick target to run test.");
+  CEP_ADD_VAR(coreMask,        1, -1,         NULL,           "Specifies which CEP accelerator cores to use");
   //
   //
   // must do this 
@@ -176,17 +172,17 @@ int cep_exe_setvar(void)
     // check to make sure there is room
     if (__cep_var_curCount >= __CEP_VAR_MAX) {
       PRNT("%s: Sorry, no more room for new variable <%s> because it might already there\n",
-	   __FUNCTION__,get_token(1)->ascii);
+       __FUNCTION__,get_token(1)->ascii);
       errCnt++;
     } else {
       // add to the list
       curVar_p = cep_var_add2idx(__cep_var_curCount, // next free one
-				     get_token(1)->ascii, // the name
-				     get_token(2)->isNum, // is a number?
-				     0, // write-able
-				     NULL, // FIXME!!
-				     get_token(2)->ascii, // valueStr
-				     "dynamic variable");
+                     get_token(1)->ascii, // the name
+                     get_token(2)->isNum, // is a number?
+                     0, // write-able
+                     NULL, // FIXME!!
+                     get_token(2)->ascii, // valueStr
+                     "dynamic variable");
       __cep_var_curCount++; // add to the list
       // resort
       cep_sort_vars();
@@ -204,7 +200,7 @@ int cep_exe_setvar(void)
     PRNT("%s: variable <%s> = <%s> is replaced\n",__FUNCTION__,get_token(1)->ascii,get_token(2)->ascii);
   } else {
     PRNT("%s: Sorry, can't create new variable <%s> because it might already there\n",
-	 __FUNCTION__,get_token(1)->ascii);
+     __FUNCTION__,get_token(1)->ascii);
     errCnt++;
   }
   return errCnt;
@@ -227,43 +223,43 @@ int cep_exe_adjvar(void)
     if (get_token(3)->isNum) { // only take number for now
       // modify the variable
       if (strcmp(get_token(2)->ascii,"+") == 0) { // add operation
-	curVar_p->value += get_token(3)->value;
+    curVar_p->value += get_token(3)->value;
       } 
       else if (strcmp(get_token(2)->ascii,"-") == 0) { // subtract operation
-	curVar_p->value -= get_token(3)->value;
+    curVar_p->value -= get_token(3)->value;
       }  
       else if (strcmp(get_token(2)->ascii,"*") == 0) { // multiply operation
-	curVar_p->value *= get_token(3)->value;
+    curVar_p->value *= get_token(3)->value;
       }  
       else if (strcmp(get_token(2)->ascii,"/") == 0) { // divide operation
-	if (get_token(3)->value != 0) {
-	  curVar_p->value = curVar_p->value / get_token(3)->value;
-	} else {
-	  PRNT("%s: can't divide by zero\n", __FUNCTION__);
-	  errCnt++;
-	  return 1;
-	}
+    if (get_token(3)->value != 0) {
+      curVar_p->value = curVar_p->value / get_token(3)->value;
+    } else {
+      PRNT("%s: can't divide by zero\n", __FUNCTION__);
+      errCnt++;
+      return 1;
+    }
       }
       else if (strcmp(get_token(2)->ascii,">>") == 0) { // right rotate
-	tmp = ((u_int64_t)curVar_p->value << 32) >> get_token(3)->value;
-	curVar_p->value = (u_int32_t)(tmp>>32) | (u_int32_t)((tmp & 0xffffffff)<<32);
+    tmp = ((u_int64_t)curVar_p->value << 32) >> get_token(3)->value;
+    curVar_p->value = (u_int32_t)(tmp>>32) | (u_int32_t)((tmp & 0xffffffff)<<32);
       }
       else if (strcmp(get_token(2)->ascii,"<<") == 0) { // left rotate
-	tmp = (u_int64_t)curVar_p->value << get_token(3)->value;
-	curVar_p->value = (u_int32_t)(tmp>>32) | (u_int32_t)(tmp & 0xffffffff);
+    tmp = (u_int64_t)curVar_p->value << get_token(3)->value;
+    curVar_p->value = (u_int32_t)(tmp>>32) | (u_int32_t)(tmp & 0xffffffff);
       } else {
-	PRNT("%s: Sorry, non-supported operation <%s>\n",__FUNCTION__,get_token(2)->ascii);
-	errCnt++;
-	return 1;
+    PRNT("%s: Sorry, non-supported operation <%s>\n",__FUNCTION__,get_token(2)->ascii);
+    errCnt++;
+    return 1;
       }
       // must also update the valStr
       sprintf(curVar_p->valStr,"0x%x",(u_int32_t)curVar_p->value); // might be negative
       if (VERBOSE1()) {
-	PRNT("%s: variable <%s> is adjusted to <%s>\n",__FUNCTION__,curVar_p->name,curVar_p->valStr);
+    PRNT("%s: variable <%s> is adjusted to <%s>\n",__FUNCTION__,curVar_p->name,curVar_p->valStr);
       }
       // there might be a function to execute after adjustment
       if (curVar_p->var_vect != NULL) {
-	    errCnt = (*curVar_p->var_vect)();      
+        errCnt = (*curVar_p->var_vect)();      
       }
     } else {
       PRNT("%s: argument#3 <%s> must be a number\n", __FUNCTION__,get_token(3)->ascii);
@@ -272,19 +268,9 @@ int cep_exe_adjvar(void)
     }
   } else {
     PRNT("%s: Sorry, can't adjust variable <%s> because there might be multiple matches or non-supported ops\n",
-	 __FUNCTION__,get_token(1)->ascii);
+     __FUNCTION__,get_token(1)->ascii);
     errCnt++;
   }
-  return errCnt;
-}
-
-int cep_exe_monitor(void)
-{
-  int errCnt = 0;
-  if (get_token(1)->isNum) { 
-    SET_VAR_VALUE(stop_when_done,get_token(1)->value ? 0 : 1);
-  }
-  PRNT("FIX ME\n");
   return errCnt;
 }
 
@@ -355,28 +341,28 @@ void cep_sort_vars(void)
       if (debugMe) PRNT("Working on %s\n",__cep_var_array[i].name);
       inserted = 0;
       while (cur_p != NULL) {
-	if (strcasecmp(__cep_var_array[i].name, cur_p->name) < 0) {  // i am his little brother!!
-	  // add it in the middle
-	  if (last_p == NULL) { // I am now the head
-	    __cep_var_head_p = &(__cep_var_array[i]);
-	  }
-	  else {
-	    last_p->next = &(__cep_var_array[i]);
-	  }
-	  __cep_var_array[i].next = cur_p; // big bother
-	  inserted = 1; 
-	  if (debugMe) PRNT("head=%s: link %s -> %s\n",__cep_var_head_p->name, last_p->name, __cep_var_array[i].name);
-	  cur_p  =  NULL; // done
-	} else { // next
-	  last_p = cur_p;
-	  cur_p  = cur_p->next;
-	  if (debugMe) PRNT("last=%s cur=%s\n",last_p->name,cur_p->name);
-	}
+    if (strcasecmp(__cep_var_array[i].name, cur_p->name) < 0) {  // i am his little brother!!
+      // add it in the middle
+      if (last_p == NULL) { // I am now the head
+        __cep_var_head_p = &(__cep_var_array[i]);
+      }
+      else {
+        last_p->next = &(__cep_var_array[i]);
+      }
+      __cep_var_array[i].next = cur_p; // big bother
+      inserted = 1; 
+      if (debugMe) PRNT("head=%s: link %s -> %s\n",__cep_var_head_p->name, last_p->name, __cep_var_array[i].name);
+      cur_p  =  NULL; // done
+    } else { // next
+      last_p = cur_p;
+      cur_p  = cur_p->next;
+      if (debugMe) PRNT("last=%s cur=%s\n",last_p->name,cur_p->name);
+    }
       } // while
       // must be at end of list
       if (!inserted) { // link to  last
-	last_p->next = &(__cep_var_array[i]);
-	if (debugMe) PRNT("link to last=%s\n",last_p->name);
+    last_p->next = &(__cep_var_array[i]);
+    if (debugMe) PRNT("link to last=%s\n",last_p->name);
       }
     } // only if valid
   } // for
@@ -397,8 +383,8 @@ cep_var_info *cep_search_var(char *varName, int *matchFound)
   l0 = strlen(varName);
   while (i < __cep_var_curCount) {
     if (strncasecmp(varName, __cep_var_array[i].name, 
-		    //MIN(l0,strlen(__cep_var_array[i].name))) == 0) { // found it
-		    l0) == 0) {
+            //MIN(l0,strlen(__cep_var_array[i].name))) == 0) { // found it
+            l0) == 0) {
       saveP = i;
       *matchFound = *matchFound + 1;
     }
@@ -427,8 +413,8 @@ void cep_search_var_and_printAll(char *varName)
   PRNT("Possible matching VAR(s)\n");
   while (i < __cep_var_curCount) {
     if (strncasecmp(varName, __cep_var_array[i].name, 
-		    //MIN(l0,strlen(__cep_var_array[i].name))) == 0) { // found it
-		    l0) == 0) {
+            //MIN(l0,strlen(__cep_var_array[i].name))) == 0) { // found it
+            l0) == 0) {
       cep_var_print(&__cep_var_array[i]);
     }
     i++;
@@ -441,13 +427,13 @@ void cep_search_var_and_printAll(char *varName)
 // ====================================
 //
 cep_var_info *cep_var_add2idx(int idx, const char *name, int isNum, int readOnly,
-				      cep_exe_var_vect_t var_vect,
-				      const char *strDefaultValue, const char *help)
+                      cep_exe_var_vect_t var_vect,
+                      const char *strDefaultValue, const char *help)
 {
   cep_var_info *tmp_p = NULL;
   if (idx  >= __CEP_VAR_MAX) {
     PRNT("%s: ERROR Can't add any more variable. idx=%d exceed its limit of %d\n",
-	 __FUNCTION__,idx,__CEP_VAR_MAX);
+     __FUNCTION__,idx,__CEP_VAR_MAX);
     return tmp_p;
   }
   // add to the current one and move to next
@@ -479,7 +465,7 @@ cep_var_info *cep_var_changeFuncVec(int idx, cep_exe_var_vect_t var_vect)
   cep_var_info *tmp_p = NULL;
   if (idx  >= __CEP_VAR_MAX) {
     PRNT("%s: ERROR Can't add any more variable. idx=%d exceed its limit of %d\n",
-	 __FUNCTION__,idx,__CEP_VAR_MAX);
+     __FUNCTION__,idx,__CEP_VAR_MAX);
     return tmp_p;
   }
   __cep_var_array[idx].var_vect = var_vect;
@@ -563,7 +549,7 @@ void cep_var_dump_all(int readOnly, int rdwr)
     cur_p = __cep_var_head_p;
     while (cur_p != NULL) {
       if (cur_p->readOnly) {
-	cep_var_print(cur_p);
+    cep_var_print(cur_p);
       }
       cur_p = cur_p->next;
     }
@@ -574,7 +560,7 @@ void cep_var_dump_all(int readOnly, int rdwr)
     // first ReadOnly
     while (cur_p != NULL) {
       if (cur_p->readOnly == 0) {
-	cep_var_print(cur_p);
+    cep_var_print(cur_p);
       }
       cur_p = cur_p->next;
     }
@@ -685,7 +671,7 @@ int cep_print_timeStamp(void)
   hours   = seconds / (60 * 60); seconds = seconds - (hours * 60 * 60);
   minutes = seconds / 60; seconds = seconds - (minutes * 60); 
   printf("Current timer since last reset: %d days %d hours %d minutes %d seconds %d usec (total=%d seconds)\n",
-	 days,hours,minutes,seconds,usec, totalSeconds);
+     days,hours,minutes,seconds,usec, totalSeconds);
 #else
   printf("*** ADD ME **\n");
 #endif

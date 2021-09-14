@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -71,7 +71,7 @@ int cepRegTest_runTest(int cpuId, int accessSize,int revCheck,int seed, int verb
 			      ((uint64_t)(CEP_MINOR_VERSION & 0xFF) << 56));
     
   if (revCheck) {
-    (*regp->AddROReg_p)(regp, CEP_VERSION_REG, expectedVersion,CEP_VERSION_MASK);
+    (*regp->AddROReg_p)(regp, CEP_VERSION_REG, expectedVersion, CEP_VERSION_MASK);
   }
   switch (cpuId) {
   case 0: {

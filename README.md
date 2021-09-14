@@ -8,7 +8,7 @@
     <img src="./doc/cep_logo.jpg" width="721" height="300">
 </p>
 <p align="center">
-    <img src="./doc/version3.4.jpg" width="98" height="60">
+    <img src="./doc/version3.41.jpg" width="98" height="60">
 </p>
 <p align="center">
    Copyright 2021 Massachusetts Institute of Technology
@@ -17,11 +17,9 @@
     <img src="./doc/related_logos.jpg" width="450" height="71">
 </p>
 
-The Common Evaluation Platform (CEP) is intended as a surrogate System on a Chip (SoC) that provides users an open-source evaluation platform for the evaluation of custom tools and techniques.  An extensive verification environment is provided to ensure the underlying functionality is maintained even after modification.
+The Common Evaluation Platform (CEP) is an Open Source Hardware (OSH) System on a Chip (SoC).  It has been developed to support the test and evluation of custom tools and techniques.  An extensive verification environment is provided to ensure the underlying functionality is maintained even after modification.
 
-The Logic Locking Key Interface (LLKI) has been provided as a representative means of distributing key / configuration material to LLKI-enabled cores.  
-
-For CEP v3.1+, the full LLKI has been added.  This includes the Surrogate Root of Trust (SRoT) and mock Technique Specific Shims (TSS) for all accelerator cores.
+The Lincoln Laboratory Key Interface (LLKI) has been provided as a representative means of distributing key / configuration material to LLKI-enabled cores.  
 
 ### Please check the [Release Notes](./RELEASE_NOTES.md) to understand what has changed and a list of known issues.
 
@@ -206,7 +204,7 @@ See ./cosim/drivers/diag/cepMacroMix.cc for example code.
 
 As one might be aware: the endianess usage is not consistent thru out the design, expesially where Chisel wrappers are used to connect to various HW cores. For some cores, little endian is used for loading keys/plain text but big-endian is used to produce cipher text as output. This creates confusion and inconsistent as one might try to understand/follow SW driver for these cores. Also, please note, RISCV is little endian.
 
-As of release CEP v2.4 and later, unless otherwise specify, big endian is used thru out the design to match key/plain/ciphertext network order.
+Unless otherwise specified, big endian is used thru out the design to match key/plain/ciphertext network order.
 
 This makes it consistent and easier to debug when key/plain text are printed to match against registers.
 
@@ -311,11 +309,15 @@ make install append
 
 If subsequent changes are made to the source code in <CEP_ROOT>/cosim/drivers/linux, simply copy the changes over to the Linux build by running `make install`.
 
-Next, one needs to build linux.  First, change to the `<CEP ROOT>/software/freedom-u-sdk` directory.  Ensure that the linux variant of the RISC-V toolset is used by executing `unset RISCV`
 
-For Ubuntu 18.04 LTS, the default PERL installation may cause a conflict with the build process.  You may need to execute `unset PERL_MM_OPT` if set.
+Next, one needs to build linux.  First, change to the `<CEP ROOT>/software/freedom-u-sdk` directory.  
 
-Begin the build by running `make -jN BOARD=vc707devkit_nopci all` where N is the numbers of cores you can dedicate to the build.  Ensure that you have NOT sourced the Xilinx Vivado environment setup script before running this step.
+A few cautionary notes:
+- Ensure that the linux variant of the RISC-V toolset is used by executing `unset RISCV`
+- For Ubuntu 18.04 LTS, the default PERL installation may cause a conflict with the build process.  You may need to execute `unset PERL_MM_OPT` if set.
+- If you patched the LIBRARY_PATH environment variable to allow for compilation of the Xilinx simulation libraries, this may cause the linux build to fail
+
+Begin the build by running `make -jN BOARD=vc707devkit_nopci all` where N is the numbers of cores you can dedicate to the build. 
 
 Following the linux build, which can take 30 - 60 minutes, you will have a binary which you can load onto an SD card.
 
@@ -342,7 +344,7 @@ You should see the following logo/text appear:
        ./+++++++++++oo+++:  +oo++o++++o+o+oo+oo.- `s+++s`-
        .--:---:-:-::-::`  -::::::::::::::::::.   :::::.
 
-                      Common Evaluation Platform v3.40
+                      Common Evaluation Platform v3.41
          Copyright 2021 Massachusetts Institute of Technology
 
             Built upon the SiFive Freedom U500 Platform using
@@ -365,7 +367,7 @@ At the command prompt, you can run the CEP diagnostics by commanding `cep_diag`.
 A partial output should be similar to:
 
 ```sh
-*** CEP SW=0x3.40 HW VERSION = v3.40 was built on Aug  5 2021 08:36:41 ***
+*** CEP SW=0x3.41 HW VERSION = v3.41 was built on Aug  5 2021 08:36:41 ***
  CEP FPGA Physical: cepReg/ddr3/other/sys -> Virtual=0x700000000, 0x800000000, 0x600000000, 0xc00000000
  ScratchPad=0x2000400000
 gSkipInit=0/0
@@ -428,7 +430,7 @@ The following cores have been integrated into the "standard" CEP build:
 - Infinite Impulse Response
 - GPS code generator
 
-Beginning with the v2.4 release, the following "generated" cores have been added to the repository, but are currently not integrated into the CEP build.
+The following "generated" cores have been added to the repository, but are currently not integrated into the CEP build.
 - A(EE)ES-WB : Advanced Egregiously Extended Encryption Standard - Whitebox Edition [./hdl_cores/aeees/README.md](./hdl_cores/aeees/README.md).
 - (RI)IIR : Randomly Indeterminate Infinite Impulse Response [./hdl_cores/auto-fir/README.md](./hdl_cores/auto-fir/README.md).
 - SHA(AA) : Secure Hash Algorithm Arbitrarily Augment [./hdl_cores/shaaa/README.md](./hdl_cores/shaaa/README.md).

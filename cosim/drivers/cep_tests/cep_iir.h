@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_iir.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -28,7 +28,7 @@ class cep_iir : public cep_crypto {
 public: //
   // constructors
   //
-  cep_iir(int seed, int verbose);
+  cep_iir(int coreIndex, int seed, int verbose);
   cep_iir() { }
   ~cep_iir(); 
 
@@ -37,7 +37,7 @@ public: //
 
   int RunIirTest(int maxLoop);
 
- protected:
+protected:
   fixp32_8 float_to_fixed(double input);
   double fixed_to_float(fixp32_8 input);
   void adjust_float(double *inout, int length);

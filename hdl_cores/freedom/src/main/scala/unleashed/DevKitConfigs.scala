@@ -91,13 +91,44 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
     ))
   case PeripheryGPSKey => List(
     COREParams(
-      slave_base_addr     = BigInt(CEPBaseAddresses.gps_base_addr),
-      slave_depth         = BigInt(CEPBaseAddresses.gps_depth),
-      llki_base_addr      = BigInt(CEPBaseAddresses.gps_llki_base_addr),
-      llki_depth          = BigInt(CEPBaseAddresses.gps_llki_depth),
-      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_llki_ctrlsts_addr),
-      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_llki_sendrecv_addr),
-      dev_name            = s"gps"
+      slave_base_addr     = BigInt(CEPBaseAddresses.gps_0_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.gps_0_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.gps_0_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.gps_0_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_0_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_0_llki_sendrecv_addr),
+      dev_name            = s"gps_0",
+      verilog_module_name = Some(s"gps_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.gps_1_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.gps_1_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.gps_1_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.gps_1_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_1_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_1_llki_sendrecv_addr),
+      dev_name            = s"gps_1",
+      verilog_module_name = Some(s"gps_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.gps_2_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.gps_2_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.gps_2_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.gps_2_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_2_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_2_llki_sendrecv_addr),
+      dev_name            = s"gps_2",
+      verilog_module_name = Some(s"gps_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.gps_3_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.gps_3_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.gps_3_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.gps_3_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.gps_3_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.gps_3_llki_sendrecv_addr),
+      dev_name            = s"gps_3",
+      verilog_module_name = Some(s"gps_mock_tss")
     ))
   case PeripheryMD5Key => List(
     COREParams(
@@ -131,13 +162,44 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
     ))
   case PeripherySHA256Key => List(
     COREParams(
-      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_base_addr),
-      slave_depth         = BigInt(CEPBaseAddresses.sha256_depth),
-      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_llki_base_addr),
-      llki_depth          = BigInt(CEPBaseAddresses.sha256_llki_depth),
-      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_llki_ctrlsts_addr),
-      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_llki_sendrecv_addr),
-      dev_name            = s"sha256"
+      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_0_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.sha256_0_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_0_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.sha256_0_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_0_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_0_llki_sendrecv_addr),
+      dev_name            = s"sha256_0",
+      verilog_module_name = Some(s"sha256_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_1_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.sha256_1_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_1_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.sha256_1_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_1_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_1_llki_sendrecv_addr),
+      dev_name            = s"sha256_1",
+      verilog_module_name = Some(s"sha256_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_2_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.sha256_2_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_2_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.sha256_2_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_2_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_2_llki_sendrecv_addr),
+      dev_name            = s"sha256_2",
+      verilog_module_name = Some(s"sha256_mock_tss")
+    ),
+    COREParams(
+      slave_base_addr     = BigInt(CEPBaseAddresses.sha256_3_base_addr),
+      slave_depth         = BigInt(CEPBaseAddresses.sha256_3_depth),
+      llki_base_addr      = BigInt(CEPBaseAddresses.sha256_3_llki_base_addr),
+      llki_depth          = BigInt(CEPBaseAddresses.sha256_3_llki_depth),
+      llki_ctrlsts_addr   = BigInt(CEPBaseAddresses.sha256_3_llki_ctrlsts_addr),
+      llki_sendrecv_addr  = BigInt(CEPBaseAddresses.sha256_3_llki_sendrecv_addr),
+      dev_name            = s"sha256_3",
+      verilog_module_name = Some(s"sha256_mock_tss")
     ))
   case PeripheryRSAKey => List(
     COREParams(
@@ -169,17 +231,23 @@ class U500DevKitPeripherals extends Config((site, here, up) => {
       cep_cores_depth     = BigInt(CEPBaseAddresses.cep_cores_depth),
       // The following array results in the creation of LLKI_CORE_INDEX_ARRAY in srot_wrapper.sv
       // The SRoT uses these indicies for routing keys to the appropriate core
-      llki_cores_array    = Array( 
-        CEPBaseAddresses.aes_llki_base_addr,	// Core Index 0 
-        CEPBaseAddresses.md5_llki_base_addr,	// Core Index 1 
-        CEPBaseAddresses.sha256_llki_base_addr,	// Core Index 2 
-        CEPBaseAddresses.rsa_llki_base_addr,	// Core Index 3 
-        CEPBaseAddresses.des3_llki_base_addr,	// Core Index 4 
-        CEPBaseAddresses.dft_llki_base_addr,	// Core Index 5 
-        CEPBaseAddresses.idft_llki_base_addr,	// Core Index 6 
-        CEPBaseAddresses.fir_llki_base_addr,	// Core Index 7 
-        CEPBaseAddresses.iir_llki_base_addr,	// Core Index 8 
-        CEPBaseAddresses.gps_llki_base_addr		// Core Index 9 
+      llki_cores_array    = Array(
+        CEPBaseAddresses.aes_llki_base_addr,      // Core Index 0 
+        CEPBaseAddresses.md5_llki_base_addr,      // Core Index 1 
+        CEPBaseAddresses.sha256_0_llki_base_addr, // Core Index 2 
+        CEPBaseAddresses.sha256_1_llki_base_addr, // Core Index 3 
+        CEPBaseAddresses.sha256_2_llki_base_addr, // Core Index 4 
+        CEPBaseAddresses.sha256_3_llki_base_addr, // Core Index 5 
+        CEPBaseAddresses.rsa_llki_base_addr,      // Core Index 6 
+        CEPBaseAddresses.des3_llki_base_addr,     // Core Index 7 
+        CEPBaseAddresses.dft_llki_base_addr,      // Core Index 8 
+        CEPBaseAddresses.idft_llki_base_addr,     // Core Index 9 
+        CEPBaseAddresses.fir_llki_base_addr,      // Core Index 10
+        CEPBaseAddresses.iir_llki_base_addr,      // Core Index 11
+        CEPBaseAddresses.gps_0_llki_base_addr,    // Core Index 12
+        CEPBaseAddresses.gps_1_llki_base_addr,    // Core Index 13
+        CEPBaseAddresses.gps_2_llki_base_addr,    // Core Index 14
+        CEPBaseAddresses.gps_3_llki_base_addr     // Core Index 15
       )
     ))
 })

@@ -66,13 +66,15 @@ class DevKitWrapper()(implicit p: Parameters) extends LazyModule
     childClock := core.clock
 
     val djtag = topMod.module.debug.get.systemjtag.get
-    djtag.jtag.TCK := jt.get.jtag.TCK
-    djtag.jtag.TMS := jt.get.jtag.TMS
-    djtag.jtag.TDI := jt.get.jtag.TDI
-    jt.get.jtag.TDO.data    := djtag.jtag.TDO.data
+    djtag.jtag.TCK  := jt.get.jtag.TCK
+    djtag.jtag.TMS  := jt.get.jtag.TMS
+    djtag.jtag.TDI  := jt.get.jtag.TDI
+    jt.get.jtag.TDO := djtag.jtag.TDO
 
-    djtag.mfr_id := p(JtagDTMKey).idcodeManufId.U(11.W)
-    djtag.reset  := core.reset
+    djtag.mfr_id      := p(JtagDTMKey).idcodeManufId.U(11.W)
+    djtag.part_number := p(JtagDTMKey).idcodePartNum.U(16.W)
+    djtag.version     := p(JtagDTMKey).idcodeVersion.U(4.W)
+    djtag.reset       := core.reset
 
     childReset := core.reset | topMod.module.debug.get.ndreset
   }

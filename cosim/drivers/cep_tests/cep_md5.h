@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_md5.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -21,13 +21,13 @@ class cep_md5 : public cep_crypto {
 public: //
   // constructors
   //
-  cep_md5(int seed, int verbose);  
+  cep_md5(int coreIndex, int seed, int verbose);  
   ~cep_md5(); 
 
   //
   int RunMd5Test(int maxLoop);
 
- protected:
+protected:
   //
   int prepare_md5_key_N_text
     (

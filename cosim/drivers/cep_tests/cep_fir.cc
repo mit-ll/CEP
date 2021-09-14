@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_fir.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -46,9 +46,9 @@ double cep_fir::fixed_to_float(fixp32_8 input)
 //
 //
 //
-cep_fir::cep_fir(int seed, int verbose)
+cep_fir::cep_fir(int coreIndex, int seed, int verbose)
 {
-  init();  
+  init(coreIndex);
   SetSeed(28147424);
   SetVerbose(verbose);
   mTolerance = 1; // %
@@ -158,34 +158,34 @@ void cep_fir::LoadInSamples(int samCnt) {
     // duplicate 32 to 64 for coverage
     word |= (word << 32) | (word & 0xFFFFFFFFLL);
     //
-    cep_writeNcapture(FIR_BASE_K, FIR_IN_DATA, word); //Write data
-    cep_writeNcapture(FIR_BASE_K, FIR_IN_ADDR, i);     //Write addr
-    cep_writeNcapture(FIR_BASE_K, FIR_IN_WRITE, 0x02);  //Load data
-    cep_writeNcapture(FIR_BASE_K, FIR_IN_WRITE, 0x00);  //Stop
+    cep_writeNcapture(FIR_IN_DATA, word); //Write data
+    cep_writeNcapture(FIR_IN_ADDR, i);     //Write addr
+    cep_writeNcapture(FIR_IN_WRITE, 0x02);  //Load data
+    cep_writeNcapture(FIR_IN_WRITE, 0x00);  //Stop
   }
 }
 
 void cep_fir::Start(void) {
-  cep_writeNcapture(FIR_BASE_K, FIR_START, 0x1);
-  cep_writeNcapture(FIR_BASE_K, FIR_START, 0x0);
+  cep_writeNcapture(FIR_START, 0x1);
+  cep_writeNcapture(FIR_START, 0x0);
 }
 
 void cep_fir::Reset(int assert) {
-  cep_writeNcapture(FIR_BASE_K, FIR_RESET, assert);
+  cep_writeNcapture(FIR_RESET, assert);
 }
 
 void cep_fir::Reset(void) {
-  cep_writeNcapture(FIR_BASE_K, FIR_RESET, 0x1);
-  cep_writeNcapture(FIR_BASE_K, FIR_RESET, 0x0);
+  cep_writeNcapture(FIR_RESET, 0x1);
+  cep_writeNcapture(FIR_RESET, 0x0);
 }
 
 int cep_fir::waitTilDone(int maxTO) {
 #if 1
    if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-   return cep_readNspin(FIR_BASE_K, FIR_DONE, 0x4, maxTO);  
+   return cep_readNspin(FIR_DONE, 0x4, maxTO);  
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(FIR_BASE_K, FIR_DONE) & 0x4) break;
+    if (cep_readNcapture(FIR_DONE) & 0x4) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -195,8 +195,8 @@ int cep_fir::waitTilDone(int maxTO) {
 void cep_fir::ReadOutSamples(int samCnt) {
   uint64_t word;
   for(int i = 0; i < samCnt; i++) { //  8-bytes/word
-    cep_writeNcapture(FIR_BASE_K, FIR_OUT_ADDR, i);    //Write addr
-    word=cep_readNcapture(FIR_BASE_K, FIR_OUT_DATA); //Read data
+    cep_writeNcapture(FIR_OUT_ADDR, i);    //Write addr
+    word=cep_readNcapture(FIR_OUT_DATA); //Read data
     mAct[i] = fixed_to_float(word);
   }
 }

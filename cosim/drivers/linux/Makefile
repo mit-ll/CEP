@@ -150,10 +150,18 @@ clean:
 	rm -f $(TARGET)
 
 #
-# This target just to rebuild the cep_diag. Assuming everything else already being built via ../README.md file
-#
+# Helper make targets for updating the cep_diag in the linux build
+# NOTE: Manual hacks of buildroot make products to allow for an incremental build were unsuccessful, thus
+#   a "make clean-buildroot" is the best that can be accomplished resulting in a ~10min build everytime
+#   cep_diag is updated
 #
 buildMe:
 	make install
-	(cd ${FREEDOM_U_SDK_DIR}/work/buildroot_initramfs; rm -rf build/cep_diag*; make)
-	(cd ${FREEDOM_U_SDK_DIR}; make -j8 BOARD=vc707devkit_nopci all)
+	(unset RISCV; unset PERL_MM_OPT; cd ${FREEDOM_U_SDK_DIR}; make clean-buildroot; make -j8 BOARD=vc707devkit_nopci all)
+
+writeSD:
+ifneq ($(DISK),)
+	(unset RISCV; unset PERL_MM_OPT; cd ${FREEDOM_U_SDK_DIR}; sudo make DISK=$(DISK) vc707-sd-write)	
+else
+	@echo "--- DISK variable needs to be set ---"
+endif

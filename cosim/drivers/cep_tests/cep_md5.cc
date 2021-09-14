@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_md5.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -27,8 +27,8 @@
 //
 //
 
-cep_md5::cep_md5(int seed, int verbose) {
-  init();  
+cep_md5::cep_md5(int coreIndex, int seed, int verbose) {
+  init(coreIndex);
   SetBlockSize(64); // 64bytes bytes
   SetSeed(seed);
   SetVerbose(verbose);
@@ -71,7 +71,7 @@ void cep_md5::LoadInText(uint8_t *buf) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)buf[i*8 + j];      
     }
-    cep_writeNcapture(MD5_BASE_K, MD5_MSG_BASE + (i * BYTES_PER_WORD), word);
+    cep_writeNcapture(MD5_MSG_BASE + (i * BYTES_PER_WORD), word);
   }
 #else
   // NOT the same as SHA256, it is byte flipped
@@ -81,32 +81,32 @@ void cep_md5::LoadInText(uint8_t *buf) {
     for (int j=0;j<8;j++) {
       word = (word << 8) | (uint64_t)buf[i*8 + (7-j)];      
     }
-    cep_writeNcapture(MD5_BASE_K, MD5_MSG_BASE + (i * BYTES_PER_WORD), word);
+    cep_writeNcapture(MD5_MSG_BASE + (i * BYTES_PER_WORD), word);
   }
 #endif
 }
 
 void cep_md5::Clear(void) {
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
-  cep_writeNcapture(MD5_BASE_K, MD5_RST, 0x2); // bit[1]=init , bit[0]=rst
-  cep_writeNcapture(MD5_BASE_K, MD5_RST, 0x0);
+  cep_writeNcapture(MD5_RST, 0x2); // bit[1]=init , bit[0]=rst
+  cep_writeNcapture(MD5_RST, 0x0);
   waitTilReady(100);    
 }
 
 void cep_md5::Start(void) {
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
-  cep_writeNcapture(MD5_BASE_K, MD5_MSG_IN_VALID, 0x1);
-  cep_writeNcapture(MD5_BASE_K, MD5_MSG_IN_VALID, 0x0);
+  cep_writeNcapture(MD5_MSG_IN_VALID, 0x1);
+  cep_writeNcapture(MD5_MSG_IN_VALID, 0x0);
 }
 
 int cep_md5::waitTilReady(int maxTO) {
 #if 1
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(MD5_BASE_K, MD5_READY, 1, maxTO);
+  return cep_readNspin(MD5_READY, 1, maxTO);
 #else  
   if (GetVerbose()) {  LOGI("%s\n",__FUNCTION__); }  
   while (maxTO > 0) {
-    if (cep_readNcapture(MD5_BASE_K, MD5_READY)) break;
+    if (cep_readNcapture(MD5_READY)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -116,10 +116,10 @@ int cep_md5::waitTilReady(int maxTO) {
 int cep_md5::waitTilDone(int maxTO) {
 #if 1
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(MD5_BASE_K, MD5_MSG_OUT_VALID, 1, maxTO);
+  return cep_readNspin(MD5_MSG_OUT_VALID, 1, maxTO);
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(MD5_BASE_K, MD5_MSG_OUT_VALID)) break;
+    if (cep_readNcapture(MD5_MSG_OUT_VALID)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -131,14 +131,14 @@ void cep_md5::ReadOutText(void) {
   if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }  
 #ifdef BIG_ENDIAN
   for(int i = 0; i < 2; i++) { //  128bits
-    word = cep_readNcapture(MD5_BASE_K, MD5_HASH_BASE + (i*8));
+    word = cep_readNcapture(MD5_HASH_BASE + (i*8));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }
   }  
 #else  
   for(int i = 0; i < 2; i++) { //  128bits
-    word = cep_readNcapture(MD5_BASE_K, MD5_HASH_BASE + (8*(1-i)));
+    word = cep_readNcapture(MD5_HASH_BASE + (8*(1-i)));
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;
     }

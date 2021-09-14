@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      
 // Program:        Common Evaluation Platform (CEP)
@@ -48,9 +48,9 @@ double cep_iir::fixed_to_float(fixp32_8 input)
 //
 //
 //
-cep_iir::cep_iir(int seed, int verbose)
+cep_iir::cep_iir(int coreIndex, int seed, int verbose)
 {
-  init();  
+  init(coreIndex);
   SetSeed(15145975);
   SetVerbose(verbose);
   mTolerance = 1; // %
@@ -158,34 +158,34 @@ void cep_iir::LoadInSamples(int samCnt) {
     // duplicate 32 to 64 for coverage
     word |= (word << 32) | (word & 0xFFFFFFFFLL);
     //
-    cep_writeNcapture(IIR_BASE_K, IIR_IN_DATA, word); //Write data
-    cep_writeNcapture(IIR_BASE_K, IIR_IN_ADDR, i);     //Write addr
-    cep_writeNcapture(IIR_BASE_K, IIR_IN_WRITE, 0x02);  //Load data
-    cep_writeNcapture(IIR_BASE_K, IIR_IN_WRITE, 0x00);  //Stop
+    cep_writeNcapture(IIR_IN_DATA, word); //Write data
+    cep_writeNcapture(IIR_IN_ADDR, i);     //Write addr
+    cep_writeNcapture(IIR_IN_WRITE, 0x02);  //Load data
+    cep_writeNcapture(IIR_IN_WRITE, 0x00);  //Stop
   }
 }
 
 void cep_iir::Start(void) {
-  cep_writeNcapture(IIR_BASE_K, IIR_START, 0x1);
-  cep_writeNcapture(IIR_BASE_K, IIR_START, 0x0);
+  cep_writeNcapture(IIR_START, 0x1);
+  cep_writeNcapture(IIR_START, 0x0);
 }
 
 void cep_iir::Reset(int assert) {
-  cep_writeNcapture(IIR_BASE_K, IIR_RESET, assert);
+  cep_writeNcapture(IIR_RESET, assert);
 }
 
 void cep_iir::Reset(void) {
-  cep_writeNcapture(IIR_BASE_K, IIR_RESET, 0x1);
-  cep_writeNcapture(IIR_BASE_K, IIR_RESET, 0x0);
+  cep_writeNcapture(IIR_RESET, 0x1);
+  cep_writeNcapture(IIR_RESET, 0x0);
 }
 
 int cep_iir::waitTilDone(int maxTO) {
 #if 1
    if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-   return cep_readNspin(IIR_BASE_K, IIR_DONE, 0x4, maxTO);
+   return cep_readNspin(IIR_DONE, 0x4, maxTO);
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(IIR_BASE_K, IIR_DONE) & 0x4) break;
+    if (cep_readNcapture(IIR_DONE) & 0x4) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -195,8 +195,8 @@ int cep_iir::waitTilDone(int maxTO) {
 void cep_iir::ReadOutSamples(int samCnt) {
   uint64_t word;
   for(int i = 0; i < samCnt; i++) { //  8-bytes/word
-    cep_writeNcapture(IIR_BASE_K, IIR_OUT_ADDR, i);    //Write addr
-    word=cep_readNcapture(IIR_BASE_K, IIR_OUT_DATA); //Read data
+    cep_writeNcapture(IIR_OUT_ADDR, i);    //Write addr
+    word=cep_readNcapture(IIR_OUT_DATA); //Read data
     mAct[i] = fixed_to_float(word);
   }
 }

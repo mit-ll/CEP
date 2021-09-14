@@ -1,10 +1,10 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
-// File Name:      
+// File Name:      cep_exports.cc/.h
 // Program:        Common Evaluation Platform (CEP)
-// Description:    
+// Description:    Exports to the Linux Diagnostics
 // Notes:          
 //
 //************************************************************************
@@ -17,8 +17,6 @@
 #include <mutex>
 #include <sys/mman.h>
 #include <malloc.h>
-//#include <asm/io.h>
-//
 #include "simdiag_global.h"
 #include "cep_adrMap.h"
 #include "cep_io.h"
@@ -61,7 +59,7 @@ static void thr_test_func(int id) {
 int run_threadTest(void) {
   int errCnt = 0;
   cep_set_thr_function(thr_test_func);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 
@@ -148,7 +146,7 @@ static void cepRegTest_thr(int id) {
 int run_cepRegTest(void) {
   int errCnt = 0;
   cep_set_thr_function(cepRegTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 //
@@ -168,7 +166,7 @@ static void cepLockTest_thr(int id) {
 int run_cepLockTest(void) {
   int errCnt = 0;
   cep_set_thr_function(cepLockTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 //
@@ -187,7 +185,7 @@ static void cepMultiLock_thr(int id) {
 int run_cepMultiLock(void) {
   int errCnt = 0;
   cep_set_thr_function(cepMultiLock_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 //
@@ -234,7 +232,7 @@ int run_cepMaskromTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepMaskromTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
  }
 
@@ -255,7 +253,7 @@ int run_cepClintTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepClintTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
  }
 
@@ -275,7 +273,7 @@ int run_cepPlicTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepPlicTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
  }
 
@@ -291,7 +289,7 @@ int run_cepPlicPrioIntrTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepPlicPrioIntrTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
  }
 #endif
@@ -508,7 +506,7 @@ int run_dcacheCoherency(void) {
   //
   dcache_gCnt = 0;  
   cep_set_thr_function(dcacheCoherency_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
 }
 
@@ -583,7 +581,7 @@ int run_icacheCoherency(void) {
     set_selfModCodeValue(0, GET_VAR_VALUE(verbose)); // start from core 0  
     //
     cep_set_thr_function(icacheCoherency_thr);
-    errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+    errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   }
   //
   return errCnt;  
@@ -616,7 +614,7 @@ int run_ddr3Test(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(ddr3Test_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   //free(scratch_ptr);
   return errCnt;  
  }
@@ -651,7 +649,7 @@ int run_smemTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(smemTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
   return errCnt;  
  }
 
@@ -660,23 +658,30 @@ int run_smemTest(void) {
 // cepMacroMix Test (4 per test)
 // ********************
 //
-//#include "cepregression.h"
 #include "cepMacroMix.h"
 static void cepMacroMix_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
-  errCnt += cepMacroMix_runTest(id,GET_VAR_VALUE(coreMask),GET_VAR_VALUE(testMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  errCnt += cepMacroMix_runTest(id, GET_VAR_VALUE(cpuMask), GET_VAR_VALUE(coreMask), GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
   cep_set_thr_errCnt(errCnt);     
 }
  
 int run_cepMacroMix(void) {
+
+  // Initialize the error count to zero
   int errCnt = 0;
-  //
-  cep_set_thr_function(cepMacroMix_thr);
+  
+  // Initialize the core data structures
   initConfig();
+  
+  // Set the threads function pointer
+  cep_set_thr_function(cepMacroMix_thr);
+
   // clear the signature
   DUT_WRITE32_64(reg_base_addr + cep_core0_status, 0);
-  //
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+  
+  // Spawn the cepMacroMix thread
+  errCnt += run_multiThreads(GET_VAR_VALUE(cpuMask));
+  
   return errCnt;  
  }
 
@@ -687,43 +692,29 @@ int run_cepMacroMix(void) {
 //
 static void cepMacroBadKey_thr(int id) {
   int errCnt = 	thr_waitTilLock(id, 5);
-  errCnt += cepMacroMix_runBadKeysTest(id,GET_VAR_VALUE(coreMask),GET_VAR_VALUE(seed),GET_VAR_VALUE(verbose));
+  errCnt += cepMacroMix_runBadKeysTest(id, GET_VAR_VALUE(cpuMask), GET_VAR_VALUE(coreMask), GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
   cep_set_thr_errCnt(errCnt);     
 }
  
 int run_cepMacroBadKey(void) {
+
+  // Initialize the error count to zero
   int errCnt = 0;
-  //
-  cep_set_thr_function(cepMacroBadKey_thr);
+
+  // Initialize the core data structures
   initConfig();
+
+  // Set the threads function pointer
+  cep_set_thr_function(cepMacroBadKey_thr);
+
+  // clear the signature
   DUT_WRITE32_64(reg_base_addr + cep_core0_status, 0);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+
+  // Spawn the cepMacroMix runBadKey thread
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
+
   return errCnt;  
  }
-
-//
-// ********************
-// Single Macros
-// ********************
-//
-#define RUN_SINGLE(c)				\
-  int run_cep_ ## c (void) {			\
-    int saveTestMask = GET_VAR_VALUE(testMask); \
-    SET_VAR_VALUE(testMask, 1 << c ## _BASE_K);	\
-    int errCnt = run_cepMacroMix();	    	\
-    SET_VAR_VALUE(testMask, saveTestMask);	\
-    return errCnt;	  		    	\
-  }
-
-RUN_SINGLE(AES)
-RUN_SINGLE(DES3)
-RUN_SINGLE(DFT)
-RUN_SINGLE(FIR)
-RUN_SINGLE(IIR)
-RUN_SINGLE(GPS)
-RUN_SINGLE(MD5)
-RUN_SINGLE(RSA)
-RUN_SINGLE(SHA256)
 
 //
 // ********************
@@ -759,7 +750,7 @@ static void cacheFlush_thr(int id) {
    int errCnt = 0;
    //
    cep_set_thr_function(cacheFlush_thr);
-   errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
+   errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask));
    return errCnt;  
   }
 
@@ -788,7 +779,7 @@ int run_cepLockfreeAtomic(void) {
   clearScratchPtr();
   //bzero(scratch_ptr,cep_cache_size*scratch_blocks);
   cep_set_thr_function(cepLockfreeAtomic_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   //free(scratch_ptr);
   return errCnt;
 }
@@ -849,7 +840,7 @@ int run_cepLrscOps(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepLrscOps_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   //free(scratch_ptr);
   return errCnt;
 }
@@ -874,7 +865,7 @@ int run_cepAccessTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepAccessTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 
@@ -929,33 +920,10 @@ int run_cepAtomicTest(void) {
   int errCnt = 0;
   //
   cep_set_thr_function(cepAtomicTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask)); 
+  errCnt = run_multiThreads(GET_VAR_VALUE(cpuMask)); 
   return errCnt;
 }
 
-//
-// ********************
-// CSR
-// ********************
-//
-#if 0
-// Not under Linux!!!!
-#include "cepCsrTest.h"
-
-static void cepCsrTest_thr(int id) {
-  int errCnt = 	thr_waitTilLock(id, 5);
-  errCnt += cepCsrTest_runTest(id, 64, GET_VAR_VALUE(revCheck), GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
-  cep_set_thr_errCnt(errCnt);     
-}
- 
-int run_cepCsrTest(void) {
-  int errCnt = 0;
-  //
-  cep_set_thr_function(cepCsrTest_thr);
-  errCnt = run_multiThreads(GET_VAR_VALUE(coreMask));
-  return errCnt;  
- }
-#endif
 
 //
 // ********************
@@ -963,16 +931,24 @@ int run_cepCsrTest(void) {
 // ********************
 //
 int run_cepSrotErrTest(void) {
+
+  // Initialize the error count to zero
   int errCnt = 0;
-  //
-  int id = GET_VAR_VALUE(seed) & 0x3; // 
-  cep_srot srot(GET_VAR_VALUE(verbose));
   
+   // Initialize the core data structures
+  initConfig();
+
+  int id = GET_VAR_VALUE(cpuMask) & 0x3;
+
+  // Initialize the SRoT object 
+  cep_srot srot(SROT_INDEX, CEP_VERSION_REG_INDEX, GET_VAR_VALUE(verbose));
+ 
   // Set the mask... from the seed (which we passed the parent's mask for this test)
   srot.SetCpuActiveMask(1 << id);
+  
   // Call the Error Test
   errCnt = srot.LLKI_ErrorTest(id);
-  //
+  
   return errCnt;
 }
 
@@ -983,31 +959,46 @@ int run_cepSrotErrTest(void) {
 //
 #include "cepMultiThread.h"
 u_int64_t testLockBuf=0;
-//
+
 static void cepMultiThread_thr(int id) {
+
+    // Set some parameters
     int errCnt = 	0;
     int maxTest = 10;
-        // RSA takes too long!!!
-    int cryptoMask = ((1 << maxTest) -1) & ~(1 << RSA_BASE_K) & GET_VAR_VALUE(testMask);
+    int cpuMask = ((1 << maxTest) -1) & GET_VAR_VALUE(coreMask);
     int maxLoop = 5;
-    errCnt += cepMultiThread_runThr(id, testLockBuf, cryptoMask, maxTest, maxLoop, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
-    cep_set_mthr_errCnt(id,errCnt);     
+
+    errCnt += cepMultiThread_runThr(id, testLockBuf, cpuMask, maxTest, maxLoop, GET_VAR_VALUE(seed), GET_VAR_VALUE(verbose));
+
+    // Aggregate thread's error count
+    cep_set_mthr_errCnt(id, errCnt);     
+
 }
  
 int run_cepMultiThread(void) {
+ 
+  // Initialize the error count to zero
   int errCnt = 0;
-  //
+
+  // Initialize the core data structures
+  initConfig();
+
+  // Set the threads function pointer
   cep_set_thr_function(cepMultiThread_thr);
+
   int maxTest = 10;
+
 #ifdef USE_ATOMIC  
   testLockBuf = (u_int64_t)getScratchPtr(); // virtual
   clearScratchPtr();
 #else  
   testLockBuf = (u_int64_t)(ddr3_base_adr) + ((u_int64_t)getScratchPtr() & (u_int64_t)(ddr3_base_size-1)); // physical
 #endif  
+
   errCnt += cepMultiThread_setup(0, testLockBuf, maxTest, 1, GET_VAR_VALUE(verbose)) ;
-  //
+
   if (!errCnt) { errCnt = run_multiThreadFloats(GET_VAR_VALUE(maxThreads)); }
+
   return errCnt;  
  }
 

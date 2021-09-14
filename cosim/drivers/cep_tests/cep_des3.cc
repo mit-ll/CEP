@@ -1,6 +1,6 @@
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:      cep_des3.cc/h
 // Program:        Common Evaluation Platform (CEP)
@@ -26,8 +26,8 @@
 //
 //
 
-cep_des3::cep_des3(int seed, int verbose) {
-  init();  
+cep_des3::cep_des3(int coreIndex, int seed, int verbose) {
+  init(coreIndex);
   SetKeySize(24); // 56*3 = 21 bytes
   SetBlockSize(64/8); // 8 bytes
   SetSeed(seed);
@@ -70,8 +70,8 @@ void cep_des3::LoadKey(void) {
   //uint64_t word;
   
   for(int i = 0; i < 3; i++) { //  7-bytes/word for des3
-    //    cep_writeNcapture(DES3_BASE_K, DES3_KEY_BASE + (((DES3_KEY_WORDS - 1) - i) * BYTES_PER_WORD),word);
-    cep_writeNcapture(DES3_BASE_K, DES3_KEY_BASE + (i * BYTES_PER_WORD),mHwKEY[i]);
+    //    cep_writeNcapture(DES3_KEY_BASE + (((DES3_KEY_WORDS - 1) - i) * BYTES_PER_WORD),word);
+    cep_writeNcapture(DES3_KEY_BASE + (i * BYTES_PER_WORD),mHwKEY[i]);
   }
 }
 
@@ -84,29 +84,29 @@ void cep_des3::LoadInText(void) {
       word = (word << 8) | (uint64_t)mHwPt[i*8 + j];      
     }
 #ifdef BIG_ENDIAN
-    cep_writeNcapture(DES3_BASE_K, DES3_IN_BASE + (i * BYTES_PER_WORD), word);    
+    cep_writeNcapture(DES3_IN_BASE + (i * BYTES_PER_WORD), word);    
 #else
-    cep_writeNcapture(DES3_BASE_K, DES3_IN_BASE + (((DES3_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), word);
+    cep_writeNcapture(DES3_IN_BASE + (((DES3_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD), word);
 #endif
   }
 }
 
 void cep_des3::SetMode(void) {
-  cep_writeNcapture(DES3_BASE_K, DES3_DECRYPT, GetDecrypt());
+  cep_writeNcapture(DES3_DECRYPT, GetDecrypt());
 }
 
 void cep_des3::Start(void) {
-  cep_writeNcapture(DES3_BASE_K, DES3_START, 0x1);
-  cep_writeNcapture(DES3_BASE_K, DES3_START, 0x0);
+  cep_writeNcapture(DES3_START, 0x1);
+  cep_writeNcapture(DES3_START, 0x0);
 }
 
 int cep_des3::waitTilDone(int maxTO) {
 #if 1
     if (GetVerbose(2)) {  LOGI("%s\n",__FUNCTION__); }    
-  return cep_readNspin(DES3_BASE_K, DES3_DONE, 1, maxTO);
+  return cep_readNspin(DES3_DONE, 1, maxTO);
 #else
   while (maxTO > 0) {
-    if (cep_readNcapture(DES3_BASE_K, DES3_DONE)) break;
+    if (cep_readNcapture(DES3_DONE)) break;
     maxTO--;
   };
   return (maxTO <= 0) ? 1 : 0;
@@ -117,9 +117,9 @@ void cep_des3::ReadOutText(void) {
   uint64_t word;
   for(int i = 0; i < GetBlockSize()/8; i++) { //  8-bytes/word
 #ifdef BIG_ENDIAN
-    word = cep_readNcapture(DES3_BASE_K, DES3_CT_BASE +(i * BYTES_PER_WORD));    
+    word = cep_readNcapture(DES3_CT_BASE +(i * BYTES_PER_WORD));    
 #else
-    word = cep_readNcapture(DES3_BASE_K, DES3_CT_BASE +(((DES3_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD));
+    word = cep_readNcapture(DES3_CT_BASE +(((DES3_BLOCK_WORDS - 1) - i) * BYTES_PER_WORD));
 #endif
     for (int j=0;j<8;j++) {
       mHwCp[i*8 +j]= (word >> (8*(7-j)) ) & 0xff;

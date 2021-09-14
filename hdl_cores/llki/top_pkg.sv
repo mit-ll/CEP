@@ -4,7 +4,7 @@
 
 //************************************************************************
 // Copyright 2021 Massachusetts Institute of Technology
-// SPDX License Identifier: MIT
+// SPDX License Identifier: BSD-2-Clause
 //
 // File Name:       top_pkg.sv
 // Program:         Common Evaluation Platform (CEP)

@@ -1,0 +1,439 @@
+//--------------------------------------------------------------------------------------
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      dpi_common.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Defines structure and functions for Mailbox I/O
+// Notes:          
+//
+//--------------------------------------------------------------------------------------
+
+// Mailbox structure for DPI communications
+typedef struct {
+  int               mCmdValid;
+  int               mRemoteReq;
+  int               mActive;
+  int unsigned      mCmd;
+  int unsigned      mAdrHi;         // upper address
+  int unsigned      mCycleCount;  
+  longint unsigned  mAdr;
+  longint unsigned  mPar[32];       // upto 16 32bits = cache size
+  byte              mStr[256];      // upto 256 characters
+  byte              mPostStr[256];  // upto 256 characters
+} mailBox;
+
+mailBox inBox; // from C
+
+import "DPI-C" context function void get_v2c_mail(input int slotId, input int cpuId, output mailBox inBox);
+import "DPI-C" context function void send_v2c_mail(input int slotId, input int cpuId, input mailBox inBox);
+
+// Support tasks and functions for DPI communications
+reg [3:0]   __mSlotId;
+reg [3:0]   __mCpuId;
+reg [31:0]  __shIpc_cmd;
+reg [63:0]  __shIpc_address;
+reg [31:0]  __shIpc_p0;
+reg [31:0]  __shIpc_p1;
+reg [31:0]  __shIpc_p2;
+reg [31:0]  __shIpc_p3;
+reg [31:0]  __shIpc_p4;
+reg [31:0]  __shIpc_p5;
+reg [31:0]  __shIpc_p6;
+reg [31:0]  __shIpc_p7;
+reg         __shIpc_cmdValid;
+reg         __shIpc_remoteReq;
+reg         __shIpc_EnableMode;
+reg         __shIpc_Active;
+reg         __shIpc_InProcess;
+reg         __shIpc_Time2Shutdown;
+reg [31:0]  __shIpc_Status;
+reg         __shIpc_CheckpointEnable;
+reg [31:0]  __simTime;
+
+initial begin
+  __shIpc_cmd               = 0;
+  __shIpc_address           = 0;
+  __shIpc_p0                = 0;
+  __shIpc_p1                = 0;
+  __shIpc_p2                = 0;
+  __shIpc_p3                = 0;
+  __shIpc_p4                = 0;
+  __shIpc_p5                = 0;
+  __shIpc_p6                = 0;
+  __shIpc_p7                = 0;
+  __shIpc_cmdValid          = 0;
+  __shIpc_remoteReq         = 0;
+  __shIpc_EnableMode        = 0;
+  __shIpc_Active            = 1;
+  __shIpc_InProcess         = 0; 
+  __shIpc_Time2Shutdown     = 0;    
+  __shIpc_Status            = 0;
+  __shIpc_CheckpointEnable  = 0;
+  __simTime                 = 0;
+
+  // MY_SLOT_ID and MY_CPU_ID must be defined by the driver including this file
+  #1 __mSlotId              = MY_SLOT_ID;
+  __mCpuId                  = MY_CPU_ID;
+end
+
+// Advance the simulation time (`SYSTEM_SIM_TIME as defined in cep_hierMap.incl is used
+// by all drivers)
+always @(posedge `SHIPC_CLK ) __simTime = __simTime + 1;
+
+//--------------------------------------------------------------------------------------
+// Process a received mailbox command
+//--------------------------------------------------------------------------------------
+task processCmd;
+  begin
+    case (__shIpc_cmd)
+      // ATOMIC_RDW64
+      `SHIPC_ATOMIC_RDW64 : begin 
+        `ifdef SHIPC_ATOMIC_RDW64_TASK
+          `SHIPC_ATOMIC_RDW64_TASK;
+          `undef SHIPC_ATOMIC_RDW64_TASK
+        `else
+          unsupportedCommand("SHIPC_ATOMIC_RDW64");
+        `endif
+      end
+      // WRITE64_BURST
+      `SHIPC_WRITE64_BURST : begin 
+        `ifdef SHIPC_WRITE64_BURST_TASK
+          `SHIPC_WRITE64_BURST_TASK;
+          `undef SHIPC_WRITE64_BURST_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE64_BURST");
+        `endif
+      end
+      // WRITE32_64
+      `SHIPC_WRITE32_64 : begin 
+        `ifdef SHIPC_WRITE32_64_TASK
+          `SHIPC_WRITE32_64_TASK;
+          `undef SHIPC_WRITE32_64_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE32_64");
+        `endif
+      end
+      // WRITE32_32
+      `SHIPC_WRITE32_32 : begin 
+        `ifdef SHIPC_WRITE32_32_TASK
+          `SHIPC_WRITE32_32_TASK;
+          `undef SHIPC_WRITE32_32_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE32_32");
+        `endif
+      end
+      // WRITE32_16
+      `SHIPC_WRITE32_16 : begin 
+        `ifdef SHIPC_WRITE32_16_TASK
+          `SHIPC_WRITE32_16_TASK;
+          `undef SHIPC_WRITE32_16_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE32_16");
+        `endif
+      end
+      // WRITE32_8
+      `SHIPC_WRITE32_8 : begin 
+        `ifdef SHIPC_WRITE32_8_TASK
+          `SHIPC_WRITE32_8_TASK;
+          `undef SHIPC_WRITE32_8_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE32_8");
+        `endif
+      end
+      // WRITE64_64
+      `SHIPC_WRITE64_64 : begin 
+        `ifdef SHIPC_WRITE64_64_TASK
+          `SHIPC_WRITE64_64_TASK;
+          `undef SHIPC_WRITE64_64_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE64_64");
+        `endif
+      end
+      // READ32_8
+      `SHIPC_READ32_8 : begin 
+        `ifdef SHIPC_READ32_8_TASK
+          `SHIPC_READ32_8_TASK;
+          `undef SHIPC_READ32_8_TASK
+        `else
+          unsupportedCommand("SHIPC_READ32_8");
+        `endif
+      end
+      // READ32_16
+      `SHIPC_READ32_16 : begin 
+        `ifdef SHIPC_READ32_16_TASK
+          `SHIPC_READ32_16_TASK;
+          `undef SHIPC_READ32_16_TASK
+        `else
+          unsupportedCommand("SHIPC_READ32_16");
+        `endif
+      end
+      // READ32_32
+      `SHIPC_READ32_32 : begin 
+        `ifdef SHIPC_READ32_32_TASK
+          `SHIPC_READ32_32_TASK;
+          `undef SHIPC_READ32_32_TASK
+        `else
+          unsupportedCommand("SHIPC_READ32_32");
+        `endif
+      end
+      // READ32_64
+      `SHIPC_READ32_64 : begin 
+        `ifdef SHIPC_READ32_64_TASK
+          `SHIPC_READ32_64_TASK;
+          `undef SHIPC_READ32_64_TASK
+        `else
+          unsupportedCommand("SHIPC_READ32_64");
+        `endif
+      end
+      // READ64_64
+      `SHIPC_READ64_64 : begin 
+        `ifdef SHIPC_READ64_64_TASK
+          `SHIPC_READ64_64_TASK;
+          `undef SHIPC_READ64_64_TASK
+        `else
+          unsupportedCommand("SHIPC_READ64_64");
+        `endif
+      end
+      // READ64_BURST
+      `SHIPC_READ64_BURST : begin 
+        `ifdef SHIPC_READ64_BURST_TASK
+          `SHIPC_READ64_BURST_TASK;
+          `undef SHIPC_READ64_BURST_TASK
+        `else
+          unsupportedCommand("SHIPC_READ64_BURST");
+        `endif
+      end
+      // PRINTF
+      `SHIPC_PRINTF : begin 
+        `ifdef SHIPC_PRINTF_TASK
+          `SHIPC_PRINTF_TASK;
+          `undef SHIPC_PRINTF_TASK
+        `else
+          unsupportedCommand("SHIPC_PRINTF");
+        `endif
+      end
+      // WRITE_STATUS
+      `SHIPC_WRITE_STATUS : begin 
+        `ifdef SHIPC_WRITE_STATUS_TASK
+          `SHIPC_WRITE_STATUS_TASK;
+          `undef SHIPC_WRITE_STATUS_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE_STATUS");
+        `endif
+      end
+      // READ_STATUS
+      `SHIPC_READ_STATUS : begin 
+        `ifdef SHIPC_READ_STATUS_TASK
+          `SHIPC_READ_STATUS_TASK;
+          `undef SHIPC_READ_STATUS_TASK
+        `else
+          unsupportedCommand("SHIPC_READ_STATUS");
+        `endif
+      end
+      // WRITE_DVT_FLAG
+      `SHIPC_WRITE_DVT_FLAG : begin 
+        `ifdef SHIPC_WRITE_DVT_FLAG_TASK
+          `SHIPC_WRITE_DVT_FLAG_TASK;
+          `undef SHIPC_WRITE_DVT_FLAG_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE_DVT_FLAG");
+        `endif
+      end
+      // READ_DVT_FLAG
+      `SHIPC_READ_DVT_FLAG : begin 
+        `ifdef SHIPC_READ_DVT_FLAG_TASK
+          `SHIPC_READ_DVT_FLAG_TASK;
+          `undef SHIPC_READ_DVT_FLAG_TASK
+        `else
+          unsupportedCommand("SHIPC_READ_DVT_FLAG");
+        `endif
+      end
+      // SHIPC_READ_ERROR_CNT
+      `SHIPC_READ_ERROR_CNT : begin 
+        `ifdef SHIPC_READ_ERROR_CNT_TASK
+          `SHIPC_READ_ERROR_CNT_TASK;
+          `undef SHIPC_READ_ERROR_CNT_TASK
+        `else
+          unsupportedCommand("SHIPC_READ_ERROR_CNT");
+        `endif
+      end
+      // FRAMER_RDWR
+      `SHIPC_FRAMER_RDWR : begin 
+        `ifdef SHIPC_FRAMER_RDWR_TASK
+          `SHIPC_FRAMER_RDWR_TASK;
+          `undef SHIPC_FRAMER_RDWR_TASK
+        `else
+          unsupportedCommand("SHIPC_FRAMER_RDWR");
+        `endif
+      end
+      // SHIPC_SAMPLE_RDWR
+      `SHIPC_SAMPLE_RDWR : begin 
+        `ifdef SHIPC_SAMPLE_RDWR_TASK
+          `SHIPC_SAMPLE_RDWR_TASK;
+          `undef SHIPC_SAMPLE_RDWR_TASK
+        `else
+          unsupportedCommand("SHIPC_SAMPLE_RDWR");
+        `endif
+      end
+      // WRITE_DVT_FLAG
+      `SHIPC_WRITE_DVT_FLAG : begin 
+        `ifdef SHIPC_WRITE_DVT_FLAG_TASK
+          `SHIPC_WRITE_DVT_FLAG_TASK;
+          `undef SHIPC_WRITE_DVT_FLAG_TASK
+        `else
+          unsupportedCommand("SHIPC_WRITE_DVT_FLAG");
+        `endif
+      end
+      // READ_DVT_FLAG
+      `SHIPC_READ_DVT_FLAG : begin 
+        `ifdef SHIPC_READ_DVT_FLAG_TASK
+          `SHIPC_READ_DVT_FLAG_TASK;
+          `undef SHIPC_READ_DVT_FLAG_TASK
+        `else
+          unsupportedCommand("SHIPC_READ_DVT_FLAG");
+        `endif
+      end
+
+      // Common Tasks
+      `SHIPC_GET_SIM_TIME     : r_data                    = {2{`SYSTEM_SIM_TIME}};
+      `SHIPC_RUNCLK           : RUNCLK(__shIpc_p0);
+      `SHIPC_SHUTDOWN         : __shIpc_Time2Shutdown     = 1;
+      `SHIPC_SIMV_SAVE        : __shIpc_CheckpointEnable  = 1;
+      `SHIPC_READ_STATUS      : __shIpc_p0                = __shIpc_Status;
+      // Trap
+      default                 : `logE("ERROR: %m __shIpc_cmd = %08x NOT SUPPORTED!!!!\n", __shIpc_cmd);
+    endcase
+  end
+endtask // processCmd
+//--------------------------------------------------------------------------------------
+
+
+//--------------------------------------------------------------------------------------
+// DPI interface & Mailbox processing
+//
+// The defines included in the case statement below are the "superset" of commands
+// supported between the CPU and System Drivers.  It is up to the driver itself
+// to define the supported tasks BEFORE the inclusion of this file
+//--------------------------------------------------------------------------------------
+always @(posedge __shIpc_EnableMode) begin
+  
+  // Wait one clock
+  @(posedge `SHIPC_CLK);
+
+  // All drivers will use the same __simTime as defined by `SYSTEM_SIM_TIME
+  `logI("Entering shIpc_EnableMode Loop simTime = %0d", `SYSTEM_SIM_TIME);  
+  
+  // Continue as long as the IPC is enabled
+  while (__shIpc_EnableMode) begin
+     
+    // Retrieve a message
+    get_v2c_mail(__mSlotId, __mCpuId, inBox);
+
+    // Fetch a few items from the mailbox
+    __shIpc_cmdValid            = inBox.mCmdValid;
+    __shIpc_Active              = inBox.mActive;
+
+
+    // Is the thread done?
+    if (__shIpc_InProcess && !__shIpc_Active) begin
+      __shIpc_EnableMode        = 0; 
+      __shIpc_InProcess         = 0;
+      __shIpc_Active            = 1;
+    end 
+      
+    // If a valid command has been received, process it and send a response
+    if (inBox.mCmdValid) begin
+      __shIpc_remoteReq         = inBox.mRemoteReq;
+      __shIpc_cmd               = inBox.mCmd;
+      __shIpc_InProcess         = 1;
+      
+      // Call the processCmd task
+      processCmd;
+
+      // return data & complete the command
+      inBox.mCmdValid           = 0; 
+      inBox.mRemoteReq          = 0;
+      
+      // Send the response
+      send_v2c_mail(__mSlotId, __mCpuId, inBox);
+      
+    // end if (inBox.mCmdValid)
+    // If no command is detected, then have the driver wait for a clock.
+    // Otherwise, the simulation will lock up because of the continuous
+    // zero simulation time polling via get_v2c_mail
+    end else begin      
+      @(posedge `SHIPC_CLK);
+    end // else if (ipcDelay)
+
+  end // while
+end // end posedge
+//--------------------------------------------------------------------------------------
+
+
+
+//--------------------------------------------------------------------------------------
+// DPI tasks and support functions
+//--------------------------------------------------------------------------------------
+
+// For shutting down the simulation
+`ifdef MODELSIM
+  import mti_fli::*;
+`endif
+
+always @(posedge __shIpc_Time2Shutdown) begin
+  `logI("Running for 1 more NS before terminate the simv process");
+  `ifdef COVERAGE
+    `logI("Dumping coverage data");
+    `ifdef MODELSIM
+      mti_Command("dump_coverage");    
+    `endif
+  `endif
+  
+  #10 $finish;
+end
+
+task unsupportedCommand;
+  input string str; 
+begin 
+  `logE("ERROR: %m Command %s NOT SUPPORTED for this module.\n", str);
+end
+endtask
+
+task RUNCLK;
+  input [31:0] clkCnt;
+begin
+  repeat(inBox.mPar[0]) @(posedge `SHIPC_CLK);
+  inBox.mPar[0]         = `SYSTEM_SIM_TIME;
+end
+endtask // RUNCLK
+
+// Intialize the shared memory for this driver
+reg myIsActive  = 0;
+always @(posedge enableMe) begin
+
+  // Initialize shared memory, use key in the file
+  $vpp_shMemInit(-1);
+
+  // Wait a bit
+  #10;
+
+  // Check if master (C-side) is on
+  $vpp_isCActive(`SHIPC_XACTOR_ID, myIsActive);
+  if (myIsActive) begin
+    // wait until C-side is alive
+
+    // The System Slot/Driver does not wait to start
+    if (MY_SLOT_ID != `SYSTEM_SLOT_ID) begin
+      `logI("Calling $vpp_WaitTilStart slot = %0d cpu = %0d", MY_SLOT_ID, MY_CPU_ID);
+      $vpp_WaitTilStart(MY_SLOT_ID, MY_CPU_ID);
+    end
+    
+    `logI("Turning ON __shIpc_EnableMode simTime = %0d", `SYSTEM_SIM_TIME);
+    __shIpc_EnableMode = 1;
+  end else begin
+    `logI("Turning OFF __shIpc_EnableMode simTime = %0d", `SYSTEM_SIM_TIME);
+    __shIpc_EnableMode = 0;
+  end // end if (myIsActive)
+end 
+//--------------------------------------------------------------------------------------

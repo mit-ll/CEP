@@ -1,5 +1,0 @@
-/builds
-
-# sbt directories
-/target
-/project/target

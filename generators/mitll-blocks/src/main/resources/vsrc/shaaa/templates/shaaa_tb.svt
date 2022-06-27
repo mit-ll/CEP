@@ -1,0 +1,97 @@
+//************************************************************************
+// Copyright 2022 Massachusets Institute of Technology
+// 
+// File Name:      {MODULE_NAME}_tb.sv
+// Program:        Common Evaluation Platform (CEP)
+// Description:    SHAAA unit testbench - tests inputs and outputs for 
+//                 functionality, but not intermediate state
+//
+//************************************************************************
+
+
+`timescale 1ns / 1ns
+
+//
+// Pull in the stimulus and other info
+//
+`include "{MODULE_NAME}_stimulus.v"
+
+module {MODULE_NAME}_tb ;
+  //
+  // Inputs
+  //
+  logic clk  = 0;
+  logic rst  = 1;
+  logic init = 0;
+  logic next = 0;
+
+  logic [`BLOCKSIZE_-1:0] block;
+
+  //
+  // Outputs
+  //
+  logic [`DIGEST_SIZE_-1:0]  exp_digest, digest;
+  logic ready, digest_valid;
+
+  int errCnt=0;
+
+  //
+  // Clock driving the DUT
+  //
+  initial begin
+    forever #5 clk = !clk;
+  end
+
+  //
+  // DUT instantiation
+  //
+  {MODULE_NAME} dut(.*);
+
+  // -------------------
+  // Test starts here
+  // -------------------
+  initial begin
+    // Pulse the DUT's reset & drive input to zeros (known states)
+    {{init,next,block,exp_digest}} = 0;
+    rst = 1;
+
+    repeat (5) @(posedge clk);
+    @(negedge clk);      // in stimulus, rst de-asserted after negedge
+    #2 rst = 0;
+    repeat (30) @(negedge clk);  // output stablizes
+
+    if (!errCnt) playback_data(0);
+    // print summary
+    if (errCnt)
+      $display("==== DUT={MODULE_NAME} TEST FAILED with %0d errors ====",errCnt);
+    else
+      $display("==== DUT={MODULE_NAME} TEST PASSED  ====");
+    //
+    $finish;
+  end
+
+  // Read data from file into buffer and playback for compare
+  task playback_data(input int StopOnError);
+    int i;
+    begin
+      // open file for checking
+      $display("Reading %d samples from buffer SHAAA_buffer",`SHAAA_SAMPLE_COUNT);
+      // now playback and check
+      for (i=0;i<`SHAAA_SAMPLE_COUNT;i++) begin
+        @(negedge clk); // set values before next clock
+        {{init,next,block,exp_digest}} = SHAAA_buffer[i];
+        @(negedge clk); // reset init and next signals
+        {{init,next}} = 0;
+        @(posedge digest_valid); // Wait for next chunk of digest to be processed
+        if (digest!==exp_digest) begin
+          $display("ERROR: miscompared at sample#%0d",i);
+          $display("  EXP=0x%x",exp_digest);
+          $display("  ACT=0x%x",digest);
+          errCnt++;
+        end
+        if (errCnt && StopOnError) break;
+      end
+    end
+  endtask
+  
+endmodule

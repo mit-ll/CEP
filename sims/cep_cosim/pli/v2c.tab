@@ -1,0 +1,35 @@
+//************************************************************************
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      v2c.tab
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Synopsys VCS "tab" file to support automated
+//                 registration of PLI functions
+// Notes:          
+//
+//************************************************************************
+
+//
+// Logging between C,_.Verilog
+//
+$logD		        call=logD				nocallback acc+=r:%task	  
+$logI		        call=logI				nocallback acc+=r:%task 
+$logW		        call=logW				nocallback acc+=r:%task 
+$logE		        call=logE				nocallback acc+=r:%task 
+$logF		   	call=logF				nocallback acc+=r:%task
+$vpp_debug_mode         call=vpp_debug_mode             args=1  nocallback acc+=r:%task
+$vpp_debug              call=vpp_debug                  size=1 	nocallback acc+=r:%task
+//
+// for comminucation between C/C++(SW) and Verilog(HW)
+//
+$vpp_shMemInit		call=vpp_shMemInit		args=1 	nocallback acc+=r:%task
+$vpp_shMemDestroy	call=vpp_shMemDestroy		args=1 	nocallback acc+=r:%task
+$vpp_shMemWakeup	call=vpp_shMemWakeup    	args=3 	nocallback acc+=r:%task
+$vpp_isCActive	        call=vpp_isCActive        	args=2 	nocallback acc+=r:%task
+$vpp_WaitTilStart       call=vpp_WaitTilStart        	args=2 	nocallback acc+=r:%task
+$vpp_getErrorCount      call=vpp_getErrorCount			nocallback acc+=r:%task
+$vpp_setErrorCount      call=vpp_setErrorCount          	nocallback acc+=r:%task
+//
+// End of file
+//

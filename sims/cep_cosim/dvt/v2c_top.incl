@@ -1,0 +1,30 @@
+//************************************************************************
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      v2c_top.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    SystemVerilog Logging support functions
+// Notes:          
+//
+//************************************************************************
+
+`ifdef __V2C_TOP__
+`else
+`define __V2C_TOP__
+
+// Mapping of logging support functions
+`define logI   $logI
+`define logE   $logE
+`define logF   $logF
+`define logW   $logW
+`define logD   if ($vpp_debug()) $logD
+
+`define logi   $logI
+`define loge   $logE
+`define logf   $logF
+`define logw   $logW
+`define logd   if ($vpp_debug()) $logD
+
+// __V2C_TOP__ 
+`endif 

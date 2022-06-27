@@ -1,0 +1,20 @@
+//************************************************************************
+// Copyright 2022 Massachusets Institute of Technology
+//
+// File Name:      {MODULE_NAME}_stimulus.txt
+// Program:        Common Evaluation Platform (CEP)
+// Description:    {MODULE_NAME} Core unit testbench stimulus
+// Notes:
+//
+//************************************************************************
+// column#1  : IN  init
+// column#2  : IN  next
+// column#3  : IN  block[BLOCKSIZE-1:0]
+// column#5  : OUT exp_digest[DIGEST_SIZE-1:0]
+`define BLOCKSIZE_    {BLOCKSIZE}
+`define DIGEST_SIZE_  {DIGEST_BITS}
+`define SHAAA_DATA_WIDTH  2+`BLOCKSIZE_+`DIGEST_SIZE_
+reg [`SHAAA_DATA_WIDTH-1:0] SHAAA_buffer[] = {{
+    'h{SHAAA_STIMULUS_DATA}
+}};
+`define SHAAA_SAMPLE_COUNT {SHAAA_STIMULUS_LENGTH}

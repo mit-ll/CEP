@@ -1,0 +1,108 @@
+//--------------------------------------------------------------------------------------
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      tl_defines.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Defines associated with the TL Master & Slace Models
+//
+// Notes:          
+//
+//--------------------------------------------------------------------------------------
+
+//
+// TileLink Defines
+//
+/*
+  Channel Opcode Message Operation Response
+A 0 PutFullData Put AccessAck
+A 1 PutPartialData Put AccessAck
+A 2 ArithmeticData Atomic AccessAckData
+A 3 LogicalData Atomic AccessAckData
+A 4 Get Get AccessAckData
+A 5 Intent Intent HintAck
+A 6 Acquire Acquire Grant or GrantData
+B 0 PutFullData Put AccessAck
+B 1 PutPartialData Put AccessAck
+B 2 ArithmeticData Atomic AccessAckData
+B 3 LogicalData Atomic AccessAckData
+B 4 Get Get AccessAckData
+B 5 Intent Intent HintAck
+B 6 Probe Acquire ProbeAck or ProbeAckData
+C 0 AccessAck Put
+C 1 AccessAckData Get or Atomic
+C 2 HintAck Intent
+C 4 ProbeAck Acquire
+C 5 ProbeAckData Acquire
+C 6 Release Release ReleaseAck
+C 7 ReleaseData Release ReleaseAck
+D 0 AccessAck Put
+D 1 AccessAckData Get or Atomic
+D 2 HintAck Intent
+D 4 Grant Acquire GrantAck
+D 5 GrantData Acquire GrantAck
+D 6 ReleaseAck Release
+E - GrantAck Acquire
+Table 5.3: Summary of TileLink messages, ordered by channel and opcode.
+  */
+//
+// TileLink Opcodes
+//
+`define TL_A_PUTFULLDATA    0   
+`define TL_A_PUTPARTIALDATA     1 
+`define TL_A_ARITHMETICDATA     2 
+`define TL_A_LOGICALDATA    3 
+`define TL_A_GET        4 
+`define TL_A_INTENT         5 
+`define TL_A_ACQUIRE        6   
+
+`define TL_B_PUTFULLDATA    0 
+`define TL_B_PUTPARTIALDATA     1 
+`define TL_B_ARITHMETICDATA     2 
+`define TL_B_LOGICALDATA    3 
+`define TL_B_GET        4 
+`define TL_B_INTENT         5 
+`define TL_B_PROBE      6 
+
+`define TL_C_ACCESSACK      0   
+`define TL_C_ACCESSACKDATA  1 
+`define TL_C_HINTACK        2   
+`define TL_C_PROBEACK       4   
+`define TL_C_PROBEACKDATA   5 
+`define TL_C_RELEASE RELEASE    6   
+`define TL_C_RELEASEDATA    7 
+
+`define TL_D_ACCESSACK      0   
+`define TL_D_ACCESSACKDATA  1 
+`define TL_D_HINTACK        2   
+`define TL_D_GRANT      4 
+`define TL_D_GRANTDATA      5   
+`define TL_D_RELEASEACK     6   
+//
+// Parameters
+// 
+// Cap types (Grant = new permissions, Probe = permisions <= target)
+`define CAP_toT    0
+`define CAP_toB    1
+`define CAP_toN    2
+
+// Grow types (Acquire = permissions >= target)
+`define GROW_NtoB  0
+`define GROW_NtoT  1
+`define GROW_BtoT  2
+ 
+// Shrink types (ProbeAck, Release)
+`define SHRINK_TtoB 0
+`define SHRINK_TtoN 1
+`define SHRINK_BtoN 2
+
+// Report types (ProbeAck, Release)
+`define REPORT_TtoT 3
+`define REPORT_BtoB 4
+`define REPORT_NtoN 5
+
+// logicalData param
+`define LOGIC_XOR   0
+`define LOGIC_OR    1
+`define LOGIC_AND   2
+`define LOGIC_SWAP  3

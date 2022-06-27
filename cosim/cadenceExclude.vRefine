@@ -1,26 +1,0 @@
-<?xml version="1.0" encoding="ISO-8859-1" standalone="no"?>
-<refinement-file-root>
-  <information comment-version="1" creation-time="Sat 12 Jun 2021 13:17:50 EDT" creator="aduong" csCheck="false" modified-by="aduong" modify-time="Wed 23 Jun 2021 08:19:02 EDT" save-ref-method="seq" tool-version="Cadence vManager20.06" rules-signature-c="94118266121e7da69fe33a271b3a8ba7">
-    <ucm-files>
-      <ucm-file domain="icc" modelCheckSum="486460092" path="/data/aduong/CEP/CEP_ASIC_v3.4_asicdev_an29511/CEP/cosim/cad_coverage/merge/icc_1cfecabc_2fdb71bd.ucm"></ucm-file>
-    </ucm-files>
-    <ccf-files>
-      <ccf-file content="#;# From Cadence 05/11/21;#;;# enable code and FSM coverage;select_coverage -block -expr -toggle -fsm -instance cep_tb.fpga.topDesign.topMod...;;# remove instances in the hierarchy without any coverage;deselect_coverage -remove_empty_instances;;# Specific options for coverage merging, refinements;set_code_fine_grained_merging;set_refinement_resilience;;# Specific options for finer granularity/control in coverage scoring;set_libcell_scoring -enable_vy;set_assign_scoring;set_branch_scoring;set_com -log;set_glitch_strobe 166 ps;;# expression specific options;set_expr_scoring -control -struct;set_expr_coverable_operators -bitwise -relational -conditional -reduction -logical_not;set_expr_coverable_statements -all;;;# toggle specific options;#set_toggle_portsonly                                                  # limit to ports only;#set_toggle_smart_refinement                                   # enable toggle smart refinement / exclusions;set_toggle_scoring -sv_mda;#set_toggle_scoring -sv_mda 16                                 # reduces most of warnings but toggle coverage space large;#set_toggle_scoring -sv_mda 18                                 # covers all warnings but toggle coverage space very large;set_toggle_scoring -sv_enum enable_mda;set_toggle_scoring -sv_enum -sv_struct_with_enum;set_toggle_strobe 166 ps;set_toggle_scoring -regeot;;# FSM specific options;set_fsm_scoring -hold_transition;set_fsm_reset_scoring;;# functional coverage ;select_functional -imm_asrt_class_package;set_covergroup -per_instance_default_one;;# Optimizations;#set_optimize -vlog_prune_on;set_optimize -top_expr_non_scorable;set_optimize -prune_covergroup;;#**************************;;" path="/data/aduong/CEP/CEP_ASIC_v3.4_asicdev_an29511/CEP/cosim/cadence_cov.ccf"></ccf-file>
-    </ccf-files>
-  </information>
-  <rules>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile/core/PlusArgTimeout" entityType="inst" excTime="1623518099" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/cbus/wrapped_error_device" entityType="inst" excTime="1623518140" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile/dcache/pma_checker" entityType="inst" excTime="1623518163" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_1/dcache/pma_checker" entityType="inst" excTime="1623518206" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_1/core/PlusArgTimeout" entityType="inst" excTime="1623518377" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_2/dcache/pma_checker" entityType="inst" excTime="1623518423" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_2/core/PlusArgTimeout" entityType="inst" excTime="1623518478" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_3/dcache/pma_checker" entityType="inst" excTime="1623518487" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/tile_3/core/PlusArgTimeout" entityType="inst" excTime="1623518495" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-    <rule ccType="inst" domain="icc" entityName="cep_tb/fpga/topDesign/topMod/mig" entityType="inst" excTime="1624450688" name="exclude" recursiveMetrics="overall" reviewer="unknown" user="0" vscope="default"></rule>
-  </rules>
-  <cache-map>
-    <cache-entry key="0" value="aduong"></cache-entry>
-  </cache-map>
-</refinement-file-root>

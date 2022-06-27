@@ -1,0 +1,77 @@
+//--------------------------------------------------------------------------------------
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      dump_control.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Provides wave dump functionality
+// Notes:          This must be included within a verilog module
+//
+//--------------------------------------------------------------------------------------
+
+// Cadence
+`ifdef CADENCE
+  `define DVAR_FILE     $recordfile("cep_wave")
+  `define DVARON        $recordon
+  `define DVAROFF       $recordoff
+  `define DVAR          $recordvars
+  `define DVAR_CLOSE    #0
+  `define LEVEL0        "depth=0"
+  `define LEVEL1        "depth=1"
+  `define SEL_LEVEL     (dLevel)?`LEVEL1:`LEVEL0
+
+  initial begin
+    `ifdef NOWAVE
+    `else  
+      `DVAR_FILE;
+      `DVAR(`LEVEL0, `COSIM_TB_TOP_MODULE);
+      `DVARON;  
+    `endif
+  end
+`endif
+
+// Modelsim ONLY
+`ifdef MODELSIM
+  import mti_fli::*;
+
+  reg waveDumpFlag          = 0; // off by default
+  reg dumpInProgress        = 0;
+  integer waveOnStartCycle  = 0;
+  integer waveonCycleDump   = -1;
+
+  always @(posedge `DVT_FLAG[`DVTF_WAVE_START_CYCLE]) begin
+    waveOnStartCycle = `DVT_FLAG[`DVTF_PAT_HI:`DVTF_PAT_LO];
+    `logI("waveOnStartCycle = %0d", waveOnStartCycle);      
+    `DVT_FLAG[`DVTF_WAVE_START_CYCLE]=0;
+  end
+
+  always @(posedge `DVT_FLAG[`DVTF_WAVE_CYCLE2DUMP]) begin
+    waveonCycleDump = `DVT_FLAG[`DVTF_PAT_HI:`DVTF_PAT_LO];
+    `logI("==== waveonCycleDump = %0d", waveonCycleDump);   
+    `DVT_FLAG[`DVTF_WAVE_CYCLE2DUMP]=0;
+  end
+
+  always @(posedge `DVT_FLAG[`DVTF_WAVE_ON]) begin
+    waveDumpFlag = 1;
+    `DVT_FLAG[`DVTF_WAVE_ON] = 0;
+  end
+
+  always @(posedge waveDumpFlag) begin
+    while (1) begin
+      if (waveDumpFlag && (`SYSTEM_SIM_TIME > waveOnStartCycle)) begin
+        `logI("Issuing wave_on to enable wave ON simTime = %0d waveonCycleDump = %0d waveonCycleDump = %0d", `SYSTEM_SIM_TIME, waveOnStartCycle, waveonCycleDump);
+        mti_Command("wave_on");
+        waveDumpFlag = 0;
+        dumpInProgress = 1;
+      end else if (dumpInProgress && (waveonCycleDump != -1) && (`SYSTEM_SIM_TIME > (waveOnStartCycle + waveonCycleDump))) begin
+        `logI("Issuing wave_off to disable wave ON simTime = %0d waveonCycleDump = %0d waveonCycleDump = %0d", `SYSTEM_SIM_TIME, waveOnStartCycle, waveonCycleDump);
+        mti_Command("wave_off");   
+        waveDumpFlag = 0;
+        dumpInProgress = 0;
+      end // end if
+    
+      @(posedge `SHIPC_CLK);
+    end // end while
+  end // end always
+
+`endif

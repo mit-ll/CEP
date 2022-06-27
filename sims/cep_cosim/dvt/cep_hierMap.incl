@@ -1,0 +1,101 @@
+//--------------------------------------------------------------------------------------
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX short identifier: BSD-2-Clause
+//
+// File Name:      cep_hierMap.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Defines related to the design hiearchy that increase
+//                 readability
+// Notes:          
+//
+//--------------------------------------------------------------------------------------
+
+`ifndef CEP_HIERMAP_INCL
+`define CEP_HIERMAP_INCL
+
+`define SYSTEM_DRIVER             `COSIM_TB_TOP_MODULE.system_driver
+`define CPU0_DRIVER               `COSIM_TB_TOP_MODULE.cpuId[0].driver
+`define CPU1_DRIVER               `COSIM_TB_TOP_MODULE.cpuId[1].driver
+`define CPU2_DRIVER               `COSIM_TB_TOP_MODULE.cpuId[2].driver
+`define CPU3_DRIVER               `COSIM_TB_TOP_MODULE.cpuId[3].driver
+
+`define SYSTEM_RESET              `COSIM_TB_TOP_MODULE.sys_rst_n
+`define PROGRAM_LOADED            `SYSTEM_DRIVER.program_loaded
+`define SYSTEM_SIM_TIME           `SYSTEM_DRIVER.__simTime
+`define UART_LOOPBACK_ENABLED     `SYSTEM_DRIVER.uart_loopback_enabled
+`define SPI_LOOPBACK_ENABLED      `SYSTEM_DRIVER.spi_loopback_enabled
+
+`define DVT_FLAG                  `SYSTEM_DRIVER.dvtFlags
+`define DUT_INST                  dut
+`define DUT_TOP_LEVEL             `COSIM_TB_TOP_MODULE.`DUT_INST
+
+`define DUT_UART_BUSY             ~`DUT_TOP_LEVEL.system.uartClockDomainWrapper.uart_0.txq.empty
+`define DUT_UART_DIVIDER          `DUT_TOP_LEVEL.system.uartClockDomainWrapper.uart_0.div
+`define DUT_SPI_SCKDIV            `DUT_TOP_LEVEL.system.spiClockDomainWrapper.spi_0.ctrl_sck_div
+
+`ifdef RISCV_TESTS
+  `define RISCV_PASSFAIL          `SYSTEM_DRIVER.passFail
+  `define RISCV_PASSFAILVALID     `SYSTEM_DRIVER.passFailValid
+`endif 
+
+// Paths to CEP-specific modules
+`define SROT_PATH                 `DUT_TOP_LEVEL.system.srotmodule
+`define SHA256_PATH               `DUT_TOP_LEVEL.system.sha256module
+`define RSA_PATH                  `DUT_TOP_LEVEL.system.rsamodule
+`define MD5_PATH                  `DUT_TOP_LEVEL.system.md5module
+`define IIR_PATH                  `DUT_TOP_LEVEL.system.iirmodule
+`define IDFT_PATH                 `DUT_TOP_LEVEL.system.idftmodule
+`define GPS_PATH                  `DUT_TOP_LEVEL.system.gpsmodule
+`define FIR_PATH                  `DUT_TOP_LEVEL.system.firmodule
+`define DFT_PATH                  `DUT_TOP_LEVEL.system.dftmodule
+`define DES3_PATH                 `DUT_TOP_LEVEL.system.des3module
+`define AES_PATH                  `DUT_TOP_LEVEL.system.aesmodule
+`ifdef ASIC_MODE
+  `define SCRATCHPAD_PATH         `DUT_TOP_LEVEL.system.scratchpadasicmodule
+  `define SCRATCHPAD_WRAPPER_PATH `SCRATCHPAD_PATH.scratchpad_asic_wrapper_inst
+`else
+  `define SCRATCHPAD_PATH         `DUT_TOP_LEVEL.system.scratchpadmodule
+  `define SCRATCHPAD_WRAPPER_PATH `SCRATCHPAD_PATH.scratchpad_wrapper_inst
+`endif 
+`define CEPREGS_PATH              `DUT_TOP_LEVEL.system.cepregsmodule
+`define SDCARD_PATH               `COSIM_TB_TOP_MODULE.spi_sd_model_inst
+
+`define TILE0_PATH                `DUT_TOP_LEVEL.system.tile_prci_domain.tile_reset_domain.tile
+`define TILE1_PATH                `DUT_TOP_LEVEL.system.tile_prci_domain_1.tile_reset_domain.tile
+`define TILE2_PATH                `DUT_TOP_LEVEL.system.tile_prci_domain_2.tile_reset_domain.tile
+`define TILE3_PATH                `DUT_TOP_LEVEL.system.tile_prci_domain_3.tile_reset_domain.tile
+`define TILE0_RESET               `TILE0_PATH.reset
+`define TILE1_RESET               `TILE1_PATH.reset
+`define TILE2_RESET               `TILE2_PATH.reset
+`define TILE3_RESET               `TILE3_PATH.reset
+
+// Paths to the Tilelink Masters in BFM mode
+`ifdef BFM_MODE
+  `define TILE0_TL_PATH            `TILE0_PATH.tl_master
+  `define TILE1_TL_PATH            `TILE1_PATH.tl_master
+  `define TILE2_TL_PATH            `TILE2_PATH.tl_master
+  `define TILE3_TL_PATH            `TILE3_PATH.tl_master
+`endif
+
+// Paths to RocketTile constructs in Bare Metal Mode 
+`ifdef BARE_MODE
+  `define CORE0_PC                 `TILE0_PATH.core.coreMonitorBundle_pc
+  `define CORE1_PC                 `TILE1_PATH.core.coreMonitorBundle_pc
+  `define CORE2_PC                 `TILE2_PATH.core.coreMonitorBundle_pc
+  `define CORE3_PC                 `TILE3_PATH.core.coreMonitorBundle_pc
+  `define CORE0_VALID              `TILE0_PATH.core.coreMonitorBundle_valid
+  `define CORE1_VALID              `TILE1_PATH.core.coreMonitorBundle_valid
+  `define CORE2_VALID              `TILE2_PATH.core.coreMonitorBundle_valid
+  `define CORE3_VALID              `TILE3_PATH.core.coreMonitorBundle_valid
+  `define CORE0_RESET              `TILE0_PATH.core.reset
+  `define CORE1_RESET              `TILE1_PATH.core.reset
+  `define CORE2_RESET              `TILE2_PATH.core.reset
+  `define CORE3_RESET              `TILE3_PATH.core.reset
+`endif
+
+// Used by the testbench when operating in BFM mode to point to the Tilelink Master Behavioral model
+`define PBUS_RESET                `DUT_TOP_LEVEL.system.subsystem_pbus_clock
+`define PBUS_CLOCK                `DUT_TOP_LEVEL.system.subsystem_pbus_reset
+`define DEBUG_NDRESET             `DUT_TOP_LEVEL.system.debug_systemjtag_reset
+
+`endif // CEP_HIERMAP_INCL

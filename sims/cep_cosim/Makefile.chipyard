@@ -1,0 +1,63 @@
+#//************************************************************************
+#// Copyright 2022 Massachusets Institute of Technology
+#// SPDX short identifier: BSD-2-Clause
+#//
+#// File Name:      Makefile
+#// Program:        Common Evaluation Platform (CEP)
+#// Description:    Chipyard-compatible makefile for creating/collecting
+#//                 the source files needed to run the CEP cosimulation
+#// Notes:          
+#//
+#//************************************************************************
+
+
+#########################################################################################
+# general path variables
+#########################################################################################
+base_dir=$(abspath ../..)
+sim_dir=$(abspath .)
+
+# do not generate simulation files
+sim_name := cep_cosim
+
+#########################################################################################
+# Default sub project and build target
+#########################################################################################
+SUB_PROJECT = cep_cosim
+
+#########################################################################################
+# include shared variables
+#########################################################################################
+include $(base_dir)/variables.mk
+
+.PHONY: default debug
+default: verilog
+
+#########################################################################################
+# simulaton requirements
+#########################################################################################
+
+# Include common simulation flags
+include $(base_dir)/sims/common-sim-flags.mk
+
+# copy files but ignore *.h files in *.f since vcs has +incdir+$(build_dir)
+$(sim_files): $(SIM_FILE_REQS) | $(build_dir)
+	cp -f $^ $(build_dir)
+	$(foreach file,\
+		$^,\
+		$(if $(filter %.h,$(file)),\
+			,\
+			echo "$(addprefix $(build_dir)/, $(notdir $(file)))" >> $@;))
+
+#########################################################################################
+# import other necessary rules and variables
+#########################################################################################
+include $(base_dir)/common.mk
+
+#########################################################################################
+# general cleanup rules
+#########################################################################################
+.PHONY: clean
+clean: cep_clean
+	(cd ${BOOTROM_SRC_DIR}; make clean)
+	-rm -rf $(gen_dir)/*

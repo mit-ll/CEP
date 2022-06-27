@@ -1,0 +1,247 @@
+//************************************************************************
+// Copyright 2022 Massachusets Institute of Technology
+// SPDX License Identifier: BSD-2-Clause
+//
+// File Name:      cep_adrMap.incl
+// Program:        Common Evaluation Platform (CEP)
+// Description:    Miscellaneous constants and addresses related to 
+//                 CEP items that are not part of the accelerator cores
+//                 as defined in CEP.h.  Converted to cep_adrMap.h via
+//                 a PERL script
+// Notes:          
+//
+//************************************************************************
+
+`ifndef CEP_ADRMAP_INCL
+`define CEP_ADRMAP_INCL
+
+// Maximum number of cores supports by co-simulation environment
+`define MAX_CORES                       4
+
+// Values used with the CEP Core Status registers to indicate status
+`define CEP_GOOD_STATUS                 'h600D_BABE
+`define CEP_BAD_STATUS                  'hBAD0_DADE
+`define CEP_RUNNING_STATUS              'h1234_5678
+`define CEP_NEXT_TEST                   'hBEEF_0000
+`define CEP_OK2RUN_SIGNATURE            'hAAAA_5555
+
+// Used by Linux diagnostics to map /dev/mem
+`define sys_base_addr                   'h0000_0000
+`define sys_base_size                   'h1000_0000
+
+`define cep_adr_mask                    'hF000_0000
+`define cep_fpga_base_adr               'h7000_0000
+`define cep_fpga_base_size              'h0800_0000
+
+// for SPI/UART/GPIO
+`define other_adr_mask                  'hFF00_0000
+`define other_base_addr                 'h6400_0000
+`define other_base_size                 'h0100_0000
+
+// The following constants define the base address and
+// size of the scratchpad memory (as defined in the 
+// selected configuration of CEPConfigs.scala)
+`define scratchpad_base_addr            'h8000_0000
+`define scratchpad_base_size            'h0010_0000
+
+// Defines the offset from scratchpad_base_addr used to
+// establish the initial SP value by the CEP bootrom.
+// This value is irrelevant to the bare metal
+// executable given that all registers are overwritten
+// in the bare metal bootloader (crt.S)
+// This needs to be "sufficiently" less than
+// scratchpad_base_size to allow sd.c to execute
+// properly
+`define scratchpad_sp_offset            'h0007_0000
+
+// Used by the bare-metal bootloader crt.S to allocate
+// both stack and thread local storage for each core
+// 
+//  2^9  - 512
+//  2^10 - 1k
+//  2^11 - 2k
+//  2^12 - 4k
+//  2^13 - 8k
+//  2^14 - 16k
+//  2^15 - 32k
+//  2^16 - 64k
+//
+// Allocation works is peformed by crt.S in the
+// following fashion:
+//  Core 0 tp = _end
+//  Core 1 tp = _end + 1 << cep_stkshift (x 2^cep_stkshift)
+//  Core 2 tp = _end + 2 << cep_stkshift (x 2^cep_stkshift)
+//  Core 3 tp = _end + 3 << cep_stkshift (x 2^cep_stkshift)
+//  Core 0 sp = _end + 4 << cep_stkshift (x 2^cep_stkshift)
+//  Core 1 sp = _end + 5 << cep_stkshift (x 2^cep_stkshift)
+//  Core 2 sp = _end + 6 << cep_stkshift (x 2^cep_stkshift)
+//  Core 3 sp = _end + 7 << cep_stkshift (x 2^cep_stkshift)
+//
+// 
+`define cep_stkshift                    12
+
+
+// Address constants used by the bare_malloc function
+// This has to fit into the scratchpad memory after
+// the data segment, thread local storage, and the stack
+// (for each core)
+//
+// 32kB of heap space is allocated per core and is
+// justified to the end of scratchpad memoyr
+//
+// regBaseTest and memBaseTest (the only tests that use bare_malloc)
+// MUST fit within this memory footprint
+//
+`define cep_malloc_heap_start           'h800A_0000   // 
+`define cep_malloc_heap_size_per_core   'h0000_8000   // 32kB per core
+
+`define scratchpad_known_pattern        'h600dbabe_12345678
+
+
+// The following constants are used within the CEP Registers
+// whose base address is defined in CEP.h
+`define version_register                'h0000
+`define testNset_reg                    'hFD10 
+`define   reqLock_bit                   32
+`define   releaseLock_bit               33
+`define   reqLockNum_bit                34
+`define   reqLockNum_mask               3
+`define   reqId_bit_lo                  40
+`define   reqId_mask                    'h7F
+`define cep_scratch0_reg                'hFE00
+`define cep_scratch1_reg                'hFE08
+`define cep_scratch2_reg                'hFE10
+`define cep_scratch3_reg                'hFE18
+`define cep_scratch4_reg                'hFE20
+`define cep_scratch5_reg                'hFE28
+`define cep_scratch6_reg                'hFE30
+`define cep_scratch7_reg                'hFE38
+`define cep_core0_status                'hFF00
+`define cep_core1_status                'hFF08
+`define cep_core2_status                'hFF10
+`define cep_core3_status                'hFF18
+`define CEP_VERSION_MASK                'h0FFFFFFF_FFFFFFFF
+
+// bootrom as 4kx32 = 16Kbytes
+`define bootrom_base_addr               'h0001_0000
+`define bootrom_base_size               (1<<15)
+
+// 32-bit offs
+// last 8 bytes of 0x7FFF
+// 32-bit offset
+`define bootrom_base_test_offs          'h1ffe
+`define bootrom_known_pat0              'h12345678
+`define bootrom_known_pat1              'h600dbabe
+
+// CLINT: core-local interrupt
+`define clint_base_addr                 'h0200_0000
+`define clint_base_size                 (1<<16)
+
+// NOTE: offset for MSIP to next hart is 4, the rest is 8
+`define  clint_msip_offset              'h0000
+`define  clint_mtimecmp_offset          'h4000
+// rtcTick = 1usec interval
+`define  clint_mtimer_offset            'hBFF8
+
+// PLIC: platform-level interrupt controller
+`define plic_base_addr                  'h0c00_0000
+`define plic_base_size                  (1<<26)
+
+// PLIC registers
+// source 1 - 127, source2 = +4 ... til 127
+`define plic_source0_prio_offset        'h00_0000
+`define plic_source1_prio_offset        'h00_0004
+`define plic_pending_array_start        'h00_1000
+`define plic_pending_array_last         'h00_100C
+
+`define plic_hart0_m_mode_ien_start     'h00_2000
+`define plic_hart0_m_mode_ien_stop      'h00_200C
+// NOTE: for Sifive U54, offset from one hart to another is 0x10 instead of 0x80
+`define plic_mode_ien_size_offset       'h80 
+
+`define plic_hart0_m_mode_prio_thresh   'h20_0000
+`define plic_hart0_m_mode_claim_done    'h20_0004
+// NOTE: for Sifiv U54, offset from one hart to another is 0x8 instead of 0x1000
+`define plic_prio_thresh_size_offset    'h1000
+
+// Misc. addresses
+`define debug_controller_base_addr      'h0000_0000  // " ]},{"base":[12288],"size":[4096]
+`define interrupt_controller_base_addr  'h0c00_0000  // "]},{"base":[1677721600],"size":[4096]
+
+// UART related addresses
+`define uart_base_addr                  'h6400_0000
+`define uart_txfifo                     'h00
+`define uart_rxfifo                     'h04
+`define uart_txctrl                     'h08
+`define uart_rxctrl                     'h0c
+`define uart_ie                         'h10
+`define uart_ip                         'h14
+`define uart_div                        'h18
+
+// SPI related addresses
+`define spi_base_addr                   'h6400_1000
+  `define spi_sckdiv                    'h00
+  `define spi_sckmode                   'h04
+  `define spi_csid                      'h10
+  `define spi_csdef                     'h14
+  `define spi_csmode                    'h18
+  `define spi_dcssck                    'h28
+  `define spi_dsckcs                    'h2a
+  `define spi_dintercs                  'h2c
+  `define spi_dinterxfr                 'h2e
+  `define spi_extradel                  'h38
+  `define spi_sampledel                 'h3c
+  `define spi_fmt                       'h40
+  `define spi_len                       'h42
+  `define spi_txfifo                    'h48
+  `define spi_rxfifo                    'h4c
+  `define spi_txmark                    'h50
+  `define spi_rxmark                    'h54
+  `define spi_insnmode                  'h60
+  `define spi_insnfmt                   'h64
+  `define spi_insnproto                 'h65
+  `define spi_insncmd                   'h66
+  `define spi_insnpad                   'h67
+  `define spi_ie                        'h70
+  `define spi_ip                        'h74
+
+// GPIO related addreses
+`define gpio_base_addr                  'h6400_2000
+  `define gpio_pin                      'h000 
+  `define gpio_input_en                 'h004 
+  `define gpio_output_en                'h008 
+  `define gpio_port_output              'h00C 
+  `define gpio_pue                      'h010 
+  `define gpio_ds                       'h014 
+  `define gpio_rise_ie                  'h018 
+  `define gpio_rise_ip                  'h01C 
+  `define gpio_fall_ie                  'h020 
+  `define gpio_fall_ip                  'h024 
+  `define gpio_high_ie                  'h028 
+  `define gpio_high_ip                  'h02C 
+  `define gpio_low_ie                   'h030 
+  `define gpio_low_ip                   'h034 
+  `define gpio_iof_en                   'h038 
+  `define gpio_iof_sel                  'h03C 
+  `define gpio_out_xor                  'h040 
+
+// 64bytes
+`define cep_cache_size                  64
+
+
+// CEP printf memory is used to overload printfs when operating in bare metal mode during simulation.
+//
+// As external memory has been removed, it must be remapped to the upper end of scratchpad memory
+// (minus the amount of space left for the stack pointer)
+//
+// Each printf len is a maxmimum of 128 bytes with up 32 lines per core
+`define cep_printf_str_max              128
+`define cep_printf_max_lines            32
+`define cep_printf_core_size            (cep_printf_str_max * cep_printf_max_lines) // in bytes
+`define cep_printf_mem_offset           'h1000  // offset from the end of scratchpad memory (to allow for stack pointer)
+`define cep_printf_mem                  (scratchpad_base_addr + scratchpad_base_size) - (cep_printf_core_size * 4) - cep_printf_mem_offset
+`define cep_max_program_size            scratchpad_base_size - (cep_printf_core_size * 4) - cep_printf_mem_offset
+
+
+`endif // CEP_ADRMAP_INCL
+

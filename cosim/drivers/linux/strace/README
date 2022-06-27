@@ -1,9 +1,0 @@
-# This directory is the latest strace for RISCV. 5.11
-
-The released version 4.11 under software/freedom-u-sdk/buildroot/package/strace is old and NOT supported. And it is no longer reside where it is supposed to be.
-
-To enable the build, remove the old directory and replace with this new one and add a line to :
-
-software/freedom-u-sdk/conf/buildroot_initramfs_config
-
-as such : BR2_PACKAGE_STRACE=y

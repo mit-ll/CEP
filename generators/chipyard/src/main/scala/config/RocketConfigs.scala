@@ -21,6 +21,13 @@ class TinyRocketConfig extends Config(
   new freechips.rocketchip.subsystem.With1TinyCore ++             // single tiny rocket-core
   new chipyard.config.AbstractConfig)
 
+// DOC include start: FFTRocketConfig
+class FFTRocketConfig extends Config(
+  new fftgenerator.WithFFTGenerator(baseAddr=0x2000, numPoints=8, width=16, decPt=8) ++ // add 8-point mmio fft at 0x2000 with 16bit fixed-point numbers.
+  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  new chipyard.config.AbstractConfig)
+// DOC include end: FFTRocketConfig
+
 class HwachaRocketConfig extends Config(
   new chipyard.config.WithHwachaTest ++
   new hwacha.DefaultHwachaConfig ++                              // use Hwacha vector accelerator
@@ -112,13 +119,6 @@ class GB1MemoryRocketConfig extends Config(
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++
   new chipyard.config.AbstractConfig)
 
-// DOC include start: Sha3Rocket
-class Sha3RocketConfig extends Config(
-  new sha3.WithSha3Accel ++                                // add SHA3 rocc accelerator
-  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
-  new chipyard.config.AbstractConfig)
-// DOC include end: Sha3Rocket
-
 // DOC include start: InitZeroRocketConfig
 class InitZeroRocketConfig extends Config(
   new chipyard.example.WithInitZero(0x88000000L, 0x1000L) ++   // add InitZero
@@ -135,9 +135,9 @@ class LoopbackNICRocketConfig extends Config(
 // DOC include start: l1scratchpadrocket
 class ScratchpadOnlyRocketConfig extends Config(
   new testchipip.WithSerialPBusMem ++
-  new freechips.rocketchip.subsystem.WithNMemoryChannels(0) ++ // remove offchip mem port
+  new chipyard.config.WithL2TLBs(0) ++
   new freechips.rocketchip.subsystem.WithNBanks(0) ++
-  new freechips.rocketchip.subsystem.WithNoMemPort ++
+  new freechips.rocketchip.subsystem.WithNoMemPort ++          // remove offchip mem port
   new freechips.rocketchip.subsystem.WithScratchpadsOnly ++    // use rocket l1 DCache scratchpad as base phys mem
   new freechips.rocketchip.subsystem.WithNBigCores(1) ++
   new chipyard.config.AbstractConfig)

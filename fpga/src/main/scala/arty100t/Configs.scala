@@ -39,21 +39,55 @@ class WithDefaultPeripherals extends Config((site, here, up) => {
   }
 })
 
-class WithSystemModifications (enableCEPRegs: Int = 0) extends Config((site, here, up) => {
+class WithSystemModifications extends Config((site, here, up) => {
   case DTSTimebase => BigInt((1e6).toLong)
   case BootROMLocated(x) => up(BootROMLocated(x), site).map { p =>
     // invoke makefile for sdboot
     val freqMHz = (site(DefaultClockFrequencyKey) * 1e6).toLong
-    val make = s"make -B -C fpga/src/main/resources/arty100t/sdboot PBUS_CLK=${freqMHz} ENABLE_CEPREG=${enableCEPRegs} bin"
+    val make = s"make -B -C fpga/src/main/resources/arty100t/sdboot PBUS_CLK=${freqMHz} bin"
     require (make.! == 0, "Failed to build bootrom")
     p.copy(hang = 0x10000, contentFileName = s"./fpga/src/main/resources/arty100t/sdboot/build/sdboot.bin")
+  }
+  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(ArtyDDRSize)))) // set extmem to DDR size
+  case SerialTLKey => None // remove serialized tl port
+})
+
+// Update to use the same bootrom as the CEP Cosimulation
+class WithCEPSystemModifications extends Config((site, here, up) => {
+  case DTSTimebase  => BigInt((1e6).toLong)
+  case BootROMLocated(x) => up(BootROMLocated(x), site).map { p =>
+    // invoke makefile for sdboot
+    val freqMHz = (site(DefaultClockFrequencyKey) * 1e6).toLong
+    val make = s"make -B -C fpga/src/main/resources/arty100t/cep_sdboot PBUS_CLK=${freqMHz} bin"
+    require (make.! == 0, "Failed to build bootrom")
+    p.copy(hang = 0x10000, contentFileName = s"./fpga/src/main/resources/arty100t/cep_sdboot/build/sdboot.bin")
   }
   case ExtMem       => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(ArtyDDRSize)))) // set extmem to DDR size
   case SerialTLKey  => None // remove serialized tl port
 })
 
 // DOC include start: AbstractArty100T and Rocket
-class WithArty100TTweaks (enableCEPRegs: Int = 0) extends Config(
+class WithArty100TTweaks extends Config(
+  // harness binders
+  new WithUART ++
+  new WithSPISDCard ++
+  new WithDDRMem ++
+  // io binders
+  new WithUARTIOPassthrough ++
+  new WithSPIIOPassthrough ++
+  new WithTLIOPassthrough ++
+  // other configuration
+  new WithDefaultPeripherals ++
+  new chipyard.config.WithTLBackingMemory ++      // use TL backing memory
+  new WithSystemModifications ++                  // setup busses, use sdboot bootrom, setup ext. mem. size
+  new chipyard.config.WithNoDebug ++              // remove debug module
+  new freechips.rocketchip.subsystem.WithoutTLMonitors ++
+  new freechips.rocketchip.subsystem.WithNMemoryChannels(1) ++
+  new WithFPGAFrequency(100)                      // default 100MHz freq
+)
+
+// DOC include start: AbstractArty100T and Rocket
+class WithArty100TCEPTweaks extends Config(
   // harness binders
   new WithUART ++
   new WithSPISDCard ++
@@ -67,7 +101,7 @@ class WithArty100TTweaks (enableCEPRegs: Int = 0) extends Config(
   // other configuration
   new WithDefaultPeripherals ++
   new chipyard.config.WithTLBackingMemory ++      // use TL backing memory
-  new WithSystemModifications(enableCEPRegs) ++   // setup busses, use sdboot bootrom, setup ext. mem. size
+  new WithCEPSystemModifications ++               // setup busses, use sdboot bootrom, setup ext. mem. size
   new chipyard.config.WithNoDebug ++              // remove debug module
   new freechips.rocketchip.subsystem.WithoutTLMonitors ++
   new freechips.rocketchip.subsystem.WithNMemoryChannels(1) ++
@@ -105,7 +139,7 @@ class RocketArty100TCEPConfig extends Config(
   new WithFPGAFrequency(50) ++
 
   // Include the Arty100T Tweaks with CEP Registers enabled (passed to the bootrom build)
-  new WithArty100TTweaks(1) ++
+  new WithArty100TCEPTweaks ++
   new chipyard.RocketNoL2Config
 )
 
@@ -121,7 +155,7 @@ class RocketArty100TMinCEPConfig extends Config(
   new WithFPGAFrequency(50) ++
 
   // Include the Arty100T Tweaks with CEP Registers enabled (passed to the bootrom build)
-  new WithArty100TTweaks(1) ++
+  new WithArty100TCEPTweaks ++
   new chipyard.RocketNoL2Config
 )
 

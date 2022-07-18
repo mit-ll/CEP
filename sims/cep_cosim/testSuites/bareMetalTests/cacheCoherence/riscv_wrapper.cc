@@ -53,8 +53,6 @@
     uint32_t pn_base = 0x800E0000 + (partnerId*8);  
     uint32_t stat=0  ;
     
-    set_printf(0);
-
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);  
 

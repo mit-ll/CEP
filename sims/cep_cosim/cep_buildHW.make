@@ -61,20 +61,19 @@ ifeq (${NOWAVE},1)
 COSIM_VLOG_ARGS				+= +define+NOWAVE
 endif
 
-# Pass on the ASIC_MODE argument
+# Pass on the ASIC_MODE and related arguements as appropriate
 ifeq (${ASIC_MODE},1)
 COSIM_VLOG_ARGS				+= +define+ASIC_MODE
 COSIM_VLOG_ARGS          	+= +define+NO_SDTC
-endif
-
+# These need to be included even if the pll_bypass is asserted
+COSIM_VSIM_ARGS				+= +PLLLIB_M55
+COSIM_VSIM_ARGS				+= +PLLLIB_SHORT_LOCK
 # If the PLL is enabled
 ifeq (${BYPASS_PLL},1)
 COSIM_VLOG_ARGS				+= +define+BYPASS_PLL
 endif
+endif
 
-# These need to be included even if the pll_bypass is asserted
-COSIM_VSIM_ARGS				+= +PLLLIB_M55
-COSIM_VSIM_ARGS				+= +PLLLIB_SHORT_LOCK
 
 # Defines for used within the Chisel Generated Verilog
 ifeq (${DISABLE_CHISEL_PRINTF},1)

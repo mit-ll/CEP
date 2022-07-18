@@ -19,6 +19,9 @@
 #
 #************************************************************************
 
+# Without the following, RHEL7 does not execute the simulation process properly
+.NOTPARALLEL:
+
 COSIM_TOP_DIR   	= $(strip $(shell cd ../..; pwd))
 REPO_TOP_DIR 		= $(strip $(shell cd ${COSIM_TOP_DIR}/../..; pwd))
 TEST_SUITE_DIR		= $(strip $(shell cd .; pwd))
@@ -271,10 +274,10 @@ TEST_LIST 	= ${ISA_SINGLE_CORE_LIST} ${ISA_VIRTUAL_TEST_LIST}
 #	TEST_LIST += dtmTest
 #endif
 
-runAll: ${TEST_SUITE_DIR}/.ISACreated
-	@for i in ${TEST_LIST}; do													\
+runAll: cleanSuite ${TEST_SUITE_DIR}/.ISACreated 
+	@for i in ${TEST_LIST}; do 									\
 		echo "    PEND : ${TEST_SUITE_DIR}/$${i}"  > ${TEST_SUITE_DIR}/$${i}/status;		\
-		(cd ${TEST_SUITE_DIR}/$${i}; rm -f *.o*; make);										\
+		make -C ${TEST_SUITE_DIR}/$${i} all; 			\
 	done
 
 summary:
@@ -331,8 +334,8 @@ createISATests: removeISATests
 
 # Cleans 
 removeISATests:
-	@rm -rf rv64*
-	@rm -f ${TEST_SUITE_DIR}/.ISACreated
+	rm -rf rv64*
+	rm -f ${TEST_SUITE_DIR}/.ISACreated
 
 
 ${TEST_SUITE_DIR}/.ISACreated:

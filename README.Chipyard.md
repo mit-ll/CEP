@@ -1,10 +1,16 @@
 ![CHIPYARD](https://github.com/ucb-bar/chipyard/raw/master/docs/_static/images/chipyard-logo-full.png)
 
-# Chipyard Framework [![CircleCI](https://circleci.com/gh/ucb-bar/chipyard/tree/master.svg?style=svg)](https://circleci.com/gh/ucb-bar/chipyard/tree/master)
+# Chipyard Framework [![Test](https://github.com/ucb-bar/chipyard/actions/workflows/chipyard-run-tests.yml/badge.svg)](https://github.com/ucb-bar/chipyard/actions)
+
+## Quick Links
+
+* **Stable Documentation**: https://chipyard.readthedocs.io/
+* **User Question Forum**: https://groups.google.com/forum/#!forum/chipyard
+* **Bugs and Feature Requests**: https://github.com/ucb-bar/chipyard/issues
 
 ## Using Chipyard
 
-To get started using Chipyard, see the documentation on the Chipyard documentation site: https://chipyard.readthedocs.io/
+To get started using Chipyard, see the stable documentation on the Chipyard documentation site: https://chipyard.readthedocs.io/
 
 ## What is Chipyard
 
@@ -16,14 +22,15 @@ Chipyard is actively developed in the [Berkeley Architecture Research Group][ucb
 
 ## Resources
 
-* Chipyard Documentation: https://chipyard.readthedocs.io/
-* Chipyard Basics slides: https://fires.im/micro19-slides-pdf/02_chipyard_basics.pdf
-* Chipyard Tutorial Exercise slides: https://fires.im/micro19-slides-pdf/03_building_custom_socs.pdf
+* Chipyard Stable Documentation: https://chipyard.readthedocs.io/
+* Chipyard (x FireSim) Tutorial: https://fires.im/tutorial
+* Chipyard Basics slides: https://fires.im/isca22-slides-pdf/02_chipyard_basics.pdf
+* Chipyard Tutorial Exercise slides: https://fires.im/isca22-slides-pdf/03_building_custom_socs.pdf
 
 ## Need help?
 
 * Join the Chipyard Mailing List: https://groups.google.com/forum/#!forum/chipyard
-* If you find a bug, post an issue on this repo
+* If you find a bug or would like propose a feature, post an issue on this repo: https://github.com/ucb-bar/chipyard/issues
 
 ## Contributing
 
@@ -56,11 +63,11 @@ These additional publications cover many of the internal components used in Chip
 
 * **Generators**
     * **Rocket Chip**: K. Asanovic, et al., *UCB EECS TR*. [PDF](http://www2.eecs.berkeley.edu/Pubs/TechRpts/2016/EECS-2016-17.pdf).
-    * **BOOM**: C. Celio, et al., *Hot Chips 30*. [PDF](https://www.hotchips.org/hc30/1conf/1.03_Berkeley_BROOM_HC30.Berkeley.Celio.v02.pdf).
+    * **BOOM**: C. Celio, et al., *Hot Chips 30*. [PDF](https://old.hotchips.org/hc30/1conf/1.03_Berkeley_BROOM_HC30.Berkeley.Celio.v02.pdf).
       * **SonicBOOM (BOOMv3)**: J. Zhao, et al., *CARRV'20*. [PDF](https://carrv.github.io/2020/papers/CARRV2020_paper_15_Zhao.pdf).
       * **COBRA (BOOM Branch Prediction)**: J. Zhao, et al., *ISPASS'21*. [PDF](https://ieeexplore.ieee.org/document/9408173).
     * **Hwacha**: Y. Lee, et al., *ESSCIRC'14*. [PDF](http://hwacha.org/papers/riscv-esscirc2014.pdf).
-    * **Gemmini**: H. Genc, et al., *arXiv*. [PDF](https://arxiv.org/pdf/1911.09925).
+    * **Gemmini**: H. Genc, et al., *DAC'21*. [PDF](https://arxiv.org/pdf/1911.09925).
 * **Sims**
     * **FireSim**: S. Karandikar, et al., *ISCA'18*. [PDF](https://sagark.org/assets/pubs/firesim-isca2018.pdf).
         * **FireSim Micro Top Picks**: S. Karandikar, et al., *IEEE Micro, Top Picks 2018*. [PDF](https://sagark.org/assets/pubs/firesim-micro-top-picks2018.pdf).
@@ -75,7 +82,9 @@ These additional publications cover many of the internal components used in Chip
 * **VLSI**
     * **Hammer**: E. Wang, et al., *ISQED'20*. [PDF](https://www.isqed.org/English/Archives/2020/Technical_Sessions/113.html).
 
+## Acknowledgements
 
+This work is supported by the NSF CCRI ENS Chipyard Award #201662.
 
 [hwacha]:https://www2.eecs.berkeley.edu/Pubs/TechRpts/2015/EECS-2015-262.pdf
 [hammer]:https://github.com/ucb-bar/hammer

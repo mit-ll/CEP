@@ -39,8 +39,6 @@
     };
     int loop = 16;
     
-    set_printf(0);
-  
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);
 

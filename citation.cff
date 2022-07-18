@@ -1,0 +1,31 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: Common Evaluation Platform
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - affiliation: MIT Lincoln Laboratory
+    email: brendon.chetwynd@ll.mit.edu
+    name-particle: Brendon
+    family-names: Chetwynd
+  - name-particle: Kevin
+    family-names: Bush
+    email: kevin.bush@ll.mit.edu
+    affiliation: MIT Lincoln Laboratory
+  - name-particle: Kyle
+    family-names: Ingols
+    email: kwi@ll.mit.edu
+    affiliation: MIT Lincoln Laboratory
+  - {}
+repository-code: 'https://github.com/mit-ll/CEP.git'
+keywords:
+  - >-
+    RISC-V, Rocket-Chip, Chipyard, Open Source
+    Hardware, SoC Design, Semiconductor Security,
+    Verification
+license: BSD-2-Clause
+version: v4.0

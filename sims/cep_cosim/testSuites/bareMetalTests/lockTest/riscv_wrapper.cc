@@ -26,7 +26,6 @@
     int testId[4] = {0x00, 0x11, 0x22, 0x33};
     int coreId    = read_csr(mhartid);
     int loop      = 2;
-    set_printf(0);
   
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);

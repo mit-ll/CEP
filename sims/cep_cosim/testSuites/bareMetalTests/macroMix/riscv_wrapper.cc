@@ -56,8 +56,6 @@
     uint64_t upper;
     uint64_t lower;
     
-    set_printf(0);
-  
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);
 
@@ -65,32 +63,32 @@
     if (coreId == 0) {
       upper = SROT_adrBase + SROT_adrSize;
       lower = SROT_adrBase;
-      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, SROT_size, 0);
+      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, 0);
       cep_write64(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE);
       upper = AES_adrBase + AES_adrSize;
       lower = AES_adrBase;
-      errCnt += cep_playback(AES_playback, upper, lower, AES_totalCommands, AES_size, 0);    
+      errCnt += cep_playback(AES_playback, upper, lower, AES_totalCommands, 0);    
     }
     else if (coreId == 1) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = SHA256_1_adrBase + SHA256_1_adrSize;
       lower = SHA256_1_adrBase;
-      errCnt += cep_playback(SHA256_1_playback, upper, lower, SHA256_1_totalCommands, SHA256_1_size, 0);    
+      errCnt += cep_playback(SHA256_1_playback, upper, lower, SHA256_1_totalCommands, 0);    
     }
     else if (coreId == 2) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = IIR_adrBase + IIR_adrSize;
       lower = IIR_adrBase;
-      errCnt += cep_playback(IIR_playback, upper, lower, IIR_totalCommands, IIR_size, 0);    
+      errCnt += cep_playback(IIR_playback, upper, lower, IIR_totalCommands, 0);    
     }
     else if (coreId == 3) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = FIR_adrBase + FIR_adrSize;
       lower = FIR_adrBase;
-      errCnt += cep_playback(FIR_playback, upper, lower, FIR_totalCommands, FIR_size, 0);    
+      errCnt += cep_playback(FIR_playback, upper, lower, FIR_totalCommands, 0);    
     }  
 
     // Set the core status

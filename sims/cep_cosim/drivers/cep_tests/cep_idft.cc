@@ -209,20 +209,6 @@ int cep_idft::idft_CheckSamples(int lpCnt, int startIdx, int samCnt) {
   return mErrCnt;
 }
 
-/* 
-Due to lost of precision, only these test can be used
-
-Single FFT tests - N inputs and N outputs
-Input random data
-Inputs are all zeros
-Inputs are all ones (or some other nonzero value)
-Inputs alternate between +1 and -1.
-Input is e^(8*j*2*pi*i/N) for i = 0,1,2, ...,N-1. (j = sqrt(-1))
-Input is cos(8*2*pi*i/N) for i = 0,1,2, ...,N-1.
-Input is e^((43/7)*j*2*pi*i/N) for i = 0,1,2, ...,N-1. (j= sqrt(-1))
-Input is cos((43/7)*2*pi*i/N) for i = 0,1,2, ...,N-1.
-
-*/
 int cep_idft::RunIdftTest(int maxLoop) {
   fixp16 fixR, fixI;
   uint32_t ranX;
@@ -284,18 +270,18 @@ int cep_idft::RunIdftTest(int maxLoop) {
         break;
     }
 
-    adjust_float(mRact, mIact, MAX_DFT_SAMPLES);
+    adjust_float(mRin, mIin, MAX_DFT_SAMPLES);
 
-    do_idft(mRact, mIact, mRexp, mIexp, MAX_DFT_SAMPLES);
+    do_idft(mRin, mIin, mRexp, mIexp, MAX_DFT_SAMPLES);
 
     if (GetVerbose(2)) {
-      PrintMe("IDFT-in",mRact,mIact,MAX_DFT_SAMPLES);
-      PrintMe("IDFT-exp",mRexp,mIexp,MAX_DFT_SAMPLES);
+      PrintMe("IDFT-In",mRin,mIin,MAX_DFT_SAMPLES);    
+      PrintMe("IDFT-Exp",mRexp,mIexp,MAX_DFT_SAMPLES);
     }
 
     // IDFT
     if (!mErrCnt) {
-      idft_setX(mRact, mIact, MAX_DFT_SAMPLES);
+      idft_setX(mRin, mIin, MAX_DFT_SAMPLES);
       idft_Start();
       mErrCnt += idft_waitTilDone(500);
       if (!mErrCnt) {

@@ -161,7 +161,7 @@ object CEPBaseAddresses {
 
 object CEPVersion {
   val CEP_MAJOR_VERSION             = 0x04
-  val CEP_MINOR_VERSION             = 0x00
+  val CEP_MINOR_VERSION             = 0x10
 }
 
 object AESAddresses {

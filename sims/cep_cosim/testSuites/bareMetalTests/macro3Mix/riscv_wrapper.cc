@@ -24,7 +24,7 @@
   // Include the test vectors related to this test
   #include "SROT_playback.h"
   #include "MD5_playback.h"
-  #include "SHA256_CMU_playback.h"
+  #include "SHA256_1_playback.h"
   #include "SHA256_2_playback.h"
   #include "SHA256_3_playback.h"
 
@@ -56,8 +56,6 @@
     uint64_t upper;
     uint64_t lower;
     
-    set_printf(0);
-  
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);
 
@@ -65,32 +63,32 @@
     if (coreId == 0) {
       upper = SROT_adrBase + SROT_adrSize;
       lower = SROT_adrBase;
-      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, SROT_size, 0);
+      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, 0);
       cep_write64(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE);
       upper = MD5_adrBase + MD5_adrSize;
       lower = MD5_adrBase;
-      errCnt += cep_playback(MD5_playback, upper, lower, MD5_totalCommands, MD5_size, 0);    
+      errCnt += cep_playback(MD5_playback, upper, lower, MD5_totalCommands, 0);    
     }
     else if (coreId == 1) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
-      upper = SHA256_CMU_adrBase + SHA256_CMU_adrSize;
-      lower = SHA256_CMU_adrBase;
-      errCnt += cep_playback(SHA256_CMU_playback, upper, lower, SHA256_CMU_totalCommands, SHA256_CMU_size, 0);    
+      upper = SHA256_1_adrBase + SHA256_1_adrSize;
+      lower = SHA256_1_adrBase;
+      errCnt += cep_playback(SHA256_1_playback, upper, lower, SHA256_1_totalCommands, 0);    
     }
     else if (coreId == 2) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = SHA256_2_adrBase + SHA256_2_adrSize;
       lower = SHA256_2_adrBase;
-      errCnt += cep_playback(SHA256_2_playback, upper, lower, SHA256_2_totalCommands, SHA256_2_size, 0);    
+      errCnt += cep_playback(SHA256_2_playback, upper, lower, SHA256_2_totalCommands, 0);    
     }
     else if (coreId == 3) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = SHA256_3_adrBase + SHA256_3_adrSize;
       lower = SHA256_3_adrBase;
-      errCnt += cep_playback(SHA256_3_playback, upper, lower, SHA256_3_totalCommands, SHA256_3_size, 0);    
+      errCnt += cep_playback(SHA256_3_playback, upper, lower, SHA256_3_totalCommands, 0);    
     }  
 
     // Set the core status

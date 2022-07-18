@@ -111,7 +111,6 @@ void thread_entry(int cid, int nc)
   //
   int errCnt = 0;
   //
-  set_printf(0);
   set_cur_status(CEP_RUNNING_STATUS);
   //
   unsigned hartid = read_csr(mhartid);

@@ -1,30 +1,29 @@
-//--------------------------------------------------------------------------------------
 // Copyright 2022 Massachusets Institute of Technology
 // SPDX short identifier: BSD-2-Clause
 //
 // File Name:      syscalls.c
 // Program:        Common Evaluation Platform (CEP)
-// Description:    
-// Notes:          
+// Description:    Modified baremetal system calls for RISC-V 
+// Notes:          Roll
 //
 //--------------------------------------------------------------------------------------
+
+
 // See LICENSE for license details.
 
 #include <stdint.h>
+#include <inttypes.h>
 #include <string.h>
 #include <stdarg.h>
 #include <stdio.h>
 #include <limits.h>
 #include <sys/signal.h>
-#include <time.h>
+#include "kprintf.h"
 #include "util.h"
 
 #define SYS_write 64
 
-#include "cep_adrMap.h"
-
 #undef strcmp
-#undef strncmp
 
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
@@ -88,9 +87,18 @@ void abort()
   exit(128 + SIGABRT);
 }
 
+// Syscall is currently disabled as it does
+// not function properly in simulation
 void printstr(const char* s)
 {
-  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+
+#ifdef ENABLE_KPRINTF
+  kputs(s);
+#else
+  ;
+//  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
+#endif
+
 }
 
 void __attribute__((weak)) thread_entry(int cid, int nc)
@@ -130,7 +138,7 @@ void _init(int cid, int nc)
   char* pbuf = buf;
   for (int i = 0; i < NUM_COUNTERS; i++)
     if (counters[i])
-      pbuf += sprintf(pbuf, "%s = %d\n", counter_names[i], (int)counters[i]);
+      pbuf += sprintf(pbuf, "%s = %" PRIuPTR "\n", counter_names[i], counters[i]);
   if (pbuf != buf)
     printstr(buf);
 
@@ -213,9 +221,9 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
 {
   register const char* p;
   const char* last_fmt;
-  register int ch; // , err;
+  register int ch, err;
   unsigned long long num;
-  int base, lflag, width, precision; // , altflag;
+  int base, lflag, width, precision, altflag;
   char padc;
 
   while (1) {
@@ -233,7 +241,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     width = -1;
     precision = -1;
     lflag = 0;
-    //    altflag = 0;
+    altflag = 0;
   reswitch:
     switch (ch = *(unsigned char *) fmt++) {
 
@@ -275,7 +283,7 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
       goto reswitch;
 
     case '#':
-      //      altflag = 1;
+      altflag = 1;
       goto reswitch;
 
     process_precision:
@@ -360,105 +368,22 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
   }
 }
 
-//
-// Tony: to support printf via main memory in bare metal
-//
-typedef struct printf_rec {
-  int32_t idx;
-  int32_t enable;
-  uint32_t dummy[14];
-} printf_t;
+// Calling of putchar from printf is currently disabled
+// as syscalls do not function correctly
+int printf(const char* fmt, ...)
+{
 
-// put these on cache line
-printf_t printf_st[MAX_CORES] __attribute__((aligned(64))) = {
-  {.idx=0, .enable=0},
-  {.idx=0, .enable=0},
-  {.idx=0, .enable=0},
-  {.idx=0, .enable=0}} ;
-
-void set_printf(int enable) {
-  int coreId = read_csr(mhartid);
-  printf_st[coreId].idx    = 0;  
-  printf_st[coreId].enable = enable;
-}
-int get_printf(void) {
-  int coreId = read_csr(mhartid);  
-  return printf_st[coreId].enable;
-}
-int get_printf_idx(void) {
-  int coreId = read_csr(mhartid);  
-  return printf_st[coreId].idx;
-}
-void inc_printf_idx(void) {
-  int coreId = read_csr(mhartid);  
-  printf_st[coreId].idx = (printf_st[coreId].idx + 1) % cep_printf_max_lines;
-}
-
-// Printf overload when operating in bare metal mode
-int printf(const char* fmt, ...) {
-#ifdef BARE_MODE
-  int i;
-  
-  // Has printing been enabled?
-  if (get_printf()) {
-  
-    va_list ap;
-  
-    int coreId = read_csr(mhartid);
-  
-    uint32_t offS = cep_printf_mem + (cep_printf_core_size * coreId) + (get_printf_idx() * cep_printf_str_max);    
-  
-    char *str = (char *)((intptr_t)offS);
-
-    va_start(ap, fmt);
-    
-    void printf_putch(int ch, void** data) {
-       char** pstr = (char**)data;
-       **pstr = ch;
-       (*pstr)++;
-    }
-
-    vprintfmt(printf_putch, (void**)&str, fmt, ap);
-
-    *str = 0;
-    
-    va_end(ap);
-    
-    //
-    // flush!!
-    //
-    //asm volatile ("fence"); // flush????    
-    //__asm__ volatile (".word 0xFC000073"); // CFLUSH.D.L1
-    //
-    uint64_t d64;
-    i = 0;
-    while (i < 16) {
-      d64 = *(volatile uint64_t *)((intptr_t)offS | ((1<<(20-i))*64));
-      if (d64 == CEP_BAD_STATUS) { i += 2; } else { i++; }
-    }
-    
-    // next
-    inc_printf_idx();
-
-  } // if (get_printf())
-  
-// Not Bare Metal Mode
-#else
-
+#ifdef ENABLE_KPRINTF
   va_list ap;
-
   va_start(ap, fmt);
-  
-  vprintfmt((void*)putchar, 0, fmt, ap);
-
+  vprintfmt((void*)kputc, 0, fmt, ap);
   va_end(ap);
-
-#endif  
-
-  return 0;
-
-} // int printf(const char* fmt, ...)
-
+#else
+  ;
+//  vprintfmt((void*)putchar, 0, fmt, ap);
+#endif
+  return 0; // incorrect return value, but who cares, anyway?
+}
 
 int sprintf(char* str, const char* fmt, ...)
 {
@@ -543,56 +468,12 @@ int strcmp(const char* s1, const char* s2)
   return c1 - c2;
 }
 
-char *strcat (char *dest, const char *src)
-{
-  strcpy (dest + strlen (dest), src);
-  return dest;
-}
-
- 
-int
-strncmp(const char *s1, const char *s2, size_t n)
-{
-	if (n < 1)
-		return 0;
-
-	while (*s1 != 0 && *s2 != 0 && --n > 0) {
-		if (*s1 != *s2)
-			break;
-		s1 += 1;
-		s2 += 1;
-	}
-
-	return *s1 - *s2;
-}
-
-
 char* strcpy(char* dest, const char* src)
 {
   char* d = dest;
   while ((*d++ = *src++))
     ;
   return dest;
-}
-
-char *
-strncpy(char *dst, const char *src, size_t n)
-{
-	char *ret = dst;
-
-	/* Copy string */
-	while (*src != 0 && n > 0) {
-		*dst++ = *src++;
-		n -= 1;
-	}
-
-	/* strncpy always clears the rest of destination string... */
-	while (n > 0) {
-		*dst++ = 0;
-		n -= 1;
-	}
-
-	return ret;
 }
 
 long atol(const char* str)
@@ -614,35 +495,4 @@ long atol(const char* str)
   }
 
   return sign ? -res : res;
-}
-
-static uint64_t random_state;
-
-void srandom(unsigned int seed)
-{
-	random_state = seed;
-	random_state |= (random_state << 32);
-}
-
-uint64_t random()
-{
-	uint64_t x = random_state;
-	x ^= x >> 12;
-	x ^= x << 25;
-	x ^= x << 27;
-	random_state = x;
-	return x;
-}
-
-time_t time(time_t *tloc)
-{
-	uint64_t usecs, secs;
-
-	asm volatile ("rdtime %[usecs]" : [usecs] "=r" (usecs));
-
-	secs = usecs / 1000000;
-
-	if (tloc != NULL)
-		*tloc = secs;
-	return secs;
 }

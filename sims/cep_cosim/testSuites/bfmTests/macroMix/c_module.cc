@@ -57,7 +57,7 @@ void *c_module(void *arg) {
   int coreMask = 0xFFFFFFFF; // all cores
 //  int coreMask = 0x00000001;  // AES
 //  int coreMask = 0x00000002;  // MD5
-//  int coreMask = 0x00000004;  // SHA256.0 (CMU Core - Redaction)
+//  int coreMask = 0x00000004;  // SHA256.0
 //  int coreMask = 0x00000008;  // SHA256.1
 //  int coreMask = 0x00000010;  // SHA256.2
 //  int coreMask = 0x00000020;  // SHA256.3
@@ -67,11 +67,10 @@ void *c_module(void *arg) {
 //  int coreMask = 0x00000200;  // IDFT
 //  int coreMask = 0x00000400;  // FIR
 //  int coreMask = 0x00000800;  // IIR
-//  int coreMask = 0x00001000;  // GPS.0 (CMU Core - LBLL)
-//  int coreMask = 0x00002000;  // GPS.1 (CMU Core - Redaction)
+//  int coreMask = 0x00002000;  // GPS.1
 //  int coreMask = 0x00004000;  // GPS.2
 //  int coreMask = 0x00008000;  // GPS.3
-
+  
   errCnt += cepMacroMix_runTest(cpuId, GlobalShMemory.getActiveMask(), coreMask, seed, verbose);
 
   pio.RunClk(100);  

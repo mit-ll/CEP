@@ -41,7 +41,9 @@
 #include "cep_rsa.h"
 #include "cep_srot.h"
 
-#define IS_ON(c) ((1 << c) & coreMask)
+#define CORE_ACTIVE(c)  ((1 << c) & coreMask)
+#define CPU_ACTIVE(c)   ((1 << c) & cpuActiveMask)
+
 #define CHECK4ERR(e,name) do {  \
   if (!errCnt) {                \
     if (srot.GetVerbose()) {    \
@@ -99,7 +101,12 @@ int cepMacroMix_runTest(int cpuId, int cpuActiveMask, int coreMask, int seed, in
     cep_core_info_t core = cep_core_info[coreIndex];
     core_type_t type     = core.type;
 
-    if (IS_ON(coreIndex) && core.enabled && cpuId == core.preferred_cpuId) {
+    // Run test if all the following are true:
+    //  - Was the core enabled when cepMacroMix_runTest was called?
+    //  - Is the core enabled in the cep_core_info structure (from CEP.h)?
+    //  - Is the current cpuId = to the preferred ID listed in the aforementioned structure?
+    //  - Was the current cpuId enabled cepMacroMix_runTest was called?
+    if (CORE_ACTIVE(coreIndex) && core.enabled && cpuId == core.preferred_cpuId && CPU_ACTIVE(cpuId)) {
 
       switch (type) {
       
@@ -222,7 +229,12 @@ int cepMacroMix_runBadKeysTest(int cpuId, int cpuActiveMask, int coreMask, int s
     cep_core_info_t core = cep_core_info[coreIndex];
     core_type_t type     = core.type;
 
-    if (IS_ON(coreIndex) && core.enabled && cpuId == core.preferred_cpuId) {
+    // Run test if all the following are true:
+    //  - Was the core enabled when cepMacroMix_runTest was called?
+    //  - Is the core enabled in the cep_core_info structure (from CEP.h)?
+    //  - Is the current cpuId = to the preferred ID listed in the aforementioned structure?
+    //  - Was the current cpuId enabled cepMacroMix_runTest was called?
+    if (CORE_ACTIVE(coreIndex) && core.enabled && cpuId == core.preferred_cpuId && CPU_ACTIVE(cpuId)) {
 
       switch (type) {
       

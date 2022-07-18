@@ -160,7 +160,23 @@ This changelog follows the format defined here (beginning with v4.0): https://ke
 * Chipyard Arty100t branch merged in (Commit 4440db0, March 4, 2022)
 
 ### Changed
+* CHANGELOG.CEP.md updated based on guidance from *keep a changelog* (https://keepachangelog.com/en/1.0.0/)
 * CEP has been completely ported to the UCB Chipyard Framework (https://github.com/ucb-bar/chipyard)
 * Arty-A7 100T FPGA target running bare-metal code is currently supported (Linux is not currently supported)
+
+## [v4.10] - 2022-07-01
+
+### Added
+* Added a bareMetal/aesMacro test for running on the Arty100T build, which currently only has one AES core and the SRoT
+
+### Changed
+* Unified/debugged console printf functionality when building bare metal executables.  By default, it is disabled, but can be enabled with the ENABLE_KPRINTF directive
+* Arty100T and cep_sim use the same 'sd.c' source file, but leverage different makefiles.
+* Misc. code and readme cleanup
+* Bumped Chipyard to 1.7.0 from 1.5.0.  See [CHANGELOG](./CHANGELOG.md).
+* Rocket-Chip bumped to v1.5
+
+### Fixed
+* iDFT test code fixed in cep_idft.cc
 
 #### Return to the root CEP [README](./README.md)

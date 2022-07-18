@@ -1,7 +1,7 @@
 [//]: # (Copyright 2022 Massachusetts Institute of Technology)
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
-# Common Evaluation Platform v4.0
+# Common Evaluation Platform v4.1
 
 [![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
 [![License](https://img.shields.io/badge/License-BSD%202--Clause-orange.svg)](https://opensource.org/licenses/BSD-2-Clause)
@@ -54,7 +54,7 @@ If using RHEL7, you need to ensure gcc 7.x.x+ is installed.  This can be found i
 * Install package dependencies.  Copies of these files can also be found in the Chipyard Documentation listed above
   * Ubuntu - `./scripts/ubuntu-reqs.sh`
   * RHEL7  - `./scripts/centos-reqs.sh`
-* Initialize all the git submodules (including FPGA-related submodules)
+* Initialize all the git submodules (including FPGA-related submodules).  There may be a warning about this not being a true chipyard repository which you can answer yes to.
   * `./scripts/init-submodules-no-riscv-tools.sh`
   * `./scripts/init-fpga.sh`
 * Build the RISC-V Toolchain.  
@@ -161,21 +161,21 @@ A developer may use baremetal software from the CEP cosimulation or the examples
 
 In either case, it is important to note what device your (micro)SD card gets mapped to (e.g., `/dev/sdd`).
 
-As of v4.0, the cosimulation baremetal software does not currently support the console printfs, thus feedback of test results will be minimal.  It is intended to provide an option for building an FPGA version of the software (vs simulation) which will overload the I/O functions according.  Furthermore, many of the bareMetal tests presume the `CEPRocketConfig` configuration, which contains substantially more functionality than can fit on the Arty100T.  As a result, many of the cosimulation tests will require substantial modification to run properly on the FPGA.  
-
 Using `<CEP_ROOT>/sims/cep_cosim/testSuites/bareMetal/regTest` as an example, the following steps will build and load the executable onto the (micro)SD card.
 
 ```
 cd <CEP_ROOT>/sims/cep_cosim/testSuites/bareMetal/regTest
-make riscv_wrapper        						<-- builds riscv_wrapper.img
-make DISK=/dev/sdd riscv_wrapper_sd_write		<-- copies riscv_wrapper.img to /dev/sdd (subsitute with your device name)
+make ENABLE_KPRINTF=1 riscv_wrapper        			<-- builds riscv_wrapper.img with console printf enabled
+make DISK=/dev/sdd riscv_wrapper_sd_write       <-- copies riscv_wrapper.img to /dev/sdd (subsitute with your device name)
 ```
+
+In the above example, the bare metal regTest is build with the console printf function enabled.  It is advised that you enable the addition of a carriage return in your chosen terminal program.
 
 The steps in `<CEP_ROOT>/software/baremetal/gpiotest` are slight different.
 
 ```
 cd <CEP_ROOT>/software/baremetal/gpiotest
-make DISK=/dev/sdd sd_write        				<-- copies gpiotest.img to /dev/sdd (subsitute with your device name)
+make DISK=/dev/sdd sd_write        				      <-- copies gpiotest.img to /dev/sdd (subsitute with your device name)
 ```
 
 It is worth noting that the examples in `<CEP_ROOT>/software/baremetal` do not require the compilation of the all the cosimulation libraries, but as a result, will not have access to those support functions.
@@ -187,12 +187,15 @@ For simulation using the CEP Co-Simulation environment, the `cep_cosim` and `cep
 Instructions on the CEP Co-Simulation (including the Chipyard build) can be found [here](./sims/cep_cosim/README.md).
 
 ### Generated DSP code notes
-Due to licensing contraints, two of the DSP cores used during CEP development cannot be included in our repository.  Instructions on generating all the cores can be found [here](./generators/mitll-blocks/src/main/resources/vsrc/dsp/README.md)
+Due to licensing contraints, two of the DSP cores used during CEP development cannot be included in our repository.  Instructions on generating all the cores can be found [here](./generators/mitll-blocks/src/main/resources/vsrc/dsp/README.md).
 
-Please check the [CEP changelog](./CHANGELOG.CEP.md) to understand what has changed and a list of known issues.
+Please check the [CEP changelog](./CHANGELOG.CEP.md) for release history.
 
 ## Errors? Ommissions? Questions?
 Please feel free to file a github issue which the CEP developers check frequently.
+
+## Citation Information
+Citation information is contained [here](./citation.cff)
 
 ## Licensing
 As the CEP has been developed with input from many sources, multiple licenses apply.  Please refer to the following files for licensing info. 

@@ -6,10 +6,20 @@ SHELL=/bin/bash
 # Without the following, RHEL7 does not execute the build process properly
 .NOTPARALLEL:
 
+ifeq "$(findstring clean,${MAKECMDGOALS})" ""
 ifndef RISCV
 $(error RISCV is unset. You must set RISCV yourself, or through the Chipyard auto-generated env file)
 else
-$(info Running with RISCV=$(RISCV))
+$(info Running with RISCV       = $(RISCV))
+endif
+endif
+
+ifeq "$(findstring clean,${MAKECMDGOALS})" ""
+ifndef SUB_PROJECT
+$(error SUB_PROJECT is unset.)
+else
+$(info Running with SUB_PROJECT = $(SUB_PROJECT))
+endif 
 endif
 
 #########################################################################################
@@ -74,7 +84,7 @@ else
 	lookup_srcs = $(shell fd -L ".*\.$(2)" $(1))
 endif
 
-SOURCE_DIRS = $(addprefix $(base_dir)/,generators sims/firesim/sim tools/barstools/iocell fpga/fpga-shells fpga/src)
+SOURCE_DIRS = $(addprefix $(base_dir)/,generators sims/firesim/sim tools/barstools fpga/fpga-shells fpga/src)
 SCALA_SOURCES = $(call lookup_srcs,$(SOURCE_DIRS),scala)
 VLOG_SOURCES = $(call lookup_srcs,$(SOURCE_DIRS),sv) $(call lookup_srcs,$(SOURCE_DIRS),v)
 # This assumes no SBT meta-build sources
@@ -114,8 +124,9 @@ $(CHIPYARD_BUILD_INFO):
 $(build_dir): cep_preprocessing
 	mkdir -p $@
 
+# Bootrom is forced to rebuild every time, in the event a different build target is selected
 $(BOOTROM_SOURCES):
-	(cd ${BOOTROM_SRC_DIR}; make PBUS_CLK=${PBUS_CLK})
+	make -B -C ${BOOTROM_SRC_DIR} PBUS_CLK=${PBUS_CLK}
 
 $(BOOTROM_TARGETS): $(BOOTROM_SOURCES) | $(build_dir)
 	cp -f $(BOOTROM_SOURCES) $(build_dir)
@@ -130,6 +141,7 @@ cep_preprocessing:
 	@echo "CEP:  Performing CEP Preprocessing step...."
 	@echo "CEP: ----------------------------------------------------------------------"
 ifeq "$(findstring cep_cosim_asic,${SUB_PROJECT})" "cep_cosim_asic"
+	@echo "CEP:  Staging an ASIC build..."
 	-cp $(base_dir)/CEP_Chipyard_ASIC/chipyard_tobecopied/build.sbt.asic ${base_dir}/build.sbt
 	-cp $(base_dir)/CEP_Chipyard_ASIC/chipyard_tobecopied/generators/chipyard/src/main/scala/DigitalTop.scala $(base_dir)/generators/chipyard/src/main/scala
 	-cp $(base_dir)/CEP_Chipyard_ASIC/chipyard_tobecopied/generators/chipyard/src/main/scala/System.scala $(base_dir)/generators/chipyard/src/main/scala
@@ -138,6 +150,7 @@ ifeq "$(findstring cep_cosim_asic,${SUB_PROJECT})" "cep_cosim_asic"
 	-cp $(base_dir)/CEP_Chipyard_ASIC/chipyard_tobecopied/generators/chipyard/src/main/scala/config/CEPASICConfig.scala $(base_dir)/generators/chipyard/src/main/scala/config
 	-cp $(base_dir)/CEP_Chipyard_ASIC/chipyard_tobecopied/generators/chipyard/src/main/scala/config/fragments/CEPASICConfigFragments.scala $(base_dir)/generators/chipyard/src/main/scala/config/fragments
 else
+	@echo "CEP:  Staging a non-ASIC build..."
 	-cp $(base_dir)/build.sbt.nonasic ${base_dir}/build.sbt
 	-cp $(base_dir)/generators/chipyard/src/main/scala/DigitalTop.scala.nonasic $(base_dir)/generators/chipyard/src/main/scala/DigitalTop.scala
 	-cp $(base_dir)/generators/chipyard/src/main/scala/System.scala.nonasic $(base_dir)/generators/chipyard/src/main/scala/System.scala
@@ -196,6 +209,7 @@ $(TOP_TARGETS) $(HARNESS_TARGETS): firrtl_temp
 
 firrtl_temp: $(FIRRTL_FILE) $(ANNO_FILE) $(VLOG_SOURCES)
 	$(call run_scala_main,tapeout,barstools.tapeout.transforms.GenerateTopAndHarness,\
+		--allow-unrecognized-annotations \
 		--output-file $(TOP_FILE) \
 		--harness-o $(HARNESS_FILE) \
 		--input-file $(FIRRTL_FILE) \
@@ -213,7 +227,7 @@ firrtl_temp: $(FIRRTL_FILE) $(ANNO_FILE) $(VLOG_SOURCES)
 		--target-dir $(build_dir) \
 		--log-level $(FIRRTL_LOGLEVEL) \
 		$(EXTRA_FIRRTL_OPTIONS))
-# Blackbox sorting script
+# Blackbox sorting script (for CEP targets)
 ifeq "$(findstring cep,${SUB_PROJECT})" "cep"
 	@${SORT_SCRIPT} ${sim_top_blackboxes} $(SORT_FILE)
 endif
@@ -227,7 +241,7 @@ $(TOP_SMEMS_FILE) $(TOP_SMEMS_FIR): top_macro_temp
 	@echo "" > /dev/null
 
 top_macro_temp: $(TOP_SMEMS_CONF)
-	$(call run_scala_main,barstoolsMacros,barstools.macros.MacroCompiler,-n $(TOP_SMEMS_CONF) -v $(TOP_SMEMS_FILE) -f $(TOP_SMEMS_FIR) $(MACROCOMPILER_MODE))
+	$(call run_scala_main,tapeout,barstools.macros.MacroCompiler,-n $(TOP_SMEMS_CONF) -v $(TOP_SMEMS_FILE) -f $(TOP_SMEMS_FIR) $(MACROCOMPILER_MODE))
 
 HARNESS_MACROCOMPILER_MODE = --mode synflops
 .INTERMEDIATE: harness_macro_temp
@@ -235,7 +249,7 @@ $(HARNESS_SMEMS_FILE) $(HARNESS_SMEMS_FIR): harness_macro_temp
 	@echo "" > /dev/null
 
 harness_macro_temp: $(HARNESS_SMEMS_CONF) | top_macro_temp
-	$(call run_scala_main,barstoolsMacros,barstools.macros.MacroCompiler, -n $(HARNESS_SMEMS_CONF) -v $(HARNESS_SMEMS_FILE) -f $(HARNESS_SMEMS_FIR) $(HARNESS_MACROCOMPILER_MODE))
+	$(call run_scala_main,tapeout,barstools.macros.MacroCompiler, -n $(HARNESS_SMEMS_CONF) -v $(HARNESS_SMEMS_FILE) -f $(HARNESS_SMEMS_FIR) $(HARNESS_MACROCOMPILER_MODE))
 
 ########################################################################################
 # remove duplicate files and headers in list of simulation file inputs

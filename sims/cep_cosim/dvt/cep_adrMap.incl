@@ -25,34 +25,11 @@
 `define CEP_NEXT_TEST                   'hBEEF_0000
 `define CEP_OK2RUN_SIGNATURE            'hAAAA_5555
 
-// Used by Linux diagnostics to map /dev/mem
-`define sys_base_addr                   'h0000_0000
-`define sys_base_size                   'h1000_0000
-
-`define cep_adr_mask                    'hF000_0000
-`define cep_fpga_base_adr               'h7000_0000
-`define cep_fpga_base_size              'h0800_0000
-
-// for SPI/UART/GPIO
-`define other_adr_mask                  'hFF00_0000
-`define other_base_addr                 'h6400_0000
-`define other_base_size                 'h0100_0000
-
 // The following constants define the base address and
 // size of the scratchpad memory (as defined in the 
 // selected configuration of CEPConfigs.scala)
 `define scratchpad_base_addr            'h8000_0000
 `define scratchpad_base_size            'h0010_0000
-
-// Defines the offset from scratchpad_base_addr used to
-// establish the initial SP value by the CEP bootrom.
-// This value is irrelevant to the bare metal
-// executable given that all registers are overwritten
-// in the bare metal bootloader (crt.S)
-// This needs to be "sufficiently" less than
-// scratchpad_base_size to allow sd.c to execute
-// properly
-`define scratchpad_sp_offset            'h0007_0000
 
 // Used by the bare-metal bootloader crt.S to allocate
 // both stack and thread local storage for each core
@@ -80,14 +57,13 @@
 // 
 `define cep_stkshift                    12
 
-
 // Address constants used by the bare_malloc function
 // This has to fit into the scratchpad memory after
 // the data segment, thread local storage, and the stack
 // (for each core)
 //
 // 32kB of heap space is allocated per core and is
-// justified to the end of scratchpad memoyr
+// justified to the end of scratchpad memory
 //
 // regBaseTest and memBaseTest (the only tests that use bare_malloc)
 // MUST fit within this memory footprint
@@ -95,8 +71,8 @@
 `define cep_malloc_heap_start           'h800A_0000   // 
 `define cep_malloc_heap_size_per_core   'h0000_8000   // 32kB per core
 
-`define scratchpad_known_pattern        'h600dbabe_12345678
-
+// Used to check the size of the bare metal program being loaded
+`define cep_max_program_size            cep_malloc_heap_start - scratchpad_base_addr
 
 // The following constants are used within the CEP Registers
 // whose base address is defined in CEP.h
@@ -126,22 +102,15 @@
 `define bootrom_base_addr               'h0001_0000
 `define bootrom_base_size               (1<<15)
 
-// 32-bit offs
-// last 8 bytes of 0x7FFF
-// 32-bit offset
-`define bootrom_base_test_offs          'h1ffe
-`define bootrom_known_pat0              'h12345678
-`define bootrom_known_pat1              'h600dbabe
-
 // CLINT: core-local interrupt
 `define clint_base_addr                 'h0200_0000
 `define clint_base_size                 (1<<16)
 
 // NOTE: offset for MSIP to next hart is 4, the rest is 8
-`define  clint_msip_offset              'h0000
-`define  clint_mtimecmp_offset          'h4000
+`define clint_msip_offset               'h0000
+`define clint_mtimecmp_offset           'h4000
 // rtcTick = 1usec interval
-`define  clint_mtimer_offset            'hBFF8
+`define clint_mtimer_offset             'hBFF8
 
 // PLIC: platform-level interrupt controller
 `define plic_base_addr                  'h0c00_0000
@@ -170,13 +139,13 @@
 
 // UART related addresses
 `define uart_base_addr                  'h6400_0000
-`define uart_txfifo                     'h00
-`define uart_rxfifo                     'h04
-`define uart_txctrl                     'h08
-`define uart_rxctrl                     'h0c
-`define uart_ie                         'h10
-`define uart_ip                         'h14
-`define uart_div                        'h18
+  `define uart_txfifo                   'h00
+  `define uart_rxfifo                   'h04
+  `define uart_txctrl                   'h08
+  `define uart_rxctrl                   'h0c
+  `define uart_ie                       'h10
+  `define uart_ip                       'h14
+  `define uart_div                      'h18
 
 // SPI related addresses
 `define spi_base_addr                   'h6400_1000
@@ -227,21 +196,6 @@
 
 // 64bytes
 `define cep_cache_size                  64
-
-
-// CEP printf memory is used to overload printfs when operating in bare metal mode during simulation.
-//
-// As external memory has been removed, it must be remapped to the upper end of scratchpad memory
-// (minus the amount of space left for the stack pointer)
-//
-// Each printf len is a maxmimum of 128 bytes with up 32 lines per core
-`define cep_printf_str_max              128
-`define cep_printf_max_lines            32
-`define cep_printf_core_size            (cep_printf_str_max * cep_printf_max_lines) // in bytes
-`define cep_printf_mem_offset           'h1000  // offset from the end of scratchpad memory (to allow for stack pointer)
-`define cep_printf_mem                  (scratchpad_base_addr + scratchpad_base_size) - (cep_printf_core_size * 4) - cep_printf_mem_offset
-`define cep_max_program_size            scratchpad_base_size - (cep_printf_core_size * 4) - cep_printf_mem_offset
-
 
 `endif // CEP_ADRMAP_INCL
 

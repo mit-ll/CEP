@@ -26,11 +26,15 @@ cep_adrMap.h
 v2c_cmds.h
 .PERSUITE*
 
+**/*.dump
+**/*.bin
 **/*.img
 **/*.elf
 **/*.o
 
-# The following exclusions ensure the ASIC-related files
+
+
+# The following exclusions ensure that ASIC-related files
 # do not get checked into the repository
 build.sbt
 /generators/chipyard/src/main/scala/DigitalTop.scala

@@ -41,7 +41,7 @@ trait CanHavePeripheryCEPRegisters { this: BaseSubsystem =>
 
     // Instantiate th TL module.  Note: This name shows up in the generated verilog hiearchy
     // and thus should be unique to this core and NOT a verilog reserved keyword
-    val cepregsmodule = LazyModule(new TLModule(cepregsattachparams)(p))
+    val cepregsmodule = LazyModule(new cepregsTLModule(cepregsattachparams)(p))
 
     // Perform the slave "attachments" to the slave bus
     cepregsattachparams.slave_bus.coupleTo(cepregsattachparams.cepregsparams.dev_name + "_slave") {
@@ -63,7 +63,7 @@ trait CanHavePeripheryCEPRegisters { this: BaseSubsystem =>
 //--------------------------------------------------------------------------------------
 // BEGIN: TileLink Module
 //--------------------------------------------------------------------------------------
-class TLModule(cepregsattachparams: CEPREGSAttachParams)(implicit p: Parameters) extends LazyModule {
+class cepregsTLModule(cepregsattachparams: CEPREGSAttachParams)(implicit p: Parameters) extends LazyModule {
 
   // Create the RegisterRouter node
   val slave_node = TLRegisterNode(
@@ -88,7 +88,7 @@ class TLModule(cepregsattachparams: CEPREGSAttachParams)(implicit p: Parameters)
 //--------------------------------------------------------------------------------------
 // BEGIN: TileLink Module Implementation
 //--------------------------------------------------------------------------------------
-class TLModuleImp(cepregsparams: CEPREGSParams, outer: TLModule) extends LazyModuleImp(outer) {
+class TLModuleImp(cepregsparams: CEPREGSParams, outer: cepregsTLModule) extends LazyModuleImp(outer) {
 
   // The following class is used to import all the miscellaneous black-box resources
   // that previously resided in srot.scala.  This effectively creates a dummy module with

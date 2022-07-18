@@ -33,7 +33,6 @@ int errCnt = 0;
 int testId[4] = {0x00,0x11,0x22,0x33};
 int coreId = read_csr(mhartid);
     //
-set_printf(0);
 
     //
     //

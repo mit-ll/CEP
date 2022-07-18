@@ -44,7 +44,6 @@ void cep_crypto::freeMe(void) {
     fprintf(mFd,"};\n\n");
     fprintf(mFd,"#define %s_adrBase 0x%010lx\n", mTestName, mAdrBase);
     fprintf(mFd,"#define %s_adrSize 0x%0lx\n", mTestName, mAdrSize);
-    fprintf(mFd,"#define %s_size %d\n", mTestName,mWordCnt);
     fprintf(mFd,"#define %s_cmdCnt4Single %d\n", mTestName, mSingle);    
     fprintf(mFd,"#define %s_totalCommands %d\n#endif\n", mTestName, mCount);
 

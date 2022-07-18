@@ -168,13 +168,7 @@ int cep_md5::RunMd5Test(int maxLoop) {
       // just randomize
       RandomGen(mHwPt, GetMsgSize());
     }
-#if 0
-    // test
-    for (int z=0;z<26;z++) {
-      mHwPt[z] = 0x61+z; // 'a'
-    }
-    SetMsgSize(26);
-#endif
+
     // Add pading of 0x80 folow by 0 and 8-bytes of len
     int x = GetMsgSize();
     int padded = (GetMsgSize()+8)%64;
@@ -190,9 +184,7 @@ int cep_md5::RunMd5Test(int maxLoop) {
     // add len: 8 bytes
     int totalLen = GetMsgSize()+padded+8;
     uint64_t lenInBits = (uint64_t)GetMsgSize() << 3; // to bits
-    // FIXME!!! the other endian
     for (int j=0;j<8;j++) {
-      //      mHwPt[x++] = lenInBits >> ((7-j)*8);
       mHwPt[x++] = lenInBits >> ((j)*8);      
     }
     if (GetVerbose(2)) {

@@ -63,7 +63,6 @@ HELP_LINES = "" \
 #   - mainly intended for quick developer setup for common flags
 #########################################################################################
 SUB_PROJECT ?= chipyard
-CHIPYARD_BUILD_INFO ?= $(base_dir)/CHIPYARD_BUILD_INFO.make
 
 # Common Evaluation Platform ASIC Build
 # Default BootROM is overriden

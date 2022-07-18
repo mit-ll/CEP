@@ -9,8 +9,8 @@
 #//
 #//************************************************************************
 
-# Causes a cleaning prior to running the test suite
-STAND_ALONE 	?= 1
+# Without the following, RHEL7 does not execute the simulation process properly
+.NOTPARALLEL:
 
 COSIM_TOP_DIR   	= $(strip $(shell cd ../..; pwd))
 REPO_TOP_DIR 		= $(strip $(shell cd ${COSIM_TOP_DIR}/../..; pwd))
@@ -38,9 +38,9 @@ TEST_LIST = 		\
 # Tests yet to run/fix/debug
 #	srotErrorTest
 
-runAll: 
+runAll: cleanSuite
 	@for i in ${TEST_LIST}; do 									\
-		(cd ${TEST_SUITE_DIR}/$${i}; make cleanTest; make);		\
+		make -C ${TEST_SUITE_DIR}/$${i} all; 					\
 	done
 
 summary:

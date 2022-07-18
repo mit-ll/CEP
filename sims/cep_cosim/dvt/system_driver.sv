@@ -153,12 +153,15 @@ module system_driver (
   `ifdef BARE_MODE
 
     initial begin
+      #1;
+      `logI("BARE_MODE: Forcing scratch_word0[3:0], thus Disabling UART and SD Boot in the BootROM...");
       force `CEPREGS_PATH.scratch_word0[3:0] = 4'hF;
     end
 
     // Automatically release the register when the core indicates it is running
     always @(`CEPREGS_PATH.core0_status) begin
-      if (`CEPREGS_PATH.core0_status == `CEP_RUNNING_STATUS) 
+      if (`CEPREGS_PATH.core0_status == `CEP_RUNNING_STATUS)
+        `logI("CEP_RUNNING_STATUS detected.  Releasing scratch_wor0[3:0]...");
         release `CEPREGS_PATH.scratch_word0[3:0];
     end
 

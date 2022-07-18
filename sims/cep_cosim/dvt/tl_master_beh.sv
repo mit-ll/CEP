@@ -581,7 +581,6 @@ module tl_master_beh #(
           tl_err = 1;         
            end
         end
-        // get new data if SAWP?? FIXME!!!
         
      end // if (tl_master_a_ready)
      @(posedge clock);   
@@ -590,7 +589,7 @@ module tl_master_beh #(
 
    //
    // =============================
-   // To hanle cache coherentcy!!!
+   // To handle cache coherency!!!
    // =============================   
    // If see PROBE on B, send and ProbeAck on C
    integer t;

@@ -178,9 +178,9 @@ class WithCEPScratchpad (address:   BigInt = CEPBaseAddresses.scratchpad_base_ad
 
 // Do not define BootROMLocated and ASICBootROMLocated at the same time
 // WithCEPBootROM allows override of default parameters
-class WithCEPBootROM    (address  : BigInt    = 0x10000, 
-                          size     : Int      = 0x10000,
-                          hang     : BigInt   = 0x10040) extends Config((site, here, up) => {
+class WithCEPBootROM    (address  : BigInt   = 0x10000, 
+                         size     : Int      = 0x10000,
+                         hang     : BigInt   = 0x10040) extends Config((site, here, up) => {
    case BootROMLocated(x) => up(BootROMLocated(x), site).map(_.copy(
                           address = address,
                           size    = size,

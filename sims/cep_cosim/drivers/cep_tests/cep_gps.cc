@@ -321,6 +321,9 @@ int cep_gps::ReadNCheckP_Code(void) {
       errCnt ++;
   }
 
+  if (errCnt)
+    LOGE("%s: P Code error detected\n",__FUNCTION__);
+
   return errCnt;
 
 }
@@ -509,12 +512,16 @@ int cep_gps::ReadNCheckCA_Code(void)
       errCnt ++;
   }
 
+  if (errCnt)
+    LOGE("%s: CA Code error detected\n",__FUNCTION__);
+
   return errCnt;
 }
 
 int cep_gps::RunSingle() {
   int outLen = mBlockSize;
-  int errCnt = 0;
+  int errCnt  = 0;
+  int errCnt2 = 0;
 
   // Start the code generators  
   Start();
@@ -532,8 +539,13 @@ int cep_gps::RunSingle() {
 
   // Read and Check the expected P-Code output
   ReadL_Code();
-  errCnt += cryptopp_aes192_ecb_encryption (mHwPt, mSwCp, GetVerbose());
-  errCnt += CheckCipherText();
+  errCnt2 += cryptopp_aes192_ecb_encryption (mHwPt, mSwCp, GetVerbose());
+  errCnt2 += CheckCipherText();
+  errCnt  += errCnt2;
+
+  // Used to localize error detection to the L code
+  if (errCnt2)
+    LOGE("%s: L Code error detected\n",__FUNCTION__);
 
   // Print
   if ((errCnt && !GetExpErr()) || GetVerbose(2)) {

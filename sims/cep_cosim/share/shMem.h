@@ -23,7 +23,8 @@
 
 // 1K class object
 #define MAX_SEGSIZE (1 << 10)
-// 16 slots with 16 CPU per slot (FIXME!!!)
+
+// 16 slots with 16 CPU per slot
 #define MAX_SLOTS         16
 #define MAX_CPU_PER_SLOT  8
 #define MAX_SHIPC         (MAX_SLOTS * MAX_CPU_PER_SLOT)

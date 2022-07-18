@@ -56,8 +56,6 @@
     uint64_t upper;
     uint64_t lower;
     
-    set_printf(0);
-  
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);
 
@@ -65,32 +63,32 @@
     if (coreId == 0) {
       upper = SROT_adrBase + SROT_adrSize;
       lower = SROT_adrBase;
-      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, SROT_size, 0);
+      errCnt += cep_playback(SROT_playback, upper, lower, SROT_totalCommands, 0);
       cep_write64(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE);
       upper = RSA_adrBase + RSA_adrSize;
       lower = RSA_adrBase;
-      errCnt += cep_playback(RSA_playback, upper, lower, RSA_totalCommands, RSA_size, 0);    
+      errCnt += cep_playback(RSA_playback, upper, lower, RSA_totalCommands, 0);    
     }
     else if (coreId == 1) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = DES3_adrBase + DES3_adrSize;
       lower = DES3_adrBase;
-      errCnt += cep_playback(DES3_playback, upper, lower, DES3_totalCommands, DES3_size, 0);    
+      errCnt += cep_playback(DES3_playback, upper, lower, DES3_totalCommands, 0);    
     }
     else if (coreId == 2) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = DFT_adrBase + DFT_adrSize;
       lower = DFT_adrBase;
-      errCnt += cep_playback(DFT_playback, upper, lower, DFT_totalCommands, DFT_size, 0);    
+      errCnt += cep_playback(DFT_playback, upper, lower, DFT_totalCommands, 0);    
     }
     else if (coreId == 3) {
       errCnt += cep_readNspin(CEP_VERSION_REG_INDEX, cep_scratch4_reg, CEP_OK2RUN_SIGNATURE, 0xFFFFFFFF, maxTO); 
       if (errCnt) goto cleanup;
       upper = IDFT_adrBase + IDFT_adrSize;
       lower = IDFT_adrBase;
-      errCnt += cep_playback(IDFT_playback, upper, lower, IDFT_totalCommands, IDFT_size, 0);    
+      errCnt += cep_playback(IDFT_playback, upper, lower, IDFT_totalCommands, 0);    
     }  
 
     // Set the core status

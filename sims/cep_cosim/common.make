@@ -9,14 +9,20 @@
 #
 #--------------------------------------------------------------------------------------
 
+# Without the following, RHEL7 does not execute the simulation process properly
+.NOTPARALLEL:
+
 # Avoid redundant inclusions of common.make
 ifndef $(COMMON_MAKE_CALLED)
 COMMON_MAKE_CALLED			= 1
 
 # RISCV *must* be defined (while BFM mode does not use RISCV executables, the SW process builds EVERYTHING, including RISCV)
+# not require if all you are doing is cleaning
+ifeq "$(findstring clean,${MAKECMDGOALS})" ""
 ifndef RISCV
 $(error CEP_COSIM: RISCV is unset.  You must set RISCV yourself, or through the Chipyard auto-generated env file)
 endif
+endif 
 
 # Set the default tool based on the OS Distro.  This can be override from the command line
 ifneq (, $(shell hostnamectl | grep "Ubuntu"))
@@ -34,7 +40,7 @@ endif
 NOWAVE          			?= 1
 TL_CAPTURE      			?= 0
 BYPASS_PLL                  ?= 0
-FPGA_SW_BUILD               ?= 0
+ENABLE_KPRINTF              ?= 0
 DISABLE_CHISEL_PRINTF		?= 1
 
 # The following flags are defined here to support the eventual enablement of legacy functionality
@@ -62,12 +68,20 @@ $(error CEP_COSIM: ${DUT_SIM_MODE} is invalid)
 endif
 
 # Validate the Chipyard verilog has been built by looking for the generated makefile
+# This is not required if the current make target is riscv_wrapper, riscv_wrapper_sd_write, or one of the cleans
+ifeq "$(findstring riscv_wrapper,${MAKECMDGOALS})" ""
+ifeq "$(findstring clean,${MAKECMDGOALS})" ""
 ifeq (,$(wildcard $(COSIM_TOP_DIR)/CHIPYARD_BUILD_INFO.make))
 $(error "CEP_COSIM: CHIPYARD_BUILD_INFO.make does not exist. run make -f Makefile.chipyard in $(REPO_TOP_DIR)")
 endif
+endif
+endif
 
-# Include the file that contains info about the chipyard build (also, a change includes a rebuild)
+# If the file exists, then include it
+ifneq (,$(wildcard $(COSIM_TOP_DIR)/CHIPYARD_BUILD_INFO.make))
 include $(COSIM_TOP_DIR)/CHIPYARD_BUILD_INFO.make
+endif
+
 
 # Override the ASIC mode based on inferrence from the CHIPYARD_SUB_PROJECT
 ifeq "$(findstring asic,${CHIPYARD_SUB_PROJECT})" "asic"
@@ -125,7 +139,7 @@ V2C_CMD						= ${BIN_DIR}/v2c.pl
 #--------------------------------------------------------------------------------------
 # To detect if any important flags have changed since last run
 #--------------------------------------------------------------------------------------
-PERSUITE_CHECK = ${TEST_SUITE_DIR}/.PERSUITE_${DUT_SIM_MODE}_${NOWAVE}_${PROFILE}_${COVERAGE}_${DISABLE_CHISEL_PRINTF}_${TL_CAPTURE}_${USE_GDB}_${BYPASS_PLL}
+PERSUITE_CHECK = ${TEST_SUITE_DIR}/.PERSUITE_${DUT_SIM_MODE}_${NOWAVE}_${PROFILE}_${COVERAGE}_${DISABLE_CHISEL_PRINTF}_${ENABLE_KPRINTF}_${TL_CAPTURE}_${USE_GDB}_${BYPASS_PLL}
 
 ${PERSUITE_CHECK}: .force
 	@if test ! -f ${PERSUITE_CHECK}; then rm -f ${TEST_SUITE_DIR}/.PERSUITE_*; touch ${PERSUITE_CHECK}; fi
@@ -164,7 +178,7 @@ endif
 	@echo "CEP_COSIM:   BYPASS_PLL             = ${BYPASS_PLL}"
 	@echo "CEP_COSIM:   ASIC_MODE              = ${ASIC_MODE}"
 	@echo "CEP_COSIM:   DISABLE_CHISEL_PRINTF  = ${DISABLE_CHISEL_PRINTF}"
-	@echo "CEP_COSIM:   FPGA_SW_BUILD          = ${FPGA_SW_BUILD}"
+	@echo "CEP_COSIM:   ENABLE_KPRINTF         = ${ENABLE_KPRINTF}"
 	@echo ""
 #--------------------------------------------------------------------------------------
 
@@ -355,7 +369,8 @@ User controlled options: (0 = not set, 1 = set)
   TL_CAPTURE              : Default: 0: Enables capturing of CEP core tilelink I/O as required by bareMetal macroMix tests and unit simulation
   BYPASS_PLL              : Default, 0: Applicable only when running the ASIC simulation, enables PLL bypass when set.
   DISABLE_CHISEL_PRINTF	  : Default, 1: When not set, enables instruction trace of the Rocket Cores (not applicable in BFM mode)
-  
+  ENABLE_KPRINTF          : Default, 0: When set, maps the LOGI/W/E/F functions to kprintf, thus enabling printf functionality in bare metal mode.                           
+    
 Targets:
   usage                   : Print this usage information.
   sim_info                : Display the default/current environment/variable settings used by the cosim.

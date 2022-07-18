@@ -29,8 +29,6 @@
     int verbose   = 0;
     uint64_t mem_base = scratchpad_base_addr + 0x000E0000;
 
-    set_printf(0);
-  
     // Set the current core's status to running
     set_cur_status(CEP_RUNNING_STATUS);
 

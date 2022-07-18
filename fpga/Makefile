@@ -108,6 +108,8 @@ ifeq ($(SUB_PROJECT),arty100tsim)
 	FPGA_BRAND        ?= xilinx
 endif
 
+# Bootrom targets are "cleared" for CEP FPGA targets, since
+# build is controlled from within the chisel configuration
 ifeq ($(SUB_PROJECT),cep_arty100t)
 	SBT_PROJECT       ?= fpga_platforms
 	MODEL             ?= Arty100TFPGATestHarness
@@ -119,10 +121,13 @@ ifeq ($(SUB_PROJECT),cep_arty100t)
 	TOP               ?= ChipTop
 	BOARD             ?= arty_a7_100
 	FPGA_BRAND        ?= xilinx
-	SORT_SCRIPT       := $(base_dir)/scripts/sort-blackbox.py
+	SORT_SCRIPT		  := $(base_dir)/scripts/sort-blackbox.py
 	SORT_FILE         := $(base_dir)/cep_sort.f
+	BOOTROM_TARGETS	  :=
 endif
 
+# Bootrom targets are "cleared" for CEP FPGA targets, since
+# build is controlled from within the chisel configuration
 ifeq ($(SUB_PROJECT),cep_min_arty100t)
 	SBT_PROJECT       ?= fpga_platforms
 	MODEL             ?= Arty100TFPGATestHarness
@@ -134,8 +139,9 @@ ifeq ($(SUB_PROJECT),cep_min_arty100t)
 	TOP               ?= ChipTop
 	BOARD             ?= arty_a7_100
 	FPGA_BRAND        ?= xilinx
-	SORT_SCRIPT       := $(base_dir)/scripts/sort-blackbox.py
+	SORT_SCRIPT		  := $(base_dir)/scripts/sort-blackbox.py
 	SORT_FILE         := $(base_dir)/cep_sort.f
+	BOOTROM_TARGETS	  :=
 endif
 include $(base_dir)/variables.mk
 

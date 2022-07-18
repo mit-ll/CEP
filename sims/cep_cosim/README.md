@@ -53,6 +53,12 @@ This command will generate and copy all of the necessary SystemVerilog/Verilog i
 
 The cosim supports bare metal execution of the RISC-V ISA tests which are included as submodule.  Additional information about these tests can be found [here](https://github.com/riscv-software-src/riscv-tests/tree/1ce128fa78c24bb0ed399c647e7139322b5353a7).
 
+In the event that submodule initialization did not include the riscv-tests, one can manually initialize the submodule:
+```
+cd <CEP_ROOT>
+git submodule update --init --recursive ./toolchains/riscv-tools/riscv-tests
+```
+
 There are a few know issues with running the ISA tests on the CEP.  Some manual changes are required before incorporating these tests into the cosim.
 
 **Issue with TVM='p' & 'pm'**: These 2 modes are setup to run in physical address only condition. Even though the riscv-tests [README.md](https://github.com/riscv-software-src/riscv-tests/tree/1ce128fa78c24bb0ed399c647e7139322b5353a7) mentions TVM='pm' mode is supported but the make infrastructure NOT really set up the build for it. In order to improve coverage, we need to be able to run tests on 4 cores. Therefore, we need to do a minor edit to change TVM='p' (virtual memory is disabled, only core 0 boots up) to 'pm' (virtual memory is disabled, all cores boot up)
@@ -123,7 +129,7 @@ The make command above will compile **mostly** assembly tests in the directory *
 Next step is to port and prepare those ISA tests above for simulation.
 
 ```
-  cd <CEP_ROOT>/simds/cep_cosim/testSuites/isaTests
+  cd <CEP_ROOT>/sims/cep_cosim/testSuites/isaTests
   make createISATests  <-- clean old (if any) and prepare all new ISA tests for simulation (take a while.. Be patient)
 ```
 
@@ -162,9 +168,11 @@ The following variables can be overwritten (or changed in cep_buildHW.make).  Th
   XCELIUM_INSTALL  ?= /brewhouse/cad4/x86_64/Cadence/${XCELIUM_VERSION}
   QUESTASIM_PATH   ?= /opt/questa-2019.1/questasim/bin
 
-### Test Status
+### Test Status / Known Issues
+Cadence XCellium on RHEL7 *occasionally* fails some of the bareMetal tests.  Root cause has not been determined, but it is recommended that the test be re-run.
+
 The following tests current "fail" with the notes contained therein:
-* ./testSuites/bfmTests/macroMix            - One test vector failure in the idft core fails, but all others pass.
+* ./testSuites/bfmTests/macroMix            - GPS tests fail.  Updated will be rolled into the next release.
 
 The following tests are currently non-functional and are thus excluded from the various testSuite *TEST_LIST*
 * ./testSuites/bfmTests/srotErrorTest
@@ -175,9 +183,8 @@ The following tests are currently non-functional and are thus excluded from the 
 
 The following tests run, but currently fail:
 * ./testSuites/bareMetalTests/plicTest
-* ./testSuites/bfmTests/macroMix              <- Single vector fails
 * ./testSuites/isaTests/rv64mi-p-csr
 * ./testSuites/isaTests/rv64si-p-csr
-
+* ./testSuites/isaTests/*all -v tests* (virtual mode tests)
 
 ### Return to the Root CEP [readme](../../README.md).

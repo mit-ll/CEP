@@ -3,7 +3,7 @@
 //
 // This file is auto-generated for test: AES. Do not modify!!!
 //
-// Generated on: Jun 15 2022 07:52:54
+// Generated on: Jun 24 2022 14:35:51
 //************************************************************************
 #ifndef AES_playback_H
 #define AES_playback_H
@@ -1028,7 +1028,6 @@ uint64_t AES_playback[] = {
 
 #define AES_adrBase 0x0070000000
 #define AES_adrSize 0x10000
-#define AES_size 3200
 #define AES_cmdCnt4Single 20
 #define AES_totalCommands 1000
 #endif

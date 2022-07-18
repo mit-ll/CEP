@@ -16,10 +16,6 @@
 #include <stdio.h>
 #include <stdint.h>
 
-#ifdef BARE_MODE
-#include <kprintf.h>
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif

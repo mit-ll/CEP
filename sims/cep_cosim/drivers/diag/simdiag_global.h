@@ -128,8 +128,6 @@
 
 #endif
 
-#define _FIXME() do { printf("%s: FIXME!!!\n",__FUNCTION__); } while (0)
-
 #ifdef __cplusplus
 extern "C" {
 #endif

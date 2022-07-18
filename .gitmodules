@@ -1,6 +1,15 @@
+[submodule "toolchains/esp-tools/riscv-isa-sim"]
+	path = toolchains/esp-tools/riscv-isa-sim
+	url = https://github.com/ucb-bar/esp-isa-sim.git
 [submodule "fpga/fpga-shells"]
 	path = fpga/fpga-shells
 	url = https://github.com/sifive/fpga-shells.git
+[submodule "generators/fft-generator"]
+	path = generators/fft-generator
+	url = https://github.com/ucb-bar/FFTGenerator.git
+[submodule "CEP_Chipyard_ASIC"]
+	path = CEP_Chipyard_ASIC
+	url = ssh://git@llcad-github/HSS/CEP_Chipyard_ASIC.git
 [submodule "generators/boom"]
 	path = generators/boom
 	url = https://github.com/riscv-boom/riscv-boom.git
@@ -27,7 +36,7 @@
 	url = https://github.com/ucb-bar/riscv-sodor.git
 [submodule "rocket-chip"]
 	path = generators/rocket-chip
-	url = https://github.com/ucb-bar/rocket-chip.git
+	url = https://github.com/chipsalliance/rocket-chip.git
 [submodule "generators/sha3"]
 	path = generators/sha3
 	url = https://github.com/ucb-bar/sha3.git
@@ -61,9 +70,6 @@
 [submodule "toolchains/esp-tools/riscv-gnu-toolchain"]
 	path = toolchains/esp-tools/riscv-gnu-toolchain
 	url = https://github.com/ucb-bar/esp-gnu-toolchain.git
-[submodule "toolchains/esp-tools/riscv-isa-sim"]
-	path = toolchains/esp-tools/riscv-isa-sim
-	url = https://github.com/riscv-software-src/riscv-isa-sim.git
 [submodule "toolchains/esp-tools/riscv-pk"]
 	path = toolchains/esp-tools/riscv-pk
 	url = https://github.com/riscv/riscv-pk.git

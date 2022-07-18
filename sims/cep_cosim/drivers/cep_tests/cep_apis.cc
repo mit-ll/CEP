@@ -327,7 +327,7 @@ int check_bare_status(int cpuId, int maxTimeOut) {
   // Put the core, not the tile into reset to stop the program counter
   // If the tile is reset, then it MIGHT lock up the tilelink bus... and thus
   // prevent other cores from completing their work
-  DUT_RUNCLK(100);
+  DUT_RUNCLK(1000);
   LOGI("%s: Putting core in reset to stop the PC...\n",__FUNCTION__);
   DUT_WRITE_DVT(DVTF_PAT_HI, DVTF_PAT_LO, cpuId);
   DUT_WRITE_DVT(DVTF_FORCE_CORE_RESET, DVTF_FORCE_CORE_RESET, 1);
@@ -430,9 +430,9 @@ static int inRange(uint64_t adr, uint64_t upperAdr,uint64_t lowerAdr) {
   return ((adr >= lowerAdr) && (adr < upperAdr)) ? 1 : 0;
 }
        
-int cep_playback(uint64_t *cmdSeq, uint64_t upperAdr, uint64_t lowerAdr, int totalCmds, int totalSize, int verbose) {
+int cep_playback(uint64_t *cmdSeq, uint64_t upperAdr, uint64_t lowerAdr, int totalCmds, int verbose) {
   if (verbose) {
-    LOGI("%s: playback command sequence totalCmds=%d totalSize=%d\n",__FUNCTION__,totalCmds,totalSize);
+    LOGI("%s: playback command sequence totalCmds=%d\n",__FUNCTION__,totalCmds);
   }
   int errCnt = 0;
   int i=0, TO;
@@ -480,6 +480,10 @@ int cep_playback(uint64_t *cmdSeq, uint64_t upperAdr, uint64_t lowerAdr, int tot
       i += RDSPIN_CMD_SIZE;
     }
   }
+
+  if (verbose)
+  	LOGI("%s: no errors detected\n");
+
   return errCnt;
 }
 

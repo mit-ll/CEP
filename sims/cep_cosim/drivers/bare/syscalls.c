@@ -28,24 +28,6 @@
 extern volatile uint64_t tohost;
 extern volatile uint64_t fromhost;
 
-static uintptr_t syscall(uintptr_t which, uint64_t arg0, uint64_t arg1, uint64_t arg2)
-{
-  volatile uint64_t magic_mem[8] __attribute__((aligned(64)));
-  magic_mem[0] = which;
-  magic_mem[1] = arg0;
-  magic_mem[2] = arg1;
-  magic_mem[3] = arg2;
-  __sync_synchronize();
-
-  tohost = (uintptr_t)magic_mem;
-  while (fromhost == 0)
-    ;
-  fromhost = 0;
-
-  __sync_synchronize();
-  return magic_mem[0];
-}
-
 #define NUM_COUNTERS 2
 static uintptr_t counters[NUM_COUNTERS];
 static char* counter_names[NUM_COUNTERS];
@@ -89,16 +71,11 @@ void abort()
 
 // Syscall is currently disabled as it does
 // not function properly in simulation
-void printstr(const char* s)
+int puts(const char* s)
 {
-
-#ifdef ENABLE_KPRINTF
   kputs(s);
-#else
-  ;
-//  syscall(SYS_write, 1, (uintptr_t)s, strlen(s));
-#endif
 
+  return 0;
 }
 
 void __attribute__((weak)) thread_entry(int cid, int nc)
@@ -111,7 +88,7 @@ void __attribute__((weak)) thread_entry(int cid, int nc)
 int __attribute__((weak)) main(int argc, char** argv)
 {
   // single-threaded programs override this function.
-  printstr("Implement main(), foo!\n");
+  puts("Implement main(), foo!\n");
   return -1;
 }
 
@@ -140,24 +117,22 @@ void _init(int cid, int nc)
     if (counters[i])
       pbuf += sprintf(pbuf, "%s = %" PRIuPTR "\n", counter_names[i], counters[i]);
   if (pbuf != buf)
-    printstr(buf);
+    puts(buf);
 
   exit(ret);
 }
 
+#undef getchar
+int getchar()
+{
+  return kgetc();
+}
+
+
 #undef putchar
 int putchar(int ch)
 {
-  static __thread char buf[64] __attribute__((aligned(64)));
-  static __thread int buflen = 0;
-
-  buf[buflen++] = ch;
-
-  if (ch == '\n' || buflen == sizeof(buf))
-  {
-    syscall(SYS_write, 1, (uintptr_t)buf, buflen);
-    buflen = 0;
-  }
+  kputc(ch);
 
   return 0;
 }
@@ -173,7 +148,7 @@ void printhex(uint64_t x)
   }
   str[16] = 0;
 
-  printstr(str);
+  puts(str);
 }
 
 static inline void printnum(void (*putch)(int, void**), void **putdat,
@@ -221,17 +196,23 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
 {
   register const char* p;
   const char* last_fmt;
-  register int ch, err;
+  register int ch;
   unsigned long long num;
-  int base, lflag, width, precision, altflag;
+  int base, lflag, width, precision;
   char padc;
 
   while (1) {
     while ((ch = *(unsigned char *) fmt) != '%') {
-      if (ch == '\0')
+      if (ch == '\0') {
         return;
-      fmt++;
-      putch(ch, putdat);
+      } else if (ch == '\n') {
+        putch('\n', putdat);
+        putch('\r', putdat);
+        fmt++;
+      } else {
+        putch(ch, putdat);
+        fmt++;
+      }
     }
     fmt++;
 
@@ -241,7 +222,6 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
     width = -1;
     precision = -1;
     lflag = 0;
-    altflag = 0;
   reswitch:
     switch (ch = *(unsigned char *) fmt++) {
 
@@ -283,7 +263,6 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
       goto reswitch;
 
     case '#':
-      altflag = 1;
       goto reswitch;
 
     process_precision:
@@ -372,16 +351,11 @@ static void vprintfmt(void (*putch)(int, void**), void **putdat, const char *fmt
 // as syscalls do not function correctly
 int printf(const char* fmt, ...)
 {
-
-#ifdef ENABLE_KPRINTF
   va_list ap;
   va_start(ap, fmt);
   vprintfmt((void*)kputc, 0, fmt, ap);
   va_end(ap);
-#else
-  ;
-//  vprintfmt((void*)putchar, 0, fmt, ap);
-#endif
+
   return 0; // incorrect return value, but who cares, anyway?
 }
 

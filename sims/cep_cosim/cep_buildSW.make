@@ -25,8 +25,8 @@ COMMON_CFLAGS	        += -DASICMODE
 RISCV_BARE_CFLAGS       += -DASICMODE
 endif
 
-ifeq (${ENABLE_KPRINTF},1)
-RISCV_BARE_CFLAGS       += -DENABLE_KPRINTF
+ifeq (${DISABLE_KPRINTF},1)
+RISCV_BARE_CFLAGS       += -DDISABLE_KPRINTF
 endif
 
 #--------------------------------------------------------------------------------------
@@ -228,8 +228,8 @@ RISCV_VIRT_INC     		+= -I${DRIVERS_DIR}/virtual -I${RISCV_TEST_DIR}/isa/macros/
 # -g                    - Produce debugging information in the operating system’s native format
 # -c                    - Compile, but don't link files
 # -lgcc                 - ?????
-RISCV_BARE_CFLAGS  		+= -mcmodel=medany -O2 -Wall -fno-common -fno-builtin-printf 
-RISCV_BARE_CFLAGS 		+= -I ${BARE_D} -I ${VECTOR_D} ${COMMON_INCLUDE_LIST}
+RISCV_BARE_CFLAGS  		+= -mcmodel=medany -O2 -fno-common -fno-builtin-printf -fno-builtin-puts -Wall -Wno-unused-function
+RISCV_BARE_CFLAGS 		+= -I ${BARE_D} -I ${BARE_D}/include -I ${VECTOR_D} ${COMMON_INCLUDE_LIST}
 RISCV_BARE_CFLAGS 		+= -mabi=lp64 -march=rv64ima
 RISCV_BARE_CFLAGS 		+= -DBARE_MODE -DRISCV_CPU
 RISCV_BARE_LFILE		+= ${BARE_D}/cep_link.lds

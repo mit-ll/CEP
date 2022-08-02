@@ -11,17 +11,16 @@
 //                - Updated ACMD41 processing to read all five bytes of the R3 response and check
 //                  the busy bit in the response per specification Figure 4-4 (Response bit 39)
 //                - Removed 34-byte BBL offset in sd_copy (now set to 0)
+//                - Increased default payload size to 35MB to accomodate larger Linux images
 //--------------------------------------------------------------------------------------
 
 // See LICENSE.Sifive for license details.
+#include <stdio.h>
 #include <stdint.h>
 #include <platform.h>
 
-#define DEBUG
-#include "kprintf.h"
-
-// Total payload in B
-#define PAYLOAD_SIZE_B (1 << 19) // 512kB
+// Payload size in bytes
+#define PAYLOAD_SIZE_B (35 << 20) // 35 MB
 
 // A sector is 512 bytes, so (1 << 11) * 512B = 1 MiB
 #define SECTOR_SIZE_B 512
@@ -39,9 +38,25 @@
 #define F_CLK TL_CLK
 
 #define REG64(p, i) ((p)[(i) >> 3])
+#define REG32(p, i) ((p)[(i) >> 2])
+#define REG16(p, i) ((p)[(i) >> 1])
 
 static volatile uint32_t * const spi = (void *)(SPI_CTRL_ADDR);
+static volatile uint32_t * const gpio = (void *)(GPIO_CTRL_ADDR);
 static volatile uint64_t * const cepregs = (void *)(CEPREGS_ADDR);
+static volatile uint32_t * const uart = (void *)(UART_CTRL_ADDR);
+
+// Button used to allow for a "fast boot"
+#ifdef VCU118
+  // GPIO Button N on VCU118
+  #define BTN0_MASK       (0x00000010)
+#elif VC707
+  // GPIO Button N on VC707
+  #define BTN0_MASK       (0x00000100)
+#else
+  // BTN0 on Arty100T
+  #define BTN0_MASK       (0x00001000)
+#endif
 
 static inline uint8_t spi_xfer(uint8_t d)
 {
@@ -80,7 +95,7 @@ static uint8_t sd_cmd(uint8_t cmd, uint32_t arg, uint8_t crc)
       goto done;
     }
   } while (--n > 0);
-  kputs("sd_cmd: timeout");
+  puts("sd_cmd: timeout");
 done:
   return r;
 }
@@ -106,7 +121,7 @@ static void sd_poweron(void)
 static int sd_cmd0(void)
 {
   int rc;
-  kputs("CMD0");
+  puts("CMD0");
   rc = (sd_cmd(0x40, 0, 0x95) != 0x01);
   sd_cmd_end();
   return rc;
@@ -115,7 +130,7 @@ static int sd_cmd0(void)
 static int sd_cmd8(void)
 {
   int rc;
-  kputs("CMD8");
+  puts("CMD8");
   // Per section 7.3.2.6 of the specification, the card should be in the IDLE state and
   // running the initialization process
   rc = (sd_cmd(0x48, 0x000001AA, 0x87) != 0x01);
@@ -135,19 +150,19 @@ static void sd_cmd55(void)
 
 static int sd_acmd41(void)
 {
-	uint8_t r;
-	dputs("ACMD41");
-	do {
-		sd_cmd55();
-		r = sd_cmd(0x69, 0x40000000, 0x77); /* HCS = 1 */
-	} while (r == 0x01);
-	return (r != 0x00);
+  uint8_t r;
+  puts("ACMD41");
+  do {
+    sd_cmd55();
+    r = sd_cmd(0x69, 0x40000000, 0x77); /* HCS = 1 */
+  } while (r == 0x01);
+  return (r != 0x00);
 }
 
 static int sd_cmd58(void)
 {
   int rc;
-  kputs("CMD58");
+  puts("CMD58");
   rc = (sd_cmd(0x7A, 0, 0xFD) != 0x00);
   rc |= ((sd_dummy() & 0x80) != 0x80); /* Power up status */
   sd_dummy();
@@ -161,7 +176,7 @@ static int sd_cmd58(void)
 static int sd_cmd16(void)
 {
   int rc;
-  kputs("CMD16");
+  puts("CMD16");
   rc = (sd_cmd(0x50, 0x200, 0x15) != 0x00);
   sd_cmd_end();
   return rc;
@@ -176,11 +191,10 @@ static uint16_t crc16_round(uint16_t crc, uint8_t data) {
   return crc;
 }
 
-#define SPIN_SHIFT  6
-#define SPIN_UPDATE(i)  (!((i) & ((1 << SPIN_SHIFT)-1)))
-#define SPIN_INDEX(i) (((i) >> SPIN_SHIFT) & 0x3)
-
-static const char spinner[] = { '-', '/', '|', '\\' };
+#define STATUS_SHIFT  6
+#define STATUS_NEWLINE_SHIFT 12
+#define STATUS_UPDATE(i)  (!((i) & ((1 << STATUS_SHIFT)-1)))
+#define STATUS_NEWLINE(i) (!((i) & ((1 << STATUS_NEWLINE_SHIFT)-1)))
 
 // Copy SD contents to main memory
 static int sd_copy(void)
@@ -188,26 +202,38 @@ static int sd_copy(void)
   volatile uint8_t *p = (void *)(MEMORY_MEM_ADDR);
   long i = PAYLOAD_SIZE;
   int rc = 0;
+  uint32_t fast_boot = 0;
 
-  // The following logic allows for a simulation overwrite of the number of blocks to be loaded
-  // If the scratch_w7 register is not "forced" by the simulation, then the default payload size
-  // will prevail.
-  REG64(cepregs, CEPREGS_SCRATCH_W7) = i;
-  i = REG64(cepregs, CEPREGS_SCRATCH_W7);
+  puts("CMD18");
 
-  kputs("CMD18");
+  // Read the state of button 0 on the arty100t board to determine if a fast boot is requested
+  REG32(gpio, GPIO_INPUT_EN) = (uint32_t)(BTN0_MASK);
+  fast_boot = REG32(gpio, GPIO_INPUT_VAL) & BTN0_MASK;
+  REG32(gpio, GPIO_INPUT_EN) = (uint32_t)(0);
+  
+  // The following logic allows for overiding of the default payload size by either holding button zero upon
+  // release from reset OR being forced by the simulation.
+  // Given that the simulation has it's own override, the "fast boot" is targetted to bare metal boots
+  // on the FPGA dev boards. 
+  if (fast_boot) {
+    i = 0x100;  // 256 x 512B = 132kB
+  } else {
+    REG64(cepregs, CEPREGS_SCRATCH_W7) = i;
+    i = REG64(cepregs, CEPREGS_SCRATCH_W7);
+  }
 
   // Performing multiplication here in the event that PAYLOAD_SIZE is
   // overriden in simulation
-  kprintf("LOADING 0x%x PAYLOAD\r\n", SECTOR_SIZE_B * i);
-  kprintf("LOADING  ");
+  printf("LOADING %ldkB PAYLOAD\n", (i * SECTOR_SIZE_B)/1024);
 
-  // Begin a multi-cycle read
+  // Begin a multi-cycle read.  Divider taked from default VCU118 Bootroml
   REG32(spi, SPI_REG_SCKDIV) = (F_CLK / 5000000UL);
-  if (sd_cmd(0x52, 0, 0xE1) != 0x00) {
+  
+  if (sd_cmd(0x52, BBL_PARTITION_START_SECTOR, 0xE1) != 0x00) {
     sd_cmd_end();
     return 1;
   }
+
   do {
     uint16_t crc, crc_exp;
     long n;
@@ -229,21 +255,25 @@ static int sd_copy(void)
     crc_exp |= sd_dummy();
 
     if (crc != crc_exp) {
-      kputs("CRC mismatch");
+      puts("CRC mismatch");
       rc = 1;
       break;
     }
 
-    if (SPIN_UPDATE(i)) {
-      kputc('\b');
-      kputc(spinner[SPIN_INDEX(i)]);
+    if (STATUS_UPDATE(i)) {
+      putchar('.');
+      if (STATUS_NEWLINE(i)) {
+        printf("%ldkB\n", (i * SECTOR_SIZE_B)/1024);
+      }
     }
-  } while (--i > 0);
-  sd_cmd_end();
 
+  } while (--i > 0);
+
+  sd_cmd_end();
   sd_cmd(0x4C, 0, 0x01);
   sd_cmd_end();
-  kputs("\b ");
+  printf("\n");
+
   return rc;
 }
 
@@ -275,48 +305,51 @@ int main(void)
 
   // Enable the welcome message if the two LSBits in CEP Scratch Register are NOT set
   if ((scratch_reg & 0x3) != 0x3) {
-    kprintf("---    Common Evaluation Platform v%x.%x     ---\r\n", major_version, minor_version);
-    kprintf("--- Copyright 2022 Massachusetts Institute of Technology ---\r\n");
-    kprintf("---     BootRom Image built on %s %s      ---\r\n",__DATE__,__TIME__);
+    printf("\n");
+    printf("---          Common Evaluation Platform v%x.%x            ---\n", major_version, minor_version);
+    printf("---         Based on the UCB Chipyard Framework          ---\n");
+    printf("--- Copyright 2022 Massachusetts Institute of Technology ---\n");
+    printf("---     BootRom Image built on %s %s      ---\n",__DATE__,__TIME__);
+    printf("\n");
   } // if ((scratch_reg & 0x3) != 0x3)
 
   // Enable SD Boot if bits 3 & 2 of the CEP Scratch register are NOT set
   if ((scratch_reg & 0xC) != 0xC) {
-    kputs("INIT");
+    puts("INIT");
   
     sd_poweron();
 
     if (sd_cmd0()) {
-      kputs("CMD0 ERROR");
+      puts("CMD0 ERROR");
       return 1;     
     }
 
     if (sd_cmd8()) {
-      kputs("CMD8 ERROR");
+      puts("CMD8 ERROR");
       return 1;     
     }
 
     if (sd_acmd41()) {
-      kputs("ACMD41 ERROR");
+      puts("ACMD41 ERROR");
       return 1;     
     }
 
     if (sd_cmd58()) {
-      kputs("CMD58 ERROR");
+      puts("CMD58 ERROR");
       return 1;     
     }
 
     if (sd_cmd16()) {
-      kputs("CMD16 ERROR");
+      puts("CMD16 ERROR");
       return 1;     
     }
 
     if (sd_copy()) {
-      kputs("SDCOPY ERROR");
+      puts("SDCOPY ERROR");
       return 1;     
     }
 
-    kputs("BOOT");
+    puts("BOOT");
   } // if ((scratch_reg & 0xC) != 0xC)
 
   // Force instruction and data stream synchronization

@@ -2,74 +2,42 @@
 #include <stdarg.h>
 #include <stdint.h>
 #include <stdbool.h>
-
 #include "kprintf.h"
 
-static inline void _kputs(const char *s)
+void kputc(int c)
 {
-	char c;
-	for (; (c = *s) != '\0'; s++)
-		kputc(c);
+#ifndef DISABLE_KPRINTF 
+  volatile uint32_t *tx = &REG32(uart, UART_REG_TXFIFO);
+  while ((int32_t)(*tx) < 0);
+  *tx = (c & 0xFF);
+#endif
+}
+
+int kgetc(void)
+{
+#ifndef DISABLE_KPRINTF
+  uint32_t ch;
+  volatile uint32_t *rx = &REG32(uart, UART_REG_RXFIFO);
+  ch = *rx;
+
+  if ((uint32_t)(ch & UART_RXEMPTY)) {
+    return -1;
+  } else {
+    return(ch & 0x0ff);
+  }
+#else
+  return -1;
+#endif
 }
 
 void kputs(const char *s)
 {
-	_kputs(s);
-	kputc('\r');
-	kputc('\n');
-}
-
-void kprintf(const char *fmt, ...)
-{
-	va_list vl;
-	bool is_format, is_long, is_char;
-	char c;
-
-	va_start(vl, fmt);
-	is_format = false;
-	is_long = false;
-	is_char = false;
-	while ((c = *fmt++) != '\0') {
-		if (is_format) {
-			switch (c) {
-			case 'l':
-				is_long = true;
-				continue;
-			case 'h':
-				is_char = true;
-				continue;
-			case 'x': {
-				unsigned long n;
-				long i;
-				if (is_long) {
-					n = va_arg(vl, unsigned long);
-					i = (sizeof(unsigned long) << 3) - 4;
-				} else {
-					n = va_arg(vl, unsigned int);
-					i = is_char ? 4 : (sizeof(unsigned int) << 3) - 4;
-				}
-				for (; i >= 0; i -= 4) {
-					long d;
-					d = (n >> i) & 0xF;
-					kputc(d < 10 ? '0' + d : 'a' + d - 10);
-				}
-				break;
-			}
-			case 's':
-				_kputs(va_arg(vl, const char *));
-				break;
-			case 'c':
-				kputc(va_arg(vl, int));
-				break;
-			}
-			is_format = false;
-			is_long = false;
-			is_char = false;
-		} else if (c == '%') {
-			is_format = true;
-		} else {
-			kputc(c);
-		}
-	}
-	va_end(vl);
+  char c;
+  while (*s != '\0') {
+    c = *s;
+    kputc((int) c);
+    s++;
+  }
+  kputc('\r');
+  kputc('\n');
 }

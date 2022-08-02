@@ -32,6 +32,11 @@ import freechips.rocketchip.diplomacy._
 import freechips.rocketchip.regmapper._
 import freechips.rocketchip.tilelink._
 
+object CEPVersion {
+  val CEP_MAJOR_VERSION             = 0x04
+  val CEP_MINOR_VERSION             = 0x20
+}
+
 object CEPBaseAddresses {  
   val scratchpad_base_addr          = 0x64800000L
   val scratchpad_depth              = 0x0001FFFFL 
@@ -157,11 +162,6 @@ object CEPBaseAddresses {
 
   val srot_base_addr                = 0x70200000L
   val srot_base_depth               = 0x0000ffffL
-}
-
-object CEPVersion {
-  val CEP_MAJOR_VERSION             = 0x04
-  val CEP_MINOR_VERSION             = 0x10
 }
 
 object AESAddresses {

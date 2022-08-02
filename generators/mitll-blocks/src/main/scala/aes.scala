@@ -85,7 +85,7 @@ class aesTLModule(coreattachparams: COREAttachParams)(implicit p: Parameters) ex
       regionType          = RegionType.IDEMPOTENT,
       supportsGet         = TransferSizes(1, 8),
       supportsPutFull     = TransferSizes(1, 8),
-      supportsPutPartial  = TransferSizes(1, 8),
+      supportsPutPartial  = TransferSizes.none,
       supportsArithmetic  = TransferSizes.none,
       supportsLogical     = TransferSizes.none,
       fifoId              = Some(0))), // requests are handled in order

@@ -26,11 +26,11 @@ cep_adrMap.h
 v2c_cmds.h
 .PERSUITE*
 
-**/*.dump
-**/*.bin
-**/*.img
-**/*.elf
-**/*.o
+*.dump
+*.bin
+*.img
+*.elf
+*.o
 
 
 

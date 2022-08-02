@@ -22,22 +22,21 @@ ROOT_DIR		:= $(strip $(shell cd .; pwd))
 COSIM_TOP_DIR 	:= $(strip $(shell cd ..; pwd))
 CONVERT_BOOTROM	:= ${COSIM_TOP_DIR}/bin/convert-bootrom.py
 
-BOOTROM_IMG 	= bootrom.rv64.img bootrom.rv32.img
-BOOTROM_DUMP	= bootrom.rv64.dump bootrom.rv32.dump
-BOOTROM_ELF  	= bootrom.rv64.elf bootrom.rv32.elf
+BOOTROM_IMG 	= bootrom.rv64.img
+BOOTROM_DUMP	= bootrom.rv64.dump
+BOOTROM_ELF  	= bootrom.rv64.elf
 
 CEP_LDS_FILE    = ${ROOT_DIR}/cep_boot.lds
 
 CC 				= $(RISCV)/bin/riscv64-unknown-elf-gcc
 OBJCOPY 		= $(RISCV)/bin/riscv64-unknown-elf-objcopy
 OBJDUMP 		= $(RISCV)/bin/riscv64-unknown-elf-objdump
-CFLAGS 			= -mcmodel=medany -O2 -std=gnu11 -Wall -fno-common -g
+CFLAGS 			= -mcmodel=medany -O2 -fno-common -fno-builtin-printf -fno-builtin-puts -Wall -Wno-unused-function
 CFLAGS 			+= -DENTROPY=0 -DNONSMP_HART=0
 
 CFLAGS 			+= -I $(ROOT_DIR)/include -I ${ROOT_DIR}
-CFLAGS_RV64		= -mabi=lp64 -march=rv64ima
-CFLAGS_RV32		= -mabi=ilp32 -march=rv32ima
-LFLAGS 			= -static -nostdlib -nostartfiles -T ${CEP_LDS_FILE}
+CFLAGS_RV64		+= -mabi=lp64 -march=rv64ima
+LFLAGS 			= -static -nostdlib -nostartfiles -lgcc -T ${CEP_LDS_FILE}
 
 
 default: bootrom_info img dump elf rcf
@@ -75,11 +74,8 @@ rcf: img
 %.dump: %.elf
 	$(OBJDUMP) -D -S $< > $@
 
-bootrom.rv32.elf: head.S kprintf.c sd.c ${CEP_LDS_FILE} ${BOOTROM_CHECK}
-	$(CC) $(CFLAGS) $(CFLAGS_RV32) -DTL_CLK="$(PBUS_CLK)UL" $(LFLAGS) -o $@ head.S sd.c kprintf.c
-
 bootrom.rv64.elf: head.S kprintf.c sd.c ${CEP_LDS_FILE} ${BOOTROM_CHECK}
-	$(CC) $(CFLAGS) $(CFLAGS_RV64) -DTL_CLK="$(PBUS_CLK)UL" $(LFLAGS) -o $@ head.S sd.c kprintf.c
+	$(CC) $(CFLAGS) $(CFLAGS_RV64) -DTL_CLK="$(PBUS_CLK)UL" $(LFLAGS) -o $@ head.S sd.c kprintf.c syscalls_bootrom.c
 
 # Use to force rebuilds for rules that include this dependency
 .force:

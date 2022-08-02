@@ -50,8 +50,8 @@ class Arty100TFPGATestHarness(override implicit val p: Parameters) extends Arty1
 
   /*** UART ***/
 
-// DOC include start: UartOverlay
-  // 1st UART goes to the VCU118 dedicated UART
+  // DOC include start: UartOverlay
+  // 1st UART goes to the Arty100T dedicated UART
 
   val io_uart_bb  = BundleBridgeSource(() => (new UARTPortIO(dp(PeripheryUARTKey).head)))
   dp(UARTOverlayKey).head.place(UARTDesignInput(io_uart_bb))

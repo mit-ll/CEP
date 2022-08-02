@@ -4,18 +4,15 @@
 [submodule "fpga/fpga-shells"]
 	path = fpga/fpga-shells
 	url = https://github.com/sifive/fpga-shells.git
-[submodule "generators/fft-generator"]
-	path = generators/fft-generator
-	url = https://github.com/ucb-bar/FFTGenerator.git
-[submodule "CEP_Chipyard_ASIC"]
-	path = CEP_Chipyard_ASIC
-	url = ssh://git@llcad-github/HSS/CEP_Chipyard_ASIC.git
 [submodule "generators/boom"]
 	path = generators/boom
 	url = https://github.com/riscv-boom/riscv-boom.git
 [submodule "generators/cva6"]
 	path = generators/cva6
 	url = https://github.com/ucb-bar/cva6-wrapper.git
+[submodule "generators/fft-generator"]
+	path = generators/fft-generator
+	url = https://github.com/ucb-bar/FFTGenerator.git
 [submodule "generators/gemmini"]
 	path = generators/gemmini
 	url = https://github.com/ucb-bar/gemmini
@@ -133,3 +130,6 @@
 [submodule "vlsi/hammer-cadence-plugins"]
 	path = vlsi/hammer-cadence-plugins
 	url = https://github.com/ucb-bar/hammer-cadence-plugins.git
+[submodule "CEP_Chipyard_ASIC"]
+	path = CEP_Chipyard_ASIC
+	url = ssh://git@llcad-github/HSS/CEP_Chipyard_ASIC.git

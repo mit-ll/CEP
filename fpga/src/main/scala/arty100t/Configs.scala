@@ -17,6 +17,8 @@ import sifive.blocks.devices.gpio.{PeripheryGPIOKey, GPIOParams}
 import sifive.fpgashells.shell.{DesignKey}
 import sifive.fpgashells.shell.xilinx.{ArtyDDRSize}
 
+import mitllBlocks.cep_addresses._
+
 import testchipip.{SerialTLKey}
 
 import chipyard.{BuildSystem, ExtTLMem, DefaultClockFrequencyKey}
@@ -39,19 +41,6 @@ class WithDefaultPeripherals extends Config((site, here, up) => {
   }
 })
 
-class WithSystemModifications extends Config((site, here, up) => {
-  case DTSTimebase => BigInt((1e6).toLong)
-  case BootROMLocated(x) => up(BootROMLocated(x), site).map { p =>
-    // invoke makefile for sdboot
-    val freqMHz = (site(DefaultClockFrequencyKey) * 1e6).toLong
-    val make = s"make -B -C fpga/src/main/resources/arty100t/sdboot PBUS_CLK=${freqMHz} bin"
-    require (make.! == 0, "Failed to build bootrom")
-    p.copy(hang = 0x10000, contentFileName = s"./fpga/src/main/resources/arty100t/sdboot/build/sdboot.bin")
-  }
-  case ExtMem => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(ArtyDDRSize)))) // set extmem to DDR size
-  case SerialTLKey => None // remove serialized tl port
-})
-
 // Update to use the same bootrom as the CEP Cosimulation
 class WithCEPSystemModifications extends Config((site, here, up) => {
   case DTSTimebase  => BigInt((1e6).toLong)
@@ -65,26 +54,6 @@ class WithCEPSystemModifications extends Config((site, here, up) => {
   case ExtMem       => up(ExtMem, site).map(x => x.copy(master = x.master.copy(size = site(ArtyDDRSize)))) // set extmem to DDR size
   case SerialTLKey  => None // remove serialized tl port
 })
-
-// DOC include start: AbstractArty100T and Rocket
-class WithArty100TTweaks extends Config(
-  // harness binders
-  new WithUART ++
-  new WithSPISDCard ++
-  new WithDDRMem ++
-  // io binders
-  new WithUARTIOPassthrough ++
-  new WithSPIIOPassthrough ++
-  new WithTLIOPassthrough ++
-  // other configuration
-  new WithDefaultPeripherals ++
-  new chipyard.config.WithTLBackingMemory ++      // use TL backing memory
-  new WithSystemModifications ++                  // setup busses, use sdboot bootrom, setup ext. mem. size
-  new chipyard.config.WithNoDebug ++              // remove debug module
-  new freechips.rocketchip.subsystem.WithoutTLMonitors ++
-  new freechips.rocketchip.subsystem.WithNMemoryChannels(1) ++
-  new WithFPGAFrequency(100)                      // default 100MHz freq
-)
 
 // DOC include start: AbstractArty100T and Rocket
 class WithArty100TCEPTweaks extends Config(
@@ -108,24 +77,6 @@ class WithArty100TCEPTweaks extends Config(
   new WithFPGAFrequency(100)                      // default 100MHz freq
 )
 
-class RocketArty100TConfig extends Config(
-  // reduce L2 size to fit in 100T's BRAMs
-  new freechips.rocketchip.subsystem.WithInclusiveCache(capacityKB=256) ++
-  // with reduced cache size, closes timing at 50 MHz
-  new WithFPGAFrequency(50) ++
-  new WithArty100TTweaks ++
-  new chipyard.RocketConfig
-)
-// DOC include end: AbstractArty100T and Rocket
-
-class RocketArty100TSimConfig extends Config(
-   new WithFPGASimSerial ++
-   new testchipip.WithDefaultSerialTL ++
-   new chipyard.harness.WithSimSerial ++
-   new chipyard.harness.WithTiedOffDebug ++
-   new RocketArty100TConfig
- )
-
 class RocketArty100TCEPConfig extends Config(
   // Add the CEP registers
   new chipyard.config.WithCEPRegisters ++
@@ -133,30 +84,19 @@ class RocketArty100TCEPConfig extends Config(
   new chipyard.config.WithSROTFPGA ++
 
   // Overide the chip info 
-  new WithDTS("mit-ll,rocketchip-cep", Nil) ++
+  new WithDTS("mit-ll,cep-arty100t", Nil) ++
 
   // with reduced cache size, closes timing at 50 MHz
   new WithFPGAFrequency(50) ++
 
   // Include the Arty100T Tweaks with CEP Registers enabled (passed to the bootrom build)
   new WithArty100TCEPTweaks ++
-  new chipyard.RocketNoL2Config
-)
 
-// A minimum CEP configuration with only the registers component
-class RocketArty100TMinCEPConfig extends Config(
-  // Add the CEP registers
-  new chipyard.config.WithCEPRegisters ++
-
-  // Overide the chip info 
-  new WithDTS("mit-ll,rocketchip-cep", Nil) ++
-
-  // with reduced cache size, closes timing at 50 MHz
-  new WithFPGAFrequency(50) ++
-
-  // Include the Arty100T Tweaks with CEP Registers enabled (passed to the bootrom build)
-  new WithArty100TCEPTweaks ++
-  new chipyard.RocketNoL2Config
+  // Instantiate one big core
+  new freechips.rocketchip.subsystem.WithNBigCores(1) ++
+  
+  // Default Chipyard AbstractConfig with L2 removed
+  new chipyard.config.AbstractNoL2Config
 )
 
 class WithFPGAFrequency(fMHz: Double) extends Config(

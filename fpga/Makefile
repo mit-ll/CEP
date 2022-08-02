@@ -12,100 +12,35 @@ sim_dir=$(abspath .)
 # include shared variables
 #########################################################################################
 
-# Verify vivado is available
+# Verify vivado is available, capture and display the version if it is...
+ifeq "$(findstring clean,${MAKECMDGOALS})" ""
 ifeq (,$(shell which vivado))
 $(error Vivado is not available.  Please install and ensure the environment script is sourced.)
-endif
-
-# Detect and 
+else
 VIVADO_VERSION := $(shell vivado -version | head -1 | grep -o -P '(?<=\s).*(?=\s)')
 $(info Vivado $(VIVADO_VERSION) detected.)
+endif
+endif
 
 # Set default SUB_PROJECT
 SUB_PROJECT ?= cep_arty100t
 
-ifeq ($(SUB_PROJECT),vcu118)
+# Bootrom targets are "cleared" for CEP FPGA targets, since
+# build is controlled from within the chisel configuration
+ifeq ($(SUB_PROJECT),cep_vcu118)
 	SBT_PROJECT       ?= fpga_platforms
 	MODEL             ?= VCU118FPGATestHarness
 	VLOG_MODEL        ?= VCU118FPGATestHarness
 	MODEL_PACKAGE     ?= chipyard.fpga.vcu118
-	CONFIG            ?= RocketVCU118Config
+	CONFIG            ?= RocketVCU118CEPConfig
 	CONFIG_PACKAGE    ?= chipyard.fpga.vcu118
 	GENERATOR_PACKAGE ?= chipyard
 	TOP               ?= ChipTop
 	BOARD             ?= vcu118
 	FPGA_BRAND        ?= xilinx
-endif
-
-ifeq ($(SUB_PROJECT),bringup)
-	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= BringupVCU118FPGATestHarness
-	VLOG_MODEL        ?= BringupVCU118FPGATestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.vcu118.bringup
-	CONFIG            ?= RocketBringupConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.vcu118.bringup
-	GENERATOR_PACKAGE ?= chipyard
-	TOP               ?= ChipTop
-	BOARD             ?= vcu118
-	FPGA_BRAND        ?= xilinx
-endif
-
-ifeq ($(SUB_PROJECT),arty)
-	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= ArtyFPGATestHarness
-	VLOG_MODEL        ?= ArtyFPGATestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.arty
-	CONFIG            ?= TinyRocketArtyConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.arty
-	GENERATOR_PACKAGE ?= chipyard
-	TOP               ?= ChipTop
-	BOARD             ?= arty
-	FPGA_FAMILY       ?= artix7
-	FPGA_BRAND        ?= xilinx
-endif
-
-ifeq ($(SUB_PROJECT),artysim)
-	# TODO: Fix with Arty
-	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= ArtyFPGATestHarness
-	VLOG_MODEL        ?= ArtyFPGATestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.arty
-	CONFIG            ?= TinyRocketArtySimConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.arty
-	GENERATOR_PACKAGE ?= chipyard
-	TB                ?= ArtyTestDriver
-	TOP               ?= ChipTop
-	BOARD             ?= arty
-	FPGA_FAMILY       ?= artix7
-	FPGA_BRAND        ?= xilinx
-endif
-
-ifeq ($(SUB_PROJECT),arty100t)
-	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= Arty100TFPGATestHarness
-	VLOG_MODEL        ?= Arty100TFPGATestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.arty100t
-	CONFIG            ?= RocketArty100TConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.arty100t
-	GENERATOR_PACKAGE ?= chipyard
-	TOP               ?= ChipTop
-	BOARD             ?= arty_a7_100
-	FPGA_BRAND        ?= xilinx
-endif
-
-ifeq ($(SUB_PROJECT),arty100tsim)
-	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= Arty100TFPGASimTestHarness
-	VLOG_MODEL        ?= Arty100TFPGASimTestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.arty100t
-	CONFIG            ?= RocketArty100TSimConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.arty100t
-	GENERATOR_PACKAGE ?= chipyard
-	TB                ?= Arty100TTestDriver
-	TOP               ?= ChipTop
-	BOARD             ?= arty_a7_100
-	FPGA_FAMILY       ?= artix7
-	FPGA_BRAND        ?= xilinx
+	SORT_SCRIPT		  := $(base_dir)/scripts/sort-blackbox.py
+	SORT_FILE         := $(base_dir)/cep_sort.f
+	BOOTROM_TARGETS	  :=
 endif
 
 # Bootrom targets are "cleared" for CEP FPGA targets, since
@@ -128,21 +63,44 @@ endif
 
 # Bootrom targets are "cleared" for CEP FPGA targets, since
 # build is controlled from within the chisel configuration
-ifeq ($(SUB_PROJECT),cep_min_arty100t)
+ifeq ($(SUB_PROJECT),cep_vc707)
 	SBT_PROJECT       ?= fpga_platforms
-	MODEL             ?= Arty100TFPGATestHarness
-	VLOG_MODEL        ?= Arty100TFPGATestHarness
-	MODEL_PACKAGE     ?= chipyard.fpga.arty100t
-	CONFIG            ?= RocketArty100TMinCEPConfig
-	CONFIG_PACKAGE    ?= chipyard.fpga.arty100t
+	MODEL             ?= VC707FPGATestHarness
+	VLOG_MODEL        ?= VC707FPGATestHarness
+	MODEL_PACKAGE     ?= chipyard.fpga.vc707
+	CONFIG            ?= RocketVC707CEPConfig
+	CONFIG_PACKAGE    ?= chipyard.fpga.vc707
 	GENERATOR_PACKAGE ?= chipyard
 	TOP               ?= ChipTop
-	BOARD             ?= arty_a7_100
+	BOARD             ?= vc707
 	FPGA_BRAND        ?= xilinx
 	SORT_SCRIPT		  := $(base_dir)/scripts/sort-blackbox.py
 	SORT_FILE         := $(base_dir)/cep_sort.f
 	BOOTROM_TARGETS	  :=
 endif
+
+# Bootrom targets are "cleared" for CEP FPGA targets, since
+# build is controlled from within the chisel configuration
+ifeq ($(SUB_PROJECT),cep_big_vc707)
+	SBT_PROJECT       ?= fpga_platforms
+	MODEL             ?= VC707FPGATestHarness
+	VLOG_MODEL        ?= VC707FPGATestHarness
+	MODEL_PACKAGE     ?= chipyard.fpga.vc707
+	CONFIG            ?= RocketVC707BigCEPConfig
+	CONFIG_PACKAGE    ?= chipyard.fpga.vc707
+	GENERATOR_PACKAGE ?= chipyard
+	TOP               ?= ChipTop
+	BOARD             ?= vc707
+	FPGA_BRAND        ?= xilinx
+	SORT_SCRIPT		  := $(base_dir)/scripts/sort-blackbox.py
+	SORT_FILE         := $(base_dir)/cep_sort.f
+	BOOTROM_TARGETS	  :=
+endif
+
+ifeq ($(SBT_PROJECT),)
+$(error Invalid SUB_PROJECT)
+endif
+
 include $(base_dir)/variables.mk
 
 # default variables to build the arty example
@@ -317,3 +275,5 @@ sim-fpga: $(sim)
 .PHONY: clean
 clean: cep_clean
 	rm -rf $(gen_dir)
+	rm -f *.log
+	rm -f *.jou

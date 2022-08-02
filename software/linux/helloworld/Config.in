@@ -1,0 +1,14 @@
+#***********************************************************************
+# Copyright 2022 Massachusets Institute of Technology
+# SPDX short identifier: BSD-2-Clause
+#
+# File Name:      Config.in
+# Program:        Common Evaluation Platform (CEP)
+# Description:    Buildroot configuration file for CEP linux application
+# Notes:          
+#************************************************************************
+
+config BR2_PACKAGE_HELLOWORLD
+	bool "helloworld"
+	help
+	  A simple hello world program

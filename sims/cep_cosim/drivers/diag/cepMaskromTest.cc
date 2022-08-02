@@ -37,8 +37,8 @@ int cepMaskromTest_runTest(int cpuId, int seed, int verbose) {
   uint8_t dat8, edat8;
 
   // from bootrom.rv64.dump
-  uint32_t known_pat1 = 0x00008137; // location 0
-  uint32_t known_pat0 = 0x0071011b; // location 4
+  uint32_t known_pat1 = 0x00080137; // location 0
+  uint32_t known_pat0 = 0x07f1011b; // location 4
   offs = bootrom_base_addr; //  + ((1<<13)-8);
 
   // 64-bit

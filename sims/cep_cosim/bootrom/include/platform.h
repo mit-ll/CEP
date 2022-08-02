@@ -5,7 +5,7 @@
 // File Name:      platform.h
 // Program:        Common Evaluation Platform (CEP)
 // Description:    
-// Notes:          
+// Notes:          This version has a 1MB main memory size and 4 cores
 //
 //--------------------------------------------------------------------------------------
 
@@ -37,14 +37,6 @@
 #define NUM_CORES 4
 #define GLOBAL_INT_SIZE 38
 #define GLOBAL_INT_MAX_PRIORITY 7
-
-
-// Address constants taken from cep_adrMap.h.  This is
-// explicitly included here (versus using the CEP CoSim generated file)
-// to avoid a circular 
-#define scratchpad_sp_offset	0x00070000
-#define scratchpad_base_addr    0x80000000
-#define scratchpad_base_size    0x00080000
 
 // Memory map
 #define CLINT_CTRL_ADDR _AC(0x2000000,UL)

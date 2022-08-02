@@ -6,22 +6,22 @@ REPO_ROOT_DIR := $(shell git rev-parse --show-toplevel)
 ROOT_DIR := $(dir $(abspath $(lastword $(MAKEFILE_LIST))))
 BUILD_DIR := $(ROOT_DIR)/build
 
-CC=$(RISCV)/bin/riscv64-unknown-elf-gcc
-OBJCOPY=$(RISCV)/bin/riscv64-unknown-elf-objcopy
-OBJDUMP=$(RISCV)/bin/riscv64-unknown-elf-objdump
-CFLAGS=-march=rv64ima -mcmodel=medany -O2 -std=gnu11 -Wall -nostartfiles
-CFLAGS+= -fno-common -g -DENTROPY=0 -mabi=lp64 -DNONSMP_HART=0
-CFLAGS+= -I $(ROOT_DIR)/include -I.
-LFLAGS=-static -nostdlib -L $(ROOT_DIR)/linker -T sdboot.elf.lds
-
-SDC_SOURCE := $(REPO_ROOT_DIR)/sims/cep_cosim/bootrom/sd.c
+CC			=$(RISCV)/bin/riscv64-unknown-elf-gcc
+OBJCOPY 	=$(RISCV)/bin/riscv64-unknown-elf-objcopy
+OBJDUMP 	=$(RISCV)/bin/riscv64-unknown-elf-objdump
+CFLAGS 		=  -mcmodel=medany -O2 -Wall -fno-common -fno-builtin-printf -fno-builtin-puts
+CFLAGS 		+= -I $(ROOT_DIR)/include -I.
+CFLAGS 		+= -mabi=lp64 -march=rv64ima
+CFLAGS 		+= -DENTROPY=0 -DNONSMP_HART=0
+LFLAGS 		=  -static -nostdlib -nostartfiles -T sdboot.elf.lds
+SDSOURCE	= ${REPO_ROOT_DIR}/sims/cep_cosim/bootrom/sd.c
 
 default: elf bin dump
 
 elf := $(BUILD_DIR)/sdboot.elf
-$(elf): head.S kprintf.c $(SDC_SOURCE)
+$(elf): head.S ${SDSOURCE} kprintf.c syscalls_bootrom.c
 	mkdir -p $(BUILD_DIR)
-	$(CC) $(CFLAGS) -DTL_CLK="$(PBUS_CLK)UL" $(LFLAGS) -o $@ head.S $(SDC_SOURCE) kprintf.c
+	$(CC) $(CFLAGS) -DTL_CLK="$(PBUS_CLK)UL" $(LFLAGS) -o $@ head.S ${SDSOURCE} kprintf.c syscalls_bootrom.c
 
 .PHONY: elf
 elf: $(elf)

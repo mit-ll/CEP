@@ -69,6 +69,19 @@ class VCU118FPGATestHarness(override implicit val p: Parameters) extends VCU118S
   dp(UARTOverlayKey).head.place(UARTDesignInput(io_uart_bb))
 // DOC include end: UartOverlay
 
+  /*** GPIO ***/
+
+  val gpio = Seq.tabulate(dp(PeripheryGPIOKey).size)(i => {
+    val maxGPIOSupport = 32 // max gpio per gpio chip
+    val names = VCU118GPIOs.names.slice(maxGPIOSupport*i, maxGPIOSupport*(i+1))
+    Overlay(GPIOOverlayKey, new CustomGPIOVCU118ShellPlacer(this, GPIOShellInput(), names))
+  })
+
+  val io_gpio_bb = dp(PeripheryGPIOKey).map { p => BundleBridgeSource(() => (new GPIOPortIO(p))) }
+  (dp(GPIOOverlayKey) zip dp(PeripheryGPIOKey)).zipWithIndex.map { case ((placer, params), i) =>
+    placer.place(GPIODesignInput(params, io_gpio_bb(i)))
+  }
+
   /*** SPI ***/
 
   // 1st SPI goes to the VCU118 SDIO port

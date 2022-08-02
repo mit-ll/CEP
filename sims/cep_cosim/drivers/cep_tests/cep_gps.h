@@ -26,7 +26,6 @@
 #define X2B_PERIOD      4093
 
 #define CHIP_RATE ((uint64_t)10230000)
-#define CODE_LENGTH (CHIP_RATE * 86400 * 7)
 
 //
 // CEP's GPS 

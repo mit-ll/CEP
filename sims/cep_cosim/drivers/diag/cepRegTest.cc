@@ -113,22 +113,14 @@ int cepRegTest_runTest(int cpuId, int accessSize, int revCheck, int seed, int ve
     break;
   }    
   }
+
   // add some holes to punch for coverage
-  /*
-  for (int i=0;i<CEP_TOTAL_CORES-1;i++) { // no SRot Yet
-    (*regp->AddAHole_p)(regp, cep_core_info[i].base_address  + 0xFFF8,(uint64_t)(-1));
-  }
-  */
-  // from 0x700x_xxxx - 0x7FFx_xxxx
   (*regp->AddAHole_p)(regp, interrupt_controller_base_addr + 0xFF8,(uint64_t)(-1));
 
-  //(*regp->AddAHole_p)(regp, 0x7FFFFFF8,(uint64_t)(-1));
-  //
-  // now do it
+  // Run the test
   errCnt = (*regp->doRegTest_p)(regp);
-  //
+
   // Destructors
-  //
   cepRegTest_DELETE(regp);
   //
   //

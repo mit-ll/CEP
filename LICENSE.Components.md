@@ -185,3 +185,13 @@ License Terms       : Copyright (c) 2018 Project Nayuki. (MIT License)
                       *   liability, whether in an action of contract, tort or otherwise, arising from,
                       *   out of or in connection with the Software or the use or other dealings in the
                       *   Software.
+
+Title               : libgpiod-example
+Source              : https://github.com/starnight/libgpiod-example
+CEP Directory       : ./software/linux/gpiotest
+License Description : BSD 3-Clause
+
+Title               : Chipyard VC707 FPGA build target
+Source              : https://github.com/necst/chipyard-vc707
+CEP Directory       : ./fpga/src/main/scala/vc707
+License Description : BSD 3-Clause

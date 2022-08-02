@@ -4,8 +4,8 @@
 #//
 #// File          : program_arty100t_jtag.tcl
 #// Project       : Common Evaluation Platform (CEP)
-#// Description   : TCL script for automatic programming of Arty100t CEP build
-#// Notes         : This TCL script assumes the arty100t CEP build target
+#// Description   : TCL script for automatic programming of Arty100t CEP build via JTA
+#// Notes         : 
 #//--------------------------------------------------------------------------------------
 open_hw_manager
 connect_hw_server

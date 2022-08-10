@@ -120,7 +120,7 @@ begin
 end
 
 S4
-    S4_0 (clk, {k3[23:0], k3[31:24]}, k4a);
+    S4_0 (clk, rst, {k3[23:0], k3[31:24]}, k4a);
 
 assign k0b = k0a ^ k4a;
 assign k1b = k1a ^ k4a;
@@ -133,7 +133,7 @@ begin
 	    out_1 <= 0;
 	else
 	    out_1 <= {k0b, k1b, k2b, k3b};
-end		
+end
 assign out_2 = {k0b, k1b, k2b, k3b};
 endmodule
 

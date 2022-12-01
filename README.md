@@ -2,7 +2,7 @@
 [//]: # (SPDX short identifier: BSD-2-Clause)
 
 # ---- ARCHIVED REPOSITORY ----
-## The CEP now residese here [here](https://www.github.com/CommonEvaluationPlatform/CEP.git).
+## The CEP now resides here [here](https://www.github.com/CommonEvaluationPlatform/CEP.git).
 # Common Evaluation Platform v4.2
 
 [![DOI](https://zenodo.org/badge/108179132.svg)](https://zenodo.org/badge/latestdoi/108179132)
